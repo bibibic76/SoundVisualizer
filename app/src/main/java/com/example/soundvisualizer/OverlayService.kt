@@ -96,6 +96,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 fun VisualizerOverlay() {
     val spectrogramData = mutableStateOf<FloatArray?>(null)
     val aiStateColor = mutableStateOf(Color.Green) // Green = Ambient, Red = Danger
+    val isCircularMode = mutableStateOf(true) // Toggle between Wave and Circular
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -113,20 +114,53 @@ fun VisualizerOverlay() {
         val data = spectrogramData.value
 
         if (data != null && data.isNotEmpty()) {
-            val barWidth = width / data.size.toFloat()
-            for (i in data.indices) {
-                // Scale magnitude for visibility
-                val barHeight = (data[i] * 10f).coerceAtMost(height / 2)
+            if (isCircularMode.value) {
+                // Circular Mode
+                val cx = width / 2f
+                val cy = height / 2f
+                val baseRadius = (width.coerceAtMost(height)) * 0.15f
                 
-                drawLine(
-                    color = aiStateColor.value.copy(alpha = 0.8f),
-                    start = Offset(i * barWidth, height),
-                    end = Offset(i * barWidth, height - barHeight),
-                    strokeWidth = barWidth * 0.8f
+                // Draw inner circle
+                drawCircle(
+                    color = aiStateColor.value.copy(alpha = 0.3f),
+                    radius = baseRadius,
+                    center = Offset(cx, cy)
                 )
+
+                // Draw outward FFT bars
+                for (i in data.indices) {
+                    val angle = (i.toFloat() / data.size) * 2.0 * Math.PI
+                    val magnitude = (data[i] * 15f).coerceAtMost(height / 3f)
+                    
+                    val startX = cx + (Math.cos(angle) * baseRadius).toFloat()
+                    val startY = cy + (Math.sin(angle) * baseRadius).toFloat()
+                    val endX = cx + (Math.cos(angle) * (baseRadius + magnitude)).toFloat()
+                    val endY = cy + (Math.sin(angle) * (baseRadius + magnitude)).toFloat()
+                    
+                    drawLine(
+                        color = aiStateColor.value.copy(alpha = 0.8f),
+                        start = Offset(startX, startY),
+                        end = Offset(endX, endY),
+                        strokeWidth = 3f,
+                        cap = StrokeCap.Round
+                    )
+                }
+            } else {
+                // Wave Mode (Bottom Bars)
+                val barWidth = width / data.size.toFloat()
+                for (i in data.indices) {
+                    val barHeight = (data[i] * 10f).coerceAtMost(height / 2)
+                    
+                    drawLine(
+                        color = aiStateColor.value.copy(alpha = 0.8f),
+                        start = Offset(i * barWidth, height),
+                        end = Offset(i * barWidth, height - barHeight),
+                        strokeWidth = barWidth * 0.8f
+                    )
+                }
             }
         } else {
-            // Draw idle wave if no data
+            // Draw idle state if no data
             drawCircle(
                 color = aiStateColor.value.copy(alpha = 0.2f),
                 radius = 50f,
