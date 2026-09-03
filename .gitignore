@@ -21,3 +21,4 @@ obj/
 app/build/
 
 .agents/
+.fake
