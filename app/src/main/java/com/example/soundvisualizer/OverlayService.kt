@@ -92,7 +92,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     override fun onBind(intent: Intent?): IBinder? = null
 }
 
-enum class VisualMode { Wave, Pad, Outline, CircleRipple }
+enum class VisualMode(val displayName: String) { 
+    Wave("파도"), 
+    Pad("패드"), 
+    CircleRipple("원형"), 
+    Outline("외곽선") 
+}
 
 @Composable
 fun VisualizerOverlay() {
