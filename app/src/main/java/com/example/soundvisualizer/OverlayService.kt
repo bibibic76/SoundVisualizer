@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -254,6 +255,12 @@ fun VisualizerOverlay() {
             delay(16) // ~60fps for smoother bezier animations
         }
     }
+    
+    // History buffer for fake spatial depth (Delaying rear channels)
+    val historySize = 5
+    val leftHistory = remember { FloatArray(historySize) { 0f } }
+    val rightHistory = remember { FloatArray(historySize) { 0f } }
+    var historyIndex by remember { mutableStateOf(0) }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
@@ -263,16 +270,51 @@ fun VisualizerOverlay() {
         val leftRms = audioLevels.value[0] * 300f 
         val rightRms = audioLevels.value[1] * 300f
 
-        // Map Left/Right to 8 channels (0:FC, 1:FR, 2:SR, 3:BR, 4:BC, 5:BL, 6:SL, 7:FL)
+        val activeSettings = when (currentMode) {
+            VisualMode.Wave -> waveSettings
+            VisualMode.Pad -> padSettings
+            VisualMode.CircleRipple -> circleSettings
+            VisualMode.Outline -> outlineSettings
+        }
+        val useRippleDelay = activeSettings.useRippleDelay
+
+        // Update history buffer for delay effect
+        leftHistory[historyIndex] = leftRms
+        rightHistory[historyIndex] = rightRms
+        val delayedIndex = (historyIndex - (historySize - 1) + historySize) % historySize
+        historyIndex = (historyIndex + 1) % historySize
+
+        val delayedLeft = leftHistory[delayedIndex]
+        val delayedRight = rightHistory[delayedIndex]
+
+        // Virtual Surround Upmixing (Mid-Side Processing)
         val targetDepths = FloatArray(8)
-        targetDepths[0] = (leftRms + rightRms) / 2f
-        targetDepths[1] = rightRms
-        targetDepths[2] = rightRms
-        targetDepths[3] = rightRms
-        targetDepths[4] = (leftRms + rightRms) / 2f
-        targetDepths[5] = leftRms
-        targetDepths[6] = leftRms
-        targetDepths[7] = leftRms
+        val minRms = minOf(leftRms, rightRms)
+        val sideLeft = maxOf(0f, leftRms - rightRms)
+        val sideRight = maxOf(0f, rightRms - leftRms)
+        
+        // Front uses real-time
+        targetDepths[0] = minRms * 1.2f   // FC
+        targetDepths[1] = rightRms * 0.9f // FR
+        targetDepths[7] = leftRms * 0.9f  // FL
+        targetDepths[2] = sideRight * 1.5f// SR
+        targetDepths[6] = sideLeft * 1.5f // SL
+
+        if (useRippleDelay) {
+            // Rear uses delayed signals to simulate spatial travel
+            val delayedMin = minOf(delayedLeft, delayedRight)
+            val delayedSideLeft = maxOf(0f, delayedLeft - delayedRight)
+            val delayedSideRight = maxOf(0f, delayedRight - delayedLeft)
+
+            targetDepths[3] = delayedSideRight * 1.2f // BR
+            targetDepths[4] = delayedMin * 0.8f       // BC
+            targetDepths[5] = delayedSideLeft * 1.2f  // BL
+        } else {
+            // Rear uses real-time
+            targetDepths[3] = sideRight * 1.2f // BR
+            targetDepths[4] = minRms * 0.8f    // BC
+            targetDepths[5] = sideLeft * 1.2f  // BL
+        }
 
         for (i in 0 until 8) {
             smoothedDepths[i] += (targetDepths[i] - smoothedDepths[i]) * 0.3f
@@ -286,7 +328,7 @@ fun VisualizerOverlay() {
                 val isWave = currentMode == VisualMode.Wave
                 val activeSettings = if (isWave) waveSettings else outlineSettings
                 val activeIntensity = activeSettings.intensity / 50f
-                val activeOpacity = activeSettings.opacity / 100f
+                val activeOpacity = 1f - (activeSettings.opacity / 100f)
                 
                 var anyActive = false
                 for (d in depths) {
@@ -380,7 +422,7 @@ fun VisualizerOverlay() {
                 }
             }
             VisualMode.Pad -> {
-                val padOpacity = padSettings.opacity / 100f
+                val padOpacity = 1f - (padSettings.opacity / 100f)
                 val padIntensity = padSettings.intensity / 50f
                 val centerDists = FloatArray(8)
                 centerDists[0] = 0f                             // FC
@@ -456,7 +498,7 @@ fun VisualizerOverlay() {
                 }
             }
             VisualMode.CircleRipple -> {
-                val circleOpacity = circleSettings.opacity / 100f
+                val circleOpacity = 1f - (circleSettings.opacity / 100f)
                 val circleIntensity = circleSettings.intensity / 50f
                 val cx = w / 2f
                 val cy = h / 2f

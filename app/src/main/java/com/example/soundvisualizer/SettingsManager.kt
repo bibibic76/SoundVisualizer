@@ -9,7 +9,8 @@ data class ModeSettings(
     var intensity: Float = 50f,
     var speed: Float = 20f,
     var opacity: Float = 60f,
-    var circleRadius: Float = 40f
+    var circleRadius: Float = 40f,
+    var useRippleDelay: Boolean = true
 )
 
 object SettingsManager {
@@ -42,23 +43,27 @@ object SettingsManager {
         _waveMode.value = ModeSettings(
             intensity = prefs.getFloat("wave_intensity", 50f),
             speed = prefs.getFloat("wave_speed", 20f),
-            opacity = prefs.getFloat("wave_opacity", 60f)
+            opacity = prefs.getFloat("wave_opacity", 60f),
+            useRippleDelay = prefs.getBoolean("wave_ripple", true)
         )
         _padMode.value = ModeSettings(
             intensity = prefs.getFloat("pad_intensity", 50f),
             speed = prefs.getFloat("pad_speed", 20f),
-            opacity = prefs.getFloat("pad_opacity", 60f)
+            opacity = prefs.getFloat("pad_opacity", 60f),
+            useRippleDelay = prefs.getBoolean("pad_ripple", true)
         )
         _circleMode.value = ModeSettings(
             intensity = prefs.getFloat("circle_intensity", 50f),
             speed = prefs.getFloat("circle_speed", 20f),
             opacity = prefs.getFloat("circle_opacity", 60f),
-            circleRadius = prefs.getFloat("circle_radius", 40f)
+            circleRadius = prefs.getFloat("circle_radius", 40f),
+            useRippleDelay = prefs.getBoolean("circle_ripple", true)
         )
         _outlineMode.value = ModeSettings(
             intensity = prefs.getFloat("outline_intensity", 50f),
             speed = prefs.getFloat("outline_speed", 20f),
-            opacity = prefs.getFloat("outline_opacity", 60f)
+            opacity = prefs.getFloat("outline_opacity", 60f),
+            useRippleDelay = prefs.getBoolean("outline_ripple", true)
         )
     }
 
@@ -74,6 +79,7 @@ object SettingsManager {
             .putFloat("wave_intensity", current.intensity)
             .putFloat("wave_speed", current.speed)
             .putFloat("wave_opacity", current.opacity)
+            .putBoolean("wave_ripple", current.useRippleDelay)
             .apply()
     }
     
@@ -84,6 +90,7 @@ object SettingsManager {
             .putFloat("pad_intensity", current.intensity)
             .putFloat("pad_speed", current.speed)
             .putFloat("pad_opacity", current.opacity)
+            .putBoolean("pad_ripple", current.useRippleDelay)
             .apply()
     }
 
@@ -95,6 +102,7 @@ object SettingsManager {
             .putFloat("circle_speed", current.speed)
             .putFloat("circle_opacity", current.opacity)
             .putFloat("circle_radius", current.circleRadius)
+            .putBoolean("circle_ripple", current.useRippleDelay)
             .apply()
     }
 
@@ -105,6 +113,7 @@ object SettingsManager {
             .putFloat("outline_intensity", current.intensity)
             .putFloat("outline_speed", current.speed)
             .putFloat("outline_opacity", current.opacity)
+            .putBoolean("outline_ripple", current.useRippleDelay)
             .apply()
     }
 

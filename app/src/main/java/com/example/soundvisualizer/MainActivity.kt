@@ -236,8 +236,11 @@ fun SettingsTab() {
                 ModernSlider("속도", "파도가 흘러가며 일렁이는 속도를 조절합니다.", waveSettings.speed) { 
                     SettingsManager.updateWaveMode { speed = it }
                 }
-                ModernSlider("투명도", "그래픽 뒤의 비침 정도를 결정합니다.", waveSettings.opacity) { 
+                ModernSlider("투명도", "파도의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", waveSettings.opacity) { 
                     SettingsManager.updateWaveMode { opacity = it }
+                }
+                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", waveSettings.useRippleDelay) { 
+                    SettingsManager.updateWaveMode { useRippleDelay = it }
                 }
             }
         }
@@ -251,8 +254,11 @@ fun SettingsTab() {
                 ModernSlider("속도", "부풀어 오르는 애니메이션 속도를 조절합니다.", padSettings.speed) { 
                     SettingsManager.updatePadMode { speed = it }
                 }
-                ModernSlider("투명도", "그래픽 뒤의 비침 정도를 결정합니다.", padSettings.opacity) { 
+                ModernSlider("투명도", "패드의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", padSettings.opacity) { 
                     SettingsManager.updatePadMode { opacity = it }
+                }
+                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", padSettings.useRippleDelay) { 
+                    SettingsManager.updatePadMode { useRippleDelay = it }
                 }
             }
         }
@@ -269,8 +275,11 @@ fun SettingsTab() {
                 ModernSlider("반지름", "중앙 빈 공간의 크기를 조절합니다.", circleSettings.circleRadius, min = 10f, max = 100f) { 
                     SettingsManager.updateCircleMode { circleRadius = it }
                 }
-                ModernSlider("투명도", "그래픽 뒤의 비침 정도를 결정합니다.", circleSettings.opacity) { 
+                ModernSlider("투명도", "원형 파동의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", circleSettings.opacity) { 
                     SettingsManager.updateCircleMode { opacity = it }
+                }
+                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", circleSettings.useRippleDelay) { 
+                    SettingsManager.updateCircleMode { useRippleDelay = it }
                 }
             }
         }
@@ -284,8 +293,11 @@ fun SettingsTab() {
                 ModernSlider("속도", "선이 움직이는 애니메이션 속도를 조절합니다.", outlineSettings.speed) { 
                     SettingsManager.updateOutlineMode { speed = it }
                 }
-                ModernSlider("투명도", "그래픽 뒤의 비침 정도를 결정합니다.", outlineSettings.opacity) { 
+                ModernSlider("투명도", "외곽선의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", outlineSettings.opacity) { 
                     SettingsManager.updateOutlineMode { opacity = it }
+                }
+                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", outlineSettings.useRippleDelay) { 
+                    SettingsManager.updateOutlineMode { useRippleDelay = it }
                 }
             }
             Spacer(modifier = Modifier.height(100.dp))
@@ -329,6 +341,26 @@ fun ModernSlider(label: String, desc: String, value: Float, min: Float = 0f, max
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             )
             Text(String.format("%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor, modifier = Modifier.width(40.dp))
+        }
+        Text(desc, fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(top = 8.dp))
+    }
+}
+
+@Composable
+fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Column(modifier = Modifier.padding(bottom = 24.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = AccentColor,
+                    uncheckedThumbColor = SecondaryTextColor,
+                    uncheckedTrackColor = Color(0xFF333A44)
+                )
+            )
         }
         Text(desc, fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(top = 8.dp))
     }
