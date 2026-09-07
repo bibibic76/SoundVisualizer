@@ -15,6 +15,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,6 +28,7 @@ class AudioCaptureService : Service() {
     private var audioRecord: AudioRecord? = null
     private val scope = CoroutineScope(Dispatchers.IO + Job())
     private var isRecording = false
+    private var aiPipeline: RealtimeAiPipeline? = null
 
     companion object {
         const val EXTRA_RESULT_CODE = "RESULT_CODE"
@@ -43,6 +45,13 @@ class AudioCaptureService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
         AudioEngine.init()
+        // Parallel AI branch — independent of C++ visualizer path
+        aiPipeline = try {
+            RealtimeAiPipeline.create(this, SAMPLE_RATE, channels = 2).also { it.start() }
+        } catch (t: Throwable) {
+            android.util.Log.e("AudioCaptureService", "AI pipeline init failed: ${t.message}", t)
+            null
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -91,7 +100,10 @@ class AudioCaptureService : Service() {
             while (isActive && isRecording) {
                 val readResult = audioRecord?.read(buffer, 0, buffer.size, AudioRecord.READ_BLOCKING) ?: 0
                 if (readResult > 0) {
+                    // Existing DSP path (unchanged)
                     AudioEngine.pushAudioData(buffer, readResult)
+                    // AI path: copy into ring immediately; never infer on capture thread
+                    aiPipeline?.ingestInterleavedPcm(buffer, readResult)
                 }
             }
         }
@@ -102,6 +114,8 @@ class AudioCaptureService : Service() {
         audioRecord?.stop()
         audioRecord?.release()
         mediaProjection?.stop()
+        aiPipeline?.close()
+        aiPipeline = null
         AudioEngine.destroy()
         super.onDestroy()
     }
