@@ -1,0 +1,951 @@
+{
+  "booster_model": "app/src/main/assets/ai/gunshot_booster.onnx",
+  "cases": {
+    "silence": {
+      "gunshot_score": 0.5055228471755981,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "blocked_speech_silence_or_low_conf",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Silence",
+        "confidence": 1.0,
+        "yamnet_class_index": 494,
+        "top5": [
+          {
+            "index": 494,
+            "name": "Silence",
+            "prob": 1.0
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 7.855638786658255e-30
+          },
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 6.4286941411018935e-37
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          },
+          {
+            "index": 2,
+            "name": "Conversation",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Silence",
+        "confidence": 1.0,
+        "yamnet_class_index": 494
+      }
+    },
+    "gunshot": {
+      "gunshot_score": 0.5047634243965149,
+      "gunshot_evidence": 0.0,
+      "accepted": true,
+      "reason": "game_mix_or_strong_danger score=0.5048 evidence=0.0000 adopt=True",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Ding",
+        "confidence": 0.12252969294786453,
+        "yamnet_class_index": 477,
+        "top5": [
+          {
+            "index": 477,
+            "name": "Ding",
+            "prob": 0.12252969294786453
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10820995271205902
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.07261022925376892
+          },
+          {
+            "index": 54,
+            "name": "Hiccup",
+            "prob": 0.06038668751716614
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.05509820953011513
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.5047634243965149,
+        "yamnet_class_index": 421
+      }
+    },
+    "alarm": {
+      "gunshot_score": 0.5047103762626648,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "default score=0.5047 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Air horn, truck horn",
+        "confidence": 0.13773442804813385,
+        "yamnet_class_index": 312,
+        "top5": [
+          {
+            "index": 312,
+            "name": "Air horn, truck horn",
+            "prob": 0.13773442804813385
+          },
+          {
+            "index": 302,
+            "name": "Vehicle horn, car horn, honking",
+            "prob": 0.10125480592250824
+          },
+          {
+            "index": 153,
+            "name": "Synthesizer",
+            "prob": 0.09391622245311737
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.07539236545562744
+          },
+          {
+            "index": 392,
+            "name": "Buzzer",
+            "prob": 0.06290934979915619
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Air horn, truck horn",
+        "confidence": 0.13773442804813385,
+        "yamnet_class_index": 312
+      }
+    },
+    "speech_block": {
+      "gunshot_score": 0.5101163387298584,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "blocked_speech_silence_or_low_conf",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "speech",
+        "display": "Speech",
+        "confidence": 0.8235293626785278,
+        "yamnet_class_index": 0,
+        "top5": [
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.8235293626785278
+          },
+          {
+            "index": 2,
+            "name": "Conversation",
+            "prob": 0.11764705926179886
+          },
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.05882352963089943
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          },
+          {
+            "index": 3,
+            "name": "Narration, monologue",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "speech",
+        "display": "Speech",
+        "confidence": 0.8235293626785278,
+        "yamnet_class_index": 0
+      }
+    },
+    "low_conf_block": {
+      "gunshot_score": 0.5037990212440491,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "blocked_speech_silence_or_low_conf",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.08713692426681519,
+        "yamnet_class_index": 507,
+        "top5": [
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.08713692426681519
+          },
+          {
+            "index": 277,
+            "name": "Wind",
+            "prob": 0.08298754692077637
+          },
+          {
+            "index": 279,
+            "name": "Wind noise (microphone)",
+            "prob": 0.08298754692077637
+          },
+          {
+            "index": 321,
+            "name": "Traffic noise, roadway noise",
+            "prob": 0.08298754692077637
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.08298754692077637
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.08713692426681519,
+        "yamnet_class_index": 507
+      }
+    },
+    "gunshot_cue": {
+      "gunshot_score": 0.5089568495750427,
+      "gunshot_evidence": 0.2054794579744339,
+      "accepted": true,
+      "reason": "gunshot_cue score=0.5090 evidence=0.2055 adopt=True",
+      "has_gunshot_cue": true,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.5479452013969421
+          },
+          {
+            "index": 421,
+            "name": "Gunshot, gunfire",
+            "prob": 0.2054794579744339
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.13698630034923553
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10958903282880783
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.5089568495750427,
+        "yamnet_class_index": 421
+      }
+    },
+    "strong_alarm": {
+      "gunshot_score": 0.50998854637146,
+      "gunshot_evidence": 0.0,
+      "accepted": true,
+      "reason": "game_mix_or_strong_danger score=0.5100 evidence=0.0000 adopt=True",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.4615384638309479
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.307692289352417
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.23076923191547394
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Alarm",
+        "confidence": 0.50998854637146,
+        "yamnet_class_index": 382
+      }
+    },
+    "default_path": {
+      "gunshot_score": 0.5074108242988586,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "default score=0.5074 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507,
+        "top5": [
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.6153846383094788
+          },
+          {
+            "index": 508,
+            "name": "Environmental noise",
+            "prob": 0.23076924681663513
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.1538461595773697
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507
+      }
+    },
+    "game_mix_no_cue": {
+      "gunshot_score": 0.5067203044891357,
+      "gunshot_evidence": 0.0,
+      "accepted": true,
+      "reason": "game_mix_or_strong_danger score=0.5067 evidence=0.0000 adopt=True",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Sound effect",
+        "confidence": 0.5384615659713745,
+        "yamnet_class_index": 498,
+        "top5": [
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.5384615659713745
+          },
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.3076923191547394
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.1538461595773697
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Sound effect",
+        "confidence": 0.5384615659713745,
+        "yamnet_class_index": 498
+      }
+    }
+  },
+  "boundaries": {
+    "cue_below_score": {
+      "gunshot_score": 0.1999,
+      "gunshot_evidence": 0.2054794579744339,
+      "accepted": false,
+      "reason": "gunshot_cue score=0.1999 evidence=0.2055 adopt=False",
+      "has_gunshot_cue": true,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.5479452013969421
+          },
+          {
+            "index": 421,
+            "name": "Gunshot, gunfire",
+            "prob": 0.2054794579744339
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.13698630034923553
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10958903282880783
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421
+      }
+    },
+    "cue_at_score": {
+      "gunshot_score": 0.2,
+      "gunshot_evidence": 0.2054794579744339,
+      "accepted": true,
+      "reason": "gunshot_cue score=0.2000 evidence=0.2055 adopt=True",
+      "has_gunshot_cue": true,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.5479452013969421
+          },
+          {
+            "index": 421,
+            "name": "Gunshot, gunfire",
+            "prob": 0.2054794579744339
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.13698630034923553
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10958903282880783
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421
+      }
+    },
+    "cue_above_score": {
+      "gunshot_score": 0.2001,
+      "gunshot_evidence": 0.2054794579744339,
+      "accepted": true,
+      "reason": "gunshot_cue score=0.2001 evidence=0.2055 adopt=True",
+      "has_gunshot_cue": true,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.5479452013969421
+          },
+          {
+            "index": 421,
+            "name": "Gunshot, gunfire",
+            "prob": 0.2054794579744339
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.13698630034923553
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10958903282880783
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421
+      }
+    },
+    "cue_evidence_below": {
+      "gunshot_score": 0.5,
+      "gunshot_evidence": 0.2054794579744339,
+      "accepted": true,
+      "reason": "gunshot_cue score=0.5000 evidence=0.2055 adopt=True",
+      "has_gunshot_cue": true,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.2054794579744339,
+        "yamnet_class_index": 421,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.5479452013969421
+          },
+          {
+            "index": 421,
+            "name": "Gunshot, gunfire",
+            "prob": 0.2054794579744339
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.13698630034923553
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10958903282880783
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.5,
+        "yamnet_class_index": 421
+      }
+    },
+    "strong_below_40": {
+      "gunshot_score": 0.3999,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.3999 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.4615384638309479
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.307692289352417
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.23076923191547394
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382
+      }
+    },
+    "strong_at_40_low_evidence": {
+      "gunshot_score": 0.4,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.4000 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.4615384638309479
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.307692289352417
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.23076923191547394
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382
+      }
+    },
+    "strong_at_50": {
+      "gunshot_score": 0.5,
+      "gunshot_evidence": 0.0,
+      "accepted": true,
+      "reason": "game_mix_or_strong_danger score=0.5000 evidence=0.0000 adopt=True",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.4615384638309479
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.307692289352417
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.23076923191547394
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Alarm",
+        "confidence": 0.5,
+        "yamnet_class_index": 382
+      }
+    },
+    "strong_49_with_evidence": {
+      "gunshot_score": 0.49,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.4900 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382,
+        "top5": [
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 0.4615384638309479
+          },
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.307692289352417
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.23076923191547394
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Alarm",
+        "confidence": 0.23076923191547394,
+        "yamnet_class_index": 382
+      }
+    },
+    "default_below": {
+      "gunshot_score": 0.4499,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "default score=0.4499 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507,
+        "top5": [
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.6153846383094788
+          },
+          {
+            "index": 508,
+            "name": "Environmental noise",
+            "prob": 0.23076924681663513
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.1538461595773697
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507
+      }
+    },
+    "default_at": {
+      "gunshot_score": 0.45,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "default score=0.4500 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507,
+        "top5": [
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.6153846383094788
+          },
+          {
+            "index": 508,
+            "name": "Environmental noise",
+            "prob": 0.23076924681663513
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.1538461595773697
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507
+      }
+    },
+    "default_above": {
+      "gunshot_score": 0.4501,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "default score=0.4501 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507,
+        "top5": [
+          {
+            "index": 507,
+            "name": "Noise",
+            "prob": 0.6153846383094788
+          },
+          {
+            "index": 508,
+            "name": "Environmental noise",
+            "prob": 0.23076924681663513
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.1538461595773697
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 0.0
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Noise",
+        "confidence": 0.6153846383094788,
+        "yamnet_class_index": 507
+      }
+    }
+  },
+  "notes": {
+    "silence_block": "silence sample must reject even if score high",
+    "gunshot_adopt": "gunshot sample pre ambient → post danger"
+  }
+}
