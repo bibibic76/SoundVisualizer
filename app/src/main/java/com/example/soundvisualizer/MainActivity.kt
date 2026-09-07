@@ -227,77 +227,64 @@ fun SettingsTab() {
             Text("모드별 상세 설정", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
         }
 
-        item {
-            val waveSettings by SettingsManager.waveMode.collectAsState()
-            SettingsExpander("파도 모드", isExpanded = currentMode == VisualMode.Wave) {
-                ModernSlider("크기", "파도의 위아래 높이와 전체적인 볼륨감을 조절합니다.", waveSettings.intensity) { 
-                    SettingsManager.updateWaveMode { intensity = it }
+        // 동적으로 선택된 모드를 제일 위에 오도록 정렬
+        val sortedModes = VisualMode.values().sortedBy { if (it == currentMode) 0 else 1 }
+
+        items(sortedModes.size) { index ->
+            val mode = sortedModes[index]
+            when (mode) {
+                VisualMode.Wave -> {
+                    val waveSettings by SettingsManager.waveMode.collectAsState()
+                    SettingsExpander("파도 모드", isExpanded = currentMode == VisualMode.Wave) {
+                        ModeSettingsSection(waveSettings) { SettingsManager.updateWaveMode(it) }
+                    }
                 }
-                ModernSlider("속도", "파도가 흘러가며 일렁이는 속도를 조절합니다.", waveSettings.speed) { 
-                    SettingsManager.updateWaveMode { speed = it }
+                VisualMode.Pad -> {
+                    val padSettings by SettingsManager.padMode.collectAsState()
+                    SettingsExpander("패드 모드", isExpanded = currentMode == VisualMode.Pad) {
+                        ModeSettingsSection(padSettings) { SettingsManager.updatePadMode(it) }
+                    }
                 }
-                ModernSlider("투명도", "파도의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", waveSettings.opacity) { 
-                    SettingsManager.updateWaveMode { opacity = it }
+                VisualMode.CircleRipple -> {
+                    val circleSettings by SettingsManager.circleMode.collectAsState()
+                    SettingsExpander("원형 모드", isExpanded = currentMode == VisualMode.CircleRipple) {
+                        ModeSettingsSection(circleSettings, isCircle = true) { SettingsManager.updateCircleMode(it) }
+                    }
                 }
-                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", waveSettings.useRippleDelay) { 
-                    SettingsManager.updateWaveMode { useRippleDelay = it }
-                }
-            }
-        }
-        
-        item {
-            val padSettings by SettingsManager.padMode.collectAsState()
-            SettingsExpander("패드 모드", isExpanded = currentMode == VisualMode.Pad) {
-                ModernSlider("크기", "패드의 두께와 볼륨감을 조절합니다.", padSettings.intensity) { 
-                    SettingsManager.updatePadMode { intensity = it }
-                }
-                ModernSlider("속도", "부풀어 오르는 애니메이션 속도를 조절합니다.", padSettings.speed) { 
-                    SettingsManager.updatePadMode { speed = it }
-                }
-                ModernSlider("투명도", "패드의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", padSettings.opacity) { 
-                    SettingsManager.updatePadMode { opacity = it }
-                }
-                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", padSettings.useRippleDelay) { 
-                    SettingsManager.updatePadMode { useRippleDelay = it }
+                VisualMode.Outline -> {
+                    val outlineSettings by SettingsManager.outlineMode.collectAsState()
+                    SettingsExpander("외곽선 모드", isExpanded = currentMode == VisualMode.Outline) {
+                        ModeSettingsSection(outlineSettings) { SettingsManager.updateOutlineMode(it) }
+                    }
                 }
             }
         }
 
         item {
-            val circleSettings by SettingsManager.circleMode.collectAsState()
-            SettingsExpander("원형 모드", isExpanded = currentMode == VisualMode.CircleRipple) {
-                ModernSlider("크기", "원형 리플의 뻗어나가는 세기를 조절합니다.", circleSettings.intensity) { 
-                    SettingsManager.updateCircleMode { intensity = it }
-                }
-                ModernSlider("속도", "물결의 진동 속도를 조절합니다.", circleSettings.speed) { 
-                    SettingsManager.updateCircleMode { speed = it }
-                }
-                ModernSlider("반지름", "중앙 빈 공간의 크기를 조절합니다.", circleSettings.circleRadius, min = 10f, max = 100f) { 
-                    SettingsManager.updateCircleMode { circleRadius = it }
-                }
-                ModernSlider("투명도", "원형 파동의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", circleSettings.opacity) { 
-                    SettingsManager.updateCircleMode { opacity = it }
-                }
-                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", circleSettings.useRippleDelay) { 
-                    SettingsManager.updateCircleMode { useRippleDelay = it }
-                }
-            }
-        }
+            Text("소리 분류 표시 (AI)", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardColor),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    val showAmbient by SettingsManager.showAmbient.collectAsState()
+                    val colorAmbient by SettingsManager.colorAmbient.collectAsState()
+                    ColorSettingRow("환경음 표시", showAmbient, colorAmbient,
+                        onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
+                        onColorChange = { SettingsManager.updateAISettings(colorAmbient = it) })
 
-        item {
-            val outlineSettings by SettingsManager.outlineMode.collectAsState()
-            SettingsExpander("외곽선 모드", isExpanded = currentMode == VisualMode.Outline) {
-                ModernSlider("크기", "선의 출렁임 정도를 조절합니다.", outlineSettings.intensity) { 
-                    SettingsManager.updateOutlineMode { intensity = it }
-                }
-                ModernSlider("속도", "선이 움직이는 애니메이션 속도를 조절합니다.", outlineSettings.speed) { 
-                    SettingsManager.updateOutlineMode { speed = it }
-                }
-                ModernSlider("투명도", "외곽선의 투명도를 조절하여 그래픽 뒤의 비침 정도를 결정합니다.", outlineSettings.opacity) { 
-                    SettingsManager.updateOutlineMode { opacity = it }
-                }
-                ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", outlineSettings.useRippleDelay) { 
-                    SettingsManager.updateOutlineMode { useRippleDelay = it }
+                    val showSpeech by SettingsManager.showSpeech.collectAsState()
+                    val colorSpeech by SettingsManager.colorSpeech.collectAsState()
+                    ColorSettingRow("대화음 표시", showSpeech, colorSpeech,
+                        onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
+                        onColorChange = { SettingsManager.updateAISettings(colorSpeech = it) })
+
+                    val showDanger by SettingsManager.showDanger.collectAsState()
+                    val colorDanger by SettingsManager.colorDanger.collectAsState()
+                    ColorSettingRow("위협음 표시", showDanger, colorDanger,
+                        onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
+                        onColorChange = { SettingsManager.updateAISettings(colorDanger = it) })
                 }
             }
             Spacer(modifier = Modifier.height(100.dp))
@@ -306,8 +293,118 @@ fun SettingsTab() {
 }
 
 @Composable
+fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, update: (ModeSettings.() -> Unit) -> Unit) {
+    ModernSwitch("크기 고정", "세기에 비례하는 투명도를 활용하여 고정된 크기의 그래픽을 보여줍니다.", settings.intensityAsOpacity) {
+        update { intensityAsOpacity = it }
+    }
+    ModernSlider("고정 크기", "투명도가 변할 기준이 되는 고정 크기를 설정합니다.", settings.opacityFixedSize, min = 10f, max = 100f) {
+        update { opacityFixedSize = it }
+    }
+    ModernSlider("최대 투명도", "소리에 비례하여 나타날 최대 투명도를 설정합니다.", settings.opacityFixedMaxOpacity, min = 0f, max = 100f) {
+        update { opacityFixedMaxOpacity = it }
+    }
+    ModernSlider("크기", "그래픽의 크기와 전체적인 볼륨감을 조절합니다.", settings.intensity) { 
+        update { intensity = it }
+    }
+    if (isCircle) {
+        ModernSlider("반지름", "원형 모드에서 가운데 중심부의 지름(반지름) 크기를 개별 조절합니다.", settings.circleRadius, min = 10f, max = 100f) { 
+            update { circleRadius = it }
+        }
+    }
+    ModernSlider("투명도", "그래픽의 투명도를 조절하여 뒤의 비침 정도를 결정합니다.", settings.opacity) { 
+        update { opacity = it }
+    }
+    ModernSlider("속도", "그래픽이 반응하며 일렁이는 애니메이션 속도를 조절합니다.", settings.speed) { 
+        update { speed = it }
+    }
+    ModernSlider("민감도", "작은 데시벨 소리에도 그래픽이 얼마나 민감하게 반응하여 출렁일지 조절합니다.", settings.sensitivity) { 
+        update { sensitivity = it }
+    }
+    ModernSwitch("광원", "그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.", settings.isGlowMode) { 
+        update { isGlowMode = it }
+    }
+    ModernSlider("광원 강도", "광원 효과의 퍼지는 강도를 조절합니다.", settings.glowIntensity) { 
+        update { glowIntensity = it }
+    }
+    ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", settings.useRippleDelay) { 
+        update { useRippleDelay = it }
+    }
+}
+
+@Composable
+fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange: (Boolean) -> Unit, onColorChange: (Int) -> Unit) {
+    var showColorDialog by remember { mutableStateOf(false) }
+    
+    if (showColorDialog) {
+        AlertDialog(
+            onDismissRequest = { showColorDialog = false },
+            title = { Text("색상 선택", color = PrimaryTextColor) },
+            text = {
+                // 간단한 프리셋 팔레트
+                val presetColors = listOf(
+                    android.graphics.Color.WHITE,
+                    android.graphics.Color.YELLOW,
+                    android.graphics.Color.RED,
+                    android.graphics.Color.GREEN,
+                    android.graphics.Color.BLUE,
+                    android.graphics.Color.CYAN,
+                    android.graphics.Color.MAGENTA,
+                    android.graphics.Color.parseColor("#FFA500") // Orange
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    presetColors.forEach { c ->
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(c))
+                                .clickable {
+                                    onColorChange(c)
+                                    showColorDialog = false
+                                }
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showColorDialog = false }) { Text("닫기", color = AccentColor) }
+            },
+            containerColor = CardColor
+        )
+    }
+
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+        Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = AccentColor,
+                uncheckedThumbColor = SecondaryTextColor,
+                uncheckedTrackColor = Color(0xFF333A44)
+            ),
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(Color(color))
+                .clickable { showColorDialog = true }
+        )
+    }
+}
+
+@Composable
 fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Composable () -> Unit) {
     var expanded by remember { mutableStateOf(isExpanded) }
+    
+    // 선택된 상태가 외부에서 바뀌면 같이 반영해주기 위함
+    LaunchedEffect(isExpanded) {
+        expanded = isExpanded
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
         shape = RoundedCornerShape(20.dp),

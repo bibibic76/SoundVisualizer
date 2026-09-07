@@ -25,6 +25,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -267,9 +270,6 @@ fun VisualizerOverlay() {
         val h = size.height
         val P = 2f * (w + h)
 
-        val leftRms = audioLevels.value[0] * 300f 
-        val rightRms = audioLevels.value[1] * 300f
-
         val activeSettings = when (currentMode) {
             VisualMode.Wave -> waveSettings
             VisualMode.Pad -> padSettings
@@ -277,6 +277,10 @@ fun VisualizerOverlay() {
             VisualMode.Outline -> outlineSettings
         }
         val useRippleDelay = activeSettings.useRippleDelay
+
+        // 적용: Sensitivity (민감도)
+        val leftRms = audioLevels.value[0] * activeSettings.sensitivity * 30f 
+        val rightRms = audioLevels.value[1] * activeSettings.sensitivity * 30f
 
         // Update history buffer for delay effect
         leftHistory[historyIndex] = leftRms
@@ -316,25 +320,58 @@ fun VisualizerOverlay() {
             targetDepths[5] = sideLeft * 1.2f  // BL
         }
 
+        // 적용: Speed (속도)
+        val speedFactor = (activeSettings.speed / 20f) * 0.3f
         for (i in 0 until 8) {
-            smoothedDepths[i] += (targetDepths[i] - smoothedDepths[i]) * 0.3f
+            smoothedDepths[i] += (targetDepths[i] - smoothedDepths[i]) * speedFactor
         }
 
         val depths = smoothedDepths
         val activeColor = aiStateColor.value
 
+        // 적용: IntensityAsOpacity (크기 고정) & Opacity & Intensity
+        val baseOpacity = 1f - (activeSettings.opacity / 100f)
+        val activeIntensity = if (activeSettings.intensityAsOpacity) {
+            activeSettings.opacityFixedSize / 10f
+        } else {
+            activeSettings.intensity / 50f
+        }
+        
+        val activeOpacity = if (activeSettings.intensityAsOpacity) {
+            val maxAlpha = activeSettings.opacityFixedMaxOpacity / 100f
+            val currentAudioAvg = depths.average().toFloat() / 100f
+            minOf(baseOpacity, currentAudioAvg * maxAlpha)
+        } else {
+            baseOpacity
+        }
+
+        // Draw Helper (Glow 적용 용도)
+        val glowRadius = if (activeSettings.isGlowMode) activeSettings.glowIntensity else 0f
+        
+        fun drawGlowPath(path: androidx.compose.ui.graphics.Path, color: Color, isStroke: Boolean = false, strokeWidth: Float = 8f) {
+            drawContext.canvas.apply {
+                val paint = androidx.compose.ui.graphics.Paint().asFrameworkPaint().apply {
+                    isAntiAlias = true
+                    this.color = color.toArgb()
+                    this.style = if (isStroke) android.graphics.Paint.Style.STROKE else android.graphics.Paint.Style.FILL
+                    if (isStroke) this.strokeWidth = strokeWidth
+                    if (glowRadius > 0f) {
+                        setShadowLayer(glowRadius, 0f, 0f, activeColor.toArgb()) // Use full activeColor for neon effect
+                    }
+                }
+                nativeCanvas.drawPath(path.asAndroidPath(), paint)
+            }
+        }
+
         when (currentMode) {
             VisualMode.Wave, VisualMode.Outline -> {
                 val isWave = currentMode == VisualMode.Wave
-                val activeSettings = if (isWave) waveSettings else outlineSettings
-                val activeIntensity = activeSettings.intensity / 50f
-                val activeOpacity = 1f - (activeSettings.opacity / 100f)
                 
                 var anyActive = false
                 for (d in depths) {
                     if (d * activeIntensity > 3f) { anyActive = true; break }
                 }
-                if (!anyActive) return@Canvas
+                if (!anyActive && !activeSettings.intensityAsOpacity) return@Canvas
 
                 val channelPos = FloatArray(8)
                 channelPos[0] = 0f / P
@@ -364,10 +401,9 @@ fun VisualizerOverlay() {
                     innerPts[i] = getRoundedInnerPoint(dist, w, h, P, d, d_tr, d_br, d_bl, d_tl)
                 }
 
-                val path = Path()
+                val path = androidx.compose.ui.graphics.Path()
                 
                 if (isWave) {
-                    // Fill mode
                     path.moveTo(0f, 0f)
                     path.lineTo(w, 0f)
                     path.lineTo(w, h)
@@ -386,18 +422,21 @@ fun VisualizerOverlay() {
 
                         path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
                     }
-                    path.fillType = PathFillType.EvenOdd
+                    path.fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
 
+                    // Wave uses gradient, but if glow is needed we can draw a base glow
+                    if (glowRadius > 0f) {
+                        drawGlowPath(path, activeColor.copy(alpha = 0f)) // Only shadows
+                    }
                     drawPath(
                         path = path,
-                        brush = Brush.radialGradient(
+                        brush = androidx.compose.ui.graphics.Brush.radialGradient(
                             colors = listOf(Color.Transparent, activeColor.copy(alpha = activeOpacity * 0.6f), activeColor.copy(alpha = activeOpacity)),
                             center = Offset(w/2f, h/2f),
                             radius = maxOf(w, h) / 2f
                         )
                     )
                 } else {
-                    // Outline mode
                     path.moveTo(innerPts[0].x, innerPts[0].y)
                     for (i in N - 1 downTo 0) {
                         val prev = (i - 1 + N) % N
@@ -414,16 +453,10 @@ fun VisualizerOverlay() {
 
                         path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
                     }
-                    drawPath(
-                        path = path,
-                        color = activeColor.copy(alpha = activeOpacity),
-                        style = Stroke(width = 8f)
-                    )
+                    drawGlowPath(path, activeColor.copy(alpha = activeOpacity), isStroke = true, strokeWidth = 8f)
                 }
             }
             VisualMode.Pad -> {
-                val padOpacity = 1f - (padSettings.opacity / 100f)
-                val padIntensity = padSettings.intensity / 50f
                 val centerDists = FloatArray(8)
                 centerDists[0] = 0f                             // FC
                 centerDists[1] = w / 2f                         // FR
@@ -434,8 +467,8 @@ fun VisualizerOverlay() {
                 centerDists[6] = w / 2f + h + w + h / 2f        // SL
                 centerDists[7] = w / 2f + h + w + h             // FL
 
-                val path = Path()
-                path.fillType = PathFillType.EvenOdd
+                val path = androidx.compose.ui.graphics.Path()
+                path.fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
                 var isAnyVisible = false
 
                 val N = 16
@@ -443,11 +476,11 @@ fun VisualizerOverlay() {
                 val innerPts = Array(N + 1) { Offset.Zero }
 
                 for (c in 0 until 8) {
-                    var targetThickness = depths[c] * padIntensity * 0.25f
+                    var targetThickness = depths[c] * activeIntensity * 0.25f
                     if (targetThickness > 100f) targetThickness = 100f
 
-                    padThicknesses[c] += (targetThickness - padThicknesses[c]) * 0.3f
-                    if (padThicknesses[c] < 0.5f) continue
+                    padThicknesses[c] += (targetThickness - padThicknesses[c]) * speedFactor
+                    if (padThicknesses[c] < 0.5f && !activeSettings.intensityAsOpacity) continue
 
                     isAnyVisible = true
                     val centerDist = centerDists[c]
@@ -493,32 +526,30 @@ fun VisualizerOverlay() {
                     path.close()
                 }
 
-                if (isAnyVisible) {
-                    drawPath(path = path, color = activeColor.copy(alpha = padOpacity))
+                if (isAnyVisible || activeSettings.intensityAsOpacity) {
+                    drawGlowPath(path, activeColor.copy(alpha = activeOpacity))
                 }
             }
             VisualMode.CircleRipple -> {
-                val circleOpacity = 1f - (circleSettings.opacity / 100f)
-                val circleIntensity = circleSettings.intensity / 50f
                 val cx = w / 2f
                 val cy = h / 2f
-                val radiusRatio = 0.05f + (circleSettings.circleRadius - 10f) / 90f * 0.35f
+                val radiusRatio = 0.05f + (activeSettings.circleRadius - 10f) / 90f * 0.35f
                 val baseRadius = minOf(w, h) * radiusRatio
 
                 var isAnyVisible = false
                 for (i in 0 until 8) {
-                    var target = depths[i] * circleIntensity * 0.35f
+                    var target = depths[i] * activeIntensity * 0.35f
                     if (target > h * 0.4f) target = h * 0.4f
 
-                    recentTargetsCircle[i] += (target - recentTargetsCircle[i]) * 0.25f
+                    recentTargetsCircle[i] += (target - recentTargetsCircle[i]) * speedFactor
                     if (recentTargetsCircle[i] > 1f) isAnyVisible = true
                 }
 
-                if (!isAnyVisible) return@Canvas
+                if (!isAnyVisible && !activeSettings.intensityAsOpacity) return@Canvas
 
                 val N = 64
-                val path = Path()
-                path.fillType = PathFillType.EvenOdd
+                val path = androidx.compose.ui.graphics.Path()
+                path.fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
                 
                 val outerPts = Array(N) { Offset.Zero }
                 val innerPts = Array(N) { Offset.Zero }
@@ -557,7 +588,7 @@ fun VisualizerOverlay() {
                 for (i in 1 until N) path.lineTo(innerPts[i].x, innerPts[i].y)
                 path.close()
 
-                drawPath(path = path, color = activeColor.copy(alpha = circleOpacity))
+                drawGlowPath(path, activeColor.copy(alpha = activeOpacity))
             }
         }
     }
