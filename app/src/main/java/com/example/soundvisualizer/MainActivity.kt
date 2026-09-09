@@ -14,8 +14,13 @@ import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -28,7 +33,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,8 +63,7 @@ class MainActivity : ComponentActivity() {
             startForegroundService(serviceIntent)
             // Start the visual overlay
             startService(Intent(this, OverlayService::class.java))
-
-            SettingsManager.setServiceRunning(true)
+            // 여기서 true 로 두지 않는다. 서비스가 실제로 뜨면 스스로 알린다.
         }
     }
 
@@ -159,7 +167,12 @@ fun LauncherApp(onStart: () -> Unit, onStop: () -> Unit) {
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
     Column(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = Modifier.clickable(
+            // 기본 리플이 어두운 배경에서 검은 사각형처럼 번쩍인다. 탭에는 밑줄로 충분하다.
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick
+        ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -169,15 +182,15 @@ fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        if (isSelected) {
-            Box(
-                modifier = Modifier
-                    .height(3.dp)
-                    .width(40.dp)
-                    .clip(RoundedCornerShape(1.5.dp))
-                    .background(PrimaryTextColor)
-            )
-        }
+        // 밑줄은 선택 여부와 상관없이 항상 자리를 차지한다. 빼버리면 열 높이가 3dp 줄어
+        // 탭을 옮길 때마다 글자가 위아래로 튄다.
+        Box(
+            modifier = Modifier
+                .height(3.dp)
+                .width(40.dp)
+                .clip(RoundedCornerShape(1.5.dp))
+                .background(if (isSelected) PrimaryTextColor else Color.Transparent)
+        )
     }
 }
 
@@ -382,40 +395,13 @@ fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange
     var showColorDialog by remember { mutableStateOf(false) }
 
     if (showColorDialog) {
-        AlertDialog(
-            onDismissRequest = { showColorDialog = false },
-            title = { Text("색상 선택", color = PrimaryTextColor) },
-            text = {
-                // 간단한 프리셋 팔레트
-                val presetColors = listOf(
-                    android.graphics.Color.WHITE,
-                    android.graphics.Color.YELLOW,
-                    android.graphics.Color.RED,
-                    android.graphics.Color.GREEN,
-                    android.graphics.Color.BLUE,
-                    android.graphics.Color.CYAN,
-                    android.graphics.Color.MAGENTA,
-                    android.graphics.Color.parseColor("#FFA500") // Orange
-                )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    presetColors.forEach { c ->
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(Color(c))
-                                .clickable {
-                                    onColorChange(c)
-                                    showColorDialog = false
-                                }
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showColorDialog = false }) { Text("닫기", color = AccentColor) }
-            },
-            containerColor = CardColor
+        ColorPickerDialog(
+            initial = color,
+            onDismiss = { showColorDialog = false },
+            onConfirm = {
+                onColorChange(it)
+                showColorDialog = false
+            }
         )
     }
 
@@ -437,9 +423,141 @@ fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange
                 .size(32.dp)
                 .clip(CircleShape)
                 .background(Color(color))
+                .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), CircleShape)
                 .clickable { showColorDialog = true }
         )
     }
+}
+
+/**
+ * 색 공간 전체에서 고르는 선택기.
+ *
+ * 채도(가로) x 명도(세로) 사각형 + 색상(Hue) 슬라이더. 자주 쓰는 색은 아래 프리셋으로 집는다.
+ * 시각화는 항상 불투명하게 그리므로 알파는 다루지 않는다.
+ */
+@Composable
+fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
+    val startHsv = remember(initial) { FloatArray(3).also { android.graphics.Color.colorToHSV(initial, it) } }
+    var hue by remember(initial) { mutableFloatStateOf(startHsv[0]) }
+    var sat by remember(initial) { mutableFloatStateOf(startHsv[1]) }
+    var bright by remember(initial) { mutableFloatStateOf(startHsv[2]) }
+
+    val picked = android.graphics.Color.HSVToColor(floatArrayOf(hue, sat, bright))
+    val hueColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f)))
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardColor,
+        title = { Text("색상 선택", color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .pointerInput(Unit) {
+                            detectTapGestures { o ->
+                                sat = (o.x / size.width).coerceIn(0f, 1f)
+                                bright = 1f - (o.y / size.height).coerceIn(0f, 1f)
+                            }
+                        }
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, _ ->
+                                sat = (change.position.x / size.width).coerceIn(0f, 1f)
+                                bright = 1f - (change.position.y / size.height).coerceIn(0f, 1f)
+                            }
+                        }
+                ) {
+                    drawRect(Brush.horizontalGradient(listOf(Color.White, hueColor)))
+                    drawRect(Brush.verticalGradient(listOf(Color.Transparent, Color.Black)))
+                    // 밝은 쪽에서도 안 묻히도록 흰 링 바깥에 검은 링을 겹친다.
+                    val c = Offset(sat * size.width, (1f - bright) * size.height)
+                    drawCircle(Color.White, radius = 9.dp.toPx(), center = c, style = Stroke(2.dp.toPx()))
+                    drawCircle(Color.Black, radius = 11.dp.toPx(), center = c, style = Stroke(1.dp.toPx()))
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(28.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .pointerInput(Unit) {
+                            detectTapGestures { o -> hue = (o.x / size.width).coerceIn(0f, 1f) * 360f }
+                        }
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, _ ->
+                                hue = (change.position.x / size.width).coerceIn(0f, 1f) * 360f
+                            }
+                        }
+                ) {
+                    val stops = (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }
+                    drawRect(Brush.horizontalGradient(stops))
+                    drawCircle(
+                        Color.White,
+                        radius = size.height / 2f - 3.dp.toPx(),
+                        center = Offset((hue / 360f) * size.width, size.height / 2f),
+                        style = Stroke(3.dp.toPx())
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(picked))
+                            .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        String.format("#%06X", picked and 0xFFFFFF),
+                        color = SecondaryTextColor, fontSize = 15.sp, fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Text("자주 쓰는 색", color = SecondaryTextColor, fontSize = 13.sp)
+                Spacer(Modifier.height(8.dp))
+
+                val presets = listOf(
+                    0xFFFFFF, 0xFF0000, 0xFF7F00, 0xFFFF00,
+                    0x00FF00, 0x00FFFF, 0x0080FF, 0xFF00FF
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    presets.forEach { rgb ->
+                        val argb = 0xFF000000.toInt() or rgb
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(Color(argb))
+                                .border(1.dp, SecondaryTextColor.copy(alpha = 0.4f), CircleShape)
+                                .clickable {
+                                    val out = FloatArray(3)
+                                    android.graphics.Color.colorToHSV(argb, out)
+                                    hue = out[0]
+                                    sat = out[1]
+                                    bright = out[2]
+                                }
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(picked) }) {
+                Text("확인", color = AccentColor, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("취소", color = SecondaryTextColor) }
+        }
+    )
 }
 
 @Composable

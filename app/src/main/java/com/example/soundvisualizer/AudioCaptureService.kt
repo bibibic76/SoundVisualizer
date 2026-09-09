@@ -89,6 +89,9 @@ class AudioCaptureService : Service() {
         )
         AudioEngine.init()
         isRunning = true
+        // 실행 상태는 서비스가 직접 알린다. 액티비티가 startForegroundService() 직후에
+        // 표시하면 아직 onCreate 가 안 돌아 false 로 덮어써진다.
+        SettingsManager.setServiceRunning(true)
         sampleRate = pickSampleRate()
 
         // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화 실패해도 캡처는 계속한다.
@@ -242,6 +245,7 @@ class AudioCaptureService : Service() {
 
     override fun onDestroy() {
         isRunning = false
+        SettingsManager.setServiceRunning(false)
         isRecording = false
 
         // read() 블로킹을 풀기 위해 먼저 stop, 그 다음 스레드 종료를 기다린 뒤 해제한다.
