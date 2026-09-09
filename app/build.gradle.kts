@@ -20,6 +20,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        // 64비트만 낸다. 16KB 페이지 기기는 전부 64비트이고, 32비트 ABI 의 ONNX 런타임은
+        // 4KB 로만 정렬돼 있어 경고를 만든다. 빠지는 만큼 APK 도 절반 아래로 줄어든다.
+        // (x86_64 는 에뮬레이터용으로 남긴다.)
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"
@@ -54,9 +60,10 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        // Keep ONNX + external weight blobs readable from assets when copying to filesDir
+        // .so 를 압축하지 않고 저장해야 AGP 가 16KB 경계에 정렬해 넣는다.
+        // (assets 의 onnx/data 무압축은 아래 androidResources.noCompress 가 담당한다.)
         jniLibs {
-            useLegacyPackaging = true
+            useLegacyPackaging = false
         }
     }
 
@@ -76,12 +83,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
-    // TFLite (existing; unused by the current AI path)
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-
     // ONNX Runtime Android — loads yamnet.onnx with its yamnet.data external weights as-is
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
 
     testImplementation("junit:junit:4.13.2")
     // Real org.json for JVM unit tests (the Android stub is not mocked by default)
