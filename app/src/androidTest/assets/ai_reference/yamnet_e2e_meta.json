@@ -1,0 +1,155 @@
+{
+  "description": "Realtime E2E: 44.1k stereo → CP1..CP6 vs Python classify_mono_capture_once",
+  "capture_sample_rate": 44100,
+  "required_mono_16k": 15600,
+  "capture_window_samples": 42998,
+  "cases": {
+    "silence": {
+      "name": "silence",
+      "capture_sample_rate": 44100,
+      "channels": 2,
+      "stereo_float_count": 85996,
+      "mono_capture_samples": 42998,
+      "capture_window_samples": 42998,
+      "mono16k_samples": 15600,
+      "pre_booster_coarse": "ambient",
+      "gunshot_score": 0.5055228471755981,
+      "booster_accepted": false,
+      "post_booster_coarse": "ambient",
+      "post_booster_display": "Silence",
+      "post_booster_confidence": 1.0,
+      "meets_threshold": true,
+      "ui_coarse": "ambient",
+      "ui_display": "Silence",
+      "ui_confidence": 1.0,
+      "confirmed_coarse": "ambient",
+      "top5": [
+        {
+          "index": 494,
+          "name": "Silence",
+          "prob": 1.0
+        },
+        {
+          "index": 0,
+          "name": "Speech",
+          "prob": 7.855638786658255e-30
+        },
+        {
+          "index": 132,
+          "name": "Music",
+          "prob": 6.4286941411018935e-37
+        },
+        {
+          "index": 1,
+          "name": "Child speech, kid speaking",
+          "prob": 0.0
+        },
+        {
+          "index": 2,
+          "name": "Conversation",
+          "prob": 0.0
+        }
+      ],
+      "yamnet_argmax": 494,
+      "fixture_note": "mono44100 place+fill from validated mono16k (exact resample round-trip)"
+    },
+    "gunshot": {
+      "name": "gunshot",
+      "capture_sample_rate": 44100,
+      "channels": 2,
+      "stereo_float_count": 85996,
+      "mono_capture_samples": 42998,
+      "capture_window_samples": 42998,
+      "mono16k_samples": 15600,
+      "pre_booster_coarse": "ambient",
+      "gunshot_score": 0.5047634243965149,
+      "booster_accepted": true,
+      "post_booster_coarse": "danger",
+      "post_booster_display": "Gunshot, gunfire",
+      "post_booster_confidence": 0.5047634243965149,
+      "meets_threshold": true,
+      "ui_coarse": "danger",
+      "ui_display": "Gunshot, gunfire",
+      "ui_confidence": 0.5047634243965149,
+      "confirmed_coarse": "danger",
+      "top5": [
+        {
+          "index": 477,
+          "name": "Ding",
+          "prob": 0.12252969294786453
+        },
+        {
+          "index": 498,
+          "name": "Sound effect",
+          "prob": 0.10820995271205902
+        },
+        {
+          "index": 382,
+          "name": "Alarm",
+          "prob": 0.07261022925376892
+        },
+        {
+          "index": 54,
+          "name": "Hiccup",
+          "prob": 0.06038668751716614
+        },
+        {
+          "index": 500,
+          "name": "Inside, small room",
+          "prob": 0.05509820953011513
+        }
+      ],
+      "yamnet_argmax": 477,
+      "fixture_note": "mono44100 place+fill from validated mono16k (exact resample round-trip)"
+    },
+    "alarm": {
+      "name": "alarm",
+      "capture_sample_rate": 44100,
+      "channels": 2,
+      "stereo_float_count": 85996,
+      "mono_capture_samples": 42998,
+      "capture_window_samples": 42998,
+      "mono16k_samples": 15600,
+      "pre_booster_coarse": "ambient",
+      "gunshot_score": 0.5047103762626648,
+      "booster_accepted": false,
+      "post_booster_coarse": "ambient",
+      "post_booster_display": "Air horn, truck horn",
+      "post_booster_confidence": 0.13773442804813385,
+      "meets_threshold": false,
+      "ui_coarse": "ambient",
+      "ui_display": "",
+      "ui_confidence": 0.0,
+      "confirmed_coarse": "ambient",
+      "top5": [
+        {
+          "index": 312,
+          "name": "Air horn, truck horn",
+          "prob": 0.13773442804813385
+        },
+        {
+          "index": 302,
+          "name": "Vehicle horn, car horn, honking",
+          "prob": 0.10125480592250824
+        },
+        {
+          "index": 153,
+          "name": "Synthesizer",
+          "prob": 0.09391622245311737
+        },
+        {
+          "index": 498,
+          "name": "Sound effect",
+          "prob": 0.07539236545562744
+        },
+        {
+          "index": 392,
+          "name": "Buzzer",
+          "prob": 0.06290934979915619
+        }
+      ],
+      "yamnet_argmax": 312,
+      "fixture_note": "mono44100 place+fill from validated mono16k (exact resample round-trip)"
+    }
+  }
+}

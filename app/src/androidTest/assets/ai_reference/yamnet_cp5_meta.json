@@ -1,0 +1,145 @@
+{
+  "cases": {
+    "silence": {
+      "gunshot_score": 0.5055228471755981,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "blocked_speech_silence_or_low_conf",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Silence",
+        "confidence": 1.0,
+        "yamnet_class_index": 494,
+        "top5": [
+          {
+            "index": 494,
+            "name": "Silence",
+            "prob": 1.0
+          },
+          {
+            "index": 0,
+            "name": "Speech",
+            "prob": 7.855638786658255e-30
+          },
+          {
+            "index": 132,
+            "name": "Music",
+            "prob": 6.4286941411018935e-37
+          },
+          {
+            "index": 1,
+            "name": "Child speech, kid speaking",
+            "prob": 0.0
+          },
+          {
+            "index": 2,
+            "name": "Conversation",
+            "prob": 0.0
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Silence",
+        "confidence": 1.0,
+        "yamnet_class_index": 494
+      }
+    },
+    "gunshot": {
+      "gunshot_score": 0.5047634243965149,
+      "gunshot_evidence": 0.0,
+      "accepted": true,
+      "reason": "game_mix_or_strong_danger score=0.5048 evidence=0.0000 adopt=True",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": true,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Ding",
+        "confidence": 0.12252969294786453,
+        "yamnet_class_index": 477,
+        "top5": [
+          {
+            "index": 477,
+            "name": "Ding",
+            "prob": 0.12252969294786453
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.10820995271205902
+          },
+          {
+            "index": 382,
+            "name": "Alarm",
+            "prob": 0.07261022925376892
+          },
+          {
+            "index": 54,
+            "name": "Hiccup",
+            "prob": 0.06038668751716614
+          },
+          {
+            "index": 500,
+            "name": "Inside, small room",
+            "prob": 0.05509820953011513
+          }
+        ]
+      },
+      "post": {
+        "coarse": "danger",
+        "display": "Gunshot, gunfire",
+        "confidence": 0.5047634243965149,
+        "yamnet_class_index": 421
+      }
+    },
+    "alarm": {
+      "gunshot_score": 0.5047103762626648,
+      "gunshot_evidence": 0.0,
+      "accepted": false,
+      "reason": "default score=0.5047 evidence=0.0000 adopt=False",
+      "has_gunshot_cue": false,
+      "has_strong_danger_cue": false,
+      "pre": {
+        "coarse": "ambient",
+        "display": "Air horn, truck horn",
+        "confidence": 0.13773442804813385,
+        "yamnet_class_index": 312,
+        "top5": [
+          {
+            "index": 312,
+            "name": "Air horn, truck horn",
+            "prob": 0.13773442804813385
+          },
+          {
+            "index": 302,
+            "name": "Vehicle horn, car horn, honking",
+            "prob": 0.10125480592250824
+          },
+          {
+            "index": 153,
+            "name": "Synthesizer",
+            "prob": 0.09391622245311737
+          },
+          {
+            "index": 498,
+            "name": "Sound effect",
+            "prob": 0.07539236545562744
+          },
+          {
+            "index": 392,
+            "name": "Buzzer",
+            "prob": 0.06290934979915619
+          }
+        ]
+      },
+      "post": {
+        "coarse": "ambient",
+        "display": "Air horn, truck horn",
+        "confidence": 0.13773442804813385,
+        "yamnet_class_index": 312
+      }
+    }
+  }
+}

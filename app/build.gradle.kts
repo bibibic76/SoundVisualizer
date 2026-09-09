@@ -54,6 +54,15 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        // Keep ONNX + external weight blobs readable from assets when copying to filesDir
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    androidResources {
+        // Avoid aapt compression of ONNX external-data companion files
+        noCompress += listOf("onnx", "data")
     }
 }
 
@@ -67,15 +76,22 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
-    // TFLite
+    // TFLite (existing; unused by the current AI path)
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
 
+    // ONNX Runtime Android — loads yamnet.onnx with its yamnet.data external weights as-is
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
+
     testImplementation("junit:junit:4.13.2")
+    // Real org.json for JVM unit tests (the Android stub is not mocked by default)
+    testImplementation("org.json:json:20240303")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

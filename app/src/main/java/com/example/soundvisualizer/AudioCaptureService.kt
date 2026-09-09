@@ -22,6 +22,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.IntentCompat
+import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -39,6 +40,7 @@ class AudioCaptureService : Service() {
 
     @Volatile
     private var isRecording = false
+    private var aiPipeline: RealtimeAiPipeline? = null
 
     private val projectionCallback = object : MediaProjection.Callback() {
         // 사용자가 상태바/시스템 UI 에서 캡처를 중단한 경우
@@ -82,6 +84,14 @@ class AudioCaptureService : Service() {
         )
         AudioEngine.init()
         isRunning = true
+
+        // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화 실패해도 캡처는 계속한다.
+        aiPipeline = try {
+            RealtimeAiPipeline.create(this, SAMPLE_RATE, channels = 2).also { it.start() }
+        } catch (t: Throwable) {
+            Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
+            null
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -171,10 +181,20 @@ class AudioCaptureService : Service() {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         // direct buffer: AudioRecord 가 직접 채우고 JNI 가 주소로 읽는다 (Kotlin 힙 복사 0회, GC 0회).
         val buffer = ByteBuffer.allocateDirect(READ_FLOATS * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder())
+        // AI 경로는 FloatArray 를 받으므로 뷰와 스크래치를 한 번만 만들어 재사용한다.
+        val floatView = buffer.asFloatBuffer()
+        val aiScratch = FloatArray(READ_FLOATS)
         while (isRecording) {
             val bytes = record.read(buffer, buffer.capacity(), AudioRecord.READ_BLOCKING)
             if (bytes > 0) {
-                AudioEngine.pushAudioBuffer(buffer, bytes / BYTES_PER_FLOAT)
+                val floats = bytes / BYTES_PER_FLOAT
+                AudioEngine.pushAudioBuffer(buffer, floats)
+                // AI 는 캡처 스레드에서 추론하지 않는다. 링버퍼로 복사만 하고 즉시 반환된다.
+                aiPipeline?.let { pipeline ->
+                    floatView.position(0)
+                    floatView.get(aiScratch, 0, floats)
+                    pipeline.ingestInterleavedPcm(aiScratch, floats)
+                }
             } else if (bytes < 0) {
                 Log.w(TAG, "AudioRecord.read error $bytes, stopping capture loop")
                 break
@@ -219,6 +239,10 @@ class AudioCaptureService : Service() {
             p.stop()
         }
         mediaProjection = null
+
+        // 캡처 스레드가 멈춘 뒤에 AI 파이프라인을 닫는다 (ingest 가 더 들어오지 않도록).
+        aiPipeline?.close()
+        aiPipeline = null
 
         AudioEngine.reset()
         super.onDestroy()
