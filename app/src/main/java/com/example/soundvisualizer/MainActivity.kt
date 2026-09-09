@@ -327,18 +327,18 @@ fun SettingsTab() {
 
 @Composable
 fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, update: (ModeSettings.() -> Unit) -> Unit) {
-    // 크기 고정을 켜면 크기/투명도 대신 고정 크기/최대 투명도가 쓰인다.
+    // 크기 고정을 켜면 크기/진하기 대신 고정 크기/최대 진하기가 쓰인다.
     // 그래서 어느 쪽이든 지금 실제로 먹지 않는 슬라이더는 비활성으로 둔다.
     val sizeLocked = settings.intensityAsOpacity
 
-    ModernSwitch("크기 고정", "그래픽 크기를 고정하고, 소리 세기는 투명도로 표현합니다.", sizeLocked) {
+    ModernSwitch("크기 고정", "그래픽 크기를 고정하고, 소리 세기는 진하기로 표현합니다.", sizeLocked) {
         update { intensityAsOpacity = it }
     }
     ModernSlider("고정 크기", "그래픽이 유지할 고정 크기입니다.", settings.opacityFixedSize,
         min = 10f, max = 100f, enabled = sizeLocked, indented = true) {
         update { opacityFixedSize = it }
     }
-    ModernSlider("최대 투명도", "소리가 가장 클 때 도달할 진하기입니다.", settings.opacityFixedMaxOpacity,
+    ModernSlider("최대 진하기", "소리가 가장 클 때 도달할 진하기입니다.", settings.opacityFixedMaxOpacity,
         min = 0f, max = 100f, enabled = sizeLocked, indented = true) {
         update { opacityFixedMaxOpacity = it }
     }

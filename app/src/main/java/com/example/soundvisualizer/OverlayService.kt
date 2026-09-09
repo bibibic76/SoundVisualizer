@@ -384,7 +384,7 @@ class VisualizerEngine(private val density: Float) {
             depths[i] = min(baseDepth, baseDepth * v)
         }
 
-        // 5. 투명도 / 색 / 광원
+        // 5. 진하기 / 색 / 광원
         alpha = if (useOpacity) {
             val maxOpacity = max(0f, s.opacityFixedMaxOpacity) / 100f
             maxOpacity * (smoothTotal / 2.5f).coerceIn(0f, 1f)

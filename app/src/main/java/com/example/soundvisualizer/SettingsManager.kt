@@ -11,7 +11,7 @@ data class ModeSettings(
     var intensity: Float = 50f,
     /** 속도 (0~100). 방향 분포가 새 소리 위치로 옮겨가는 속도. */
     var speed: Float = 20f,
-    /** 투명도 (0~100). 값이 클수록 진하게 보인다. */
+    /** 진하기 (0~100). 값이 클수록 진하게 보인다. */
     var opacity: Float = 50f,
     var circleRadius: Float = 40f,
     /** 후면 채널에 지연을 줘서 앞→뒤로 퍼지는 느낌을 낸다. */
