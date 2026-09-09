@@ -13,6 +13,8 @@ import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.os.Build
 import android.os.IBinder
+import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.foundation.Canvas
@@ -48,6 +50,10 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
+
+    private companion object {
+        const val TAG = "OverlayService"
+    }
 
     private lateinit var windowManager: WindowManager
     private var composeView: ComposeView? = null
@@ -101,12 +107,38 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                 VisualizerOverlay()
             }
         }
-        composeView = view
+        // 권한이 도중에 회수됐거나 시스템이 서비스를 되살린 경우 addView 가 BadTokenException 을
+        // 던지고, onCreate 에서 터지면 프로세스가 죽는다. 확인 + 방어를 모두 건다.
+        if (!Settings.canDrawOverlays(this)) {
+            Log.w(TAG, "overlay permission not granted; stopping")
+            stopEverything()
+            return
+        }
 
-        windowManager.addView(view, params)
+        try {
+            windowManager.addView(view, params)
+        } catch (e: Exception) {
+            Log.e(TAG, "failed to add overlay view", e)
+            // composeView 를 비워 onDestroy 의 removeViewImmediate 를 건너뛰게 한다.
+            composeView = null
+            stopEverything()
+            return
+        }
+
+        composeView = view
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
+
+    /** 오버레이를 띄울 수 없으면 오디오 캡처도 의미가 없으므로 같이 정리한다. */
+    private fun stopEverything() {
+        stopService(Intent(this, AudioCaptureService::class.java))
+        SettingsManager.setServiceRunning(false)
+        stopSelf()
+    }
+
+    /** 프로세스가 죽었다가 시스템이 되살리면 오디오 없는 오버레이만 남는다. 되살리지 않는다. */
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_NOT_STICKY
 
     override fun onDestroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
