@@ -1,12 +1,16 @@
 package com.example.soundvisualizer
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,7 +42,7 @@ val PrimaryTextColor = Color(0xFFF2F4F6)
 val SecondaryTextColor = Color(0xFF8B95A1)
 
 class MainActivity : ComponentActivity() {
-    
+
     private val mediaProjectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -47,15 +51,22 @@ class MainActivity : ComponentActivity() {
                 putExtra(AudioCaptureService.EXTRA_RESULT_CODE, result.resultCode)
                 putExtra(AudioCaptureService.EXTRA_RESULT_DATA, result.data)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
-            }
+            startForegroundService(serviceIntent)
             // Start the visual overlay
             startService(Intent(this, OverlayService::class.java))
-            
+
             SettingsManager.setServiceRunning(true)
+        }
+    }
+
+    // RECORD_AUDIO 는 내부 오디오 캡처(AudioPlaybackCapture)에 필수. POST_NOTIFICATIONS 는 FGS 알림 표시용(선택).
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants[Manifest.permission.RECORD_AUDIO] == true) {
+            launchProjectionRequest()
+        } else {
+            Toast.makeText(this, "오디오 캡처를 위해 마이크(오디오 녹음) 권한이 필요합니다.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -83,8 +94,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 알림의 "중지" 나 시스템 UI 로 캡처가 끝난 경우 홈 화면 상태를 실제 서비스 상태와 맞춘다.
+        SettingsManager.setServiceRunning(AudioCaptureService.isRunning)
+    }
+
     private fun requestOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+        if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:$packageName")
@@ -94,19 +111,35 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startMediaProjectionRequest() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+        if (!Settings.canDrawOverlays(this)) {
             requestOverlayPermission()
             return
         }
+        val needed = ArrayList<String>(2)
+        if (!isGranted(Manifest.permission.RECORD_AUDIO)) needed.add(Manifest.permission.RECORD_AUDIO)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !isGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+            needed.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        if (needed.isEmpty()) {
+            launchProjectionRequest()
+        } else {
+            permissionLauncher.launch(needed.toTypedArray())
+        }
+    }
+
+    private fun launchProjectionRequest() {
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
     }
+
+    private fun isGranted(permission: String): Boolean =
+        ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 }
 
 @Composable
 fun LauncherApp(onStart: () -> Unit, onStop: () -> Unit) {
     var selectedTab by remember { mutableStateOf(0) }
-    
+
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow
         Row(modifier = Modifier.padding(24.dp)) {
@@ -158,7 +191,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit) {
             "보이지 않던 소리를 화면에 그려냅니다.\n게이밍부터 영화 감상까지 새로운 경험을 시작하세요.",
             fontSize = 16.sp, color = SecondaryTextColor, lineHeight = 26.sp, modifier = Modifier.padding(bottom = 24.dp)
         )
-        
+
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 24.dp)) {
             Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(if (isRunning) AccentColor else SecondaryTextColor))
             Spacer(modifier = Modifier.width(8.dp))
@@ -204,7 +237,7 @@ fun SettingsTab() {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text("표현 모드", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
                     Text("화면에 그려질 그래픽의 기본 형태를 선택합니다.", fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
-                    
+
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         VisualMode.values().forEach { mode ->
                             val selected = currentMode == mode
@@ -311,13 +344,13 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
             update { circleRadius = it }
         }
     }
-    ModernSlider("투명도", "그래픽의 투명도를 조절하여 뒤의 비침 정도를 결정합니다.", settings.opacity) { 
+    ModernSlider("투명도", "그래픽의 진하기를 조절합니다. 값이 클수록 진하게, 작을수록 옅게 보입니다.", settings.opacity) { 
         update { opacity = it }
     }
-    ModernSlider("속도", "그래픽이 반응하며 일렁이는 애니메이션 속도를 조절합니다.", settings.speed) { 
+    ModernSlider("속도", "소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.", settings.speed) { 
         update { speed = it }
     }
-    ModernSlider("민감도", "작은 데시벨 소리에도 그래픽이 얼마나 민감하게 반응하여 출렁일지 조절합니다.", settings.sensitivity) { 
+    ModernSlider("민감도", "소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.", settings.sensitivity) { 
         update { sensitivity = it }
     }
     ModernSwitch("광원", "그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.", settings.isGlowMode) { 
@@ -334,7 +367,7 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
 @Composable
 fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange: (Boolean) -> Unit, onColorChange: (Int) -> Unit) {
     var showColorDialog by remember { mutableStateOf(false) }
-    
+
     if (showColorDialog) {
         AlertDialog(
             onDismissRequest = { showColorDialog = false },
@@ -399,7 +432,7 @@ fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange
 @Composable
 fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Composable () -> Unit) {
     var expanded by remember { mutableStateOf(isExpanded) }
-    
+
     // 선택된 상태가 외부에서 바뀌면 같이 반영해주기 위함
     LaunchedEffect(isExpanded) {
         expanded = isExpanded

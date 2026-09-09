@@ -3,7 +3,14 @@ package com.example.soundvisualizer
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.BlurMaskFilter
+import android.graphics.Canvas as NativeCanvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PixelFormat
+import android.graphics.RadialGradient
+import android.graphics.Shader
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
@@ -12,23 +19,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -41,11 +38,19 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sin
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
     private lateinit var windowManager: WindowManager
-    private lateinit var composeView: ComposeView
+    private var composeView: ComposeView? = null
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val store = ViewModelStore()
@@ -62,6 +67,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
     override fun onCreate() {
         super.onCreate()
+        SettingsManager.init(applicationContext)
         savedStateRegistryController.performRestore(null)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
@@ -70,18 +76,24 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else
-                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         )
         params.gravity = Gravity.TOP or Gravity.START
+        // 노치/상태바/내비게이션 영역까지 덮어서 파도가 화면 실제 테두리에서 시작하도록 한다.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            params.fitInsetsTypes = 0
+        } else {
+            params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
 
-        composeView = ComposeView(this).apply {
+        val view = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@OverlayService)
             setViewTreeViewModelStoreOwner(this@OverlayService)
             setViewTreeSavedStateRegistryOwner(this@OverlayService)
@@ -89,507 +101,773 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                 VisualizerOverlay()
             }
         }
+        composeView = view
 
-        windowManager.addView(composeView, params)
+        windowManager.addView(view, params)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
 
     override fun onDestroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        windowManager.removeView(composeView)
+        composeView?.let { view ->
+            try {
+                windowManager.removeViewImmediate(view)
+            } catch (e: IllegalArgumentException) {
+                // 이미 제거된 경우
+            }
+        }
+        composeView = null
+        store.clear()
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 }
 
-enum class VisualMode(val displayName: String) { 
-    Wave("파도"), 
-    Pad("패드"), 
-    CircleRipple("원형"), 
-    Outline("외곽선") 
+enum class VisualMode(val displayName: String) {
+    Wave("파도"),
+    Pad("패드"),
+    CircleRipple("원형"),
+    Outline("외곽선")
 }
 
-// ----------------- Math Utilities -----------------
-private fun getEdgePosition(distIn: Float, w: Float, h: Float, P: Float): Offset {
-    val dist = ((distIn % P) + P) % P
-    if (dist <= w / 2f) return Offset(w / 2f + dist, 0f)
-    if (dist <= w / 2f + h) return Offset(w, dist - w / 2f)
-    if (dist <= w / 2f + h + w) return Offset(w - (dist - (w / 2f + h)), h)
-    if (dist <= w / 2f + h + w + h) return Offset(0f, h - (dist - (w / 2f + h + w)))
-    return Offset(dist - (w / 2f + h + w + h), 0f)
-}
+/**
+ * 오디오 피크 → 8채널 깊이 → 도형 → 캔버스까지 담당하는 렌더 엔진.
+ *
+ * 스무딩 파이프라인과 네 가지 모드의 기하 수식을 구현하되,
+ *  - 프레임당 힙 할당이 0 이 되도록 모든 버퍼/Path/Paint 를 미리 잡아두고
+ *  - 스무딩 계수는 60fps 기준으로 시간 정규화해서 90/120Hz 화면에서도 같은 느낌을 내고
+ *  - 소리가 없으면 그리기 무효화를 멈추고(GPU 휴식), 1초 뒤엔 저빈도 폴링으로 내려간다.
+ *
+ * 메인 스레드에서만 접근한다.
+ *
+ * 채널 인덱스(화면 둘레 기준): 0:FC(상단중앙) 1:FR(우상단) 2:SR(우측중앙) 3:BR(우하단)
+ *                          4:BC(하단중앙) 5:BL(좌하단) 6:SL(좌측중앙) 7:FL(좌상단)
+ */
+class VisualizerEngine(private val density: Float) {
 
-private fun interpolateDepthCatmullRom(tIn: Float, depths: FloatArray, positions: FloatArray): Float {
-    val t = ((tIn % 1f) + 1f) % 1f
-    val n = positions.size
-    var idx1 = 0
-    for (i in 0 until n) {
-        if (positions[i] <= t) idx1 = i
-    }
-    val idx0 = (idx1 - 1 + n) % n
-    val idx2 = (idx1 + 1) % n
-    val idx3 = (idx1 + 2) % n
+    companion object {
+        private const val CH = 8
+        private const val WAVE_N = 150
+        private const val PAD_N = 16
+        private const val CIRCLE_N = 64
 
-    val p1 = positions[idx1]
-    var p2 = positions[idx2]
-    if (p2 <= p1) p2 += 1f
+        /** 렌더 프레임마다 target *= 0.87 로 감쇠 */
+        private const val TARGET_DECAY = 0.87f
+        /** Pad / CircleRipple 모드의 고정 lerp 계수 */
+        private const val PAD_LERP = 0.3f
+        private const val CIRCLE_LERP = 0.25f
+        /** 민감도는 내부 계수 3.75 를 x4 한 15 로 표시한다. 슬라이더 값이 곧 표시값. */
+        private const val SENSITIVITY_UI_SCALE = 0.25f
 
-    var at = t
-    if (at < p1) at += 1f
+        /** 외곽선 두께 4dp, 광원 블러 반경 = GlowIntensity * 0.5 */
+        private const val OUTLINE_STROKE_DP = 4f
+        private const val EDGE_MARGIN_DP = 10f
+        private const val WAVE_ACTIVE_DP = 3f
+        private const val PAD_MAX_DP = 55f
+        private const val PAD_MIN_DP = 0.5f
+        private const val CIRCLE_MIN_DP = 1f
 
-    val segLen = p2 - p1
-    var lt = if (segLen > 0) (at - p1) / segLen else 0f
-    lt = maxOf(0f, minOf(1f, lt))
+        /** 스테레오 → 8채널 가상 서라운드 근사. 후면 채널 지연 히스토리 길이(틱). */
+        private const val HISTORY = 5
 
-    val d0 = depths[idx0]
-    val d1 = depths[idx1]
-    val d2 = depths[idx2]
-    val d3 = depths[idx3]
+        /** 시간 정규화 기준 프레임(60fps). 정지 후 복귀 시 한 번에 최대 4프레임까지만 진행. */
+        private const val REF_FRAME_NS = 16_666_667L
+        private const val MIN_FRAME_STEP = 0.25f
+        private const val MAX_FRAME_STEP = 4f
 
-    val a = -0.5f * d0 + 1.5f * d1 - 1.5f * d2 + 0.5f * d3
-    val b = d0 - 2.5f * d1 + 2.0f * d2 - 0.5f * d3
-    val c = -0.5f * d0 + 0.5f * d2
-    val dv = d1
-
-    return maxOf(0f, a * lt * lt * lt + b * lt * lt + c * lt + dv)
-}
-
-private fun getWaveDepth(t: Float, depths: FloatArray, positions: FloatArray, maxDepth: Float): Float {
-    return minOf(maxDepth, maxOf(0f, interpolateDepthCatmullRom(t, depths, positions)))
-}
-
-private fun getRoundedInnerPoint(
-    dist: Float, w: Float, h: Float, P: Float, d: Float,
-    d_tr: Float, d_br: Float, d_bl: Float, d_tl: Float
-): Offset {
-    val c_tr = w / 2f
-    val c_br = w / 2f + h
-    val c_bl = c_br + w
-    val c_tl = c_bl + h
-
-    val R_tr = minOf(d_tr * 2f, minOf(w / 2f, h / 2f))
-    val R_br = minOf(d_br * 2f, minOf(w / 2f, h / 2f))
-    val R_bl = minOf(d_bl * 2f, minOf(w / 2f, h / 2f))
-    val R_tl = minOf(d_tl * 2f, minOf(w / 2f, h / 2f))
-
-    var distToTL = dist - c_tl
-    if (dist < w / 2f) distToTL = dist + P - c_tl
-
-    // 1) Top-Right
-    if (Math.abs(dist - c_tr) <= R_tr) {
-        val t = (dist - c_tr + R_tr) / (2 * R_tr)
-        val p0x = w - R_tr; val p0y = d
-        val p1x = w - d; val p1y = d
-        val p2x = w - d; val p2y = R_tr
-        val inv = 1 - t
-        return Offset(
-            inv * inv * p0x + 2 * inv * t * p1x + t * t * p2x,
-            inv * inv * p0y + 2 * inv * t * p1y + t * t * p2y
-        )
-    }
-    // 2) Bottom-Right
-    if (Math.abs(dist - c_br) <= R_br) {
-        val t = (dist - c_br + R_br) / (2 * R_br)
-        val p0x = w - d; val p0y = h - R_br
-        val p1x = w - d; val p1y = h - d
-        val p2x = w - R_br; val p2y = h - d
-        val inv = 1 - t
-        return Offset(
-            inv * inv * p0x + 2 * inv * t * p1x + t * t * p2x,
-            inv * inv * p0y + 2 * inv * t * p1y + t * t * p2y
-        )
-    }
-    // 3) Bottom-Left
-    if (Math.abs(dist - c_bl) <= R_bl) {
-        val t = (dist - c_bl + R_bl) / (2 * R_bl)
-        val p0x = R_bl; val p0y = h - d
-        val p1x = d; val p1y = h - d
-        val p2x = d; val p2y = h - R_bl
-        val inv = 1 - t
-        return Offset(
-            inv * inv * p0x + 2 * inv * t * p1x + t * t * p2x,
-            inv * inv * p0y + 2 * inv * t * p1y + t * t * p2y
-        )
-    }
-    // 4) Top-Left
-    if (Math.abs(distToTL) <= R_tl) {
-        val t = (distToTL + R_tl) / (2 * R_tl)
-        val p0x = d; val p0y = R_tl
-        val p1x = d; val p1y = d
-        val p2x = R_tl; val p2y = d
-        val inv = 1 - t
-        return Offset(
-            inv * inv * p0x + 2 * inv * t * p1x + t * t * p2x,
-            inv * inv * p0y + 2 * inv * t * p1y + t * t * p2y
-        )
+        /** 오버레이 최대 프레임. 120Hz 화면에서 GPU/배터리를 아낀다. 0 이면 vsync 그대로. */
+        const val MAX_FPS = 60
+        /** 이 시간 동안 아무것도 안 보이면 저빈도 폴링(idle)으로 전환 */
+        private const val IDLE_AFTER_NS = 1_000_000_000L
+        const val IDLE_POLL_MS = 33L
+        /** maxVolume < 0.01 이면 비활성으로 본다 */
+        private const val WAKE_THRESHOLD = 0.01f
+        private const val MIN_VISIBLE_ALPHA = 0.002f
     }
 
-    val edgePos = getEdgePosition(dist, w, h, P)
-    if (dist <= c_tr || dist > c_tl) return Offset(maxOf(d, minOf(w - d, edgePos.x)), d) // Top
-    if (dist <= c_br) return Offset(w - d, maxOf(d, minOf(h - d, edgePos.y))) // Right
-    if (dist <= c_bl) return Offset(maxOf(d, minOf(w - d, edgePos.x)), h - d) // Bottom
-    return Offset(d, maxOf(d, minOf(h - d, edgePos.y))) // Left
+    // ---------------- 오디오 입력 ----------------
+    private val peaks = FloatArray(3)
+    private var targetL = 0f
+    private var targetR = 0f
+    private val historyL = FloatArray(HISTORY)
+    private val historyR = FloatArray(HISTORY)
+    private var historyIndex = 0
+
+    // ---------------- 스무딩 상태 ----------------
+    private val targets = FloatArray(CH)
+    private val dist = FloatArray(CH)
+    private var smoothTotal = 0f
+    private val depths = FloatArray(CH)
+    private var baseDepth = 0f
+
+    // ---------------- 모드별 애니메이션 상태 ----------------
+    private val padThickness = FloatArray(CH)
+    private val circleTargets = FloatArray(CH)
+
+    // ---------------- 프레임 결과 ----------------
+    private var mode = VisualMode.Wave
+    private var settings: ModeSettings = ModeSettings()
+    private var alpha = 0f
+    private var glowAlpha = 0f
+    private var glowRadiusPx = 0f
+    private var colorRgb = 0xFFFFFF
+    private var visible = false
+    private var wasVisible = false
+    private var lastTickNanos = 0L      // 마지막으로 처리한 틱 (시간 정규화용)
+    private var lastVsyncNanos = 0L     // 마지막으로 관측한 vsync (프레임 캡 누산용)
+    private var invisibleSinceNanos = -1L
+    private var frameAccNanos = 0L
+    var isIdle = false
+        private set
+
+    // ---------------- 화면 크기 (draw 에서 갱신) ----------------
+    private var w = 0f
+    private var h = 0f
+
+    // ---------------- 기하 버퍼 ----------------
+    private val channelPos = FloatArray(CH)
+    private val waveX = FloatArray(WAVE_N)
+    private val waveY = FloatArray(WAVE_N)
+    private val centerDists = FloatArray(CH)
+    private val padOuterX = FloatArray(PAD_N + 1)
+    private val padOuterY = FloatArray(PAD_N + 1)
+    private val padInnerX = FloatArray(PAD_N + 1)
+    private val padInnerY = FloatArray(PAD_N + 1)
+    private val padEase = FloatArray(PAD_N + 1)
+    private val cosT = FloatArray(CIRCLE_N)
+    private val sinT = FloatArray(CIRCLE_N)
+    private val circleI0 = IntArray(CIRCLE_N)
+    private val circleI1 = IntArray(CIRCLE_N)
+    private val circleFt = FloatArray(CIRCLE_N)
+    private var px = 0f
+    private var py = 0f
+
+    // ---------------- 그리기 객체 ----------------
+    private val path = Path()
+    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var waveShader: RadialGradient? = null
+    private var shaderW = -1f
+    private var shaderH = -1f
+    private var shaderRgb = -1
+    private val shaderColors = IntArray(3)
+    private val shaderStops = floatArrayOf(0f, 0.7f, 1f)
+    private val shaderMatrix = Matrix()
+    private var blurFilter: BlurMaskFilter? = null
+    private var blurRadius = -1f
+
+    init {
+        for (i in 0..PAD_N) {
+            val t = i.toDouble() / PAD_N
+            padEase[i] = sin(t * PI).pow(0.6).toFloat()
+        }
+        for (i in 0 until CIRCLE_N) {
+            val angle = 2.0 * PI * i / CIRCLE_N
+            cosT[i] = cos(angle).toFloat()
+            sinT[i] = sin(angle).toFloat()
+            // angle=0(3시) → 2번(SR), pi/2(6시) → 4번(BC)
+            var mapped = (angle / (2.0 * PI)) * 8.0 + 2.0
+            if (mapped >= 8.0) mapped -= 8.0
+            val i0 = floor(mapped).toInt() % CH
+            circleI0[i] = i0
+            circleI1[i] = (i0 + 1) % CH
+            val t = mapped - floor(mapped)
+            circleFt[i] = ((1.0 - cos(t * PI)) / 2.0).toFloat()
+        }
+    }
+
+    // =====================================================================
+    // 프레임 틱
+    // =====================================================================
+
+    /**
+     * vsync 마다 호출. 오디오를 읽고 깊이/가시성을 갱신한다.
+     * @return 이번 프레임에 다시 그려야 하면 true
+     */
+    fun tick(frameTimeNanos: Long): Boolean {
+        // 프레임 캡: vsync 간격을 누적해서 1/MAX_FPS 마다 한 번만 처리 (90Hz → 2/3, 120Hz → 1/2)
+        if (MAX_FPS > 0) {
+            val interval = 1_000_000_000L / MAX_FPS - 200_000L
+            if (lastVsyncNanos != 0L) {
+                frameAccNanos += frameTimeNanos - lastVsyncNanos
+                lastVsyncNanos = frameTimeNanos
+                if (frameAccNanos < interval) return false
+                frameAccNanos = min(frameAccNanos - interval, interval)
+            } else {
+                lastVsyncNanos = frameTimeNanos
+                frameAccNanos = 0L
+            }
+        }
+
+        val k = if (lastTickNanos == 0L) 1f
+        else ((frameTimeNanos - lastTickNanos).toFloat() / REF_FRAME_NS).coerceIn(MIN_FRAME_STEP, MAX_FRAME_STEP)
+        lastTickNanos = frameTimeNanos
+
+        mode = SettingsManager.visualMode.value
+        settings = settingsFor(mode)
+        val s = settings
+
+        // 1. 피크 읽기. 오디오 버퍼가 도착하면 target = 피크, 렌더 프레임마다 target *= 0.87
+        AudioEngine.readPeaks(peaks)
+        val decay = TARGET_DECAY.pow(k)
+        if (peaks[2] > 0f) {
+            targetL = peaks[0]
+            targetR = peaks[1]
+        } else {
+            targetL = max(targetL * decay, peaks[0])
+            targetR = max(targetR * decay, peaks[1])
+        }
+
+        // 2. 스테레오 → 8채널 가상 서라운드 (2채널만 받으므로 Mid/Side 로 방향을 합성)
+        historyL[historyIndex] = targetL
+        historyR[historyIndex] = targetR
+        val delayedIndex = (historyIndex + 1) % HISTORY // 가장 오래된 값 (HISTORY-1 틱 전)
+        historyIndex = delayedIndex
+        val rearL = if (s.useRippleDelay) historyL[delayedIndex] else targetL
+        val rearR = if (s.useRippleDelay) historyR[delayedIndex] else targetR
+        upmix(targetL, targetR, rearL, rearR)
+
+        // 3. 스무딩: 전체 크기(민감도)와 방향 분포(속도)를 따로 추종
+        var total = 0f
+        for (i in 0 until CH) total += targets[i]
+
+        val sfTremor = norm(min(1f, max(0.1f, s.sensitivity * SENSITIVITY_UI_SCALE) / 100f), k)
+        smoothTotal += (total - smoothTotal) * sfTremor
+
+        val sfPosition = norm(min(1f, max(0.1f, s.speed) / 100f), k)
+        if (total > 0.0001f) {
+            for (i in 0 until CH) dist[i] += (targets[i] / total - dist[i]) * sfPosition
+        }
+
+        // 4. 깊이(px). Intensity 100% 가 화면 중앙 한계선에 닿도록 매핑
+        var maxBase = min(w, h) / 2f - EDGE_MARGIN_DP * density
+        if (maxBase < EDGE_MARGIN_DP * density) maxBase = EDGE_MARGIN_DP * density
+        val useOpacity = s.intensityAsOpacity
+        val currentIntensity = if (useOpacity) s.opacityFixedSize / 2f else s.intensity
+        baseDepth = maxBase * (max(0f, currentIntensity) / 100f)
+        for (i in 0 until CH) {
+            val v = if (useOpacity) dist[i] * 4f else smoothTotal * dist[i]
+            depths[i] = min(baseDepth, baseDepth * v)
+        }
+
+        // 5. 투명도 / 색 / 광원
+        alpha = if (useOpacity) {
+            val maxOpacity = max(0f, s.opacityFixedMaxOpacity) / 100f
+            maxOpacity * (smoothTotal / 2.5f).coerceIn(0f, 1f)
+        } else {
+            (max(0f, s.opacity) / 100f).coerceAtMost(1f)
+        }
+        // ===== AI 연동 지점 (별도 브랜치) =====
+        // 분류기가 아직 없으므로 라벨은 항상 "" → 환경음으로 취급한다.
+        // AI 브랜치는 여기서 라벨에 따라 colorSpeech/colorDanger, showSpeech/showDanger 로 바꾸면 된다.
+        colorRgb = SettingsManager.colorAmbient.value and 0xFFFFFF
+        val shown = SettingsManager.showAmbient.value
+        // ======================================
+        if (s.isGlowMode && s.glowIntensity > 0f) {
+            glowAlpha = min(1f, s.glowIntensity / 100f * 1.6f)
+            glowRadiusPx = max(1f, s.glowIntensity * 0.5f) * density
+        } else {
+            glowAlpha = 0f
+        }
+
+        // 6. 모드별 가시성 판정 (Pad/Circle 은 여기서 자체 lerp 도 진행)
+        val anyShape = when (mode) {
+            VisualMode.Wave, VisualMode.Outline -> anyDepthAbove(WAVE_ACTIVE_DP * density)
+            VisualMode.Pad -> stepPad(k)
+            VisualMode.CircleRipple -> stepCircle(k)
+        }
+        visible = shown && alpha > MIN_VISIBLE_ALPHA && anyShape
+
+        // 7. 무효화 / idle 판단
+        val needsRedraw = visible || wasVisible
+        wasVisible = visible
+        if (visible) {
+            invisibleSinceNanos = -1L
+        } else if (invisibleSinceNanos < 0L) {
+            invisibleSinceNanos = frameTimeNanos
+        } else if (frameTimeNanos - invisibleSinceNanos > IDLE_AFTER_NS &&
+            targetL < WAKE_THRESHOLD && targetR < WAKE_THRESHOLD
+        ) {
+            enterIdle()
+        }
+        return needsRedraw
+    }
+
+    /** idle 중 저빈도 폴링. 소리가 감지되면 프레임 클럭으로 복귀한다. */
+    fun pollWake() {
+        AudioEngine.readPeaks(peaks)
+        if (peaks[0] > WAKE_THRESHOLD || peaks[1] > WAKE_THRESHOLD) {
+            targetL = peaks[0]
+            targetR = peaks[1]
+            isIdle = false
+            invisibleSinceNanos = -1L
+            lastTickNanos = 0L
+            lastVsyncNanos = 0L
+            frameAccNanos = 0L
+        }
+    }
+
+    private fun enterIdle() {
+        isIdle = true
+        targetL = 0f
+        targetR = 0f
+        smoothTotal = 0f
+        for (i in 0 until CH) {
+            targets[i] = 0f
+            padThickness[i] = 0f
+            circleTargets[i] = 0f
+        }
+        historyL.fill(0f)
+        historyR.fill(0f)
+        lastTickNanos = 0L
+        lastVsyncNanos = 0L
+        frameAccNanos = 0L
+    }
+
+    private fun settingsFor(mode: VisualMode): ModeSettings = when (mode) {
+        VisualMode.Wave -> SettingsManager.waveMode.value
+        VisualMode.Pad -> SettingsManager.padMode.value
+        VisualMode.CircleRipple -> SettingsManager.circleMode.value
+        VisualMode.Outline -> SettingsManager.outlineMode.value
+    }
+
+    /** 프레임당 계수 a 를 k 프레임 분량으로 환산: 1-(1-a)^k */
+    private fun norm(a: Float, k: Float): Float = if (k == 1f) a else 1f - (1f - a).pow(k)
+
+    private fun upmix(fl: Float, fr: Float, rearL: Float, rearR: Float) {
+        val mid = min(fl, fr)
+        val sideL = max(0f, fl - fr)
+        val sideR = max(0f, fr - fl)
+        targets[0] = mid * 1.2f    // FC
+        targets[1] = fr * 0.9f     // FR
+        targets[7] = fl * 0.9f     // FL
+        targets[2] = sideR * 1.5f  // SR
+        targets[6] = sideL * 1.5f  // SL
+
+        val rearMid = min(rearL, rearR)
+        val rearSideL = max(0f, rearL - rearR)
+        val rearSideR = max(0f, rearR - rearL)
+        targets[3] = rearSideR * 1.2f // BR
+        targets[4] = rearMid * 0.8f   // BC
+        targets[5] = rearSideL * 1.2f // BL
+    }
+
+    private fun anyDepthAbove(threshold: Float): Boolean {
+        for (i in 0 until CH) if (depths[i] > threshold) return true
+        return false
+    }
+
+    private fun stepPad(k: Float): Boolean {
+        val lerp = norm(PAD_LERP, k)
+        val cap = PAD_MAX_DP * density
+        val minVisible = PAD_MIN_DP * density
+        var any = false
+        for (c in 0 until CH) {
+            var target = depths[c] * 0.25f
+            if (target > cap) target = cap
+            padThickness[c] += (target - padThickness[c]) * lerp
+            if (padThickness[c] >= minVisible) any = true
+        }
+        return any
+    }
+
+    private fun stepCircle(k: Float): Boolean {
+        val lerp = norm(CIRCLE_LERP, k)
+        val cap = h * 0.4f
+        val minVisible = CIRCLE_MIN_DP * density
+        var any = false
+        for (i in 0 until CH) {
+            var target = depths[i] * 0.35f
+            if (target > cap) target = cap
+            circleTargets[i] += (target - circleTargets[i]) * lerp
+            if (circleTargets[i] > minVisible) any = true
+        }
+        return any
+    }
+
+    // =====================================================================
+    // 그리기
+    // =====================================================================
+
+    /**
+     * Compose draw 단계에서 호출. [frameSerial] 은 값 자체는 쓰지 않고, 읽는 행위로
+     * 그리기 무효화를 프레임 틱에 묶는 용도다.
+     */
+    fun draw(canvas: NativeCanvas, width: Float, height: Float, @Suppress("UNUSED_PARAMETER") frameSerial: Long) {
+        w = width
+        h = height
+        if (!visible || w <= 0f || h <= 0f) return
+
+        when (mode) {
+            VisualMode.Wave -> drawWaveOrOutline(canvas, isWave = true)
+            VisualMode.Outline -> drawWaveOrOutline(canvas, isWave = false)
+            VisualMode.Pad -> drawPad(canvas)
+            VisualMode.CircleRipple -> drawCircle(canvas)
+        }
+    }
+
+    // ---------------- Wave / Outline ----------------
+
+    private fun drawWaveOrOutline(canvas: NativeCanvas, isWave: Boolean) {
+        buildWavePoints()
+
+        val n = WAVE_N
+        val path = path
+        path.rewind()
+        path.fillType = Path.FillType.EVEN_ODD
+
+        if (isWave) {
+            // 바깥 사각형 + 안쪽 파도 루프 → EvenOdd 로 테두리 띠만 채워진다
+            path.moveTo(0f, 0f)
+            path.lineTo(w, 0f)
+            path.lineTo(w, h)
+            path.lineTo(0f, h)
+            path.close()
+
+            path.moveTo(waveX[0], waveY[0])
+            for (i in 0 until n) {
+                val i0 = (i + n - 1) % n
+                val i2 = (i + 1) % n
+                val i3 = (i + 2) % n
+                val p0x = waveX[i0]; val p0y = waveY[i0]
+                val p1x = waveX[i]; val p1y = waveY[i]
+                val p2x = waveX[i2]; val p2y = waveY[i2]
+                val p3x = waveX[i3]; val p3y = waveY[i3]
+                path.cubicTo(
+                    p1x + (p2x - p0x) / 6f, p1y + (p2y - p0y) / 6f,
+                    p2x - (p3x - p1x) / 6f, p2y - (p3y - p1y) / 6f,
+                    p2x, p2y
+                )
+            }
+            path.close()
+        } else {
+            // 외곽선: 안쪽 루프만, 역방향으로 순회
+            path.moveTo(waveX[0], waveY[0])
+            for (i in n - 1 downTo 0) {
+                val prev = (i + n - 1) % n
+                val next = (i + 1) % n
+                val nnext = (i + 2) % n
+                val p0x = waveX[nnext]; val p0y = waveY[nnext]
+                val p1x = waveX[next]; val p1y = waveY[next]
+                val p2x = waveX[i]; val p2y = waveY[i]
+                val p3x = waveX[prev]; val p3y = waveY[prev]
+                path.cubicTo(
+                    p1x + (p2x - p0x) / 6f, p1y + (p2y - p0y) / 6f,
+                    p2x - (p3x - p1x) / 6f, p2y - (p3y - p1y) / 6f,
+                    p2x, p2y
+                )
+            }
+            path.close()
+        }
+
+        val shader = ensureWaveShader()
+        val paint = fillPaint
+        paint.shader = shader
+        if (isWave) {
+            paint.style = Paint.Style.FILL
+        } else {
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = OUTLINE_STROKE_DP * density
+        }
+        if (glowAlpha > 0f) drawGlow(canvas, shader, paint.style, paint.strokeWidth)
+        paint.alpha = alphaByte(alpha)
+        canvas.drawPath(path, paint)
+    }
+
+    private fun buildWavePoints() {
+        val p = 2f * (w + h)
+        val halfW = w / 2f
+        channelPos[0] = 0f
+        channelPos[1] = halfW / p
+        channelPos[2] = (halfW + h / 2f) / p
+        channelPos[3] = (halfW + h) / p
+        channelPos[4] = (halfW + h + halfW) / p
+        channelPos[5] = (halfW + h + w) / p
+        channelPos[6] = (halfW + h + w + h / 2f) / p
+        channelPos[7] = (halfW + h + w + h) / p
+
+        val dTr = waveDepth(channelPos[1])
+        val dBr = waveDepth(channelPos[3])
+        val dBl = waveDepth(channelPos[5])
+        val dTl = waveDepth(channelPos[7])
+
+        for (i in 0 until WAVE_N) {
+            val dist = (p * i) / WAVE_N
+            val d = waveDepth(dist / p)
+            roundedInnerPoint(dist, p, d, dTr, dBr, dBl, dTl)
+            waveX[i] = px
+            waveY[i] = py
+        }
+    }
+
+    private fun waveDepth(t: Float): Float = min(baseDepth, max(0f, interpolateDepthCatmullRom(t)))
+
+    private fun interpolateDepthCatmullRom(tIn: Float): Float {
+        val t = ((tIn % 1f) + 1f) % 1f
+        var idx1 = 0
+        for (i in 0 until CH) if (channelPos[i] <= t) idx1 = i
+        val idx0 = (idx1 + CH - 1) % CH
+        val idx2 = (idx1 + 1) % CH
+        val idx3 = (idx1 + 2) % CH
+
+        val p1 = channelPos[idx1]
+        var p2 = channelPos[idx2]
+        if (p2 <= p1) p2 += 1f
+        var at = t
+        if (at < p1) at += 1f
+        val segLen = p2 - p1
+        val lt = (if (segLen > 0f) (at - p1) / segLen else 0f).coerceIn(0f, 1f)
+
+        val d0 = depths[idx0]
+        val d1 = depths[idx1]
+        val d2 = depths[idx2]
+        val d3 = depths[idx3]
+        val a = -0.5f * d0 + 1.5f * d1 - 1.5f * d2 + 0.5f * d3
+        val b = d0 - 2.5f * d1 + 2.0f * d2 - 0.5f * d3
+        val c = -0.5f * d0 + 0.5f * d2
+        return max(0f, ((a * lt + b) * lt + c) * lt + d1)
+    }
+
+    /** 둘레 거리 dist(상단 중앙 기준, 시계 방향) → 화면 테두리 좌표. 결과는 px/py. */
+    private fun edgePosition(distIn: Float, p: Float) {
+        val dist = ((distIn % p) + p) % p
+        val halfW = w / 2f
+        when {
+            dist <= halfW -> { px = halfW + dist; py = 0f }
+            dist <= halfW + h -> { px = w; py = dist - halfW }
+            dist <= halfW + h + w -> { px = w - (dist - (halfW + h)); py = h }
+            dist <= halfW + h + w + h -> { px = 0f; py = h - (dist - (halfW + h + w)) }
+            else -> { px = dist - (halfW + h + w + h); py = 0f }
+        }
+    }
+
+    /** 코너를 2차 베지어로 둥글린 안쪽 파도 좌표. 결과는 px/py. */
+    private fun roundedInnerPoint(
+        dist: Float, p: Float, d: Float,
+        dTr: Float, dBr: Float, dBl: Float, dTl: Float
+    ) {
+        val cTr = w / 2f
+        val cBr = w / 2f + h
+        val cBl = cBr + w
+        val cTl = cBl + h
+        val maxR = min(w / 2f, h / 2f)
+
+        // 라운딩 반경은 파도 깊이에 비례 (깊이 0 이면 깎이지 않음)
+        val rTr = min(dTr * 2f, maxR)
+        val rBr = min(dBr * 2f, maxR)
+        val rBl = min(dBl * 2f, maxR)
+        val rTl = min(dTl * 2f, maxR)
+
+        var distToTL = dist - cTl
+        if (dist < w / 2f) distToTL = dist + p - cTl
+
+        if (abs(dist - cTr) <= rTr && rTr > 0f) {
+            val t = (dist - cTr + rTr) / (2f * rTr)
+            quadBezier(t, w - rTr, d, w - d, d, w - d, rTr)
+            return
+        }
+        if (abs(dist - cBr) <= rBr && rBr > 0f) {
+            val t = (dist - cBr + rBr) / (2f * rBr)
+            quadBezier(t, w - d, h - rBr, w - d, h - d, w - rBr, h - d)
+            return
+        }
+        if (abs(dist - cBl) <= rBl && rBl > 0f) {
+            val t = (dist - cBl + rBl) / (2f * rBl)
+            quadBezier(t, rBl, h - d, d, h - d, d, h - rBl)
+            return
+        }
+        if (abs(distToTL) <= rTl && rTl > 0f) {
+            val t = (distToTL + rTl) / (2f * rTl)
+            quadBezier(t, d, rTl, d, d, rTl, d)
+            return
+        }
+
+        edgePosition(dist, p)
+        when {
+            dist <= cTr || dist > cTl -> { px = max(d, min(w - d, px)); py = d }          // Top
+            dist <= cBr -> { px = w - d; py = max(d, min(h - d, py)) }                    // Right
+            dist <= cBl -> { px = max(d, min(w - d, px)); py = h - d }                    // Bottom
+            else -> { px = d; py = max(d, min(h - d, py)) }                               // Left
+        }
+    }
+
+    private fun quadBezier(t: Float, p0x: Float, p0y: Float, p1x: Float, p1y: Float, p2x: Float, p2y: Float) {
+        val inv = 1f - t
+        val a = inv * inv
+        val b = 2f * inv * t
+        val c = t * t
+        px = a * p0x + b * p1x + c * p2x
+        py = a * p0y + b * p1y + c * p2y
+    }
+
+    // ---------------- Pad ----------------
+
+    private fun drawPad(canvas: NativeCanvas) {
+        val p = 2f * (w + h)
+        val halfW = w / 2f
+        centerDists[0] = 0f                          // FC 상단 중앙
+        centerDists[1] = halfW                       // FR 우상단
+        centerDists[2] = halfW + h / 2f              // SR 우측 중앙
+        centerDists[3] = halfW + h                   // BR 우하단
+        centerDists[4] = halfW + h + halfW           // BC 하단 중앙
+        centerDists[5] = halfW + h + w               // BL 좌하단
+        centerDists[6] = halfW + h + w + h / 2f      // SL 좌측 중앙
+        centerDists[7] = halfW + h + w + h           // FL 좌상단
+
+        val path = path
+        path.rewind()
+        path.fillType = Path.FillType.EVEN_ODD
+
+        val minVisible = PAD_MIN_DP * density
+        val barLen = h / 4f
+        var any = false
+
+        for (c in 0 until CH) {
+            val maxThickness = padThickness[c]
+            if (maxThickness < minVisible) continue
+            any = true
+
+            val startDist = centerDists[c] - barLen / 2f
+            for (i in 0..PAD_N) {
+                val distPos = startDist + (barLen * i) / PAD_N
+                edgePosition(distPos, p)
+                val ex = px
+                val ey = py
+                padOuterX[i] = ex
+                padOuterY[i] = ey
+
+                val cur = maxThickness * padEase[i]
+                val dMod = ((distPos % p) + p) % p
+                var ix = ex
+                var iy = ey
+                if (dMod <= halfW || dMod > halfW + h + w + h) {          // Top
+                    iy += cur; ix = max(cur, min(w - cur, ix))
+                } else if (dMod <= halfW + h) {                            // Right
+                    ix -= cur; iy = max(cur, min(h - cur, iy))
+                } else if (dMod <= halfW + h + w) {                        // Bottom
+                    iy -= cur; ix = max(cur, min(w - cur, ix))
+                } else {                                                   // Left
+                    ix += cur; iy = max(cur, min(h - cur, iy))
+                }
+                padInnerX[i] = ix
+                padInnerY[i] = iy
+            }
+
+            path.moveTo(padOuterX[0], padOuterY[0])
+            for (i in 1..PAD_N) path.lineTo(padOuterX[i], padOuterY[i])
+            for (i in PAD_N downTo 0) path.lineTo(padInnerX[i], padInnerY[i])
+            path.close()
+        }
+        if (!any) return
+        drawSolid(canvas)
+    }
+
+    // ---------------- Circle ----------------
+
+    private fun drawCircle(canvas: NativeCanvas) {
+        val cx = w / 2f
+        val cy = h / 2f
+        // CircleRadius 10~100 → 화면 짧은 변의 0.05~0.40
+        val radiusRatio = 0.05f + (settings.circleRadius - 10f) / 90f * 0.35f
+        val baseRadius = min(w, h) * radiusRatio
+
+        val path = path
+        path.rewind()
+        path.fillType = Path.FillType.EVEN_ODD
+
+        for (i in 0 until CIRCLE_N) {
+            val ft = circleFt[i]
+            val depth = circleTargets[circleI0[i]] * (1f - ft) + circleTargets[circleI1[i]] * ft
+            val r = baseRadius + depth
+            val x = cx + cosT[i] * r
+            val y = cy + sinT[i] * r
+            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        path.close()
+
+        // 안쪽 고정 원을 역방향으로 그려 EvenOdd 로 구멍을 낸다
+        for (i in 0 until CIRCLE_N) {
+            val j = CIRCLE_N - 1 - i
+            val x = cx + cosT[j] * baseRadius
+            val y = cy + sinT[j] * baseRadius
+            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        path.close()
+
+        drawSolid(canvas)
+    }
+
+    // ---------------- 공통 페인팅 ----------------
+
+    private fun drawSolid(canvas: NativeCanvas) {
+        val paint = fillPaint
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        paint.color = (0xFF shl 24) or colorRgb
+        if (glowAlpha > 0f) drawGlow(canvas, null, Paint.Style.FILL, 0f)
+        paint.alpha = alphaByte(alpha)
+        canvas.drawPath(path, paint)
+    }
+
+    /** 광원: 같은 도형을 블러 마스크로 한 번 더 깔아 아우라를 만든다. */
+    private fun drawGlow(canvas: NativeCanvas, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
+        if (blurFilter == null || abs(blurRadius - glowRadiusPx) > 0.5f) {
+            blurRadius = glowRadiusPx
+            blurFilter = BlurMaskFilter(glowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+            glowPaint.maskFilter = blurFilter
+        }
+        val paint = glowPaint
+        paint.shader = shader
+        paint.style = style
+        paint.strokeWidth = strokeWidth
+        paint.color = (0xFF shl 24) or colorRgb
+        paint.alpha = alphaByte(glowAlpha * alpha)
+        canvas.drawPath(path, paint)
+    }
+
+    /** 파도 채움: 중심 투명 → 0.7 지점 A=160 → 가장자리 불투명, 화면 비율에 맞춘 타원형 */
+    private fun ensureWaveShader(): RadialGradient {
+        val current = waveShader
+        if (current != null && shaderW == w && shaderH == h && shaderRgb == colorRgb) return current
+        shaderColors[0] = colorRgb
+        shaderColors[1] = (160 shl 24) or colorRgb
+        shaderColors[2] = (0xFF shl 24) or colorRgb
+        val shader = RadialGradient(0.5f, 0.5f, 0.5f, shaderColors, shaderStops, Shader.TileMode.CLAMP)
+        shaderMatrix.setScale(w, h)
+        shader.setLocalMatrix(shaderMatrix)
+        waveShader = shader
+        shaderW = w
+        shaderH = h
+        shaderRgb = colorRgb
+        return shader
+    }
+
+    private fun alphaByte(a: Float): Int = (a.coerceIn(0f, 1f) * 255f + 0.5f).toInt()
 }
 
 @Composable
 fun VisualizerOverlay() {
-    val audioLevels = mutableStateOf(FloatArray(2) { 0f })
-    val aiStateColor = mutableStateOf(Color.Green) // Green = Ambient, Red = Danger
-    
-    val currentMode by SettingsManager.visualMode.collectAsState()
-    val waveSettings by SettingsManager.waveMode.collectAsState()
-    val padSettings by SettingsManager.padMode.collectAsState()
-    val circleSettings by SettingsManager.circleMode.collectAsState()
-    val outlineSettings by SettingsManager.outlineMode.collectAsState()
+    val density = LocalDensity.current.density
+    val engine = remember(density) { VisualizerEngine(density) }
+    // 프레임 틱 → 그리기 무효화를 잇는 유일한 Compose 상태. 리컴포지션은 발생하지 않는다.
+    val frame = remember { mutableLongStateOf(0L) }
 
-    // State arrays for animations
-    val recentTargetsCircle = remember { FloatArray(8) { 0f } }
-    val padThicknesses = remember { FloatArray(8) { 0f } }
-    val smoothedDepths = remember { FloatArray(8) { 0f } }
-
-    LaunchedEffect(Unit) {
+    LaunchedEffect(engine) {
         while (true) {
-            val levels = AudioEngine.getAudioLevels()
-            if (levels != null) {
-                audioLevels.value = levels
+            if (engine.isIdle) {
+                delay(VisualizerEngine.IDLE_POLL_MS)
+                engine.pollWake()
+            } else {
+                withFrameNanos { nanos ->
+                    if (engine.tick(nanos)) frame.longValue++
+                }
             }
-            delay(16) // ~60fps for smoother bezier animations
         }
     }
-    
-    // History buffer for fake spatial depth (Delaying rear channels)
-    val historySize = 5
-    val leftHistory = remember { FloatArray(historySize) { 0f } }
-    val rightHistory = remember { FloatArray(historySize) { 0f } }
-    var historyIndex by remember { mutableStateOf(0) }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val P = 2f * (w + h)
-
-        val activeSettings = when (currentMode) {
-            VisualMode.Wave -> waveSettings
-            VisualMode.Pad -> padSettings
-            VisualMode.CircleRipple -> circleSettings
-            VisualMode.Outline -> outlineSettings
-        }
-        val useRippleDelay = activeSettings.useRippleDelay
-
-        // 적용: Sensitivity (민감도)
-        val leftRms = audioLevels.value[0] * activeSettings.sensitivity * 30f 
-        val rightRms = audioLevels.value[1] * activeSettings.sensitivity * 30f
-
-        // Update history buffer for delay effect
-        leftHistory[historyIndex] = leftRms
-        rightHistory[historyIndex] = rightRms
-        val delayedIndex = (historyIndex - (historySize - 1) + historySize) % historySize
-        historyIndex = (historyIndex + 1) % historySize
-
-        val delayedLeft = leftHistory[delayedIndex]
-        val delayedRight = rightHistory[delayedIndex]
-
-        // Virtual Surround Upmixing (Mid-Side Processing)
-        val targetDepths = FloatArray(8)
-        val minRms = minOf(leftRms, rightRms)
-        val sideLeft = maxOf(0f, leftRms - rightRms)
-        val sideRight = maxOf(0f, rightRms - leftRms)
-        
-        // Front uses real-time
-        targetDepths[0] = minRms * 1.2f   // FC
-        targetDepths[1] = rightRms * 0.9f // FR
-        targetDepths[7] = leftRms * 0.9f  // FL
-        targetDepths[2] = sideRight * 1.5f// SR
-        targetDepths[6] = sideLeft * 1.5f // SL
-
-        if (useRippleDelay) {
-            // Rear uses delayed signals to simulate spatial travel
-            val delayedMin = minOf(delayedLeft, delayedRight)
-            val delayedSideLeft = maxOf(0f, delayedLeft - delayedRight)
-            val delayedSideRight = maxOf(0f, delayedRight - delayedLeft)
-
-            targetDepths[3] = delayedSideRight * 1.2f // BR
-            targetDepths[4] = delayedMin * 0.8f       // BC
-            targetDepths[5] = delayedSideLeft * 1.2f  // BL
-        } else {
-            // Rear uses real-time
-            targetDepths[3] = sideRight * 1.2f // BR
-            targetDepths[4] = minRms * 0.8f    // BC
-            targetDepths[5] = sideLeft * 1.2f  // BL
-        }
-
-        // 적용: Speed (속도)
-        val speedFactor = (activeSettings.speed / 20f) * 0.3f
-        for (i in 0 until 8) {
-            smoothedDepths[i] += (targetDepths[i] - smoothedDepths[i]) * speedFactor
-        }
-
-        val depths = smoothedDepths
-        val activeColor = aiStateColor.value
-
-        // 적용: IntensityAsOpacity (크기 고정) & Opacity & Intensity
-        val baseOpacity = 1f - (activeSettings.opacity / 100f)
-        val activeIntensity = if (activeSettings.intensityAsOpacity) {
-            activeSettings.opacityFixedSize / 10f
-        } else {
-            activeSettings.intensity / 50f
-        }
-        
-        val activeOpacity = if (activeSettings.intensityAsOpacity) {
-            val maxAlpha = activeSettings.opacityFixedMaxOpacity / 100f
-            val currentAudioAvg = depths.average().toFloat() / 100f
-            minOf(baseOpacity, currentAudioAvg * maxAlpha)
-        } else {
-            baseOpacity
-        }
-
-        // Draw Helper (Glow 적용 용도)
-        val glowRadius = if (activeSettings.isGlowMode) activeSettings.glowIntensity else 0f
-        
-        fun drawGlowPath(path: androidx.compose.ui.graphics.Path, color: Color, isStroke: Boolean = false, strokeWidth: Float = 8f) {
-            drawContext.canvas.apply {
-                val paint = androidx.compose.ui.graphics.Paint().asFrameworkPaint().apply {
-                    isAntiAlias = true
-                    this.color = color.toArgb()
-                    this.style = if (isStroke) android.graphics.Paint.Style.STROKE else android.graphics.Paint.Style.FILL
-                    if (isStroke) this.strokeWidth = strokeWidth
-                    if (glowRadius > 0f) {
-                        setShadowLayer(glowRadius, 0f, 0f, activeColor.toArgb()) // Use full activeColor for neon effect
-                    }
-                }
-                nativeCanvas.drawPath(path.asAndroidPath(), paint)
-            }
-        }
-
-        when (currentMode) {
-            VisualMode.Wave, VisualMode.Outline -> {
-                val isWave = currentMode == VisualMode.Wave
-                
-                var anyActive = false
-                for (d in depths) {
-                    if (d * activeIntensity > 3f) { anyActive = true; break }
-                }
-                if (!anyActive && !activeSettings.intensityAsOpacity) return@Canvas
-
-                val channelPos = FloatArray(8)
-                channelPos[0] = 0f / P
-                channelPos[1] = (w / 2f) / P
-                channelPos[2] = (w / 2f + h / 2f) / P
-                channelPos[3] = (w / 2f + h) / P
-                channelPos[4] = (w / 2f + h + w / 2f) / P
-                channelPos[5] = (w / 2f + h + w) / P
-                channelPos[6] = (w / 2f + h + w + h / 2f) / P
-                channelPos[7] = (w / 2f + h + w + h) / P
-
-                val baseDepth = minOf(w, h) * 0.4f
-                val scaledDepths = depths.map { it * activeIntensity }.toFloatArray()
-                
-                val d_tr = getWaveDepth((w / 2f) / P, scaledDepths, channelPos, baseDepth)
-                val d_br = getWaveDepth((w / 2f + h) / P, scaledDepths, channelPos, baseDepth)
-                val d_bl = getWaveDepth((w / 2f + h + w) / P, scaledDepths, channelPos, baseDepth)
-                val d_tl = getWaveDepth((w / 2f + h + w + h) / P, scaledDepths, channelPos, baseDepth)
-
-                val N = 150
-                val innerPts = Array(N) { Offset.Zero }
-
-                for (i in 0 until N) {
-                    val dist = (P * i) / N
-                    val t = dist / P
-                    val d = getWaveDepth(t, scaledDepths, channelPos, baseDepth)
-                    innerPts[i] = getRoundedInnerPoint(dist, w, h, P, d, d_tr, d_br, d_bl, d_tl)
-                }
-
-                val path = androidx.compose.ui.graphics.Path()
-                
-                if (isWave) {
-                    path.moveTo(0f, 0f)
-                    path.lineTo(w, 0f)
-                    path.lineTo(w, h)
-                    path.lineTo(0f, h)
-                    path.lineTo(0f, 0f)
-
-                    path.moveTo(innerPts[0].x, innerPts[0].y)
-                    for (i in 0 until N) {
-                        val p0 = innerPts[(i - 1 + N) % N]
-                        val p1 = innerPts[i]
-                        val p2 = innerPts[(i + 1) % N]
-                        val p3 = innerPts[(i + 2) % N]
-
-                        val cp1 = Offset(p1.x + (p2.x - p0.x) / 6f, p1.y + (p2.y - p0.y) / 6f)
-                        val cp2 = Offset(p2.x - (p3.x - p1.x) / 6f, p2.y - (p3.y - p1.y) / 6f)
-
-                        path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
-                    }
-                    path.fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
-
-                    // Wave uses gradient, but if glow is needed we can draw a base glow
-                    if (glowRadius > 0f) {
-                        drawGlowPath(path, activeColor.copy(alpha = 0f)) // Only shadows
-                    }
-                    drawPath(
-                        path = path,
-                        brush = androidx.compose.ui.graphics.Brush.radialGradient(
-                            colors = listOf(Color.Transparent, activeColor.copy(alpha = activeOpacity * 0.6f), activeColor.copy(alpha = activeOpacity)),
-                            center = Offset(w/2f, h/2f),
-                            radius = maxOf(w, h) / 2f
-                        )
-                    )
-                } else {
-                    path.moveTo(innerPts[0].x, innerPts[0].y)
-                    for (i in N - 1 downTo 0) {
-                        val prev = (i - 1 + N) % N
-                        val next = (i + 1) % N
-                        val nnext = (i + 2) % N
-
-                        val p0 = innerPts[nnext]
-                        val p1 = innerPts[next]
-                        val p2 = innerPts[i]
-                        val p3 = innerPts[prev]
-
-                        val cp1 = Offset(p1.x + (p2.x - p0.x) / 6f, p1.y + (p2.y - p0.y) / 6f)
-                        val cp2 = Offset(p2.x - (p3.x - p1.x) / 6f, p2.y - (p3.y - p1.y) / 6f)
-
-                        path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, p2.x, p2.y)
-                    }
-                    drawGlowPath(path, activeColor.copy(alpha = activeOpacity), isStroke = true, strokeWidth = 8f)
-                }
-            }
-            VisualMode.Pad -> {
-                val centerDists = FloatArray(8)
-                centerDists[0] = 0f                             // FC
-                centerDists[1] = w / 2f                         // FR
-                centerDists[2] = w / 2f + h / 2f                // SR
-                centerDists[3] = w / 2f + h                     // BR
-                centerDists[4] = w / 2f + h + w / 2f            // BC
-                centerDists[5] = w / 2f + h + w                 // BL
-                centerDists[6] = w / 2f + h + w + h / 2f        // SL
-                centerDists[7] = w / 2f + h + w + h             // FL
-
-                val path = androidx.compose.ui.graphics.Path()
-                path.fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
-                var isAnyVisible = false
-
-                val N = 16
-                val outerPts = Array(N + 1) { Offset.Zero }
-                val innerPts = Array(N + 1) { Offset.Zero }
-
-                for (c in 0 until 8) {
-                    var targetThickness = depths[c] * activeIntensity * 0.25f
-                    if (targetThickness > 100f) targetThickness = 100f
-
-                    padThicknesses[c] += (targetThickness - padThicknesses[c]) * speedFactor
-                    if (padThicknesses[c] < 0.5f && !activeSettings.intensityAsOpacity) continue
-
-                    isAnyVisible = true
-                    val centerDist = centerDists[c]
-                    val maxThickness = padThicknesses[c]
-
-                    val barLen = h / 4f
-                    val startDist = centerDist - barLen / 2f
-
-                    for (i in 0..N) {
-                        val distPos = startDist + (barLen * i) / N
-                        val edgePoint = getEdgePosition(distPos, w, h, P)
-                        outerPts[i] = edgePoint
-
-                        val t = i.toFloat() / N
-                        var ease = Math.sin(t * Math.PI)
-                        ease = Math.pow(ease, 0.6)
-                        val currentThickness = (maxThickness * ease).toFloat()
-
-                        val dMod = ((distPos % P) + P) % P
-                        var ix = edgePoint.x
-                        var iy = edgePoint.y
-
-                        if (dMod <= w / 2f || dMod > w / 2f + h + w + h) {
-                            iy += currentThickness
-                            ix = maxOf(currentThickness, minOf(w - currentThickness, ix))
-                        } else if (dMod <= w / 2f + h) {
-                            ix -= currentThickness
-                            iy = maxOf(currentThickness, minOf(h - currentThickness, iy))
-                        } else if (dMod <= w / 2f + h + w) {
-                            iy -= currentThickness
-                            ix = maxOf(currentThickness, minOf(w - currentThickness, ix))
-                        } else {
-                            ix += currentThickness
-                            iy = maxOf(currentThickness, minOf(h - currentThickness, iy))
-                        }
-
-                        innerPts[i] = Offset(ix, iy)
-                    }
-
-                    path.moveTo(outerPts[0].x, outerPts[0].y)
-                    for (i in 1..N) path.lineTo(outerPts[i].x, outerPts[i].y)
-                    for (i in N downTo 0) path.lineTo(innerPts[i].x, innerPts[i].y)
-                    path.close()
-                }
-
-                if (isAnyVisible || activeSettings.intensityAsOpacity) {
-                    drawGlowPath(path, activeColor.copy(alpha = activeOpacity))
-                }
-            }
-            VisualMode.CircleRipple -> {
-                val cx = w / 2f
-                val cy = h / 2f
-                val radiusRatio = 0.05f + (activeSettings.circleRadius - 10f) / 90f * 0.35f
-                val baseRadius = minOf(w, h) * radiusRatio
-
-                var isAnyVisible = false
-                for (i in 0 until 8) {
-                    var target = depths[i] * activeIntensity * 0.35f
-                    if (target > h * 0.4f) target = h * 0.4f
-
-                    recentTargetsCircle[i] += (target - recentTargetsCircle[i]) * speedFactor
-                    if (recentTargetsCircle[i] > 1f) isAnyVisible = true
-                }
-
-                if (!isAnyVisible && !activeSettings.intensityAsOpacity) return@Canvas
-
-                val N = 64
-                val path = androidx.compose.ui.graphics.Path()
-                path.fillType = androidx.compose.ui.graphics.PathFillType.EvenOdd
-                
-                val outerPts = Array(N) { Offset.Zero }
-                val innerPts = Array(N) { Offset.Zero }
-
-                for (i in 0 until N) {
-                    val angle = (2.0 * Math.PI * i) / N
-                    var mappedIndex = (angle / (2.0 * Math.PI)) * 8.0 + 2.0
-                    if (mappedIndex >= 8.0) mappedIndex -= 8.0
-
-                    val i0 = Math.floor(mappedIndex).toInt() % 8
-                    val i1 = (i0 + 1) % 8
-                    val t = mappedIndex - Math.floor(mappedIndex)
-                    val ft = (1.0 - Math.cos(t * Math.PI)) / 2.0
-                    val depth = (recentTargetsCircle[i0] * (1 - ft) + recentTargetsCircle[i1] * ft).toFloat()
-
-                    val r = baseRadius + depth
-                    outerPts[i] = Offset(
-                        cx + (Math.cos(angle) * r).toFloat(),
-                        cy + (Math.sin(angle) * r).toFloat()
-                    )
-                }
-
-                path.moveTo(outerPts[0].x, outerPts[0].y)
-                for (i in 1 until N) path.lineTo(outerPts[i].x, outerPts[i].y)
-                path.close()
-
-                for (i in 0 until N) {
-                    val angle = 2.0 * Math.PI * (N - 1 - i) / N
-                    innerPts[i] = Offset(
-                        cx + (Math.cos(angle) * baseRadius).toFloat(),
-                        cy + (Math.sin(angle) * baseRadius).toFloat()
-                    )
-                }
-
-                path.moveTo(innerPts[0].x, innerPts[0].y)
-                for (i in 1 until N) path.lineTo(innerPts[i].x, innerPts[i].y)
-                path.close()
-
-                drawGlowPath(path, activeColor.copy(alpha = activeOpacity))
-            }
-        }
+        engine.draw(drawContext.canvas.nativeCanvas, size.width, size.height, frame.longValue)
     }
 }

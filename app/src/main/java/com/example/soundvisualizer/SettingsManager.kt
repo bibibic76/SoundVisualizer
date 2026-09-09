@@ -7,19 +7,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 data class ModeSettings(
+    /** 크기 (0~100). 100 이면 파도가 화면 중앙 한계선까지 닿는다. */
     var intensity: Float = 50f,
+    /** 속도 (0~100). 방향 분포가 새 소리 위치로 옮겨가는 속도. */
     var speed: Float = 20f,
-    var opacity: Float = 60f,
+    /** 투명도 (0~100). 값이 클수록 진하게 보인다. */
+    var opacity: Float = 50f,
     var circleRadius: Float = 40f,
+    /** 후면 채널에 지연을 줘서 앞→뒤로 퍼지는 느낌을 낸다. */
     var useRippleDelay: Boolean = true,
-    
-    // New Settings
-    var sensitivity: Float = 10f,
+
+    /** 민감도 (0~100). 전체 크기가 소리를 따라붙는 반응 속도. 내부 계수 3.75 의 x4 표시값 = 15. */
+    var sensitivity: Float = 15f,
     var isGlowMode: Boolean = false,
     var glowIntensity: Float = 0f,
     var intensityAsOpacity: Boolean = false,
     var opacityFixedSize: Float = 30f,
-    var opacityFixedMaxOpacity: Float = 0f
+    var opacityFixedMaxOpacity: Float = 100f
 )
 
 object SettingsManager {
@@ -60,8 +64,10 @@ object SettingsManager {
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
 
+    /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
-        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (::prefs.isInitialized) return
+        prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         
         _visualMode.value = VisualMode.values()[prefs.getInt("visualMode", 0)]
         
@@ -69,15 +75,15 @@ object SettingsManager {
             return ModeSettings(
                 intensity = prefs.getFloat("${prefix}_intensity", 50f),
                 speed = prefs.getFloat("${prefix}_speed", 20f),
-                opacity = prefs.getFloat("${prefix}_opacity", 60f),
+                opacity = prefs.getFloat("${prefix}_opacity", 50f),
                 circleRadius = prefs.getFloat("${prefix}_radius", defaultRadius),
                 useRippleDelay = prefs.getBoolean("${prefix}_ripple", true),
-                sensitivity = prefs.getFloat("${prefix}_sensitivity", 10f),
+                sensitivity = prefs.getFloat("${prefix}_sensitivity", 15f),
                 isGlowMode = prefs.getBoolean("${prefix}_glow", false),
                 glowIntensity = prefs.getFloat("${prefix}_glow_intensity", 0f),
                 intensityAsOpacity = prefs.getBoolean("${prefix}_intensity_as_opacity", false),
                 opacityFixedSize = prefs.getFloat("${prefix}_opacity_fixed_size", 30f),
-                opacityFixedMaxOpacity = prefs.getFloat("${prefix}_opacity_fixed_max", 0f)
+                opacityFixedMaxOpacity = prefs.getFloat("${prefix}_opacity_fixed_max", 100f)
             )
         }
 

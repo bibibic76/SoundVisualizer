@@ -3,67 +3,120 @@ package com.example.soundvisualizer
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.os.Process
+import android.util.Log
 import androidx.core.app.NotificationCompat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import androidx.core.app.ServiceCompat
+import androidx.core.content.IntentCompat
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
+/**
+ * MediaProjection 기반 내부 오디오 캡처 포그라운드 서비스.
+ *
+ * 캡처 루프는 코루틴 대신 전용 스레드(URGENT_AUDIO 우선순위)에서 돌며,
+ * AudioRecord → direct ByteBuffer → JNI 로 복사 없이 넘긴다.
+ */
 class AudioCaptureService : Service() {
 
     private var mediaProjection: MediaProjection? = null
     private var audioRecord: AudioRecord? = null
-    private val scope = CoroutineScope(Dispatchers.IO + Job())
+    private var captureThread: Thread? = null
+
+    @Volatile
     private var isRecording = false
 
+    private val projectionCallback = object : MediaProjection.Callback() {
+        // 사용자가 상태바/시스템 UI 에서 캡처를 중단한 경우
+        override fun onStop() {
+            Log.i(TAG, "MediaProjection stopped by system/user")
+            stopEverything()
+        }
+    }
+
     companion object {
+        private const val TAG = "AudioCaptureService"
         const val EXTRA_RESULT_CODE = "RESULT_CODE"
         const val EXTRA_RESULT_DATA = "RESULT_DATA"
+        const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
         private const val CHANNEL_ID = "AudioCaptureChannel"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLE_RATE = 44100
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
+
+        /** 한 번에 읽는 float 개수 (스테레오 512 프레임 ≈ 11.6ms @44.1kHz). */
+        private const val READ_FLOATS = 1024
+        private const val BYTES_PER_FLOAT = 4
+
+        /** 프로세스 내에서 서비스가 살아있는지 (액티비티 UI 상태 복원용). */
+        @Volatile
+        var isRunning: Boolean = false
+            private set
     }
 
     override fun onCreate() {
         super.onCreate()
+        SettingsManager.init(applicationContext)
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+        // Android 14+: getMediaProjection() 이전에 mediaProjection 타입 FGS 가 먼저 떠 있어야 한다.
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            createNotification(),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+        )
         AudioEngine.init()
+        isRunning = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent != null) {
+        if (intent?.action == ACTION_STOP) {
+            stopEverything()
+            return START_NOT_STICKY
+        }
+        if (intent != null && audioRecord == null) {
             val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
-            val resultData: Intent? = intent.getParcelableExtra(EXTRA_RESULT_DATA)
-            
+            val resultData = IntentCompat.getParcelableExtra(intent, EXTRA_RESULT_DATA, Intent::class.java)
             if (resultCode != 0 && resultData != null) {
-                startAudioCapture(resultCode, resultData)
+                if (!startAudioCapture(resultCode, resultData)) {
+                    stopEverything()
+                }
+            } else {
+                stopEverything()
             }
         }
         return START_NOT_STICKY
     }
 
-    private fun startAudioCapture(resultCode: Int, resultData: Intent) {
-        val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData)
+    private fun startAudioCapture(resultCode: Int, resultData: Intent): Boolean {
+        val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val projection = try {
+            manager.getMediaProjection(resultCode, resultData)
+        } catch (e: Exception) {
+            Log.e(TAG, "getMediaProjection failed", e)
+            null
+        } ?: return false
 
-        if (mediaProjection == null) return
+        // 콜백은 프로젝션을 사용하기 전에 등록해야 한다 (Android 14 요구사항).
+        projection.registerCallback(projectionCallback, Handler(Looper.getMainLooper()))
+        mediaProjection = projection
 
-        val config = AudioPlaybackCaptureConfiguration.Builder(mediaProjection!!)
+        val config = AudioPlaybackCaptureConfiguration.Builder(projection)
             .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
             .addMatchingUsage(AudioAttributes.USAGE_GAME)
             .addMatchingUsage(AudioAttributes.USAGE_UNKNOWN)
@@ -76,32 +129,88 @@ class AudioCaptureService : Service() {
             .build()
 
         val minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+        if (minBufferSize <= 0) {
+            Log.e(TAG, "getMinBufferSize failed: $minBufferSize")
+            return false
+        }
+        val bufferSize = maxOf(minBufferSize * 2, READ_FLOATS * BYTES_PER_FLOAT * 4)
 
-        audioRecord = AudioRecord.Builder()
-            .setAudioFormat(audioFormat)
-            .setBufferSizeInBytes(minBufferSize * 2)
-            .setAudioPlaybackCaptureConfig(config)
-            .build()
+        val record = try {
+            AudioRecord.Builder()
+                .setAudioFormat(audioFormat)
+                .setBufferSizeInBytes(bufferSize)
+                .setAudioPlaybackCaptureConfig(config)
+                .build()
+        } catch (e: Exception) {
+            // RECORD_AUDIO 미허용 / 기기 미지원 등
+            Log.e(TAG, "AudioRecord build failed", e)
+            return false
+        }
+        if (record.state != AudioRecord.STATE_INITIALIZED) {
+            Log.e(TAG, "AudioRecord not initialized")
+            record.release()
+            return false
+        }
 
+        audioRecord = record
         isRecording = true
-        audioRecord?.startRecording()
+        record.startRecording()
+        if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+            Log.e(TAG, "AudioRecord failed to start recording")
+            return false
+        }
 
-        scope.launch {
-            val buffer = FloatArray(1024)
-            while (isActive && isRecording) {
-                val readResult = audioRecord?.read(buffer, 0, buffer.size, AudioRecord.READ_BLOCKING) ?: 0
-                if (readResult > 0) {
-                    AudioEngine.pushAudioData(buffer, readResult)
-                }
+        captureThread = Thread({ captureLoop(record) }, "SV-AudioCapture").apply {
+            isDaemon = true
+            start()
+        }
+        return true
+    }
+
+    private fun captureLoop(record: AudioRecord) {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
+        // direct buffer: AudioRecord 가 직접 채우고 JNI 가 주소로 읽는다 (Kotlin 힙 복사 0회, GC 0회).
+        val buffer = ByteBuffer.allocateDirect(READ_FLOATS * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder())
+        while (isRecording) {
+            val bytes = record.read(buffer, buffer.capacity(), AudioRecord.READ_BLOCKING)
+            if (bytes > 0) {
+                AudioEngine.pushAudioBuffer(buffer, bytes / BYTES_PER_FLOAT)
+            } else if (bytes < 0) {
+                Log.w(TAG, "AudioRecord.read error $bytes, stopping capture loop")
+                break
             }
         }
     }
 
+    /** 캡처, 오버레이, 자기 자신을 모두 정리한다. 여러 번 호출해도 안전. */
+    private fun stopEverything() {
+        stopService(Intent(this, OverlayService::class.java))
+        SettingsManager.setServiceRunning(false)
+        stopSelf()
+    }
+
     override fun onDestroy() {
+        isRunning = false
         isRecording = false
-        audioRecord?.stop()
+
+        // read() 블로킹을 풀기 위해 먼저 stop, 그 다음 스레드 종료를 기다린 뒤 해제한다.
+        audioRecord?.let { record ->
+            try { record.stop() } catch (e: IllegalStateException) { /* already stopped */ }
+        }
+        captureThread?.let { t ->
+            try { t.join(1000) } catch (e: InterruptedException) { Thread.currentThread().interrupt() }
+        }
+        captureThread = null
         audioRecord?.release()
-        mediaProjection?.stop()
+        audioRecord = null
+
+        mediaProjection?.let { p ->
+            p.unregisterCallback(projectionCallback)
+            p.stop()
+        }
+        mediaProjection = null
+
+        // 캡처 스레드가 멈춘 뒤에만 네이티브 버퍼를 해제한다.
         AudioEngine.destroy()
         super.onDestroy()
     }
@@ -109,22 +218,35 @@ class AudioCaptureService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Audio Capture Service",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Audio Capture Service",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
     private fun createNotification(): Notification {
+        val stopIntent = PendingIntent.getService(
+            this,
+            0,
+            Intent(this, AudioCaptureService::class.java).setAction(ACTION_STOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val openIntent = PendingIntent.getActivity(
+            this,
+            1,
+            Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("SoundVisualizer")
             .setContentText("Capturing audio for visualization...")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now) // temporary icon
+            .setContentIntent(openIntent)
+            .addAction(0, "중지", stopIntent)
+            .setOngoing(true)
+            .setSilent(true)
             .build()
     }
 }
