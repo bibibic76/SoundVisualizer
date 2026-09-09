@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 런처 아이콘 전경. 적응형 아이콘 규격상 108x108 중 가운데 72x72 만 항상 보이므로
+     모든 도형을 중심(54,54) 반경 31 안에 둔다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 중심점 -->
+    <path
+        android:fillColor="#3182F6"
+        android:pathData="M54,47.5a6.5,6.5 0 1,0 0,13a6.5,6.5 0 1,0 0,-13z" />
+
+    <!-- 안쪽 파동 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M38.5,54a15.5,15.5 0 1,0 31,0a15.5,15.5 0 1,0 -31,0z"
+        android:strokeColor="#3182F6"
+        android:strokeWidth="5" />
+
+    <!-- 바깥 파동 (퍼져나가며 옅어지는 느낌) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M27.5,54a26.5,26.5 0 1,0 53,0a26.5,26.5 0 1,0 -53,0z"
+        android:strokeAlpha="0.5"
+        android:strokeColor="#3182F6"
+        android:strokeWidth="4" />
+</vector>

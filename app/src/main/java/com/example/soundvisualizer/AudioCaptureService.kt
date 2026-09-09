@@ -41,7 +41,16 @@ class AudioCaptureService : Service() {
 
     @Volatile
     private var isRecording = false
+
+    /** 캡처 스레드가 프레임마다 읽고, 초기화 스레드가 늦게 채운다. */
+    @Volatile
     private var aiPipeline: RealtimeAiPipeline? = null
+
+    /** aiPipeline 부착과 서비스 종료 사이의 경합을 막는다. */
+    private val aiLock = Any()
+
+    /** onDestroy 가 지났는지. 늦게 끝난 초기화가 스스로 정리하도록 알린다. */
+    private var aiDestroyed = false
 
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
     private var sampleRate = 48000
@@ -87,7 +96,7 @@ class AudioCaptureService : Service() {
             createNotification(),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
         )
-        AudioEngine.init()
+        AudioEngine.reset()
         isRunning = true
         // 실행 상태는 서비스가 직접 알린다. 액티비티가 startForegroundService() 직후에
         // 표시하면 아직 onCreate 가 안 돌아 false 로 덮어써진다.
@@ -95,14 +104,44 @@ class AudioCaptureService : Service() {
         sampleRate = pickSampleRate()
 
         // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화 실패해도 캡처는 계속한다.
-        aiPipeline = try {
-            RealtimeAiPipeline.create(this, sampleRate, channels = 2).also { it.start() }
-        } catch (t: Throwable) {
-            Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
-            null
+        startAiPipelineAsync()
+    }
+
+    /**
+     * 모델 로딩을 메인 스레드에서 하지 않는다.
+     *
+     * 첫 실행에는 15MB 짜리 외부 가중치를 filesDir 로 복사하고 ONNX 세션 두 개를
+     * 그래프 최적화까지 걸어 만든다. onCreate 를 붙잡으면 그동안 화면이 멈추고
+     * 실제 캡처 시작(onStartCommand)까지 밀린다.
+     *
+     * 로딩이 끝나기 전에는 [AiClassification] 이 환경음을 돌려주므로 시각화는 그대로 돈다.
+     * 로딩 중에 서비스가 내려가면 늦게 만들어진 파이프라인이 스스로 닫힌다.
+     */
+    private fun startAiPipelineAsync() {
+        val rate = sampleRate
+        val appContext = applicationContext
+        Thread({
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
+            val pipeline = try {
+                RealtimeAiPipeline.create(appContext, rate, channels = 2)
+            } catch (t: Throwable) {
+                Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
+                null
+            } ?: return@Thread
+
+            synchronized(aiLock) {
+                if (aiDestroyed) {
+                    pipeline.close()
+                } else {
+                    pipeline.start()
+                    aiPipeline = pipeline
+                    AiClassification.attach { pipeline.lastClassification() }
+                }
+            }
+        }, "SV-AiInit").apply {
+            isDaemon = true
+            start()
         }
-        // 분류 결과를 오버레이가 읽을 수 있게 걸어둔다. 실패했으면 걸지 않는다.
-        aiPipeline?.let { pipeline -> AiClassification.attach { pipeline.lastClassification() } }
     }
 
     /**
@@ -276,10 +315,14 @@ class AudioCaptureService : Service() {
         mediaProjection = null
 
         // 캡처 스레드가 멈춘 뒤에 AI 파이프라인을 닫는다 (ingest 가 더 들어오지 않도록).
-        // 먼저 브릿지를 끊어야 오버레이가 닫힌 파이프라인을 읽지 않는다.
+        // aiDestroyed 를 먼저 세워야 아직 로딩 중인 초기화가 붙지 않고 스스로 닫는다.
+        val pipeline = synchronized(aiLock) {
+            aiDestroyed = true
+            aiPipeline.also { aiPipeline = null }
+        }
+        // 브릿지를 먼저 끊어야 오버레이가 닫힌 파이프라인을 읽지 않는다.
         AiClassification.detach()
-        aiPipeline?.close()
-        aiPipeline = null
+        pipeline?.close()
 
         AudioEngine.reset()
         super.onDestroy()
@@ -312,7 +355,7 @@ class AudioCaptureService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("SoundVisualizer")
             .setContentText("Capturing audio for visualization...")
-            .setSmallIcon(android.R.drawable.ic_btn_speak_now) // temporary icon
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
             .addAction(0, "중지", stopIntent)
             .setOngoing(true)

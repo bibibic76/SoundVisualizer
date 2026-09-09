@@ -14,7 +14,7 @@ graph TD
     C -->|스테레오 2ch 데이터| D(방향 및 볼륨 연산<br/>C++ DSP)
     C -->|16kHz 모노 다운믹스| E(AI 전처리 엔진<br/>FFT / Mel-Spectrogram)
 
-    E -->|96x64 텐서| F[TFLite AI 추론<br/>NPU 가속]
+    E -->|96x64 텐서| F[ONNX Runtime 추론<br/>백그라운드 스레드]
     F -->|확률 배열| G(클래스 분류<br/>Ambient/Speech/Danger)
 
     D --> H[Jetpack Compose UI<br/>Overlay 렌더러]
@@ -34,7 +34,7 @@ graph TD
     1. 앱 실행 시 사용자에게 화면/오디오 녹화 권한(MediaProjection)을 요청합니다.
     2. 안드로이드의 **Foreground Service**(상단 알림바에 고정되는 백그라운드 서비스)를 띄워 앱이 종료되지 않게 보호합니다.
     3. `AudioRecord` 클래스를 통해 내부 소리(스테레오 PCM 데이터)를 실시간 스트리밍으로 가져옵니다.
-- **버퍼 관리 (Zero-Latency)**: 자바/코틀린 단에서 배열을 계속 생성하면 가비지 컬렉터(GC)가 작동해 프레임이 끊깁니다. 따라서 수집된 PCM 데이터는 JNI를 통해 **C++로 작성된 Lock-free 링 버퍼(Ring Buffer)**로 즉시 넘겨 보관합니다.
+- **버퍼 관리 (Zero-Latency)**: 자바/코틀린 단에서 배열을 계속 생성하면 가비지 컬렉터(GC)가 작동해 프레임이 끊깁니다. 따라서 `AudioRecord`가 direct `ByteBuffer`를 직접 채우고, JNI는 그 주소를 그대로 읽습니다. 코틀린 힙 복사와 프레임당 할당이 모두 0입니다.
 
 ---
 
@@ -43,14 +43,14 @@ graph TD
 수집된 오디오 데이터를 가공하고, 신경망 모델에 통과시켜 소리의 정체를 파악하는 단계입니다. 모바일 기기의 배터리 보호를 위해 극한의 최적화가 필요합니다.
 
 - **사용 언어**: C++ (NDK) + Kotlin
-- **AI 프레임워크**: **TensorFlow Lite (TFLite)** + `NNAPI` (Android Neural Networks API)
+- **AI 프레임워크**: **ONNX Runtime (Android)**
 - **사용 모델**:
-    - 양자화(Quantized)된 YAMNet TFLite 모델
-    - 총소리/위협음 판별용 커스텀 Booster TFLite 모델
+    - YAMNet ONNX 모델 (`yamnet.onnx` + 외부 가중치 `yamnet.data`)
+    - 총소리/위협음 판별용 커스텀 Gunshot Booster ONNX 모델
 - **작동 방식**:
     1. **전처리 (C++ DSP)**: 스테레오 소리를 16kHz 모노로 합치고, 고속 푸리에 변환(FFT)을 수행하여 소리 데이터를 `96x64` 크기의 Log-mel 스펙트로그램 이미지 텐서로 변환합니다. (C++ 단에서 연산하여 CPU 부하 최소화)
-    2. **추론 (TFLite)**: 코루틴(Coroutines)을 이용해 250ms마다 백그라운드 스레드에서 TFLite 엔진을 호출합니다. 이때 안드로이드 `NNAPI`를 켜서 폰에 탑재된 전용 AI 칩셋(NPU)을 사용, 배터리 소모를 극적으로 줄입니다.
-    3. **후처리 (분류)**: YAMNet이 뱉어낸 521개의 확률 중 가장 높은 것을 바탕으로 `Ambient(배경음)`, `Speech(대화)`, `Danger(위협음)` 3가지 중 하나로 최종 확정합니다.
+    2. **추론 (ONNX Runtime)**: 코루틴(Coroutines)을 이용해 250ms마다 백그라운드 스레드에서 ONNX Runtime 세션을 호출합니다. 인트라/인터 op 스레드를 각 1개로 제한해 오디오·렌더 스레드와 CPU를 다투지 않게 합니다. 모델 로딩(약 15MB 외부 가중치 복사 + 세션 생성)도 별도 백그라운드 스레드에서 수행해 서비스 시작을 막지 않습니다.
+    3. **후처리 (분류)**: YAMNet이 뱉어낸 521개의 확률을 `Ambient(배경음)`, `Speech(대화)`, `Danger(위협음)` 3가지로 매핑하고, Gunshot Booster와 히스테리시스 후처리를 거쳐 최종 라벨을 확정합니다. 라벨이 매 프레임 흔들리지 않도록 임계값과 유지 시간을 함께 적용합니다.
 
 ---
 

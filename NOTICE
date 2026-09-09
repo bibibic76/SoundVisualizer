@@ -1,0 +1,77 @@
+SoundVisualizer
+Copyright 2026 SoundVisualizer Contributors
+
+이 제품에는 아래의 서드파티 구성요소가 포함되어 있습니다.
+각 구성요소의 라이선스 전문은 표시된 위치에서 확인할 수 있습니다.
+
+================================================================================
+1. ONNX Runtime (Android)
+================================================================================
+com.microsoft.onnxruntime:onnxruntime-android
+AI 추론 실행 엔진으로 APK 에 포함됩니다.
+
+Copyright (c) Microsoft Corporation
+Licensed under the MIT License.
+https://github.com/microsoft/onnxruntime/blob/main/LICENSE
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+================================================================================
+2. YAMNet (모델 가중치 및 클래스 맵)
+================================================================================
+app/src/main/assets/ai/yamnet.onnx
+app/src/main/assets/ai/yamnet.data
+app/src/main/assets/ai/yamnet_class_map.csv
+
+TensorFlow Model Garden 의 YAMNet 오디오 분류 모델을 ONNX 로 변환하여 포함합니다.
+app/src/main/assets/ai/gunshot_booster.onnx 는 이 모델의 임베딩을 이용해 학습한
+파생 모델이므로 동일한 조건이 적용됩니다.
+
+Copyright The TensorFlow Authors. All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
+https://github.com/tensorflow/models/blob/master/LICENSE
+
+Apache License 2.0 전문은 이 저장소의 LICENSE 파일과 동일합니다.
+
+클래스 이름은 AudioSet 온톨로지에서 유래하며, 해당 온톨로지는
+Creative Commons Attribution 4.0 International (CC BY 4.0) 으로 배포됩니다.
+https://research.google.com/audioset/
+https://creativecommons.org/licenses/by/4.0/
+
+================================================================================
+3. Android Open Source Project (AndroidX, Jetpack Compose, Material Components)
+================================================================================
+androidx.core, androidx.lifecycle, androidx.activity,
+androidx.compose.* , androidx.compose.material3
+
+Copyright (C) The Android Open Source Project
+Licensed under the Apache License, Version 2.0.
+https://developer.android.com/license
+
+================================================================================
+4. Kotlin 표준 라이브러리 및 kotlinx.coroutines
+================================================================================
+Copyright 2010-2026 JetBrains s.r.o. and Kotlin Programming Language contributors
+Licensed under the Apache License, Version 2.0.
+https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt
+
+================================================================================
+
+테스트에만 쓰이는 의존성(JUnit, Espresso, org.json 등)은 APK 에 포함되지 않으므로
+위 목록에서 제외했습니다.

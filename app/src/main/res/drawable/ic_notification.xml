@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 알림 표시줄용 단색 아이콘. 시스템이 알파만 보고 자체 색으로 칠하므로 흰색으로 둔다. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,10.4a1.6,1.6 0 1,0 0,3.2a1.6,1.6 0 1,0 0,-3.2z" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M6.6,12a5.4,5.4 0 1,0 10.8,0a5.4,5.4 0 1,0 -10.8,0z"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.7" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M2.6,12a9.4,9.4 0 1,0 18.8,0a9.4,9.4 0 1,0 -18.8,0z"
+        android:strokeAlpha="0.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.7" />
+</vector>

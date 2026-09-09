@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 앱 배경과 같은 톤. 런처 아이콘 배경으로 쓴다. -->
+    <color name="ic_launcher_background">#1E2024</color>
+</resources>
