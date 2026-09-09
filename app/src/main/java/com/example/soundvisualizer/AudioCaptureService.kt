@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
@@ -42,6 +43,9 @@ class AudioCaptureService : Service() {
     private var isRecording = false
     private var aiPipeline: RealtimeAiPipeline? = null
 
+    /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
+    private var sampleRate = 48000
+
     private val projectionCallback = object : MediaProjection.Callback() {
         // 사용자가 상태바/시스템 UI 에서 캡처를 중단한 경우
         override fun onStop() {
@@ -57,7 +61,8 @@ class AudioCaptureService : Service() {
         const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
         private const val CHANNEL_ID = "AudioCaptureChannel"
         private const val NOTIFICATION_ID = 1
-        private const val SAMPLE_RATE = 44100
+        /** 기기 출력 레이트를 못 읽었을 때의 순서. 요즘 기기는 대부분 48kHz 가 네이티브다. */
+        private val SAMPLE_RATE_CANDIDATES = intArrayOf(48000, 44100)
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
 
@@ -84,14 +89,40 @@ class AudioCaptureService : Service() {
         )
         AudioEngine.init()
         isRunning = true
+        sampleRate = pickSampleRate()
 
         // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화 실패해도 캡처는 계속한다.
         aiPipeline = try {
-            RealtimeAiPipeline.create(this, SAMPLE_RATE, channels = 2).also { it.start() }
+            RealtimeAiPipeline.create(this, sampleRate, channels = 2).also { it.start() }
         } catch (t: Throwable) {
             Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
             null
         }
+        // 분류 결과를 오버레이가 읽을 수 있게 걸어둔다. 실패했으면 걸지 않는다.
+        aiPipeline?.let { pipeline -> AiClassification.attach { pipeline.lastClassification() } }
+    }
+
+    /**
+     * 기기 출력 레이트를 우선 쓴다. 다른 값을 요청하면 캡처 경로에 리샘플러가 끼어
+     * 지연이 늘고 일부 기기에서 초기화가 실패한다.
+     */
+    private fun pickSampleRate(): Int {
+        val reported = (getSystemService(Context.AUDIO_SERVICE) as? AudioManager)
+            ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+            ?.toIntOrNull()
+        val candidates = if (reported != null) {
+            intArrayOf(reported) + SAMPLE_RATE_CANDIDATES.filter { it != reported }
+        } else {
+            SAMPLE_RATE_CANDIDATES
+        }
+        for (rate in candidates) {
+            if (AudioRecord.getMinBufferSize(rate, CHANNEL_CONFIG, AUDIO_FORMAT) > 0) {
+                Log.i(TAG, "capture sample rate: $rate (device reported $reported)")
+                return rate
+            }
+        }
+        Log.w(TAG, "no candidate sample rate accepted; falling back to 48000")
+        return 48000
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -134,11 +165,11 @@ class AudioCaptureService : Service() {
 
         val audioFormat = AudioFormat.Builder()
             .setEncoding(AUDIO_FORMAT)
-            .setSampleRate(SAMPLE_RATE)
+            .setSampleRate(sampleRate)
             .setChannelMask(CHANNEL_CONFIG)
             .build()
 
-        val minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+        val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, CHANNEL_CONFIG, AUDIO_FORMAT)
         if (minBufferSize <= 0) {
             Log.e(TAG, "getMinBufferSize failed: $minBufferSize")
             return false
@@ -241,6 +272,8 @@ class AudioCaptureService : Service() {
         mediaProjection = null
 
         // 캡처 스레드가 멈춘 뒤에 AI 파이프라인을 닫는다 (ingest 가 더 들어오지 않도록).
+        // 먼저 브릿지를 끊어야 오버레이가 닫힌 파이프라인을 읽지 않는다.
+        AiClassification.detach()
         aiPipeline?.close()
         aiPipeline = null
 
