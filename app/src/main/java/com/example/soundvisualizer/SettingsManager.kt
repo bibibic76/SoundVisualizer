@@ -69,7 +69,8 @@ object SettingsManager {
         if (::prefs.isInitialized) return
         prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         
-        _visualMode.value = VisualMode.values()[prefs.getInt("visualMode", 0)]
+        // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
+        _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
         
         fun loadMode(prefix: String, defaultRadius: Float = 40f): ModeSettings {
             return ModeSettings(
