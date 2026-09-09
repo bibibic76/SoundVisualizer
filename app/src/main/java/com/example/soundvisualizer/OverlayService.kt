@@ -391,12 +391,20 @@ class VisualizerEngine(private val density: Float) {
         } else {
             (max(0f, s.opacity) / 100f).coerceAtMost(1f)
         }
-        // ===== AI 연동 지점 (별도 브랜치) =====
-        // 분류기가 아직 없으므로 라벨은 항상 "" → 환경음으로 취급한다.
-        // AI 브랜치는 여기서 라벨에 따라 colorSpeech/colorDanger, showSpeech/showDanger 로 바꾸면 된다.
-        colorRgb = SettingsManager.colorAmbient.value and 0xFFFFFF
-        val shown = SettingsManager.showAmbient.value
-        // ======================================
+        // 소리 종류에 따라 색과 표시 여부를 고른다. 분류기가 없으면 항상 환경음이다.
+        // 색은 보간하지 않고 즉시 바꾼다. 위협음은 경고라서 서서히 물드는 것보다
+        // 바로 뜨는 편이 낫고, 프레임당 셰이더 재생성(=할당)도 생기지 않는다.
+        val coarse = AiClassification.coarse()
+        colorRgb = when (coarse) {
+            AiClassification.DANGER -> SettingsManager.colorDanger.value
+            AiClassification.SPEECH -> SettingsManager.colorSpeech.value
+            else -> SettingsManager.colorAmbient.value
+        } and 0xFFFFFF
+        val shown = when (coarse) {
+            AiClassification.DANGER -> SettingsManager.showDanger.value
+            AiClassification.SPEECH -> SettingsManager.showSpeech.value
+            else -> SettingsManager.showAmbient.value
+        }
         if (s.isGlowMode && s.glowIntensity > 0f) {
             glowAlpha = min(1f, s.glowIntensity / 100f * 1.6f)
             glowRadiusPx = max(1f, s.glowIntensity * 0.5f) * density
