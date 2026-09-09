@@ -327,39 +327,52 @@ fun SettingsTab() {
 
 @Composable
 fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, update: (ModeSettings.() -> Unit) -> Unit) {
-    ModernSwitch("크기 고정", "세기에 비례하는 투명도를 활용하여 고정된 크기의 그래픽을 보여줍니다.", settings.intensityAsOpacity) {
+    // 크기 고정을 켜면 크기/투명도 대신 고정 크기/최대 투명도가 쓰인다.
+    // 그래서 어느 쪽이든 지금 실제로 먹지 않는 슬라이더는 비활성으로 둔다.
+    val sizeLocked = settings.intensityAsOpacity
+
+    ModernSwitch("크기 고정", "그래픽 크기를 고정하고, 소리 세기는 투명도로 표현합니다.", sizeLocked) {
         update { intensityAsOpacity = it }
     }
-    ModernSlider("고정 크기", "투명도가 변할 기준이 되는 고정 크기를 설정합니다.", settings.opacityFixedSize, min = 10f, max = 100f) {
+    ModernSlider("고정 크기", "그래픽이 유지할 고정 크기입니다.", settings.opacityFixedSize,
+        min = 10f, max = 100f, enabled = sizeLocked, indented = true) {
         update { opacityFixedSize = it }
     }
-    ModernSlider("최대 투명도", "소리에 비례하여 나타날 최대 투명도를 설정합니다.", settings.opacityFixedMaxOpacity, min = 0f, max = 100f) {
+    ModernSlider("최대 투명도", "소리가 가장 클 때 도달할 진하기입니다.", settings.opacityFixedMaxOpacity,
+        min = 0f, max = 100f, enabled = sizeLocked, indented = true) {
         update { opacityFixedMaxOpacity = it }
     }
-    ModernSlider("크기", "그래픽의 크기와 전체적인 볼륨감을 조절합니다.", settings.intensity) { 
+
+    ModernSlider("크기", "그래픽의 크기와 전체적인 볼륨감을 조절합니다.", settings.intensity,
+        enabled = !sizeLocked) {
         update { intensity = it }
     }
     if (isCircle) {
-        ModernSlider("반지름", "원형 모드에서 가운데 중심부의 지름(반지름) 크기를 개별 조절합니다.", settings.circleRadius, min = 10f, max = 100f) { 
+        ModernSlider("반지름", "원형 모드에서 가운데 중심부의 반지름을 개별 조절합니다.", settings.circleRadius,
+            min = 10f, max = 100f) {
             update { circleRadius = it }
         }
     }
-    ModernSlider("투명도", "그래픽의 진하기를 조절합니다. 값이 클수록 진하게, 작을수록 옅게 보입니다.", settings.opacity) { 
+    ModernSlider("진하기", "값이 클수록 진하고, 작을수록 옅고 투명해집니다.", settings.opacity,
+        enabled = !sizeLocked) {
         update { opacity = it }
     }
-    ModernSlider("속도", "소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.", settings.speed) { 
+    ModernSlider("속도", "소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.", settings.speed) {
         update { speed = it }
     }
-    ModernSlider("민감도", "소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.", settings.sensitivity) { 
+    ModernSlider("민감도", "소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.", settings.sensitivity) {
         update { sensitivity = it }
     }
-    ModernSwitch("광원", "그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.", settings.isGlowMode) { 
+
+    ModernSwitch("광원", "그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.", settings.isGlowMode) {
         update { isGlowMode = it }
     }
-    ModernSlider("광원 강도", "광원 효과의 퍼지는 강도를 조절합니다.", settings.glowIntensity) { 
+    ModernSlider("광원 강도", "광원 효과가 퍼지는 정도를 조절합니다.", settings.glowIntensity,
+        enabled = settings.isGlowMode, indented = true) {
         update { glowIntensity = it }
     }
-    ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", settings.useRippleDelay) { 
+
+    ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", settings.useRippleDelay) {
         update { useRippleDelay = it }
     }
 }
@@ -459,20 +472,46 @@ fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Compo
 }
 
 @Composable
-fun ModernSlider(label: String, desc: String, value: Float, min: Float = 0f, max: Float = 100f, onValueChange: (Float) -> Unit) {
-    Column(modifier = Modifier.padding(bottom = 24.dp)) {
+fun ModernSlider(
+    label: String,
+    desc: String,
+    value: Float,
+    min: Float = 0f,
+    max: Float = 100f,
+    enabled: Boolean = true,
+    indented: Boolean = false,
+    onValueChange: (Float) -> Unit
+) {
+    // 비활성 슬라이더는 글자까지 함께 죽여야 "지금은 안 먹는 값"이라는 게 읽힌다.
+    val labelColor = if (enabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f)
+    val descColor = if (enabled) SecondaryTextColor else SecondaryTextColor.copy(alpha = 0.4f)
+    val valueColor = if (enabled) AccentColor else AccentColor.copy(alpha = 0.35f)
+
+    Column(
+        modifier = Modifier
+            .padding(start = if (indented) 16.dp else 0.dp)
+            .padding(bottom = 24.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.width(100.dp))
+            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, modifier = Modifier.width(100.dp))
             Slider(
                 value = value,
                 onValueChange = onValueChange,
                 valueRange = min..max,
-                colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = AccentColor, inactiveTrackColor = Color(0xFF333A44)),
+                enabled = enabled,
+                colors = SliderDefaults.colors(
+                    thumbColor = Color.White,
+                    activeTrackColor = AccentColor,
+                    inactiveTrackColor = Color(0xFF333A44),
+                    disabledThumbColor = Color(0xFF6B7684),
+                    disabledActiveTrackColor = Color(0xFF3A4351),
+                    disabledInactiveTrackColor = Color(0xFF2A3038)
+                ),
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             )
-            Text(String.format("%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor, modifier = Modifier.width(40.dp))
+            Text(String.format("%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor, modifier = Modifier.width(40.dp))
         }
-        Text(desc, fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(top = 8.dp))
+        Text(desc, fontSize = 13.sp, color = descColor, modifier = Modifier.padding(top = 8.dp))
     }
 }
 
