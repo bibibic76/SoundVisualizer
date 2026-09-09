@@ -22,3 +22,5 @@ app/build/
 
 .agents/
 .fake
+# Kotlin compiler session files
+.kotlin/

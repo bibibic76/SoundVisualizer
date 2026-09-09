@@ -1,0 +1,5 @@
+# Linux/macOS 실행 스크립트는 LF
+/gradlew  text eol=lf
+
+# Windows 배치 파일은 CRLF
+*.bat     text eol=crlf
