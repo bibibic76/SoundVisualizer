@@ -28,6 +28,10 @@ object AudioEngine {
     /** 1024-point FFT magnitude of the oldest ring-buffer data (reserved for the AI branch). */
     external fun getSpectrogram(): FloatArray?
 
-    /** Frees C++ RingBuffer. Call only after the capture thread has stopped. */
-    external fun destroy()
+    /**
+     * Clears the peak accumulators after capture stops. The native ring buffer is
+     * deliberately kept alive for the process lifetime and reused by [init], so a
+     * capture thread that outlives the service cannot touch freed memory.
+     */
+    external fun reset()
 }

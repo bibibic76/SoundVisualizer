@@ -197,11 +197,21 @@ class AudioCaptureService : Service() {
         audioRecord?.let { record ->
             try { record.stop() } catch (e: IllegalStateException) { /* already stopped */ }
         }
+        // 스레드가 실제로 끝났는지 확인한다. 아직 read() 안에 있는데 release() 하면
+        // 네이티브에서 해제된 AudioRecord 를 건드려 SIGSEGV 가 난다.
+        var terminated = true
         captureThread?.let { t ->
-            try { t.join(1000) } catch (e: InterruptedException) { Thread.currentThread().interrupt() }
+            try { t.join(2000) } catch (e: InterruptedException) { Thread.currentThread().interrupt() }
+            terminated = !t.isAlive
         }
         captureThread = null
-        audioRecord?.release()
+
+        if (terminated) {
+            audioRecord?.release()
+        } else {
+            // 크래시보다는 누수가 낫다. 프로세스가 살아있는 동안만 남는다.
+            Log.w(TAG, "capture thread still alive; leaking AudioRecord to avoid use-after-free")
+        }
         audioRecord = null
 
         mediaProjection?.let { p ->
@@ -210,8 +220,7 @@ class AudioCaptureService : Service() {
         }
         mediaProjection = null
 
-        // 캡처 스레드가 멈춘 뒤에만 네이티브 버퍼를 해제한다.
-        AudioEngine.destroy()
+        AudioEngine.reset()
         super.onDestroy()
     }
 
