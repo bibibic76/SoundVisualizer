@@ -2,7 +2,7 @@ package com.example.soundvisualizer.ai
 
 /**
  * AI-only capture mono ring (reference capture ring semantics).
- * Independent of C++ visualizer RingBuffer.
+ * Independent of the visualizer's native audio path.
  *
  * Thread-safe: ingest from AudioRecord loop; snapshot from AI coroutine.
  */

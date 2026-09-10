@@ -127,15 +127,16 @@ class AudioCaptureService : Service() {
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
                 null
-            } ?: return@Thread
-
-            synchronized(aiLock) {
-                if (aiDestroyed) {
-                    pipeline.close()
-                } else {
-                    pipeline.start()
-                    aiPipeline = pipeline
-                    AiClassification.attach { pipeline.lastClassification() }
+            }
+            if (pipeline != null) {
+                synchronized(aiLock) {
+                    if (aiDestroyed) {
+                        pipeline.close()
+                    } else {
+                        pipeline.start()
+                        aiPipeline = pipeline
+                        AiClassification.attach { pipeline.lastClassification() }
+                    }
                 }
             }
         }, "SV-AiInit").apply {
