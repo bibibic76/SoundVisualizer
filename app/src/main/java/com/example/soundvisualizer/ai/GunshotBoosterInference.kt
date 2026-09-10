@@ -7,6 +7,7 @@ import ai.onnxruntime.OrtSession
 import ai.onnxruntime.TensorInfo
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.FloatBuffer
 
 /**
  * gunshot_booster.onnx — input Softmax probs [1,521] → gunshot_score [1,1].
@@ -62,16 +63,20 @@ class GunshotBoosterInference private constructor(
         return "in=$inputName${inInfo.shape.contentToString()} out=$outputName${outInfo.shape.contentToString()}"
     }
 
+    /** ORT 입력 버퍼. 추론마다 새로 잡지 않고 재사용한다 ([YamnetInference] 와 같은 이유). */
+    private val inputBuffer: FloatBuffer = ByteBuffer
+        .allocateDirect(NUM_CLASSES * 4)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer()
+
     /** @param yamnetSoftmaxProbs length 521 Softmax probabilities (not logits). */
     fun score(yamnetSoftmaxProbs: FloatArray): Float {
         require(yamnetSoftmaxProbs.size == NUM_CLASSES) {
             "Expected $NUM_CLASSES probs, got ${yamnetSoftmaxProbs.size}"
         }
         val shape = longArrayOf(1, NUM_CLASSES.toLong())
-        val buffer = ByteBuffer
-            .allocateDirect(NUM_CLASSES * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
+        val buffer = inputBuffer
+        buffer.clear()
         buffer.put(yamnetSoftmaxProbs)
         buffer.rewind()
 

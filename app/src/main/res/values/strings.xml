@@ -1,3 +1,82 @@
-﻿<resources>
+<resources>
     <string name="app_name">SoundVisualizer</string>
+
+    <!-- 탭 -->
+    <string name="tab_home">홈</string>
+    <string name="tab_settings">설정</string>
+
+    <!-- 홈 -->
+    <string name="home_title">Sound Visualizer</string>
+    <string name="home_subtitle">보이지 않던 소리를 화면에 그려냅니다.\n게이밍부터 영화 감상까지 새로운 경험을 시작하세요.</string>
+    <string name="home_status_running">상태: 실행 중</string>
+    <string name="home_status_idle">상태: 실행 대기 중</string>
+    <string name="home_start">실행</string>
+    <string name="home_stop">실행 종료</string>
+
+    <!-- 권한 -->
+    <string name="permission_record_audio_required">오디오 캡처를 위해 마이크(오디오 녹음) 권한이 필요합니다.</string>
+
+    <!-- 표현 모드 -->
+    <string name="mode_wave">파도</string>
+    <string name="mode_pad">패드</string>
+    <string name="mode_circle">원형</string>
+    <string name="mode_outline">외곽선</string>
+
+    <string name="mode_card_wave">파도 모드</string>
+    <string name="mode_card_pad">패드 모드</string>
+    <string name="mode_card_circle">원형 모드</string>
+    <string name="mode_card_outline">외곽선 모드</string>
+
+    <!-- 설정 화면 머리말 -->
+    <string name="settings_section_mode">모드 설정</string>
+    <string name="settings_mode_picker_title">표현 모드</string>
+    <string name="settings_mode_picker_desc">화면에 그려질 그래픽의 기본 형태를 선택합니다.</string>
+    <string name="settings_section_mode_detail">모드별 상세 설정</string>
+    <string name="settings_section_ai">소리 분류 표시 (AI)</string>
+
+    <!-- 모드별 상세 설정 -->
+    <string name="setting_size_lock">크기 고정</string>
+    <string name="setting_size_lock_desc">그래픽 크기를 고정하고, 소리 세기는 진하기로 표현합니다.</string>
+    <string name="setting_fixed_size">고정 크기</string>
+    <string name="setting_fixed_size_desc">그래픽이 유지할 고정 크기입니다.</string>
+    <string name="setting_max_opacity">최대 진하기</string>
+    <string name="setting_max_opacity_desc">소리가 가장 클 때 도달할 진하기입니다.</string>
+    <string name="setting_size">크기</string>
+    <string name="setting_size_desc">그래픽의 크기와 전체적인 볼륨감을 조절합니다.</string>
+    <string name="setting_radius">반지름</string>
+    <string name="setting_radius_desc">원형 모드에서 가운데 중심부의 반지름을 개별 조절합니다.</string>
+    <string name="setting_opacity">진하기</string>
+    <string name="setting_opacity_desc">값이 클수록 진하고, 작을수록 옅고 투명해집니다.</string>
+    <string name="setting_speed">속도</string>
+    <string name="setting_speed_desc">소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.</string>
+    <string name="setting_sensitivity">민감도</string>
+    <string name="setting_sensitivity_desc">소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.</string>
+    <string name="setting_glow">광원</string>
+    <string name="setting_glow_desc">그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.</string>
+    <string name="setting_glow_intensity">광원 강도</string>
+    <string name="setting_glow_intensity_desc">광원 효과가 퍼지는 정도를 조절합니다.</string>
+    <string name="setting_ripple">공간 리플 효과</string>
+    <string name="setting_ripple_desc">소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.</string>
+
+    <!-- 소리 분류 표시 -->
+    <string name="ai_show_ambient">환경음 표시</string>
+    <string name="ai_show_speech">대화음 표시</string>
+    <string name="ai_show_danger">위협음 표시</string>
+
+    <!-- 색상 선택 -->
+    <string name="color_picker_title">색상 선택</string>
+    <string name="color_picker_presets">자주 쓰는 색</string>
+    <string name="color_picker_confirm">확인</string>
+    <string name="color_picker_cancel">취소</string>
+
+    <!-- 접근성 -->
+    <string name="cd_pick_color">색상 선택 열기</string>
+    <string name="cd_expand">펼치기</string>
+    <string name="cd_collapse">접기</string>
+
+    <!-- 알림 -->
+    <string name="notification_channel_name">오디오 캡처</string>
+    <string name="notification_title">SoundVisualizer</string>
+    <string name="notification_text">소리를 시각화하는 중입니다.</string>
+    <string name="notification_stop">중지</string>
 </resources>

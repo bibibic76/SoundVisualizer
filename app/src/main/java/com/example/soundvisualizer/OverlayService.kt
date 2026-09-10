@@ -17,6 +17,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -157,11 +158,60 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     override fun onBind(intent: Intent?): IBinder? = null
 }
 
-enum class VisualMode(val displayName: String) {
-    Wave("파도"),
-    Pad("패드"),
-    CircleRipple("원형"),
-    Outline("외곽선")
+/**
+ * 표현 모드. 저장은 [Enum.ordinal] 로 하므로 순서를 바꾸면 기존 설정이 어긋난다.
+ */
+enum class VisualMode(@StringRes val labelRes: Int) {
+    Wave(R.string.mode_wave),
+    Pad(R.string.mode_pad),
+    CircleRipple(R.string.mode_circle),
+    Outline(R.string.mode_outline)
+}
+
+/**
+ * [VisualizerEngine] 이 프레임마다 읽는 바깥 세계.
+ *
+ * 엔진 자체는 산술만 하는데, 값의 출처는 네이티브 라이브러리와 SharedPreferences 와
+ * 분류기다. 그 셋을 직접 부르면 기기 없이는 엔진을 만들 수조차 없으므로 한 겹으로 묶었다.
+ * 실제 구동은 [LiveVisualizerInputs], 테스트는 가짜 구현을 넣는다.
+ */
+interface VisualizerInputs {
+    /** [out] (크기 3) 에 `[좌 피크, 우 피크, 도착한 버퍼 수]` 를 채운다. */
+    fun readPeaks(out: FloatArray)
+    fun currentMode(): VisualMode
+    fun settingsFor(mode: VisualMode): ModeSettings
+    /** [AiClassification] 의 라벨 중 하나. */
+    fun coarseLabel(): String
+    fun colorFor(label: String): Int
+    fun isShown(label: String): Boolean
+}
+
+/** 실제 구동 배선. */
+object LiveVisualizerInputs : VisualizerInputs {
+    override fun readPeaks(out: FloatArray) = AudioEngine.readPeaks(out)
+
+    override fun currentMode(): VisualMode = SettingsManager.visualMode.value
+
+    override fun settingsFor(mode: VisualMode): ModeSettings = when (mode) {
+        VisualMode.Wave -> SettingsManager.waveMode.value
+        VisualMode.Pad -> SettingsManager.padMode.value
+        VisualMode.CircleRipple -> SettingsManager.circleMode.value
+        VisualMode.Outline -> SettingsManager.outlineMode.value
+    }
+
+    override fun coarseLabel(): String = AiClassification.coarse()
+
+    override fun colorFor(label: String): Int = when (label) {
+        AiClassification.DANGER -> SettingsManager.colorDanger.value
+        AiClassification.SPEECH -> SettingsManager.colorSpeech.value
+        else -> SettingsManager.colorAmbient.value
+    }
+
+    override fun isShown(label: String): Boolean = when (label) {
+        AiClassification.DANGER -> SettingsManager.showDanger.value
+        AiClassification.SPEECH -> SettingsManager.showSpeech.value
+        else -> SettingsManager.showAmbient.value
+    }
 }
 
 /**
@@ -177,7 +227,10 @@ enum class VisualMode(val displayName: String) {
  * 채널 인덱스(화면 둘레 기준): 0:FC(상단중앙) 1:FR(우상단) 2:SR(우측중앙) 3:BR(우하단)
  *                          4:BC(하단중앙) 5:BL(좌하단) 6:SL(좌측중앙) 7:FL(좌상단)
  */
-class VisualizerEngine(private val density: Float) {
+class VisualizerEngine(
+    private val density: Float,
+    private val inputs: VisualizerInputs = LiveVisualizerInputs
+) {
 
     companion object {
         private const val CH = 8
@@ -254,9 +307,18 @@ class VisualizerEngine(private val density: Float) {
     var isIdle = false
         private set
 
-    // ---------------- 화면 크기 (draw 에서 갱신) ----------------
+    // ---------------- 화면 크기 ----------------
     private var w = 0f
     private var h = 0f
+
+    /**
+     * 그릴 면의 크기를 알려준다. [draw] 가 매 프레임 호출하므로 보통 따로 부를 일은 없지만,
+     * 캔버스 없이 [tick] 만 돌릴 때는 이걸로 크기를 먼저 정해야 깊이가 화면에 맞게 나온다.
+     */
+    fun setSurfaceSize(width: Float, height: Float) {
+        w = width
+        h = height
+    }
 
     // ---------------- 기하 버퍼 ----------------
     private val channelPos = FloatArray(CH)
@@ -277,16 +339,18 @@ class VisualizerEngine(private val density: Float) {
     private var py = 0f
 
     // ---------------- 그리기 객체 ----------------
-    private val path = Path()
-    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    // 그릴 때만 필요하다. 미리 만들면 엔진을 JVM 에서 생성할 수 없어 계산부를 테스트하지 못한다.
+    // draw 는 메인 스레드 전용이라 동기화 없는 lazy 로 충분하다.
+    private val path by lazy(LazyThreadSafetyMode.NONE) { Path() }
+    private val fillPaint by lazy(LazyThreadSafetyMode.NONE) { Paint(Paint.ANTI_ALIAS_FLAG) }
+    private val glowPaint by lazy(LazyThreadSafetyMode.NONE) { Paint(Paint.ANTI_ALIAS_FLAG) }
+    private val shaderMatrix by lazy(LazyThreadSafetyMode.NONE) { Matrix() }
     private var waveShader: RadialGradient? = null
     private var shaderW = -1f
     private var shaderH = -1f
     private var shaderRgb = -1
     private val shaderColors = IntArray(3)
     private val shaderStops = floatArrayOf(0f, 0.7f, 1f)
-    private val shaderMatrix = Matrix()
     private var blurFilter: BlurMaskFilter? = null
     private var blurRadius = -1f
 
@@ -337,12 +401,12 @@ class VisualizerEngine(private val density: Float) {
         else ((frameTimeNanos - lastTickNanos).toFloat() / REF_FRAME_NS).coerceIn(MIN_FRAME_STEP, MAX_FRAME_STEP)
         lastTickNanos = frameTimeNanos
 
-        mode = SettingsManager.visualMode.value
-        settings = settingsFor(mode)
+        mode = inputs.currentMode()
+        settings = inputs.settingsFor(mode)
         val s = settings
 
         // 1. 피크 읽기. 오디오 버퍼가 도착하면 target = 피크, 렌더 프레임마다 target *= 0.87
-        AudioEngine.readPeaks(peaks)
+        inputs.readPeaks(peaks)
         val decay = TARGET_DECAY.pow(k)
         if (peaks[2] > 0f) {
             targetL = peaks[0]
@@ -394,17 +458,9 @@ class VisualizerEngine(private val density: Float) {
         // 소리 종류에 따라 색과 표시 여부를 고른다. 분류기가 없으면 항상 환경음이다.
         // 색은 보간하지 않고 즉시 바꾼다. 위협음은 경고라서 서서히 물드는 것보다
         // 바로 뜨는 편이 낫고, 프레임당 셰이더 재생성(=할당)도 생기지 않는다.
-        val coarse = AiClassification.coarse()
-        colorRgb = when (coarse) {
-            AiClassification.DANGER -> SettingsManager.colorDanger.value
-            AiClassification.SPEECH -> SettingsManager.colorSpeech.value
-            else -> SettingsManager.colorAmbient.value
-        } and 0xFFFFFF
-        val shown = when (coarse) {
-            AiClassification.DANGER -> SettingsManager.showDanger.value
-            AiClassification.SPEECH -> SettingsManager.showSpeech.value
-            else -> SettingsManager.showAmbient.value
-        }
+        val coarse = inputs.coarseLabel()
+        colorRgb = inputs.colorFor(coarse) and 0xFFFFFF
+        val shown = inputs.isShown(coarse)
         if (s.isGlowMode && s.glowIntensity > 0f) {
             glowAlpha = min(1f, s.glowIntensity / 100f * 1.6f)
             glowRadiusPx = max(1f, s.glowIntensity * 0.5f) * density
@@ -435,9 +491,32 @@ class VisualizerEngine(private val density: Float) {
         return needsRedraw
     }
 
+    /**
+     * 한 프레임의 계산 결과. 테스트에서 확인용으로만 읽는다. 렌더 경로는 쓰지 않는다.
+     */
+    internal data class DebugState(
+        val visible: Boolean,
+        val alpha: Float,
+        val smoothTotal: Float,
+        val baseDepth: Float,
+        val colorRgb: Int,
+        val depths: List<Float>,
+        val idle: Boolean
+    )
+
+    internal fun debugState(): DebugState = DebugState(
+        visible = visible,
+        alpha = alpha,
+        smoothTotal = smoothTotal,
+        baseDepth = baseDepth,
+        colorRgb = colorRgb,
+        depths = depths.toList(),
+        idle = isIdle
+    )
+
     /** idle 중 저빈도 폴링. 소리가 감지되면 프레임 클럭으로 복귀한다. */
     fun pollWake() {
-        AudioEngine.readPeaks(peaks)
+        inputs.readPeaks(peaks)
         if (peaks[0] > WAKE_THRESHOLD || peaks[1] > WAKE_THRESHOLD) {
             targetL = peaks[0]
             targetR = peaks[1]
@@ -464,13 +543,6 @@ class VisualizerEngine(private val density: Float) {
         lastTickNanos = 0L
         lastVsyncNanos = 0L
         frameAccNanos = 0L
-    }
-
-    private fun settingsFor(mode: VisualMode): ModeSettings = when (mode) {
-        VisualMode.Wave -> SettingsManager.waveMode.value
-        VisualMode.Pad -> SettingsManager.padMode.value
-        VisualMode.CircleRipple -> SettingsManager.circleMode.value
-        VisualMode.Outline -> SettingsManager.outlineMode.value
     }
 
     /** 프레임당 계수 a 를 k 프레임 분량으로 환산: 1-(1-a)^k */
@@ -536,8 +608,7 @@ class VisualizerEngine(private val density: Float) {
      * 그리기 무효화를 프레임 틱에 묶는 용도다.
      */
     fun draw(canvas: NativeCanvas, width: Float, height: Float, @Suppress("UNUSED_PARAMETER") frameSerial: Long) {
-        w = width
-        h = height
+        setSurfaceSize(width, height)
         if (!visible || w <= 0f || h <= 0f) return
 
         when (mode) {

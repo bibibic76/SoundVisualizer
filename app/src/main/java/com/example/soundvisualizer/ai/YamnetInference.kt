@@ -9,6 +9,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.FloatBuffer
 import kotlin.math.exp
 
 /**
@@ -135,6 +136,15 @@ class YamnetInference private constructor(
     }
 
     /**
+     * ORT 입력 버퍼. 추론마다 새로 잡으면 힙 밖 메모리가 Cleaner 가 돌 때까지 남으므로
+     * 한 번만 잡아 재사용한다. 호출은 RealtimeAiPipeline 의 inferMutex 로 직렬화된다.
+     */
+    private val inputBuffer: FloatBuffer = ByteBuffer
+        .allocateDirect(LOG_MEL_SIZE * 4)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer()
+
+    /**
      * @param logMelFlat length 6144, layout time*64+mel (same as AudioPreprocessor output)
      */
     fun inferFromLogMelFlat(logMelFlat: FloatArray): Result {
@@ -143,10 +153,8 @@ class YamnetInference private constructor(
         }
 
         val shape = longArrayOf(1, 1, TIME_FRAMES.toLong(), MEL_BINS.toLong())
-        val buffer = ByteBuffer
-            .allocateDirect(LOG_MEL_SIZE * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
+        val buffer = inputBuffer
+        buffer.clear()
         buffer.put(logMelFlat)
         buffer.rewind()
 

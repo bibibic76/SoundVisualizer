@@ -18,8 +18,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,10 +39,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
+import java.util.Locale
 
 val BgColor = Color(0xFF2A2C31)
 val CardColor = Color(0xFF1E2024)
@@ -74,7 +77,7 @@ class MainActivity : ComponentActivity() {
         if (grants[Manifest.permission.RECORD_AUDIO] == true) {
             launchProjectionRequest()
         } else {
-            Toast.makeText(this, "오디오 캡처를 위해 마이크(오디오 녹음) 권한이 필요합니다.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.permission_record_audio_required, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -151,9 +154,9 @@ fun LauncherApp(onStart: () -> Unit, onStop: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow
         Row(modifier = Modifier.padding(24.dp)) {
-            TabButton("홈", selectedTab == 0) { selectedTab = 0 }
+            TabButton(stringResource(R.string.tab_home), selectedTab == 0) { selectedTab = 0 }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton("설정", selectedTab == 1) { selectedTab = 1 }
+            TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { selectedTab = 1 }
         }
 
         if (selectedTab == 0) {
@@ -199,16 +202,19 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit) {
     val isRunning by SettingsManager.isServiceRunning.collectAsState()
 
     Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize(), verticalArrangement = Arrangement.Center) {
-        Text("Sound Visualizer", fontSize = 36.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
+        Text(stringResource(R.string.home_title), fontSize = 36.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
         Text(
-            "보이지 않던 소리를 화면에 그려냅니다.\n게이밍부터 영화 감상까지 새로운 경험을 시작하세요.",
+            stringResource(R.string.home_subtitle),
             fontSize = 16.sp, color = SecondaryTextColor, lineHeight = 26.sp, modifier = Modifier.padding(bottom = 24.dp)
         )
 
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 24.dp)) {
             Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(if (isRunning) AccentColor else SecondaryTextColor))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(if (isRunning) "상태: 실행 중" else "상태: 실행 대기 중", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor)
+            Text(
+                stringResource(if (isRunning) R.string.home_status_running else R.string.home_status_idle),
+                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
+            )
         }
 
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -219,7 +225,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit) {
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.weight(1f).height(56.dp)
             ) {
-                Text("실행", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (isRunning) SecondaryTextColor else Color.White)
+                Text(stringResource(R.string.home_start), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (isRunning) SecondaryTextColor else Color.White)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(
@@ -229,7 +235,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit) {
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.weight(1f).height(56.dp)
             ) {
-                Text("실행 종료", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (!isRunning) SecondaryTextColor else Color.White)
+                Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (!isRunning) SecondaryTextColor else Color.White)
             }
         }
     }
@@ -241,15 +247,15 @@ fun SettingsTab() {
 
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
-            Text("모드 설정", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+            Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text("표현 모드", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
-                    Text("화면에 그려질 그래픽의 기본 형태를 선택합니다.", fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+                    Text(stringResource(R.string.settings_mode_picker_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
+                    Text(stringResource(R.string.settings_mode_picker_desc), fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         VisualMode.values().forEach { mode ->
@@ -263,43 +269,45 @@ fun SettingsTab() {
                                     .padding(vertical = 12.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(mode.displayName, color = if (selected) Color.White else PrimaryTextColor, fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(mode.labelRes), color = if (selected) Color.White else PrimaryTextColor, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
                 }
             }
 
-            Text("모드별 상세 설정", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+            Text(stringResource(R.string.settings_section_mode_detail), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
         }
 
         // 동적으로 선택된 모드를 제일 위에 오도록 정렬
         val sortedModes = VisualMode.values().sortedBy { if (it == currentMode) 0 else 1 }
 
-        items(sortedModes.size) { index ->
+        // 현재 모드가 맨 위로 올라오며 순서가 바뀐다. key 가 없으면 기억된 펼침 상태가
+        // 모드가 아니라 슬롯 인덱스에 붙어서 카드끼리 뒤바뀐다.
+        items(sortedModes.size, key = { sortedModes[it].name }) { index ->
             val mode = sortedModes[index]
             when (mode) {
                 VisualMode.Wave -> {
                     val waveSettings by SettingsManager.waveMode.collectAsState()
-                    SettingsExpander("파도 모드", isExpanded = currentMode == VisualMode.Wave) {
+                    SettingsExpander(stringResource(R.string.mode_card_wave), isExpanded = currentMode == VisualMode.Wave) {
                         ModeSettingsSection(waveSettings) { SettingsManager.updateWaveMode(it) }
                     }
                 }
                 VisualMode.Pad -> {
                     val padSettings by SettingsManager.padMode.collectAsState()
-                    SettingsExpander("패드 모드", isExpanded = currentMode == VisualMode.Pad) {
+                    SettingsExpander(stringResource(R.string.mode_card_pad), isExpanded = currentMode == VisualMode.Pad) {
                         ModeSettingsSection(padSettings) { SettingsManager.updatePadMode(it) }
                     }
                 }
                 VisualMode.CircleRipple -> {
                     val circleSettings by SettingsManager.circleMode.collectAsState()
-                    SettingsExpander("원형 모드", isExpanded = currentMode == VisualMode.CircleRipple) {
+                    SettingsExpander(stringResource(R.string.mode_card_circle), isExpanded = currentMode == VisualMode.CircleRipple) {
                         ModeSettingsSection(circleSettings, isCircle = true) { SettingsManager.updateCircleMode(it) }
                     }
                 }
                 VisualMode.Outline -> {
                     val outlineSettings by SettingsManager.outlineMode.collectAsState()
-                    SettingsExpander("외곽선 모드", isExpanded = currentMode == VisualMode.Outline) {
+                    SettingsExpander(stringResource(R.string.mode_card_outline), isExpanded = currentMode == VisualMode.Outline) {
                         ModeSettingsSection(outlineSettings) { SettingsManager.updateOutlineMode(it) }
                     }
                 }
@@ -307,7 +315,7 @@ fun SettingsTab() {
         }
 
         item {
-            Text("소리 분류 표시 (AI)", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            Text(stringResource(R.string.settings_section_ai), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -316,19 +324,19 @@ fun SettingsTab() {
                 Column(modifier = Modifier.padding(24.dp)) {
                     val showAmbient by SettingsManager.showAmbient.collectAsState()
                     val colorAmbient by SettingsManager.colorAmbient.collectAsState()
-                    ColorSettingRow("환경음 표시", showAmbient, colorAmbient,
+                    ColorSettingRow(stringResource(R.string.ai_show_ambient), showAmbient, colorAmbient,
                         onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorAmbient = it) })
 
                     val showSpeech by SettingsManager.showSpeech.collectAsState()
                     val colorSpeech by SettingsManager.colorSpeech.collectAsState()
-                    ColorSettingRow("대화음 표시", showSpeech, colorSpeech,
+                    ColorSettingRow(stringResource(R.string.ai_show_speech), showSpeech, colorSpeech,
                         onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorSpeech = it) })
 
                     val showDanger by SettingsManager.showDanger.collectAsState()
                     val colorDanger by SettingsManager.colorDanger.collectAsState()
-                    ColorSettingRow("위협음 표시", showDanger, colorDanger,
+                    ColorSettingRow(stringResource(R.string.ai_show_danger), showDanger, colorDanger,
                         onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorDanger = it) })
                 }
@@ -344,48 +352,92 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
     // 그래서 어느 쪽이든 지금 실제로 먹지 않는 슬라이더는 비활성으로 둔다.
     val sizeLocked = settings.intensityAsOpacity
 
-    ModernSwitch("크기 고정", "그래픽 크기를 고정하고, 소리 세기는 진하기로 표현합니다.", sizeLocked) {
+    ModernSwitch(
+        stringResource(R.string.setting_size_lock),
+        stringResource(R.string.setting_size_lock_desc),
+        sizeLocked
+    ) {
         update { intensityAsOpacity = it }
     }
-    ModernSlider("고정 크기", "그래픽이 유지할 고정 크기입니다.", settings.opacityFixedSize,
-        min = 10f, max = 100f, enabled = sizeLocked, indented = true) {
+    ModernSlider(
+        stringResource(R.string.setting_fixed_size),
+        stringResource(R.string.setting_fixed_size_desc),
+        settings.opacityFixedSize,
+        min = 10f, max = 100f, enabled = sizeLocked, indented = true
+    ) {
         update { opacityFixedSize = it }
     }
-    ModernSlider("최대 진하기", "소리가 가장 클 때 도달할 진하기입니다.", settings.opacityFixedMaxOpacity,
-        min = 0f, max = 100f, enabled = sizeLocked, indented = true) {
+    ModernSlider(
+        stringResource(R.string.setting_max_opacity),
+        stringResource(R.string.setting_max_opacity_desc),
+        settings.opacityFixedMaxOpacity,
+        min = 0f, max = 100f, enabled = sizeLocked, indented = true
+    ) {
         update { opacityFixedMaxOpacity = it }
     }
 
-    ModernSlider("크기", "그래픽의 크기와 전체적인 볼륨감을 조절합니다.", settings.intensity,
-        enabled = !sizeLocked) {
+    ModernSlider(
+        stringResource(R.string.setting_size),
+        stringResource(R.string.setting_size_desc),
+        settings.intensity,
+        enabled = !sizeLocked
+    ) {
         update { intensity = it }
     }
     if (isCircle) {
-        ModernSlider("반지름", "원형 모드에서 가운데 중심부의 반지름을 개별 조절합니다.", settings.circleRadius,
-            min = 10f, max = 100f) {
+        ModernSlider(
+            stringResource(R.string.setting_radius),
+            stringResource(R.string.setting_radius_desc),
+            settings.circleRadius,
+            min = 10f, max = 100f
+        ) {
             update { circleRadius = it }
         }
     }
-    ModernSlider("진하기", "값이 클수록 진하고, 작을수록 옅고 투명해집니다.", settings.opacity,
-        enabled = !sizeLocked) {
+    ModernSlider(
+        stringResource(R.string.setting_opacity),
+        stringResource(R.string.setting_opacity_desc),
+        settings.opacity,
+        enabled = !sizeLocked
+    ) {
         update { opacity = it }
     }
-    ModernSlider("속도", "소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.", settings.speed) {
+    ModernSlider(
+        stringResource(R.string.setting_speed),
+        stringResource(R.string.setting_speed_desc),
+        settings.speed
+    ) {
         update { speed = it }
     }
-    ModernSlider("민감도", "소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.", settings.sensitivity) {
+    ModernSlider(
+        stringResource(R.string.setting_sensitivity),
+        stringResource(R.string.setting_sensitivity_desc),
+        settings.sensitivity
+    ) {
         update { sensitivity = it }
     }
 
-    ModernSwitch("광원", "그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.", settings.isGlowMode) {
+    ModernSwitch(
+        stringResource(R.string.setting_glow),
+        stringResource(R.string.setting_glow_desc),
+        settings.isGlowMode
+    ) {
         update { isGlowMode = it }
     }
-    ModernSlider("광원 강도", "광원 효과가 퍼지는 정도를 조절합니다.", settings.glowIntensity,
-        enabled = settings.isGlowMode, indented = true) {
+    ModernSlider(
+        stringResource(R.string.setting_glow_intensity),
+        stringResource(R.string.setting_glow_intensity_desc),
+        settings.glowIntensity,
+        enabled = settings.isGlowMode, indented = true
+    ) {
         update { glowIntensity = it }
     }
 
-    ModernSwitch("공간 리플 효과", "소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.", settings.useRippleDelay) {
+    ModernSwitch(
+        stringResource(R.string.setting_ripple),
+        stringResource(R.string.setting_ripple_desc),
+        settings.useRippleDelay
+    ) {
         update { useRippleDelay = it }
     }
 }
@@ -424,7 +476,10 @@ fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange
                 .clip(CircleShape)
                 .background(Color(color))
                 .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), CircleShape)
-                .clickable { showColorDialog = true }
+                .clickable(
+                    onClickLabel = stringResource(R.string.cd_pick_color),
+                    onClick = { showColorDialog = true }
+                )
         )
     }
 }
@@ -448,7 +503,7 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = CardColor,
-        title = { Text("색상 선택", color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.color_picker_title), color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Canvas(
@@ -456,16 +511,18 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                         .fillMaxWidth()
                         .height(180.dp)
                         .clip(RoundedCornerShape(12.dp))
+                        // 누름과 끌기를 한 핸들러에서 처리한다. detectTapGestures 와
+                        // detectDragGestures 를 각각 pointerInput 으로 걸면 down 이벤트를
+                        // 앞쪽이 소비해서 끌기가 씹힌다.
                         .pointerInput(Unit) {
-                            detectTapGestures { o ->
-                                sat = (o.x / size.width).coerceIn(0f, 1f)
-                                bright = 1f - (o.y / size.height).coerceIn(0f, 1f)
-                            }
-                        }
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, _ ->
-                                sat = (change.position.x / size.width).coerceIn(0f, 1f)
-                                bright = 1f - (change.position.y / size.height).coerceIn(0f, 1f)
+                            awaitEachGesture {
+                                val down = awaitFirstDown()
+                                sat = (down.position.x / size.width).coerceIn(0f, 1f)
+                                bright = 1f - (down.position.y / size.height).coerceIn(0f, 1f)
+                                drag(down.id) { change ->
+                                    sat = (change.position.x / size.width).coerceIn(0f, 1f)
+                                    bright = 1f - (change.position.y / size.height).coerceIn(0f, 1f)
+                                }
                             }
                         }
                 ) {
@@ -485,20 +542,25 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                         .height(28.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .pointerInput(Unit) {
-                            detectTapGestures { o -> hue = (o.x / size.width).coerceIn(0f, 1f) * 360f }
-                        }
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, _ ->
-                                hue = (change.position.x / size.width).coerceIn(0f, 1f) * 360f
+                            awaitEachGesture {
+                                val down = awaitFirstDown()
+                                hue = (down.position.x / size.width).coerceIn(0f, 1f) * 360f
+                                drag(down.id) { change ->
+                                    hue = (change.position.x / size.width).coerceIn(0f, 1f) * 360f
+                                }
                             }
                         }
                 ) {
                     val stops = (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }
                     drawRect(Brush.horizontalGradient(stops))
+                    // 손잡이 중심을 반지름만큼 안으로 물린다. 그러지 않으면 양 끝에서 반이 잘린다.
+                    val knobRadius = size.height / 2f - 3.dp.toPx()
+                    val knobX = ((hue / 360f) * size.width)
+                        .coerceIn(knobRadius, maxOf(knobRadius, size.width - knobRadius))
                     drawCircle(
                         Color.White,
-                        radius = size.height / 2f - 3.dp.toPx(),
-                        center = Offset((hue / 360f) * size.width, size.height / 2f),
+                        radius = knobRadius,
+                        center = Offset(knobX, size.height / 2f),
                         style = Stroke(3.dp.toPx())
                     )
                 }
@@ -515,13 +577,13 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        String.format("#%06X", picked and 0xFFFFFF),
+                        String.format(Locale.US, "#%06X", picked and 0xFFFFFF),
                         color = SecondaryTextColor, fontSize = 15.sp, fontWeight = FontWeight.SemiBold
                     )
                 }
 
                 Spacer(Modifier.height(16.dp))
-                Text("자주 쓰는 색", color = SecondaryTextColor, fontSize = 13.sp)
+                Text(stringResource(R.string.color_picker_presets), color = SecondaryTextColor, fontSize = 13.sp)
                 Spacer(Modifier.height(8.dp))
 
                 val presets = listOf(
@@ -551,11 +613,11 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(picked) }) {
-                Text("확인", color = AccentColor, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.color_picker_confirm), color = AccentColor, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("취소", color = SecondaryTextColor) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.color_picker_cancel), color = SecondaryTextColor) }
         }
     )
 }
@@ -580,7 +642,11 @@ fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Compo
                 modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(bottom = if(expanded) 24.dp else 0.dp)
             ) {
                 Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
-                Icon(if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, contentDescription = null, tint = SecondaryTextColor)
+                Icon(
+                    if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = stringResource(if (expanded) R.string.cd_collapse else R.string.cd_expand),
+                    tint = SecondaryTextColor
+                )
             }
             if (expanded) {
                 content()
@@ -627,7 +693,7 @@ fun ModernSlider(
                 ),
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             )
-            Text(String.format("%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor, modifier = Modifier.width(40.dp))
+            Text(String.format(Locale.US, "%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor, modifier = Modifier.width(40.dp))
         }
         Text(desc, fontSize = 13.sp, color = descColor, modifier = Modifier.padding(top = 8.dp))
     }

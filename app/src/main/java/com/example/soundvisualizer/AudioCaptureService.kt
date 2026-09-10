@@ -334,7 +334,7 @@ class AudioCaptureService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Audio Capture Service",
+            getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_LOW
         )
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -354,11 +354,11 @@ class AudioCaptureService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("SoundVisualizer")
-            .setContentText("Capturing audio for visualization...")
+            .setContentTitle(getString(R.string.notification_title))
+            .setContentText(getString(R.string.notification_text))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
-            .addAction(0, "중지", stopIntent)
+            .addAction(0, getString(R.string.notification_stop), stopIntent)
             .setOngoing(true)
             .setSilent(true)
             .build()

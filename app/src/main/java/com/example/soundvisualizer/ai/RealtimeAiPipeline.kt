@@ -98,7 +98,9 @@ class RealtimeAiPipeline private constructor(
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
                 try {
-                    runTickInternal(observe = true)
+                    // diagnostics = false: 스케줄러는 반환값을 쓰지 않는다.
+                    // true 로 두면 프레임마다 배열 3개(약 88KB)를 복사해 그대로 버린다.
+                    runTickInternal(log = true, diagnostics = false)
                 } catch (t: Throwable) {
                     if (debuggable) {
                         Log.w(TAG, "AI tick failed: ${t.message}", t)
@@ -137,7 +139,7 @@ class RealtimeAiPipeline private constructor(
      * Synchronous one-shot for instrumentation fixtures (does not require scheduler).
      */
     fun runTickForTest(): TickDiagnostics? {
-        return runTickInternal(observe = false)
+        return runTickInternal(log = false, diagnostics = true)
     }
 
     fun resetState() {
@@ -146,20 +148,25 @@ class RealtimeAiPipeline private constructor(
         lastResult.set(null)
     }
 
-    private fun runTickInternal(observe: Boolean): TickDiagnostics? {
+    /**
+     * @param log 결과를 디버그 로그로 남길지 (스케줄러 경로).
+     * @param diagnostics 중간 텐서를 복사해 [TickDiagnostics] 로 돌려줄지 (테스트 경로).
+     *                    false 면 null 을 반환하고 복사도 하지 않는다.
+     */
+    private fun runTickInternal(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         if (closed.get()) return null
         if (!audioBuffer.hasEnoughForYamnetWindow()) return null
 
         // Skip if previous tick still running (scheduler overlap)
         if (!inferMutex.tryLock()) return null
         try {
-            return doInference(observe)
+            return doInference(log, diagnostics)
         } finally {
             inferMutex.unlock()
         }
     }
 
-    private fun doInference(observe: Boolean): TickDiagnostics {
+    private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         val t0 = System.nanoTime()
 
         audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
@@ -170,7 +177,7 @@ class RealtimeAiPipeline private constructor(
             sourceSampleRate = audioBuffer.sampleRate,
             destination = mono16kScratch
         )
-        val mono16kCopy = mono16kScratch.copyOf()
+        val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
 
         var logMel: FloatArray
         val preprocessNs = measureNanoTime {
@@ -232,10 +239,11 @@ class RealtimeAiPipeline private constructor(
         )
         lastResult.set(result)
 
-        if (observe && debuggable) {
+        if (log && debuggable) {
             maybeLog(result)
         }
 
+        if (!diagnostics || mono16kCopy == null) return null
         return TickDiagnostics(
             result = result,
             mono16k = mono16kCopy,
