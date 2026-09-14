@@ -1,5 +1,7 @@
 package com.example.soundvisualizer
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,6 +9,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -197,6 +200,13 @@ class AudioCaptureService : Service() {
     }
 
     private fun startAudioCapture(resultCode: Int, resultData: Intent): Boolean {
+        // 액티비티가 권한을 받은 뒤에 시작하지만, 그 사이 시스템 설정에서 권한을 끌 수 있다.
+        // 프로젝션을 만들기 전에 확인해야 동의만 받고 캡처는 못 하는 상태가 남지 않는다.
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "RECORD_AUDIO not granted")
+            return false
+        }
+
         val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         val projection = try {
             manager.getMediaProjection(resultCode, resultData)
@@ -235,7 +245,7 @@ class AudioCaptureService : Service() {
                 .setAudioPlaybackCaptureConfig(config)
                 .build()
         } catch (e: Exception) {
-            // RECORD_AUDIO 미허용 / 기기 미지원 등
+            // 기기 미지원, 확인 직후 권한 회수 등
             Log.e(TAG, "AudioRecord build failed", e)
             return false
         }
@@ -290,7 +300,10 @@ class AudioCaptureService : Service() {
         }
     }
 
+    // stopService 는 Intent 의 대상 컴포넌트로 서비스를 찾으므로 새로 만든 Intent 로 멈추는 게 맞다.
+    // Lint(ImplicitSamInstance)는 새 인스턴스라 아무것도 멈추지 못한다고 보지만 오탐이다.
     /** 캡처, 오버레이, 자기 자신을 모두 정리한다. 여러 번 호출해도 안전. */
+    @SuppressLint("ImplicitSamInstance")
     private fun stopEverything() {
         stopService(Intent(this, OverlayService::class.java))
         SettingsManager.setServiceRunning(false)

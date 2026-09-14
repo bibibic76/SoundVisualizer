@@ -26,8 +26,11 @@ class HapticPlayer(context: Context) {
         val v = vibrator ?: return
         if (!hasVibrator) return
         val effect = buildEffect(pattern, strength)
+        // 접근성 용도로 울린다. 무음 모드나 백그라운드에서 막히는 기기가 확인되면
+        // 두 갈래 모두 알람 용도(VibrationAttributes.USAGE_ALARM / AudioAttributes.USAGE_ALARM)로 바꾼다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            v.vibrate(effect, VibrationAttributes.createForUsage(VIBRATION_USAGE))
+            // 상수도 API 33 에 생겼으므로 버전 확인 안에서만 쓴다.
+            v.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_ACCESSIBILITY))
         } else {
             @Suppress("DEPRECATION")
             v.vibrate(effect, LEGACY_AUDIO_ATTRIBUTES)
@@ -61,12 +64,6 @@ class HapticPlayer(context: Context) {
         val TAP = longArrayOf(0, 60)
         val DOUBLE_TAP = longArrayOf(0, 60, 80, 60)
         val HOLD = longArrayOf(0, 350)
-
-        /**
-         * 접근성 용도로 울린다. 무음 모드나 백그라운드에서 막히는 기기가 확인되면
-         * [VibrationAttributes.USAGE_ALARM] / [AudioAttributes.USAGE_ALARM] 으로 바꾼다.
-         */
-        const val VIBRATION_USAGE = VibrationAttributes.USAGE_ACCESSIBILITY
 
         val LEGACY_AUDIO_ATTRIBUTES: AudioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
