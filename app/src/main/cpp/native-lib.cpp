@@ -18,12 +18,17 @@
 // consumer 는 pushCount(acquire) → 피크 순으로 읽는다.
 // 따라서 pushCount > 0 이면 그 푸시의 피크는 반드시 함께 읽힌다 (한 프레임짜리 0 으로 꺼지는 현상 방지).
 //
-// 상태가 이 세 개뿐이라 해제할 자원이 없다. 캡처 스레드가 서비스보다 늦게 끝나도
+// 상태가 정적 atomic 뿐이라 해제할 자원이 없다. 캡처 스레드가 서비스보다 늦게 끝나도
 // 건드릴 대상이 프로세스 수명과 같은 정적 atomic 이므로 use-after-free 가 성립하지 않는다.
 // ---------------------------------------------------------------------------
 static std::atomic<float> peakLeft{0.0f};
 static std::atomic<float> peakRight{0.0f};
 static std::atomic<int> pushCount{0};
+
+// 가장 최근 버퍼의 좌우 중 큰 피크. readPeaks() 와 달리 읽어도 초기화하지 않는다.
+// 오버레이가 readPeaks() 로 누적값을 가져가며 0 으로 되돌리므로, 다른 소비자(진동 알림)는
+// 이 값을 읽는다. 버퍼마다 덮어쓰기만 하므로 읽는 순서를 따질 필요가 없다.
+static std::atomic<float> lastLevel{0.0f};
 
 static inline void atomicMax(std::atomic<float> &target, float value) {
   float cur = target.load(std::memory_order_relaxed);
@@ -65,6 +70,7 @@ Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
   atomicMax(peakLeft, l);
   atomicMax(peakRight, r);
   pushCount.fetch_add(1, std::memory_order_release);
+  lastLevel.store(l > r ? l : r, std::memory_order_relaxed);
 }
 
 // out[0] = 좌 피크, out[1] = 우 피크, out[2] = 마지막 호출 이후 푸시된 버퍼 수. 읽은 뒤 0 으로 리셋.
@@ -83,6 +89,12 @@ Java_com_example_soundvisualizer_AudioEngine_readPeaks(JNIEnv *env, jobject thiz
   env->SetFloatArrayRegion(out, 0, 3, values);
 }
 
+// 가장 최근 버퍼의 좌우 중 큰 피크 (0..1). 읽어도 초기화하지 않는다.
+extern "C" JNIEXPORT jfloat JNICALL
+Java_com_example_soundvisualizer_AudioEngine_currentLevel(JNIEnv *env, jobject thiz) {
+  return lastLevel.load(std::memory_order_relaxed);
+}
+
 // 누적값을 0 으로 돌린다. 캡처 시작 시점과 종료 시점에 각각 호출한다.
 // (시작 때 호출하면 네이티브 라이브러리 적재 실패도 캡처 스레드가 아니라 여기서 드러난다.)
 extern "C" JNIEXPORT void JNICALL
@@ -90,5 +102,6 @@ Java_com_example_soundvisualizer_AudioEngine_reset(JNIEnv *env, jobject thiz) {
   peakLeft.store(0.0f, std::memory_order_relaxed);
   peakRight.store(0.0f, std::memory_order_relaxed);
   pushCount.store(0, std::memory_order_relaxed);
+  lastLevel.store(0.0f, std::memory_order_relaxed);
   LOGD("Audio engine reset.");
 }

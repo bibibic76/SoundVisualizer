@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.soundvisualizer.feedback.HapticSettingRow
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
 
@@ -327,18 +328,21 @@ fun SettingsTab() {
                     ColorSettingRow(stringResource(R.string.ai_show_ambient), showAmbient, colorAmbient,
                         onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorAmbient = it) })
+                    HapticSettingRow(AiClassification.AMBIENT, showAmbient)
 
                     val showSpeech by SettingsManager.showSpeech.collectAsState()
                     val colorSpeech by SettingsManager.colorSpeech.collectAsState()
                     ColorSettingRow(stringResource(R.string.ai_show_speech), showSpeech, colorSpeech,
                         onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorSpeech = it) })
+                    HapticSettingRow(AiClassification.SPEECH, showSpeech)
 
                     val showDanger by SettingsManager.showDanger.collectAsState()
                     val colorDanger by SettingsManager.colorDanger.collectAsState()
                     ColorSettingRow(stringResource(R.string.ai_show_danger), showDanger, colorDanger,
                         onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorDanger = it) })
+                    HapticSettingRow(AiClassification.DANGER, showDanger)
                 }
             }
             Spacer(modifier = Modifier.height(100.dp))

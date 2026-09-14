@@ -24,6 +24,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
+import com.example.soundvisualizer.feedback.HapticNotifier
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -51,6 +52,9 @@ class AudioCaptureService : Service() {
 
     /** onDestroy 가 지났는지. 늦게 끝난 초기화가 스스로 정리하도록 알린다. */
     private var aiDestroyed = false
+
+    /** 분류 결과에 맞춰 진동을 준다. AI 파이프라인이 붙은 뒤에만 생긴다. aiLock 으로 보호. */
+    private var hapticNotifier: HapticNotifier? = null
 
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
     private var sampleRate = 48000
@@ -136,6 +140,9 @@ class AudioCaptureService : Service() {
                         pipeline.start()
                         aiPipeline = pipeline
                         AiClassification.attach { pipeline.lastClassification() }
+                        // 첫 분류 결과가 나오기 전(null)에는 울리지 않는다.
+                        hapticNotifier = HapticNotifier(appContext) { pipeline.lastClassification()?.coarse }
+                            .also { it.start() }
                     }
                 }
             }
@@ -317,10 +324,15 @@ class AudioCaptureService : Service() {
 
         // 캡처 스레드가 멈춘 뒤에 AI 파이프라인을 닫는다 (ingest 가 더 들어오지 않도록).
         // aiDestroyed 를 먼저 세워야 아직 로딩 중인 초기화가 붙지 않고 스스로 닫는다.
-        val pipeline = synchronized(aiLock) {
+        val (pipeline, haptics) = synchronized(aiLock) {
             aiDestroyed = true
-            aiPipeline.also { aiPipeline = null }
+            (aiPipeline to hapticNotifier).also {
+                aiPipeline = null
+                hapticNotifier = null
+            }
         }
+        // 진동부터 멈춘다. 캡처를 끈 뒤에 남은 결과로 한 번 더 울리지 않도록.
+        haptics?.stop()
         // 브릿지를 먼저 끊어야 오버레이가 닫힌 파이프라인을 읽지 않는다.
         AiClassification.detach()
         pipeline?.close()
