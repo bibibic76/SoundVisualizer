@@ -84,7 +84,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SettingsManager.init(this)
-        requestOverlayPermission()
+        // 오버레이 권한은 [실행]을 눌렀을 때 요청한다 (startMediaProjectionRequest).
+        // 여기서 요청하면 앱을 열 때마다, 화면을 돌릴 때마다 설명 없이 설정 화면으로 튕긴다.
 
         setContent {
             SoundVisualizerTheme {
@@ -109,6 +110,12 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // 알림의 "중지" 나 시스템 UI 로 캡처가 끝난 경우 홈 화면 상태를 실제 서비스 상태와 맞춘다.
         SettingsManager.setServiceRunning(AudioCaptureService.isRunning)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 설정 화면에서 바꾸고 손을 떼기 전에 나가도 값이 남도록 한 번 더 저장한다.
+        SettingsManager.flushModeSettings()
     }
 
     private fun requestOverlayPermission() {
@@ -681,6 +688,8 @@ fun ModernSlider(
             Slider(
                 value = value,
                 onValueChange = onValueChange,
+                // 끄는 동안에는 화면에만 반영하고, 손을 뗄 때 저장한다.
+                onValueChangeFinished = SettingsManager::flushModeSettings,
                 valueRange = min..max,
                 enabled = enabled,
                 colors = SliderDefaults.colors(
@@ -706,7 +715,11 @@ fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange:
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                // 스위치는 한 번에 끝나는 조작이라 바로 저장한다.
+                onCheckedChange = {
+                    onCheckedChange(it)
+                    SettingsManager.flushModeSettings()
+                },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = AccentColor,
