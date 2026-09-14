@@ -151,6 +151,33 @@
 ./gradlew connectedDebugAndroidTest    # 계측 테스트 (기기 필요, AI 모델 골든 비교)
 ```
 
+### 자동 빌드 (CI)
+
+어느 브랜치든 push 하면 GitHub Actions 가 빌드하고 유닛 테스트를 돌립니다. 결과는 저장소의 **Actions** 탭에서 확인합니다.
+
+- **APK 받기**: 실행 결과 화면 아래 **Artifacts** 의 `SoundVisualizer-arm64-run번호` 를 받아 압축을 풀면 폰용 APK 가 있습니다. 14일간 보관됩니다.
+- **계측 테스트**는 기기가 필요해서 CI 에서는 돌리지 않습니다.
+
+#### 같은 서명으로 빌드하기 (저장소 관리자가 한 번 설정)
+
+Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설치하려면 기존 앱을 지워야 합니다. 지금까지 팀에 APK 를 빌드해 준 PC 의 디버그 키를 넣으면, 그 PC 에서 만든 앱 위에 CI 가 만든 APK 를 그대로 덮어 설치할 수 있습니다.
+
+1. 그 PC 에서 디버그 키를 base64 로 바꿉니다.
+
+   ```powershell
+   # Windows (PowerShell)
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.android\debug.keystore")) | Set-Clipboard
+   ```
+
+   ```bash
+   # macOS / Linux
+   base64 < ~/.android/debug.keystore | tr -d '\n'
+   ```
+
+2. 저장소 **Settings → Secrets and variables → Actions → New repository secret** 에서 이름을 `DEBUG_KEYSTORE_BASE64` 로, 값에 위 결과를 넣습니다.
+
+디버그 키는 출시용 서명 키가 아니지만, 이 키로 서명한 앱은 팀원 폰의 앱을 덮어쓸 수 있으니 Secret 으로만 공유하세요.
+
 ### 구조
 
 | 위치 | 역할 |

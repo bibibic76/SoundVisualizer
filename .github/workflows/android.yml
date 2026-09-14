@@ -1,0 +1,75 @@
+# 모든 브랜치에 push 할 때마다 빌드하고 유닛 테스트를 돌린 뒤, 폰용 디버그 APK 를 올린다.
+# 브랜치를 develop 에 합치기 전에 깨졌는지 알 수 있고, APK 는 Actions 실행 화면에서 받는다.
+#
+# 계측 테스트(connectedDebugAndroidTest)는 기기가 필요해서 여기서는 돌리지 않는다.
+
+name: Android CI
+
+on:
+  push:
+  workflow_dispatch:
+
+# 같은 브랜치에 연달아 push 하면 이전 실행은 취소한다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 빌드 · 유닛 테스트 · APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 코드 받기
+        uses: actions/checkout@v4
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle 설정 (의존성 캐시)
+        uses: gradle/actions/setup-gradle@v4
+
+      # 같은 서명으로 빌드해야 팀원 폰에 깔린 앱 위에 새 APK 를 덮어 설치할 수 있다.
+      # 저장소 Secret DEBUG_KEYSTORE_BASE64 가 없으면 실행마다 새 임시 키로 서명되어,
+      # 받은 APK 를 설치하려면 기존 앱을 지워야 한다. (설정 방법은 README 의 "자동 빌드" 참고)
+      - name: 디버그 서명 키 복원
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+            mkdir -p ~/.android
+            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+            echo "공유 디버그 키로 서명합니다."
+          else
+            echo "::warning title=임시 서명::DEBUG_KEYSTORE_BASE64 Secret 이 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
+          fi
+
+      - name: 유닛 테스트
+        run: ./gradlew testDebugUnitTest
+
+      - name: 디버그 APK 빌드
+        run: ./gradlew assembleDebug
+
+      - name: 테스트 결과 올리기 (실패했을 때)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: 폰용 APK 올리기
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundVisualizer-arm64-run${{ github.run_number }}
+          path: app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+          if-no-files-found: error
+          retention-days: 14
