@@ -55,6 +55,8 @@ class AudioCaptureService : Service() {
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
     private var sampleRate = 48000
 
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     private val projectionCallback = object : MediaProjection.Callback() {
         // 사용자가 상태바/시스템 UI 에서 캡처를 중단한 경우
         override fun onStop() {
@@ -271,6 +273,11 @@ class AudioCaptureService : Service() {
                 }
             } else if (bytes < 0) {
                 Log.w(TAG, "AudioRecord.read error $bytes, stopping capture loop")
+                // 우리가 멈춘 게 아닌데 캡처가 끊겼다 (오디오 서버 재시작 등).
+                // 서비스만 남으면 화면은 "실행 중"인데 시각화는 멈추고, AI 는 링버퍼에 남은
+                // 마지막 소리를 계속 다시 분류한다. 전부 내린다.
+                // 정상 종료 중에도 read 가 에러를 낼 수 있으니 isRecording 으로 구분한다.
+                if (isRecording) mainHandler.post { if (isRecording) stopEverything() }
                 break
             }
         }
