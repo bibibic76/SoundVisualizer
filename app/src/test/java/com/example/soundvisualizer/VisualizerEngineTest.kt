@@ -325,6 +325,53 @@ class VisualizerEngineTest {
         assertTrue("여전히 조용하면 idle 을 유지한다", engine.debugState().idle)
     }
 
+    @Test
+    fun `표시가 꺼진 종류의 소리가 계속 나면 대기 상태로 내려간다`() {
+        val fake = FakeInputs(shown = false)
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue("그릴 것이 없는데 화면 주사율로 계속 돈다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `진하기가 0이면 소리가 나도 대기 상태로 내려간다`() {
+        val fake = FakeInputs(settings = ModeSettings(opacity = 0f))
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+    }
+
+    @Test
+    fun `대기 중 표시 대상이 아닌 소리로는 깨어나지 않는다`() {
+        val fake = FakeInputs(shown = false)
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+
+        engine.pollWake()
+        assertTrue("표시가 꺼진 소리에 깨어났다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `대기 중 표시 대상이 되면 깨어난다`() {
+        val fake = FakeInputs(shown = false)
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+
+        fake.shown = true
+        engine.pollWake()
+        assertFalse("표시를 켰는데 깨어나지 않았다", engine.debugState().idle)
+    }
+
     // ---------------------------------------------------------------
     // 시간 정규화: 프레임 간격이 달라도 같은 시간에 같은 결과가 나와야 한다
     // ---------------------------------------------------------------

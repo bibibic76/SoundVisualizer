@@ -484,11 +484,24 @@ class VisualizerEngine(
         } else if (invisibleSinceNanos < 0L) {
             invisibleSinceNanos = frameTimeNanos
         } else if (frameTimeNanos - invisibleSinceNanos > IDLE_AFTER_NS &&
-            targetL < WAKE_THRESHOLD && targetR < WAKE_THRESHOLD
+            ((targetL < WAKE_THRESHOLD && targetR < WAKE_THRESHOLD) || !canShow(s, shown))
         ) {
+            // 조용하거나, 소리는 나도 지금 설정으로는 그릴 수 없으면 쉰다.
+            // 소리 조건만 보면 표시를 끈 종류의 음악이 계속 나올 때 그릴 것도 없이 화면 주사율로 돈다.
             enterIdle()
         }
         return needsRedraw
+    }
+
+    /**
+     * 소리 크기와 상관없이, 지금 설정으로 무언가 보일 수 있는지.
+     * 표시가 꺼졌거나 진하기·크기가 0이면 소리가 아무리 커도 그릴 것이 없다.
+     */
+    private fun canShow(s: ModeSettings, shown: Boolean): Boolean {
+        if (!shown) return false
+        val potentialAlpha = (if (s.intensityAsOpacity) s.opacityFixedMaxOpacity else s.opacity) / 100f
+        val size = if (s.intensityAsOpacity) s.opacityFixedSize else s.intensity
+        return potentialAlpha > MIN_VISIBLE_ALPHA && size > 0f
     }
 
     /**
@@ -514,18 +527,22 @@ class VisualizerEngine(
         idle = isIdle
     )
 
-    /** idle 중 저빈도 폴링. 소리가 감지되면 프레임 클럭으로 복귀한다. */
+    /**
+     * idle 중 저빈도 폴링. 소리가 나고 지금 설정으로 그릴 수 있을 때만 프레임 클럭으로 복귀한다.
+     * 표시를 끈 종류의 소리가 계속 나는 동안에는 깨어나지 않는다.
+     */
     fun pollWake() {
         inputs.readPeaks(peaks)
-        if (peaks[0] > WAKE_THRESHOLD || peaks[1] > WAKE_THRESHOLD) {
-            targetL = peaks[0]
-            targetR = peaks[1]
-            isIdle = false
-            invisibleSinceNanos = -1L
-            lastTickNanos = 0L
-            lastVsyncNanos = 0L
-            frameAccNanos = 0L
-        }
+        if (peaks[0] <= WAKE_THRESHOLD && peaks[1] <= WAKE_THRESHOLD) return
+        if (!canShow(inputs.settingsFor(inputs.currentMode()), inputs.isShown(inputs.coarseLabel()))) return
+
+        targetL = peaks[0]
+        targetR = peaks[1]
+        isIdle = false
+        invisibleSinceNanos = -1L
+        lastTickNanos = 0L
+        lastVsyncNanos = 0L
+        frameAccNanos = 0L
     }
 
     private fun enterIdle() {
