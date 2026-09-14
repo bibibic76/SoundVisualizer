@@ -1,16 +1,17 @@
 package com.example.soundvisualizer
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -96,11 +97,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     LauncherApp(
                         onStart = { startMediaProjectionRequest() },
-                        onStop = { 
-                            stopService(Intent(this, AudioCaptureService::class.java))
-                            stopService(Intent(this, OverlayService::class.java))
-                            SettingsManager.setServiceRunning(false)
-                        }
+                        onStop = { stopVisualizer() }
                     )
                 }
             }
@@ -119,11 +116,19 @@ class MainActivity : ComponentActivity() {
         SettingsManager.flushModeSettings()
     }
 
+    // 새로 만든 Intent 로 stopService 를 부르는 건 정상이다. Lint(ImplicitSamInstance) 오탐.
+    @SuppressLint("ImplicitSamInstance")
+    private fun stopVisualizer() {
+        stopService(Intent(this, AudioCaptureService::class.java))
+        stopService(Intent(this, OverlayService::class.java))
+        SettingsManager.setServiceRunning(false)
+    }
+
     private fun requestOverlayPermission() {
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
+                "package:$packageName".toUri()
             )
             startActivity(intent)
         }
@@ -157,7 +162,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LauncherApp(onStart: () -> Unit, onStop: () -> Unit) {
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow

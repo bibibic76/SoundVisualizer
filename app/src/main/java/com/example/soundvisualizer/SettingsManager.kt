@@ -2,7 +2,7 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Color
+import androidx.core.content.edit
 import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,19 +47,24 @@ object SettingsManager {
     val outlineMode: StateFlow<ModeSettings> = _outlineMode
 
     // AI Classification Display Settings
+    // 기본색 (ARGB): 환경음 흰색, 대화음 노란색, 위협음 빨간색
+    private const val DEFAULT_COLOR_AMBIENT = 0xFFFFFFFF.toInt()
+    private const val DEFAULT_COLOR_SPEECH = 0xFFFFFF00.toInt()
+    private const val DEFAULT_COLOR_DANGER = 0xFFFF0000.toInt()
+
     private val _showAmbient = MutableStateFlow(true)
     val showAmbient: StateFlow<Boolean> = _showAmbient
-    private val _colorAmbient = MutableStateFlow(Color.parseColor("#FFFFFFFF"))
+    private val _colorAmbient = MutableStateFlow(DEFAULT_COLOR_AMBIENT)
     val colorAmbient: StateFlow<Int> = _colorAmbient
 
     private val _showSpeech = MutableStateFlow(true)
     val showSpeech: StateFlow<Boolean> = _showSpeech
-    private val _colorSpeech = MutableStateFlow(Color.parseColor("#FFFFFF00"))
+    private val _colorSpeech = MutableStateFlow(DEFAULT_COLOR_SPEECH)
     val colorSpeech: StateFlow<Int> = _colorSpeech
 
     private val _showDanger = MutableStateFlow(true)
     val showDanger: StateFlow<Boolean> = _showDanger
-    private val _colorDanger = MutableStateFlow(Color.parseColor("#FFFF0000"))
+    private val _colorDanger = MutableStateFlow(DEFAULT_COLOR_DANGER)
     val colorDanger: StateFlow<Int> = _colorDanger
 
     // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
@@ -100,13 +105,13 @@ object SettingsManager {
         _outlineMode.value = loadMode("outline")
 
         _showAmbient.value = prefs.getBoolean("show_ambient", true)
-        _colorAmbient.value = prefs.getInt("color_ambient", Color.parseColor("#FFFFFFFF"))
+        _colorAmbient.value = prefs.getInt("color_ambient", DEFAULT_COLOR_AMBIENT)
 
         _showSpeech.value = prefs.getBoolean("show_speech", true)
-        _colorSpeech.value = prefs.getInt("color_speech", Color.parseColor("#FFFFFF00"))
+        _colorSpeech.value = prefs.getInt("color_speech", DEFAULT_COLOR_SPEECH)
 
         _showDanger.value = prefs.getBoolean("show_danger", true)
-        _colorDanger.value = prefs.getInt("color_danger", Color.parseColor("#FFFF0000"))
+        _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -124,23 +129,23 @@ object SettingsManager {
 
     fun setVisualMode(mode: VisualMode) {
         _visualMode.value = mode
-        prefs.edit().putInt("visualMode", mode.ordinal).apply()
+        prefs.edit { putInt("visualMode", mode.ordinal) }
     }
 
     private fun saveMode(prefix: String, settings: ModeSettings) {
-        prefs.edit()
-            .putFloat("${prefix}_intensity", settings.intensity)
-            .putFloat("${prefix}_speed", settings.speed)
-            .putFloat("${prefix}_opacity", settings.opacity)
-            .putFloat("${prefix}_radius", settings.circleRadius)
-            .putBoolean("${prefix}_ripple", settings.useRippleDelay)
-            .putFloat("${prefix}_sensitivity", settings.sensitivity)
-            .putBoolean("${prefix}_glow", settings.isGlowMode)
-            .putFloat("${prefix}_glow_intensity", settings.glowIntensity)
-            .putBoolean("${prefix}_intensity_as_opacity", settings.intensityAsOpacity)
-            .putFloat("${prefix}_opacity_fixed_size", settings.opacityFixedSize)
-            .putFloat("${prefix}_opacity_fixed_max", settings.opacityFixedMaxOpacity)
-            .apply()
+        prefs.edit {
+            putFloat("${prefix}_intensity", settings.intensity)
+            putFloat("${prefix}_speed", settings.speed)
+            putFloat("${prefix}_opacity", settings.opacity)
+            putFloat("${prefix}_radius", settings.circleRadius)
+            putBoolean("${prefix}_ripple", settings.useRippleDelay)
+            putFloat("${prefix}_sensitivity", settings.sensitivity)
+            putBoolean("${prefix}_glow", settings.isGlowMode)
+            putFloat("${prefix}_glow_intensity", settings.glowIntensity)
+            putBoolean("${prefix}_intensity_as_opacity", settings.intensityAsOpacity)
+            putFloat("${prefix}_opacity_fixed_size", settings.opacityFixedSize)
+            putFloat("${prefix}_opacity_fixed_max", settings.opacityFixedMaxOpacity)
+        }
     }
 
     /**
@@ -200,14 +205,14 @@ object SettingsManager {
         _showDanger.value = showDanger
         _colorDanger.value = colorDanger
 
-        prefs.edit()
-            .putBoolean("show_ambient", showAmbient)
-            .putInt("color_ambient", colorAmbient)
-            .putBoolean("show_speech", showSpeech)
-            .putInt("color_speech", colorSpeech)
-            .putBoolean("show_danger", showDanger)
-            .putInt("color_danger", colorDanger)
-            .apply()
+        prefs.edit {
+            putBoolean("show_ambient", showAmbient)
+            putInt("color_ambient", colorAmbient)
+            putBoolean("show_speech", showSpeech)
+            putInt("color_speech", colorSpeech)
+            putBoolean("show_danger", showDanger)
+            putInt("color_danger", colorDanger)
+        }
     }
 
     /** 소리 종류별 진동 설정. 모르는 라벨은 환경음 설정을 돌려준다 (AiClassification 과 같은 규칙). */
@@ -217,11 +222,11 @@ object SettingsManager {
     fun updateHaptic(label: String, settings: HapticSettings) {
         val flow = hapticFlows[label] ?: return
         flow.value = settings
-        prefs.edit()
-            .putBoolean("haptic_${label}_enabled", settings.enabled)
-            .putString("haptic_${label}_strength", settings.strength.name)
-            .putString("haptic_${label}_pattern", settings.pattern.name)
-            .apply()
+        prefs.edit {
+            putBoolean("haptic_${label}_enabled", settings.enabled)
+            putString("haptic_${label}_strength", settings.strength.name)
+            putString("haptic_${label}_pattern", settings.pattern.name)
+        }
     }
 
     fun setServiceRunning(isRunning: Boolean) {
