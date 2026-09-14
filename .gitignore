@@ -1,12 +1,14 @@
 *.iml
 .gradle
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# Android Studio: 팀이 함께 쓰는 코드 스타일·검사 설정만 올리고,
+# 실행 기기·JDK 경로처럼 PC마다 달라지는 나머지 설정은 올리지 않는다.
+/.idea/*
+!/.idea/codeStyles/
+!/.idea/inspectionProfiles/
+!/.idea/vcs.xml
+# VS Code 개인 설정
+/.vscode/
 .DS_Store
 /build
 /captures

@@ -192,6 +192,8 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 | `MainActivity` | 홈과 설정 화면 |
 | `tools/ai_reference/` | AI 전처리·추론의 기준 구현(Python)과 골든 데이터 생성 스크립트 |
 
+데이터 흐름, 스레드 구성, 단계별 동작은 [아키텍처 문서](docs/ARCHITECTURE.md)에 정리되어 있습니다.
+
 ### 기술 스택
 
 - **언어**: Kotlin, C++17
