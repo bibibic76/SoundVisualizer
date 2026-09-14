@@ -20,12 +20,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        // 64비트만 낸다. 16KB 페이지 기기는 전부 64비트이고, 32비트 ABI 의 ONNX 런타임은
-        // 4KB 로만 정렬돼 있어 경고를 만든다. 빠지는 만큼 APK 도 절반 아래로 줄어든다.
-        // (x86_64 는 에뮬레이터용으로 남긴다.)
-        ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
-        }
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"
@@ -64,6 +58,20 @@ android {
         // (assets 의 onnx/data 무압축은 아래 androidResources.noCompress 가 담당한다.)
         jniLibs {
             useLegacyPackaging = false
+        }
+    }
+
+    splits {
+        // ABI 마다 APK 를 따로 만든다. 폰에는 app-arm64-v8a-*.apk 만 보내면 된다.
+        // .so 를 압축하지 않고 넣으므로(위 useLegacyPackaging) ABI 하나가 APK 크기에 그대로 더해지는데,
+        // 하나로 합치면 폰에 필요 없는 에뮬레이터용 x86_64 ONNX 런타임까지 따라간다.
+        // 32비트 ABI 는 넣지 않는다. 16KB 페이지 기기는 전부 64비트이고, 32비트 ONNX 런타임은 4KB 로만 정렬돼 있다.
+        // (ABI 분할과 ndk.abiFilters 는 함께 쓸 수 없어서 ABI 목록은 여기서만 정한다.)
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = false
         }
     }
 
