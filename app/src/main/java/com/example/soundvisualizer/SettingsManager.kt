@@ -3,6 +3,7 @@ package com.example.soundvisualizer
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -61,6 +62,11 @@ object SettingsManager {
     private val _colorDanger = MutableStateFlow(Color.parseColor("#FFFF0000"))
     val colorDanger: StateFlow<Int> = _colorDanger
 
+    // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
+    private val hapticFlows: Map<String, MutableStateFlow<HapticSettings>> =
+        listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
+            .associateWith { MutableStateFlow(HapticSettings.defaultFor(it)) }
+
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
 
@@ -101,7 +107,20 @@ object SettingsManager {
 
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", Color.parseColor("#FFFF0000"))
+
+        // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
+        hapticFlows.forEach { (label, flow) ->
+            val default = HapticSettings.defaultFor(label)
+            flow.value = HapticSettings(
+                enabled = prefs.getBoolean("haptic_${label}_enabled", default.enabled),
+                strength = enumByName(prefs.getString("haptic_${label}_strength", null), default.strength),
+                pattern = enumByName(prefs.getString("haptic_${label}_pattern", null), default.pattern)
+            )
+        }
     }
+
+    private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
+        enumValues<T>().firstOrNull { it.name == name } ?: default
 
     fun setVisualMode(mode: VisualMode) {
         _visualMode.value = mode
@@ -188,6 +207,20 @@ object SettingsManager {
             .putInt("color_speech", colorSpeech)
             .putBoolean("show_danger", showDanger)
             .putInt("color_danger", colorDanger)
+            .apply()
+    }
+
+    /** 소리 종류별 진동 설정. 모르는 라벨은 환경음 설정을 돌려준다 (AiClassification 과 같은 규칙). */
+    fun hapticSettings(label: String): StateFlow<HapticSettings> =
+        hapticFlows[label] ?: hapticFlows.getValue(AiClassification.AMBIENT)
+
+    fun updateHaptic(label: String, settings: HapticSettings) {
+        val flow = hapticFlows[label] ?: return
+        flow.value = settings
+        prefs.edit()
+            .putBoolean("haptic_${label}_enabled", settings.enabled)
+            .putString("haptic_${label}_strength", settings.strength.name)
+            .putString("haptic_${label}_pattern", settings.pattern.name)
             .apply()
     }
 

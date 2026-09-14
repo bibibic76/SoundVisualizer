@@ -63,6 +63,22 @@
     <string name="ai_show_speech">대화음 표시</string>
     <string name="ai_show_danger">위협음 표시</string>
 
+    <!-- 진동 -->
+    <string name="haptic_vibrate">진동</string>
+    <string name="haptic_requires_display">화면 표시를 켜야 진동합니다.</string>
+    <string name="haptic_unsupported">이 기기는 진동을 지원하지 않습니다.</string>
+    <string name="haptic_no_amplitude">이 기기는 진동 세기 조절을 지원하지 않아 기본 세기로 울립니다.</string>
+    <string name="haptic_strength">세기</string>
+    <string name="haptic_strength_weak">약</string>
+    <string name="haptic_strength_medium">중</string>
+    <string name="haptic_strength_strong">강</string>
+    <string name="haptic_pattern">패턴</string>
+    <string name="haptic_pattern_tap">한 번</string>
+    <string name="haptic_pattern_double">두 번</string>
+    <string name="haptic_pattern_hold">길게</string>
+    <string name="haptic_pattern_repeat">계속 반복</string>
+    <string name="haptic_preview_hint">선택지를 누르면 진동을 미리 느껴볼 수 있습니다.</string>
+
     <!-- 색상 선택 -->
     <string name="color_picker_title">색상 선택</string>
     <string name="color_picker_presets">자주 쓰는 색</string>
