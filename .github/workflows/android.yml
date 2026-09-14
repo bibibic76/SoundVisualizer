@@ -1,7 +1,10 @@
-# 모든 브랜치에 push 할 때마다 빌드하고 유닛 테스트를 돌린 뒤, 폰용 디버그 APK 를 올린다.
+# 모든 브랜치에 push 할 때마다 빌드하고 유닛 테스트를 돌린 뒤, 폰용 디버그 APK 를 올리고 Lint 로 검사한다.
 # 브랜치를 develop 에 합치기 전에 깨졌는지 알 수 있고, APK 는 Actions 실행 화면에서 받는다.
 #
 # 계측 테스트(connectedDebugAndroidTest)는 기기가 필요해서 여기서는 돌리지 않는다.
+#
+# job 이름(name)은 develop·main 보호 규칙의 필수 체크 이름이다. 바꾸면 저장소 규칙도 함께 바꿔야 하고,
+# 이전 이름으로 도는 진행 중인 브랜치의 PR 이 머지되지 않는다.
 
 name: Android CI
 
@@ -101,4 +104,79 @@ jobs:
           name: SoundVisualizer-arm64-run${{ github.run_number }}
           path: app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
           if-no-files-found: error
+          retention-days: 14
+
+      # APK 를 먼저 올려 두고 검사한다. Lint 가 실패해도 기기에서 확인할 APK 는 받을 수 있다.
+      # 기준선(app/lint-baseline.xml)에 있는 기존 문제는 빼고, 새로 생긴 오류만 실패로 본다.
+      - name: Lint
+        run: ./gradlew lintDebug
+
+      # 새 문제의 개수와 위치를 실행 화면과 PR 파일 화면에 남긴다. Lint 가 실패해도 실행한다.
+      - name: Lint 결과 요약
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'PY'
+          import collections, os
+          import xml.etree.ElementTree as ET
+
+          report = "app/build/reports/lint-results-debug.xml"
+          if not os.path.exists(report):
+              print("::warning title=Lint::결과 파일이 없습니다. Lint 가 실행되지 않았습니다.")
+              raise SystemExit(0)
+
+          workspace = os.environ.get("GITHUB_WORKSPACE", os.getcwd()) + "/"
+          issues = []
+          for issue in ET.parse(report).getroot().iter("issue"):
+              severity = issue.get("severity", "Warning")
+              location = issue.find("location")
+              path = line = ""
+              if location is not None:
+                  path = location.get("file", "")
+                  line = location.get("line", "")
+                  # 주석이 PR 파일 화면에 붙으려면 저장소 루트 기준 경로여야 한다.
+                  if path.startswith(workspace):
+                      path = path[len(workspace):]
+                  elif path and not os.path.isabs(path) and not os.path.exists(path) and os.path.exists(os.path.join("app", path)):
+                      path = "app/" + path
+              issues.append((severity, issue.get("id", ""), issue.get("message", ""), path, line))
+
+          errors = [i for i in issues if i[0] in ("Fatal", "Error")]
+          warnings = [i for i in issues if i[0] == "Warning"]
+
+          baselined = 0
+          if os.path.exists("app/lint-baseline.xml"):
+              baselined = sum(1 for _ in ET.parse("app/lint-baseline.xml").getroot().iter("issue"))
+
+          # GitHub 은 한 단계에서 종류별로 주석 10개까지만 보여준다.
+          def annotate(level, items):
+              for _, issue_id, message, path, line in items[:10]:
+                  where = f"file={path},line={line or 1}," if path else ""
+                  message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                  print(f"::{level} {where}title=Lint {issue_id}::{message}")
+
+          annotate("error", errors)
+          annotate("warning", warnings)
+
+          line = f"새 오류 {len(errors)} · 새 경고 {len(warnings)} · 기준선의 기존 문제 {baselined}"
+          print(f"::{'notice' if not errors else 'error'} title=Lint::{line}")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"### Lint\n\n{line}\n")
+              if issues:
+                  summary.write("\n| 심각도 | 검사 | 개수 |\n|---|---|---|\n")
+                  counts = collections.Counter((i[0], i[1]) for i in issues)
+                  for (severity, issue_id), count in sorted(counts.items(), key=lambda kv: (kv[0][0] not in ("Fatal", "Error"), -kv[1])):
+                      summary.write(f"| {severity} | `{issue_id}` | {count} |\n")
+          PY
+
+      - name: Lint 리포트 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-report-run${{ github.run_number }}
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+            app/lint-baseline.xml
+          if-no-files-found: ignore
           retention-days: 14

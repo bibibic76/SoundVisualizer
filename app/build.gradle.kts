@@ -79,6 +79,17 @@ android {
         // Avoid aapt compression of ONNX external-data companion files
         noCompress += listOf("onnx", "data")
     }
+
+    lint {
+        // 이미 있던 문제는 기준선에 기록해 두고, 새로 생긴 문제만 잡는다.
+        // 기준선에 있는 문제를 고쳤으면 lint-baseline.xml 을 지우고 lintDebug 를 한 번 돌려 다시 만든다.
+        baseline = file("lint-baseline.xml")
+        // 오류만 빌드를 실패시킨다. 경고는 CI 실행 화면에 개수와 위치로만 보인다.
+        abortOnError = true
+        warningsAsErrors = false
+        xmlReport = true
+        htmlReport = true
+    }
 }
 
 dependencies {
