@@ -127,7 +127,8 @@
 
   ```bash
   ./gradlew assembleDebug
-  # → app/build/outputs/apk/debug/app-debug.apk
+  # → app/build/outputs/apk/debug/app-arm64-v8a-debug.apk  (폰 설치용)
+  # → app/build/outputs/apk/debug/app-x86_64-debug.apk     (에뮬레이터용)
   ```
 
 ### 테스트
