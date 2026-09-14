@@ -124,28 +124,46 @@ object SettingsManager {
             .apply()
     }
 
+    /**
+     * 모드 설정 변경은 화면(StateFlow)에 즉시 반영하고 저장은 미룬다.
+     * 슬라이더는 끄는 동안 값이 계속 바뀌어서 그때마다 저장하면 쓰기가 줄줄이 예약된다.
+     * 설정 화면이 손을 뗄 때와 화면을 벗어날 때 [flushModeSettings] 를 부른다.
+     */
+    private val dirtyModes = mutableSetOf<String>()
+
     fun updateWaveMode(update: ModeSettings.() -> Unit) {
-        val current = _waveMode.value.copy().apply(update)
-        _waveMode.value = current
-        saveMode("wave", current)
+        _waveMode.value = _waveMode.value.copy().apply(update)
+        dirtyModes += "wave"
     }
     
     fun updatePadMode(update: ModeSettings.() -> Unit) {
-        val current = _padMode.value.copy().apply(update)
-        _padMode.value = current
-        saveMode("pad", current)
+        _padMode.value = _padMode.value.copy().apply(update)
+        dirtyModes += "pad"
     }
 
     fun updateCircleMode(update: ModeSettings.() -> Unit) {
-        val current = _circleMode.value.copy().apply(update)
-        _circleMode.value = current
-        saveMode("circle", current)
+        _circleMode.value = _circleMode.value.copy().apply(update)
+        dirtyModes += "circle"
     }
 
     fun updateOutlineMode(update: ModeSettings.() -> Unit) {
-        val current = _outlineMode.value.copy().apply(update)
-        _outlineMode.value = current
-        saveMode("outline", current)
+        _outlineMode.value = _outlineMode.value.copy().apply(update)
+        dirtyModes += "outline"
+    }
+
+    /** 미뤄둔 모드 설정을 저장한다. 바뀐 것이 없으면 아무것도 하지 않는다. 메인 스레드에서 부른다. */
+    fun flushModeSettings() {
+        if (dirtyModes.isEmpty()) return
+        for (prefix in dirtyModes) {
+            val settings = when (prefix) {
+                "wave" -> _waveMode.value
+                "pad" -> _padMode.value
+                "circle" -> _circleMode.value
+                else -> _outlineMode.value
+            }
+            saveMode(prefix, settings)
+        }
+        dirtyModes.clear()
     }
 
     fun updateAISettings(
