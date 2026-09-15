@@ -4,6 +4,7 @@
     <!-- 탭 -->
     <string name="tab_home">홈</string>
     <string name="tab_settings">설정</string>
+    <string name="tab_help">도움말</string>
 
     <!-- 홈 -->
     <string name="home_title">Sound Visualizer</string>
@@ -104,4 +105,63 @@
     <string name="tile_state_on">켜짐</string>
     <string name="tile_state_off">꺼짐</string>
     <string name="tile_overlay_permission_needed">다른 앱 위에 표시 권한이 필요합니다. 앱에서 실행을 눌러 허용해 주세요.</string>
+
+    <!-- 도움말 -->
+    <string name="help_start_title">시작하기</string>
+    <string name="help_start_1">홈에서 실행을 누릅니다.</string>
+    <string name="help_start_2">권한을 허용합니다. 화면 녹화 동의는 안드로이드 정책상 켤 때마다 묻습니다.</string>
+    <string name="help_start_3">게임이나 영상을 켜면 화면 테두리에 소리가 그려집니다.</string>
+    <string name="help_start_4">끌 때는 홈의 실행 종료나 알림의 중지 버튼을 누릅니다.</string>
+
+    <string name="help_tile_title">알림창에서 켜고 끄기</string>
+    <string name="help_tile_body">홈의 ‘빠른 설정에 추가’를 누르면 알림창에 ‘소리 시각화’ 버튼이 생깁니다. 앱으로 나가지 않고 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="help_tile_use">누르면 켜지고, 켜져 있을 때 다시 누르면 꺼집니다. 길게 누르면 이 앱의 설정 화면이 열립니다.</string>
+    <string name="help_tile_old">Android 12 이하는 알림창의 편집(연필) 버튼에서 ‘소리 시각화’를 직접 끌어다 놓습니다.</string>
+
+    <string name="help_permissions_title">권한이 필요한 이유</string>
+    <string name="help_perm_overlay">다른 앱 위에 표시</string>
+    <string name="help_perm_overlay_desc">게임과 영상 위에 그래픽을 띄우기 위해 필요합니다.</string>
+    <string name="help_perm_mic">마이크 (오디오 녹음)</string>
+    <string name="help_perm_mic_desc">폰 안에서 재생되는 소리를 받으려면 안드로이드가 이 권한을 요구합니다. 주변 소리는 녹음하지 않습니다.</string>
+    <string name="help_perm_capture">화면 녹화</string>
+    <string name="help_perm_capture_desc">안드로이드는 폰 안의 소리를 이 동의를 거쳐서만 받을 수 있게 합니다. 화면은 캡처하지 않습니다.</string>
+    <string name="help_perm_notification">알림 (Android 13 이상)</string>
+    <string name="help_perm_notification_desc">실행 중 알림과 중지 버튼을 보여줍니다. 거부해도 앱은 동작합니다.</string>
+
+    <string name="help_modes_title">표현 모드</string>
+    <string name="help_mode_wave_desc">화면 테두리 전체가 소리 세기만큼 안쪽으로 밀려듭니다. 소리가 나는 쪽이 더 깊게 밀려옵니다.</string>
+    <string name="help_mode_pad_desc">화면 가장자리 8곳에 막대가 떠오릅니다. 방향을 가장 또렷하게 볼 수 있습니다.</string>
+    <string name="help_mode_outline_desc">파도의 윤곽선만 가늘게 그려 게임 화면을 덜 가립니다.</string>
+    <string name="help_mode_circle_desc">화면 가운데의 고리가 소리 나는 쪽으로 부풀어 오릅니다.</string>
+    <string name="help_modes_note">크기·진하기 같은 설정은 모드마다 따로 저장되고, 설정 탭에서 바꿀 수 있습니다.</string>
+
+    <string name="help_sound_title">소리 종류와 진동</string>
+    <string name="help_sound_kinds">AI가 들리는 소리를 환경음·대화음·위협음으로 나눕니다. 기본색은 환경음 흰색, 대화음 노란색, 위협음 빨간색이고, 설정 탭에서 종류마다 색과 표시 여부를 바꿀 수 있습니다.</string>
+    <string name="help_sound_danger">위협음(총소리 등)이 감지되면 색이 서서히 바뀌지 않고 즉시 바뀝니다.</string>
+    <string name="help_sound_haptic">화면을 보고 있지 않아도 진동으로 알려줍니다. 처음에는 위협음만 켜져 있고, 종류마다 세기(약·중·강)와 패턴(한 번·두 번·길게·계속 반복)을 고를 수 있습니다.</string>
+    <string name="help_sound_haptic_rule">화면 표시가 켜진 종류만 진동합니다. 같은 종류는 2초 안에 다시 울리지 않고, ‘계속 반복’은 소리가 이어지는 동안 1.5초마다 울립니다.</string>
+
+    <string name="help_notes_title">알아두세요</string>
+    <string name="help_note_direction">좌우는 구분하지만 앞뒤는 구분하지 못합니다. 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감 효과를 나타냅니다.</string>
+    <string name="help_note_mono">좌우가 똑같은 소리(모노)는 정면 쪽으로만 표시됩니다.</string>
+    <string name="help_note_sources">미디어와 게임 소리만 받습니다. 전화 통화, 알림음, 알람은 대상이 아니고, 소리 캡처를 막아둔 앱(일부 영상 앱 등)은 시각화되지 않습니다.</string>
+    <string name="help_note_ai">AI 분류는 틀릴 수 있습니다. 안전이 걸린 상황에서 이 앱을 유일한 수단으로 쓰지 마세요.</string>
+
+    <string name="help_faq_title">자주 묻는 질문</string>
+    <string name="help_faq_no_graphic_q">그래픽이 보이지 않아요.</string>
+    <string name="help_faq_no_graphic_a">재생 중인 앱이 소리 캡처를 막는 앱인지 확인해 주세요. 설정에서 진하기가 너무 낮지 않은지, 지금 나는 소리 종류의 표시가 꺼져 있지 않은지도 확인해 주세요.</string>
+    <string name="help_faq_no_vibration_q">진동이 오지 않아요.</string>
+    <string name="help_faq_no_vibration_a">설정의 소리 분류에서 해당 종류의 표시와 진동이 모두 켜져 있는지 확인해 주세요. 폰 설정에서 진동을 꺼두었다면 울리지 않을 수 있습니다.</string>
+    <string name="help_faq_install_q">새 버전이 설치되지 않아요.</string>
+    <string name="help_faq_install_a">다른 곳에서 빌드한 APK는 서명이 달라 기존 앱 위에 설치되지 않습니다. 기존 앱을 삭제한 뒤 설치해 주세요. 이 경우 설정이 초기화됩니다.</string>
+    <string name="help_faq_battery_q">배터리를 많이 쓰나요?</string>
+    <string name="help_faq_battery_a">소리가 날 때만 그리고, 조용하면 대기 상태로 내려갑니다. 다만 소리를 계속 받기 때문에 쓰지 않을 때는 꺼두는 것을 권장합니다.</string>
+
+    <string name="help_about_title">앱 정보</string>
+    <string name="help_about_version">버전 %1$s</string>
+    <string name="help_about_team">만든 팀: SOVIS</string>
+    <string name="help_about_license">이 앱은 Apache License 2.0으로 배포됩니다.</string>
+    <string name="help_licenses_button">오픈소스 라이선스</string>
+    <string name="help_licenses_title">오픈소스 라이선스</string>
+    <string name="help_close">닫기</string>
 </resources>

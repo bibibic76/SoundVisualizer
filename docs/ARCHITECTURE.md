@@ -19,7 +19,7 @@ graph TD
 
 | 단계 | 코드 | 언어 |
 |---|---|---|
-| 시작·설정 화면 | `MainActivity`, `SettingsManager` | Kotlin (Compose) |
+| 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/` | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일) | Kotlin |
 | 캡처 | `AudioCaptureService` | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
