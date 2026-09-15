@@ -20,6 +20,8 @@ private val DarkColorScheme = darkColorScheme(
     surface = Color(0xFF1E2024)
 )
 
+// 여기 지정한 색은 DarkColorScheme 과 같지만, 지정하지 않은 역할(onSurface, surfaceContainerHigh 등)에는 밝은 기본값이 들어간다.
+// 둘을 하나로 합치면 폰이 라이트 모드일 때 기본색을 쓰는 부분의 모양이 바뀌므로, 화면을 확인하고 합친다.
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF3182F6),
     secondary = Color(0xFF8B95A1),
@@ -31,7 +33,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun SoundVisualizerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme

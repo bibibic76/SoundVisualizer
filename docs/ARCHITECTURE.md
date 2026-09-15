@@ -249,3 +249,14 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 - 탭 줄은 넘치면 옆으로 밀립니다.
 - 홈의 실행·실행 종료 버튼, 모드 선택 칸, 진동 세기·패턴 선택지는 가운데 정렬로 줄을 바꾸고, 같은 줄의 칸 높이를 함께 맞춥니다.
 - 슬라이더 이름 칸은 너비가 고정이라 줄을 바꾸고, 긴 단어는 하이픈을 넣어 끊습니다(`wrappingLabelStyle`, 하이픈 규칙이 있는 언어만).
+
+---
+
+## 9. 창 테마
+
+화면은 Compose가 그리지만, 앱을 켜서 첫 화면을 그리기 전과 액티비티가 다시 만들어지는 동안에는 창 테마(`res/values/themes.xml`의 `Theme.SoundVisualizer`)의 배경이 보입니다. 이 색이 앱 배경과 다르면 앱을 켤 때마다 다른 색이 번쩍입니다.
+
+- 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경과 상태 표시줄을 `@color/app_background`(#2A2C31)로 칠합니다.
+- Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`). 아이콘은 런처 아이콘을 그대로 씁니다.
+- `app_background`는 Compose의 `BgColor`(`MainActivity.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
+- 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 이 테마를 쓰지 않고 매니페스트에서 투명 테마(`Theme.Translucent.NoTitleBar`)를 따로 지정합니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
