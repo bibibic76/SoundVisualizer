@@ -38,7 +38,9 @@ class ModelCacheIntegrityTest {
 
         assertTrue(ModelCacheIntegrity.copyIfInvalid(cached, expected) { ByteArrayInputStream(source) })
         assertArrayEquals(source, cached.readBytes())
-        assertFalse(ModelCacheIntegrity.copyIfInvalid(cached, expected) { fail("verified cache must not re-copy") })
+        assertFalse(ModelCacheIntegrity.copyIfInvalid(cached, expected) {
+            error("verified cache must not re-copy")
+        })
 
         cached.writeBytes(source.copyOf(source.size - 1))
         assertTrue(ModelCacheIntegrity.copyIfInvalid(cached, expected) { ByteArrayInputStream(source) })
