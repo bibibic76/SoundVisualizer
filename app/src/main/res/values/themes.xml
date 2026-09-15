@@ -1,4 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SoundVisualizer" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        앱 화면(MainActivity) 창의 테마. 화면은 Compose 가 그리지만, 앱을 켜서 첫 화면을 그리기 전의 시작 창과
+        언어 변경·회전으로 다시 만들어지는 동안의 빈 창은 이 테마로 칠해진다.
+        밝은 테마면 이때 흰 화면이 번쩍이므로, 어두운 테마에 앱 배경색(app_background)을 깐다.
+        Android 12 이상의 스플래시 배경은 values-v31/themes.xml 에서 더한다.
+    -->
+    <style name="Base.Theme.SoundVisualizer" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/app_background</item>
+        <!-- Compose 테마(SoundVisualizerTheme)가 칠하는 상태 표시줄 색을 미리 맞춰, 첫 화면이 뜰 때 색이 바뀌지 않게 한다. -->
+        <item name="android:statusBarColor">@color/app_background</item>
+    </style>
+
+    <style name="Theme.SoundVisualizer" parent="Base.Theme.SoundVisualizer" />
 </resources>

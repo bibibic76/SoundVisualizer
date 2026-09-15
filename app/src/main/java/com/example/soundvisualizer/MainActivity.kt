@@ -60,6 +60,7 @@ import com.example.soundvisualizer.tile.VisualizerTileService
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
 
+/** 앱 화면 배경. 창·스플래시 배경(res/values/colors.xml 의 app_background)과 같은 값이어야 한다. */
 val BgColor = Color(0xFF2A2C31)
 val CardColor = Color(0xFF1E2024)
 val AccentColor = Color(0xFF3182F6)
