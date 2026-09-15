@@ -29,6 +29,16 @@ android {
         }
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // CI 는 팀 공용 디버그 키를 풀어 두고 그 경로를 SV_DEBUG_KEYSTORE 로 알려준다. 그래야 CI·릴리스 APK 가
+            // 같은 서명이 되어 기존 앱 위에 덮어 설치된다. GitHub 서버에서는 ~/.android/debug.keystore 에 풀어 둬도
+            // 빌드 도구가 그 파일을 쓰지 않고 새 키를 만들어서, 기본 위치에 기대지 않고 경로를 직접 넘긴다.
+            // 환경 변수가 없는 로컬 빌드는 지금처럼 각자의 기본 디버그 키로 서명된다.
+            providers.environmentVariable("SV_DEBUG_KEYSTORE").orNull?.let { storeFile = file(it) }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
