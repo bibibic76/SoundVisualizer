@@ -28,7 +28,7 @@ enum class CapturePermissionDialog {
     /** 시스템 권한 창을 띄우기 전에 마이크 권한이 필요한 이유를 설명한다. */
     MicRationale,
 
-    /** 시스템이 더는 권한 창을 띄우지 않아, 설정 화면에서 허용하도록 안내한다. */
+    /** 거부된 뒤 시스템이 더는 권한 창을 띄우지 않는 것으로 보여, 설정 화면에서 허용하도록 안내한다. */
     MicSettings
 }
 
@@ -116,7 +116,8 @@ class CapturePermissionFlow(
     private fun onRequestResult(micAsked: Boolean) {
         when {
             VisualizerController.hasCapturePermission(activity) -> onGranted()
-            // 거부 직후에도 이 값이 false 면 시스템이 더는 창을 띄우지 않는다(두 번 거부, "다시 묻지 않음").
+            // 거부 직후에도 이 값이 false 면 시스템이 더는 창을 띄우지 않는 상태로 본다(두 번 거부, "다시 묻지 않음").
+            // 처음 뜬 창을 고르지 않고 뒤로 가기나 바깥을 눌러 닫아도 false 라 구분할 수 없으니, 안내 문구는 두 경우 모두 맞게 쓴다.
             // 요청이 중간에 끊겨 결과가 비어 있으면 사용자가 거부한 게 아니므로 설정 안내를 띄우지 않는다.
             micAsked && !activity.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) ->
                 dialog = CapturePermissionDialog.MicSettings
