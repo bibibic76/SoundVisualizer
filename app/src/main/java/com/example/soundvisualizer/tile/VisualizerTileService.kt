@@ -2,6 +2,7 @@ package com.example.soundvisualizer.tile
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.Tile
@@ -9,6 +10,7 @@ import android.service.quicksettings.TileService
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.VisualizerController
+import com.example.soundvisualizer.language.AppLanguage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -24,6 +26,11 @@ class VisualizerTileService : TileService() {
 
     private val scope = MainScope()
     private var stateJob: Job? = null
+
+    // Android 12 이하에서 타일 이름과 켜짐·꺼짐 표시를 앱 언어로 보여준다. 13 이상은 시스템이 적용한다.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     override fun onCreate() {
         super.onCreate()

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
@@ -105,6 +107,7 @@ fun HelpTab() {
                 TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_a)
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)
                 TitledItem(R.string.help_faq_battery_q, R.string.help_faq_battery_a)
+                TitledItem(R.string.help_faq_language_q, R.string.help_faq_language_a)
             }
         }
         item {
@@ -120,9 +123,9 @@ fun HelpTab() {
                     onClick = { showLicenses = true },
                     border = BorderStroke(1.dp, AccentColor),
                     shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(48.dp)
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp).heightIn(min = 48.dp)
                 ) {
-                    Text(stringResource(R.string.help_licenses_button), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = AccentColor)
+                    Text(stringResource(R.string.help_licenses_button), fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor)
                 }
             }
         }

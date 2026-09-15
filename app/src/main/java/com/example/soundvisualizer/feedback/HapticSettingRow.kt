@@ -5,8 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Switch
@@ -23,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
@@ -30,6 +34,7 @@ import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
+import com.example.soundvisualizer.wrappingLabelStyle
 
 /**
  * 한 소리 종류의 진동 설정 (켜기/끄기, 세기, 패턴).
@@ -149,12 +154,14 @@ private fun <T> HapticChoiceRow(
             color = if (enabled) SecondaryTextColor else SecondaryTextColor.copy(alpha = 0.4f),
             modifier = Modifier.padding(bottom = 6.dp)
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // 번역된 선택지가 칸보다 길면 가운데 정렬로 줄을 바꾸고, 칸 높이를 함께 맞춘다.
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.height(IntrinsicSize.Min)) {
             options.forEach { option ->
                 val isSelected = option == selected
                 Box(
                     modifier = Modifier
                         .weight(1f)
+                        .fillMaxHeight()
                         .clip(RoundedCornerShape(10.dp))
                         .background(
                             when {
@@ -164,13 +171,15 @@ private fun <T> HapticChoiceRow(
                             }
                         )
                         .clickable(enabled = enabled) { onSelect(option) }
-                        .padding(vertical = 10.dp),
+                        .padding(horizontal = 4.dp, vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         labelOf(option),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        style = wrappingLabelStyle(),
                         color = when {
                             !enabled -> PrimaryTextColor.copy(alpha = 0.35f)
                             isSelected -> Color.White

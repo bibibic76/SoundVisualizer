@@ -25,9 +25,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -44,11 +46,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
 import com.example.soundvisualizer.help.HelpTab
+import com.example.soundvisualizer.language.AppLanguage
+import com.example.soundvisualizer.language.LanguageSettingCard
 import com.example.soundvisualizer.tile.VisualizerTileService
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
@@ -59,6 +66,17 @@ val AccentColor = Color(0xFF3182F6)
 val DangerColor = Color(0xFFE53935)
 val PrimaryTextColor = Color(0xFFF2F4F6)
 val SecondaryTextColor = Color(0xFF8B95A1)
+
+/** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
+private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+
+/**
+ * 좁은 칸(모드 선택, 진동 선택지, 슬라이더 이름)에 들어가는 이름표의 글자 모양.
+ * 번역된 이름이 칸보다 길면 줄을 바꾸는데, 긴 단어는 아무 글자에서나 끊지 않고 하이픈을 넣어 끊는다.
+ * (하이픈 규칙이 있는 언어만 해당된다.)
+ */
+@Composable
+fun wrappingLabelStyle(): TextStyle = LocalTextStyle.current.copy(hyphens = Hyphens.Auto)
 
 class MainActivity : ComponentActivity() {
 
@@ -78,13 +96,24 @@ class MainActivity : ComponentActivity() {
     /** 보이는 탭. 빠른 설정 타일을 길게 눌러 들어오면 설정 탭을 연다. */
     private val selectedTab = mutableIntStateOf(TAB_HOME)
 
+    // Android 12 이하에서는 고른 앱 언어를 여기서 입힌다. 13 이상은 시스템이 적용한다.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SettingsManager.init(this)
+        AppLanguage.migrateLegacyChoice(this)
         // 오버레이 권한은 [실행]을 눌렀을 때 요청한다 (startMediaProjectionRequest).
         // 여기서 요청하면 앱을 열 때마다, 화면을 돌릴 때마다 설명 없이 설정 화면으로 튕긴다.
 
-        if (savedInstanceState == null) openTabFor(intent)
+        // 언어를 바꾸거나 화면을 돌려 다시 만들어져도 보던 탭에 남는다. 언어는 설정 탭에서 바꾸기 때문이다.
+        if (savedInstanceState == null) {
+            openTabFor(intent)
+        } else {
+            selectedTab.intValue = savedInstanceState.getInt(KEY_SELECTED_TAB, TAB_HOME)
+        }
         addOnNewIntentListener { openTabFor(it) }
 
         setContent {
@@ -106,6 +135,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_SELECTED_TAB, selectedTab.intValue)
     }
 
     private fun openTabFor(intent: Intent?) {
@@ -173,6 +207,7 @@ class MainActivity : ComponentActivity() {
     private companion object {
         const val TAB_HOME = 0
         const val TAB_SETTINGS = 1
+        const val KEY_SELECTED_TAB = "selected_tab"
     }
 }
 
@@ -185,8 +220,8 @@ fun LauncherApp(
     onAddTile: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // TabRow
-        Row(modifier = Modifier.padding(24.dp)) {
+        // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
+        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(24.dp)) {
             TabButton(stringResource(R.string.tab_home), selectedTab == 0) { onSelectTab(0) }
             Spacer(modifier = Modifier.width(24.dp))
             TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { onSelectTab(1) }
@@ -253,15 +288,18 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
             )
         }
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        // 번역된 이름이 길면 버튼 안에서 가운데 정렬로 두 줄까지 들어간다(56dp 안에 두 줄).
+        // 글자 크기 설정 때문에 한쪽이 더 커지면 두 버튼 높이를 같이 맞춘다.
+        Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             Button(
                 onClick = onStart,
                 enabled = !isRunning,
                 colors = ButtonDefaults.buttonColors(containerColor = AccentColor, disabledContainerColor = Color(0xFF333A44)),
                 shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.weight(1f).height(56.dp)
+                contentPadding = HomeButtonPadding,
+                modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
             ) {
-                Text(stringResource(R.string.home_start), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (isRunning) SecondaryTextColor else Color.White)
+                Text(stringResource(R.string.home_start), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (isRunning) SecondaryTextColor else Color.White)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(
@@ -269,9 +307,10 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
                 enabled = isRunning,
                 colors = ButtonDefaults.buttonColors(containerColor = DangerColor, disabledContainerColor = Color(0xFF333A44)),
                 shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.weight(1f).height(56.dp)
+                contentPadding = HomeButtonPadding,
+                modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
             ) {
-                Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (!isRunning) SecondaryTextColor else Color.White)
+                Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (!isRunning) SecondaryTextColor else Color.White)
             }
         }
 
@@ -283,9 +322,9 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
                     onClick = onAddTile,
                     border = BorderStroke(1.dp, AccentColor),
                     shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.fillMaxWidth().height(52.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
                 ) {
-                    Text(stringResource(R.string.home_add_tile), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor)
+                    Text(stringResource(R.string.home_add_tile), fontSize = 16.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor)
                 }
                 Text(
                     stringResource(R.string.home_add_tile_desc),
@@ -305,6 +344,9 @@ fun SettingsTab() {
 
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
+            // 읽지 못하는 언어로 바뀌어도 찾을 수 있게 맨 위에 둔다.
+            LanguageSettingCard()
+
             Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -315,19 +357,27 @@ fun SettingsTab() {
                     Text(stringResource(R.string.settings_mode_picker_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
                     Text(stringResource(R.string.settings_mode_picker_desc), fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // 번역된 이름이 칸보다 길면 가운데 정렬로 줄을 바꾸고, 네 칸 높이를 함께 맞춘다.
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.height(IntrinsicSize.Min)) {
                         VisualMode.values().forEach { mode ->
                             val selected = currentMode == mode
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
+                                    .fillMaxHeight()
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(if (selected) AccentColor else Color(0xFF333A44))
                                     .clickable { SettingsManager.setVisualMode(mode) }
-                                    .padding(vertical = 12.dp),
+                                    .padding(horizontal = 4.dp, vertical = 12.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(stringResource(mode.labelRes), color = if (selected) Color.White else PrimaryTextColor, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    stringResource(mode.labelRes),
+                                    color = if (selected) Color.White else PrimaryTextColor,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Center,
+                                    style = wrappingLabelStyle()
+                                )
                             }
                         }
                     }
@@ -738,7 +788,8 @@ fun ModernSlider(
             .padding(bottom = 24.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, modifier = Modifier.width(100.dp))
+            // 슬라이더 줄을 맞추려고 이름 칸 너비를 고정한다. 번역된 이름이 길면 줄을 바꾼다.
+            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, style = wrappingLabelStyle(), modifier = Modifier.width(100.dp))
             Slider(
                 value = value,
                 onValueChange = onValueChange,

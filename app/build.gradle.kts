@@ -75,9 +75,19 @@ android {
         }
     }
 
+    bundle {
+        // 앱 안에서 언어를 바꾸므로, App Bundle 로 올리더라도 폰 언어 말고 다른 언어의 문구가 빠지지 않게 한다.
+        language {
+            enableSplit = false
+        }
+    }
+
     androidResources {
         // Avoid aapt compression of ONNX external-data companion files
         noCompress += listOf("onnx", "data")
+        // res 의 values-* 폴더로 지원 언어 목록(locale config)을 만들어 매니페스트에 넣는다.
+        // Android 13 이상의 폰 설정 "앱 언어"에 이 목록이 뜬다. 기본 values 의 언어는 res/resources.properties 에 적는다.
+        generateLocaleConfig = true
     }
 
     lint {
@@ -87,6 +97,9 @@ android {
         // 오류만 빌드를 실패시킨다. 경고는 CI 실행 화면에 개수와 위치로만 보인다.
         abortOnError = true
         warningsAsErrors = false
+        // 영어·한국어 말고 다른 언어는 번역이 늦어도 영어로 보이므로 경고로만 둔다.
+        // 영어(values)와 한국어(values-ko)가 빠짐없는지는 StringResourcesTest 가 막는다.
+        warning += "MissingTranslation"
         xmlReport = true
         htmlReport = true
     }

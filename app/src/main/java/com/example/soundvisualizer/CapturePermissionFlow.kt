@@ -122,8 +122,13 @@ class CapturePermissionFlow(
             micAsked && !activity.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) ->
                 dialog = CapturePermissionDialog.MicSettings
             else -> {
-                // 투명 화면은 바로 닫히므로 앱 컨텍스트로 띄운다.
-                Toast.makeText(activity.applicationContext, R.string.permission_record_audio_required, Toast.LENGTH_LONG).show()
+                // 투명 화면은 바로 닫히므로 앱 컨텍스트로 띄운다. 문구는 앱 언어가 입혀진 액티비티에서 꺼낸다.
+                // (Android 12 이하에서는 앱 컨텍스트가 폰 언어 그대로다. AppLanguage 참고)
+                Toast.makeText(
+                    activity.applicationContext,
+                    activity.getString(R.string.permission_record_audio_required),
+                    Toast.LENGTH_LONG
+                ).show()
                 onStopped()
             }
         }
