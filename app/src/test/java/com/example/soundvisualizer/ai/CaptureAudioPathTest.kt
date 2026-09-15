@@ -80,6 +80,25 @@ class CaptureAudioPathTest {
     }
 
     @Test
+    fun compactParityFixtures_matchPythonFirAt44100And48000() {
+        for (sampleRate in listOf(44100, 48000)) {
+            val source = loadResource("ai_reference/resample_parity_${sampleRate}_capture.bin")
+            val expected = loadResource("ai_reference/resample_parity_${sampleRate}_mono16k.bin")
+            val actual = FloatArray(expected.size)
+
+            CaptureAudioMath.resampleMonoFloatTo16kCustom(
+                source,
+                source.size,
+                sampleRate,
+                actual,
+                expected.size
+            )
+
+            assertTrue("$sampleRate FIR parity maxAbs", maxAbs(actual, expected) < 1e-5f)
+        }
+    }
+
+    @Test
     fun antiAliasedResample_meetsFrequencyAcceptanceAt44100And48000() {
         for (sampleRate in listOf(44100, 48000)) {
             assertGainAtLeast(sampleRate, 7000.0, -1.5)
@@ -123,13 +142,14 @@ class CaptureAudioPathTest {
 
     @Test
     fun antiAliasedResample_zeroExtendsAtSourceWindowEdges() {
-        val source = floatArrayOf(1f)
+        val source = FloatArray(512) { 1f }
         val destination = FloatArray(64)
 
         CaptureAudioMath.resampleMonoFloatTo16kCustom(source, source.size, 48000, destination, 64)
 
         assertTrue(destination.all { it.isFinite() })
-        assertTrue("source support must end instead of repeating its final sample", destination[32] == 0f)
+        assertTrue("left edge must use a partial FIR sum", destination[0] > 0f && destination[0] < 1f)
+        assertEquals("interior must include the full FIR support", 1f, destination[32], 1e-5f)
     }
 
     private fun loadResource(path: String): FloatArray {
@@ -137,6 +157,12 @@ class CaptureAudioPathTest {
         val out = FloatArray(bytes.size / 4)
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(out)
         return out
+    }
+
+    private fun maxAbs(a: FloatArray, b: FloatArray): Float {
+        var maximum = 0f
+        for (index in a.indices) maximum = max(maximum, kotlin.math.abs(a[index] - b[index]))
+        return maximum
     }
 
     private fun assertGainAtLeast(sampleRate: Int, frequencyHz: Double, minimumDb: Double) {

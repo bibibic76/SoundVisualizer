@@ -26,9 +26,20 @@ class AntiAliasedResampleTest(unittest.TestCase):
         self.assertTrue(np.array_equal(source, output))
 
     def test_source_window_edges_are_zero_extended(self) -> None:
-        output = resample_mono_float_to_16k_custom(np.asarray([1.0], dtype=np.float32), 48000, 64)
+        output = resample_mono_float_to_16k_custom(np.ones(512, dtype=np.float32), 48000, 64)
         self.assertTrue(np.isfinite(output).all())
-        self.assertEqual(0.0, float(output[32]))
+        self.assertGreater(float(output[0]), 0.0)
+        self.assertLess(float(output[0]), 1.0)
+        self.assertAlmostEqual(1.0, float(output[32]), places=5)
+
+    def test_deterministic_signal_is_repeatable_at_44100_and_48000(self) -> None:
+        for source_rate in (44100, 48000):
+            source = self._deterministic_signal(
+                source_rate, math.ceil(1024 * source_rate / SAMPLE_RATE) + 96
+            )
+            first = resample_mono_float_to_16k_custom(source, source_rate, 1024)
+            second = resample_mono_float_to_16k_custom(source, source_rate, 1024)
+            self.assertTrue(np.array_equal(first, second))
 
     def _assert_gain_at_least(self, source_rate: int, frequency_hz: float, minimum_db: float) -> None:
         gain = self._tone_gain_db(source_rate, frequency_hz)
@@ -62,6 +73,22 @@ class AntiAliasedResampleTest(unittest.TestCase):
         sine_coefficient = 0.0 if sine_denominator < 1e-12 else float(np.dot(values, sine) / sine_denominator)
         amplitude = math.sqrt(cosine_coefficient * cosine_coefficient + sine_coefficient * sine_coefficient)
         return 20.0 * math.log10(max(amplitude, 1e-300))
+
+    @staticmethod
+    def _deterministic_signal(sample_rate: int, length: int) -> np.ndarray:
+        state = (0x6D2B79F5 ^ sample_rate) & 0xFFFFFFFF
+        values = np.empty(length, dtype=np.float32)
+        duration = max(1.0, length / sample_rate)
+        for index in range(length):
+            state = (1664525 * state + 1013904223) & 0xFFFFFFFF
+            noise = (state / 4294967296.0) * 2.0 - 1.0
+            seconds = index / sample_rate
+            phase = 2.0 * math.pi * (
+                300.0 * seconds + 0.5 * (7200.0 / duration) * seconds * seconds
+            )
+            values[index] = np.float32(0.12 * noise + 0.18 * math.sin(phase))
+        values[length // 3] += np.float32(0.5)
+        return values
 
 
 if __name__ == "__main__":
