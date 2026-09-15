@@ -9,7 +9,9 @@
 name: Android CI
 
 on:
+  # 브랜치 push 에만 돈다. 버전 태그 push 는 release.yml 이 빌드한다.
   push:
+    branches: ["**"]
   workflow_dispatch:
 
 # 같은 브랜치에 연달아 push 하면 이전 실행은 취소한다.
