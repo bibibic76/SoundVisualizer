@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
+import com.example.soundvisualizer.help.HelpTab
 import com.example.soundvisualizer.tile.VisualizerTileService
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
@@ -204,12 +205,14 @@ fun LauncherApp(
             TabButton(stringResource(R.string.tab_home), selectedTab == 0) { onSelectTab(0) }
             Spacer(modifier = Modifier.width(24.dp))
             TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { onSelectTab(1) }
+            Spacer(modifier = Modifier.width(24.dp))
+            TabButton(stringResource(R.string.tab_help), selectedTab == 2) { onSelectTab(2) }
         }
 
-        if (selectedTab == 0) {
-            HomeTab(onStart, onStop, onAddTile)
-        } else {
-            SettingsTab()
+        when (selectedTab) {
+            0 -> HomeTab(onStart, onStop, onAddTile)
+            1 -> SettingsTab()
+            else -> HelpTab()
         }
     }
 }
