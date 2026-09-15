@@ -163,4 +163,21 @@ class AiPostProcessorTest {
         )
         assertFalse(AiPostProcessor.isCriticalDangerEvent("Music", "Siren 12.0% > Alarm 10.0%"))
     }
+
+    @Test
+    fun waterSoundsDoNotProduceDangerUiClassification() {
+        listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
+            val result = AiPostProcessor().process(
+                AiPostProcessor.FrameInput(
+                    coarse = YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName),
+                    display = displayName,
+                    confidence = 1f
+                )
+            )
+
+            assertEquals(displayName, "ambient", result.confirmedCoarse)
+            assertEquals(displayName, "ambient", result.uiCoarse)
+            assertFalse(displayName, result.useBoosterDangerPreview)
+        }
+    }
 }
