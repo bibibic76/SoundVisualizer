@@ -34,6 +34,12 @@ object VisualizerController {
     }
 
     /**
+     * 시스템 권한 창보다 마이크 권한이 필요한 이유를 먼저 설명할지.
+     * 알림 권한만 남았으면 오해할 일이 없으니 설명 없이 바로 묻는다. ([CapturePermissionFlow])
+     */
+    fun needsMicRationale(needed: Array<String>): Boolean = Manifest.permission.RECORD_AUDIO in needed
+
+    /**
      * 캡처에 꼭 필요한 권한이 있는지. 권한 요청 결과 맵에는 이번에 물어본 권한만 들어 있어서,
      * 알림 권한만 물어본 경우에도 맞게 판단하려면 결과 맵 대신 실제 상태를 본다.
      */

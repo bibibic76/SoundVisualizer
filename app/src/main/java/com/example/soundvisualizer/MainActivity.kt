@@ -4,7 +4,6 @@ import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.drawable.Icon
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -73,15 +72,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) {
-        if (VisualizerController.hasCapturePermission(this)) {
-            launchProjectionRequest()
-        } else {
-            Toast.makeText(this, R.string.permission_record_audio_required, Toast.LENGTH_LONG).show()
-        }
-    }
+    /** 마이크·알림 권한을 받는다. 마이크는 이유를 먼저 설명하고, 다시 묻지 못하게 되면 설정 화면으로 안내한다. */
+    private val capturePermission = CapturePermissionFlow(this, onGranted = ::launchProjectionRequest)
 
     /** 보이는 탭. 빠른 설정 타일을 길게 눌러 들어오면 설정 탭을 연다. */
     private val selectedTab = mutableIntStateOf(TAB_HOME)
@@ -110,6 +102,7 @@ class MainActivity : ComponentActivity() {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
                         }
                     )
+                    CapturePermissionDialogs(capturePermission)
                 }
             }
         }
@@ -169,21 +162,13 @@ class MainActivity : ComponentActivity() {
             requestOverlayPermission()
             return
         }
-        val needed = VisualizerController.requiredPermissions(Build.VERSION.SDK_INT, ::isGranted)
-        if (needed.isEmpty()) {
-            launchProjectionRequest()
-        } else {
-            permissionLauncher.launch(needed)
-        }
+        capturePermission.start()
     }
 
     private fun launchProjectionRequest() {
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
     }
-
-    private fun isGranted(permission: String): Boolean =
-        ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
     private companion object {
         const val TAB_HOME = 0

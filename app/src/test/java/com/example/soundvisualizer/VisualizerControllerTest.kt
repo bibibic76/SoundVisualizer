@@ -2,6 +2,8 @@ package com.example.soundvisualizer
 
 import android.Manifest
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -37,5 +39,18 @@ class VisualizerControllerTest {
             arrayOf(Manifest.permission.POST_NOTIFICATIONS),
             VisualizerController.requiredPermissions(34) { it == Manifest.permission.RECORD_AUDIO }
         )
+    }
+
+    @Test
+    fun `마이크 권한을 물을 때만 이유를 먼저 설명한다`() {
+        assertTrue(VisualizerController.needsMicRationale(VisualizerController.requiredPermissions(34, none)))
+        assertTrue(VisualizerController.needsMicRationale(VisualizerController.requiredPermissions(29, none)))
+        // 알림 권한만 남은 경우
+        assertFalse(
+            VisualizerController.needsMicRationale(
+                VisualizerController.requiredPermissions(34) { it == Manifest.permission.RECORD_AUDIO }
+            )
+        )
+        assertFalse(VisualizerController.needsMicRationale(VisualizerController.requiredPermissions(34, all)))
     }
 }
