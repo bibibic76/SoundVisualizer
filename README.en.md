@@ -45,6 +45,7 @@ You can see the same sound in four shapes and switch between them any time in Se
 - **Pick a color for each type.** Choose any color in the color picker, or tap a common color.
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
 - When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away.
+- Even with only danger sounds shown, short danger sounds like gunshots that end before the AI decides are still drawn at their real size.
 
 ### 📳 Vibration alerts
 

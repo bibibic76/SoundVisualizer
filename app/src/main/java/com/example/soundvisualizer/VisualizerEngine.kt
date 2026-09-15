@@ -23,6 +23,7 @@ import kotlin.math.sin
  *  - 프레임당 힙 할당이 0 이 되도록 모든 버퍼/Path/Paint 를 미리 잡아두고
  *  - 스무딩 계수는 60fps 기준으로 시간 정규화해서 90/120Hz 화면에서도 같은 느낌을 내고
  *  - 소리가 없으면 그리기 무효화를 멈추고(GPU 휴식), 1초 뒤엔 저빈도 폴링으로 내려간다.
+ *  - 표시가 꺼진 라벨이라 그리지 못한 피크는 약 1초 보관해, 위협음 판정이 늦게 와도 소리 크기대로 그린다.
  *
  * 메인 스레드에서만 접근한다.
  *
@@ -72,6 +73,14 @@ class VisualizerEngine(
         /** maxVolume < 0.01 이면 비활성으로 본다 */
         private const val WAKE_THRESHOLD = 0.01f
         private const val MIN_VISIBLE_ALPHA = 0.002f
+
+        /**
+         * 표시가 꺼진 라벨이라 그리지 못한 피크를 보관하는 칸 수와 칸 하나의 길이(60fps 프레임 단위).
+         * 칸 하나 = 대기 폴링 한 번(33ms ≈ 2프레임)이라 30칸이면 약 1초다.
+         * 분류기는 최근 약 1초 창을 250ms 마다 판정하므로, 판정이 몇 번 늦어져도 그 판정을 부른 소리는 이 안에 있다.
+         */
+        private const val HOLD_SLOTS = 30
+        private const val HOLD_SLOT_FRAMES = 2f
     }
 
     // ---------------- 오디오 입력 ----------------
@@ -88,6 +97,17 @@ class VisualizerEngine(
     private var smoothTotal = 0f
     private val depths = FloatArray(CH)
     private var baseDepth = 0f
+
+    // ---------------- 늦게 온 위협음 판정용 피크 보관 ----------------
+    // 라벨이 숨김이라 읽고 버리던 피크를 칸마다 가장 큰 좌우 한 쌍으로 남기는 링 버퍼. 할당은 없다.
+    private val holdL = FloatArray(HOLD_SLOTS)
+    private val holdR = FloatArray(HOLD_SLOTS)
+    private var holdIndex = 0       // 다음에 덮어쓸(가장 오래된) 칸
+    private var holdCurL = 0f       // 채우는 중인 칸
+    private var holdCurR = 0f
+    private var holdFrames = 0f     // 채우는 중인 칸에 쌓인 시간(60fps 프레임 단위)
+    /** 마지막으로 큰 피크를 넣은 뒤 그 피크가 밀려나기까지 남은 칸 수. 0 이면 보관한 게 없어 링을 훑지 않는다. */
+    private var holdLiveSlots = 0
 
     // ---------------- 모드별 애니메이션 상태 ----------------
     private val padThickness = FloatArray(CH)
@@ -218,6 +238,17 @@ class VisualizerEngine(
             targetR = max(targetR * decay, peaks[1])
         }
 
+        // 1-1. 라벨. 숨김이면 이번 피크를 보관하고, 위협음 판정이 새로 왔으면 보관한 크기로 시작한다 (pollWake 참고).
+        // 깨어 있는 동안 받은 소리도 판정이 오기 전에 대기로 내려가면 사라지므로 여기서도 똑같이 모은다.
+        val coarse = inputs.coarseLabel()
+        val shown = inputs.isShown(coarse)
+        val drawable = canDraw(s)
+        advanceHold(k)
+        if (drawable) {
+            if (!shown) holdHidden(peaks[0], peaks[1])
+            else if (coarse == AiClassification.DANGER) releaseHold()
+        }
+
         // 2. 스테레오 → 8채널 가상 서라운드 (2채널만 받으므로 Mid/Side 로 방향을 합성)
         historyL[historyIndex] = targetL
         historyR[historyIndex] = targetR
@@ -260,9 +291,7 @@ class VisualizerEngine(
         // 소리 종류에 따라 색과 표시 여부를 고른다. 분류기가 없으면 항상 환경음이다.
         // 색은 보간하지 않고 즉시 바꾼다. 위협음은 경고라서 서서히 물드는 것보다
         // 바로 뜨는 편이 낫고, 프레임당 셰이더 재생성(=할당)도 생기지 않는다.
-        val coarse = inputs.coarseLabel()
         colorRgb = inputs.colorFor(coarse) and 0xFFFFFF
-        val shown = inputs.isShown(coarse)
         if (s.isGlowMode && s.glowIntensity > 0f) {
             glowAlpha = min(1f, s.glowIntensity / 100f * 1.6f)
             glowRadiusPx = max(1f, s.glowIntensity * 0.5f) * density
@@ -286,7 +315,7 @@ class VisualizerEngine(
         } else if (invisibleSinceNanos < 0L) {
             invisibleSinceNanos = frameTimeNanos
         } else if (frameTimeNanos - invisibleSinceNanos > IDLE_AFTER_NS &&
-            ((targetL < WAKE_THRESHOLD && targetR < WAKE_THRESHOLD) || !canShow(s, shown))
+            ((targetL < WAKE_THRESHOLD && targetR < WAKE_THRESHOLD) || !(shown && drawable))
         ) {
             // 조용하거나, 소리는 나도 지금 설정으로는 그릴 수 없으면 쉰다.
             // 소리 조건만 보면 표시를 끈 종류의 음악이 계속 나올 때 그릴 것도 없이 화면 주사율로 돈다.
@@ -296,11 +325,10 @@ class VisualizerEngine(
     }
 
     /**
-     * 소리 크기와 상관없이, 지금 설정으로 무언가 보일 수 있는지.
-     * 표시가 꺼졌거나 진하기·크기가 0이면 소리가 아무리 커도 그릴 것이 없다.
+     * 소리 크기와 라벨에 상관없이, 지금 설정으로 무언가 보일 수 있는지.
+     * 진하기·크기가 0이면 소리가 아무리 커도 그릴 것이 없다. 라벨의 표시 여부는 따로 본다.
      */
-    private fun canShow(s: ModeSettings, shown: Boolean): Boolean {
-        if (!shown) return false
+    private fun canDraw(s: ModeSettings): Boolean {
         val potentialAlpha = (if (s.intensityAsOpacity) s.opacityFixedMaxOpacity else s.opacity) / 100f
         val size = if (s.intensityAsOpacity) s.opacityFixedSize else s.intensity
         return potentialAlpha > MIN_VISIBLE_ALPHA && size > 0f
@@ -332,11 +360,27 @@ class VisualizerEngine(
     /**
      * idle 중 저빈도 폴링. 소리가 나고 지금 설정으로 그릴 수 있을 때만 프레임 클럭으로 복귀한다.
      * 표시를 끈 종류의 소리가 계속 나는 동안에는 깨어나지 않는다.
+     *
+     * 다만 그 피크는 버리지 않고 약 1초 보관한다. 위협음만 보이게 해 두면 총성 같은 짧은 소리는 먼저
+     * 숨긴 라벨(환경음 등)로 들어오고, 위협음 판정은 다음 분류(250ms 주기)와 추론 시간만큼 늦게 온다.
+     * 피크를 이미 버렸다면 그때 남은 잔향으로 깨어나 민감도 속도로 0 에서 자라므로 거의 보이지 않는다.
      */
     fun pollWake() {
         inputs.readPeaks(peaks)
-        if (peaks[0] <= WAKE_THRESHOLD && peaks[1] <= WAKE_THRESHOLD) return
-        if (!canShow(inputs.settingsFor(inputs.currentMode()), inputs.isShown(inputs.coarseLabel()))) return
+        advanceHold(HOLD_SLOT_FRAMES) // 폴링 한 번 = 보관 한 칸
+        val loud = peaks[0] > WAKE_THRESHOLD || peaks[1] > WAKE_THRESHOLD
+        // 조용하고 보관한 소리도 없으면 설정·라벨을 읽을 필요가 없다. 대기 중 폴링은 대부분 여기서 끝난다.
+        if (!loud && holdLiveSlots == 0) return
+        if (!canDraw(inputs.settingsFor(inputs.currentMode()))) return
+        val coarse = inputs.coarseLabel()
+        if (!inputs.isShown(coarse)) {
+            holdHidden(peaks[0], peaks[1])
+            return
+        }
+        // 위협음 판정이 새로 왔으면 보관한 크기로 시작한다. 소리가 이미 끝났어도 깨어난다.
+        // 그 밖의 깨어남은 0 에서 민감도 속도로 자란다.
+        val released = coarse == AiClassification.DANGER && releaseHold()
+        if (!loud && !released) return
 
         targetL = peaks[0]
         targetR = peaks[1]
@@ -362,6 +406,81 @@ class VisualizerEngine(
         lastTickNanos = 0L
         lastVsyncNanos = 0L
         frameAccNanos = 0L
+        // 보관한 피크는 비우지 않는다. 대기로 내려간 뒤에 위협음 판정이 와도 쓸 수 있어야 한다.
+    }
+
+    // ---------------- 피크 보관 ----------------
+
+    /**
+     * 라벨이 숨김이라 그리지 못한 피크를 지금 칸에 모은다.
+     * 문턱 이하는 깨울 일도 없으니 넣지 않고, 방향이 섞이지 않게 좌우를 한 쌍으로 다룬다.
+     */
+    private fun holdHidden(l: Float, r: Float) {
+        if (l <= WAKE_THRESHOLD && r <= WAKE_THRESHOLD) return
+        if (max(l, r) > max(holdCurL, holdCurR)) {
+            holdCurL = l
+            holdCurR = r
+        }
+        holdLiveSlots = HOLD_SLOTS + 1 // 지금 칸 + 링 한 바퀴
+    }
+
+    /**
+     * 보관 시간을 [frames](60fps 프레임 단위)만큼 흘린다. 칸이 차면 링에 넣고 가장 오래된 칸을 덮어쓴다.
+     * 큰 피크가 모두 밀려나면 링은 전부 0 이 되므로 그다음부터는 아무것도 하지 않는다.
+     */
+    private fun advanceHold(frames: Float) {
+        if (holdLiveSlots == 0) return
+        holdFrames += frames
+        while (holdFrames >= HOLD_SLOT_FRAMES) {
+            holdFrames -= HOLD_SLOT_FRAMES
+            holdL[holdIndex] = holdCurL
+            holdR[holdIndex] = holdCurR
+            holdIndex = (holdIndex + 1) % HOLD_SLOTS
+            holdCurL = 0f
+            holdCurR = 0f
+            holdLiveSlots--
+            if (holdLiveSlots == 0) {
+                holdFrames = 0f
+                return
+            }
+        }
+    }
+
+    /**
+     * 보관한 피크 중 가장 큰 좌우 쌍으로 전체 크기와 방향을 바로 잡고 보관을 비운다.
+     * 판정이 늦게 온 소리를 민감도 스무딩으로 0 에서 키우면 이미 끝난 뒤라 거의 보이지 않으므로
+     * 그 소리 크기에서 시작하고, 줄어드는 것은 이후 프레임에서 평소처럼 민감도 속도를 따른다.
+     * 한 번 쓰면 비우므로 같은 소리로 두 번 번쩍이지 않는다.
+     * @return 보관한 피크가 있었으면 true
+     */
+    private fun releaseHold(): Boolean {
+        if (holdLiveSlots == 0) return false
+        var l = holdCurL
+        var r = holdCurR
+        for (i in 0 until HOLD_SLOTS) {
+            if (max(holdL[i], holdR[i]) > max(l, r)) {
+                l = holdL[i]
+                r = holdR[i]
+            }
+        }
+        holdL.fill(0f)
+        holdR.fill(0f)
+        holdCurL = 0f
+        holdCurR = 0f
+        holdFrames = 0f
+        holdLiveSlots = 0
+
+        // 판정이 올 즈음엔 후면 지연도 이미 따라잡았으므로 앞뒤에 같은 값을 넣는다.
+        // targets 는 틱의 2단계 upmix 가 곧 현재 소리로 다시 채우므로 여기서 덮어써도 된다.
+        upmix(l, r, l, r)
+        var total = 0f
+        for (i in 0 until CH) total += targets[i]
+        // 이미 더 크게 그리는 중이면(지금도 큰 소리가 이어짐) 건드리지 않는다.
+        if (total > smoothTotal) {
+            smoothTotal = total
+            for (i in 0 until CH) dist[i] = targets[i] / total
+        }
+        return true
     }
 
     /** 프레임당 계수 a 를 k 프레임 분량으로 환산: 1-(1-a)^k */
