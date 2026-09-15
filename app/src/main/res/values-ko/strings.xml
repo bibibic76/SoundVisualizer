@@ -8,8 +8,8 @@
     <string name="home_subtitle">보이지 않던 소리를 화면에 그려냅니다.\n게이밍부터 영화 감상까지 새로운 경험을 시작하세요.</string>
     <string name="home_status_running">상태: 실행 중</string>
     <string name="home_status_idle">상태: 실행 대기 중</string>
-    <string name="home_ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시되고 진동 알림이 꺼져 있습니다.</string>
-    <string name="home_stopped_dismiss">닫기</string>
+    <string name="home_ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시되고 진동 알림이 꺼져 있습니다. 껐다가 다시 켜 보세요.</string>
+    <string name="home_stopped_dismiss">안내 닫기</string>
     <string name="home_start">실행</string>
     <string name="home_stop">실행 종료</string>
     <string name="home_add_tile">빠른 설정에 추가</string>
@@ -83,7 +83,7 @@
     <string name="ai_show_ambient">환경음 표시</string>
     <string name="ai_show_speech">대화음 표시</string>
     <string name="ai_show_danger">위협음 표시</string>
-    <string name="ai_unavailable">소리 종류 구분을 시작하지 못해 모든 소리가 환경음 색으로 표시됩니다.</string>
+    <string name="ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시됩니다. 껐다가 다시 켜 보세요.</string>
 
     <!-- 진동 -->
     <string name="haptic_vibrate">진동</string>
@@ -124,9 +124,10 @@
     <string name="stopped_channel_name">시각화 꺼짐 알림</string>
     <string name="stopped_channel_desc">직접 끄지 않았는데 소리 시각화가 꺼지면 알려줍니다.</string>
     <string name="stopped_title">소리 시각화가 꺼졌습니다</string>
-    <string name="stopped_text_projection">소리 받기가 끝나 그래픽과 진동 알림이 꺼졌습니다. 화면 녹화·화면 공유·전송을 시작하거나 시스템이 소리 받기를 끝내면 이렇게 됩니다.</string>
+    <string name="stopped_text_projection">소리 받기가 끝나 그래픽과 진동 알림이 꺼졌습니다. 화면 녹화·화면 공유·전송을 시작하거나 시스템이 소리 받기를 끝내면 이렇게 됩니다. 다시 켜면 그 녹화·공유·전송이 끝납니다.</string>
     <string name="stopped_text_capture_error">오류로 소리 받기가 멈춰 그래픽과 진동 알림이 꺼졌습니다.</string>
     <string name="stopped_text_start_failed">소리 받기를 시작하지 못해 그래픽과 진동 알림이 꺼졌습니다.</string>
+    <string name="stopped_text_overlay_failed">다른 앱 위에 그래픽을 띄우지 못해 시각화가 꺼졌습니다. ‘다른 앱 위에 표시’ 권한이 허용돼 있는지 확인해 주세요.</string>
     <string name="stopped_turn_on">다시 켜기</string>
     <string name="stopped_toast">소리 시각화가 꺼졌습니다. 그래픽과 진동 알림이 꺼져 있습니다.</string>
 
@@ -156,7 +157,7 @@
     <string name="help_perm_capture">화면 녹화</string>
     <string name="help_perm_capture_desc">안드로이드는 폰 안의 소리를 이 동의를 거쳐서만 받을 수 있게 합니다. 화면은 캡처하지 않습니다.</string>
     <string name="help_perm_notification">알림 (Android 13 이상)</string>
-    <string name="help_perm_notification_desc">실행 중 알림과 중지 버튼을 보여줍니다. 거부해도 앱은 동작합니다.</string>
+    <string name="help_perm_notification_desc">실행 중 알림과 중지 버튼을 보여주고, 직접 끄지 않았는데 시각화가 꺼지면 알려줍니다. 거부해도 앱은 동작합니다. 이때 꺼지면 진동으로만 알리고, 앱을 열면 홈 화면에서 무엇이 꺼졌는지 보여줍니다.</string>
 
     <string name="help_modes_title">표현 모드</string>
     <string name="help_mode_wave_desc">화면 테두리 전체가 소리 세기만큼 안쪽으로 밀려듭니다. 소리가 나는 쪽이 더 깊게 밀려옵니다.</string>
@@ -175,19 +176,21 @@
     <string name="help_note_direction">좌우는 구분하지만 앞뒤는 구분하지 못합니다. 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감 효과를 나타냅니다.</string>
     <string name="help_note_mono">좌우가 똑같은 소리(모노)는 정면 쪽으로만 표시됩니다.</string>
     <string name="help_note_sources">미디어와 게임 소리만 받습니다. 전화 통화, 알림음, 알람은 대상이 아니고, 소리 캡처를 막아둔 앱(일부 영상 앱 등)은 시각화되지 않습니다.</string>
-    <string name="help_note_stopped">화면 녹화·화면 공유·전송을 시작하면 시각화가 꺼집니다. 같은 화면 녹화 동의를 쓰는데, 안드로이드는 한 번에 한 앱만 쓸 수 있게 하기 때문입니다. 직접 끄지 않았는데 꺼지면 폰이 세 번 진동하고 ‘다시 켜기’ 버튼이 있는 알림을 띄웁니다. 알림을 꺼 두었으면 진동으로만 알리고, 앱을 열면 홈 화면에서 무엇이 꺼졌는지 보여줍니다.</string>
+    <string name="help_note_stopped">화면 녹화·화면 공유·전송을 시작하면 시각화가 꺼집니다. 같은 화면 녹화 동의를 쓰는데, 안드로이드는 한 번에 한 앱만 쓸 수 있게 하기 때문입니다. 다시 켜면 그 녹화·공유·전송이 끝납니다. 직접 끄지 않았는데 꺼지면 대개 폰이 세 번 길게 진동하고 ‘다시 켜기’ 버튼이 있는 알림을 띄웁니다. 폰의 화면 공유 알림에서 소리 받기를 끝내도 같은 알림이 뜨고, 앱을 강제 종료하거나 앱이 죽으면 알리지 못합니다. 알림을 꺼 두었으면 진동으로만 알리고, 앱을 열면 홈 화면에서 무엇이 꺼졌는지 보여줍니다.</string>
     <string name="help_note_screen_off">화면이 꺼져 있는 동안에는 배터리를 아끼려고 쉬고, 화면을 켜면 다시 이어서 합니다. 설정 탭의 배터리에서 바꿀 수 있습니다.</string>
     <string name="help_note_ai">AI 분류는 틀릴 수 있습니다. 안전이 걸린 상황에서 이 앱을 유일한 수단으로 쓰지 마세요.</string>
 
     <string name="help_faq_title">자주 묻는 질문</string>
+    <string name="help_faq_stopped_q">직접 끄지 않았는데 꺼졌어요.</string>
+    <string name="help_faq_stopped_a">화면 녹화·화면 공유·전송을 시작했거나, 오류로 소리 받기가 끊기면 꺼집니다. 알림의 ‘다시 켜기’를 누르거나 홈·빠른 설정에서 다시 켜세요. 화면 녹화 동의는 켤 때마다 다시 묻고, 다시 켜면 돌고 있던 녹화·공유·전송이 끝납니다.</string>
     <string name="help_faq_no_graphic_q">그래픽이 보이지 않아요.</string>
     <string name="help_faq_no_graphic_a">재생 중인 앱이 소리 캡처를 막는 앱인지 확인해 주세요. 설정에서 진하기가 너무 낮지 않은지, 지금 나는 소리 종류의 표시가 꺼져 있지 않은지도 확인해 주세요.</string>
     <string name="help_faq_no_vibration_q">진동이 오지 않아요.</string>
-    <string name="help_faq_no_vibration_a">설정의 소리 분류에서 해당 종류의 표시와 진동이 모두 켜져 있는지 확인해 주세요. 폰 설정에서 진동을 꺼두었다면 울리지 않을 수 있습니다.</string>
+    <string name="help_faq_no_vibration_a">설정의 소리 분류에서 해당 종류의 표시와 진동이 모두 켜져 있는지 확인해 주세요. 화면이 꺼져 있는 동안에는 기본적으로 쉬므로, 그때도 진동을 받으려면 설정 배터리의 ‘화면이 꺼지면 일시정지’를 끄세요. 소리 종류를 구분하지 못하는 동안에도 진동하지 않습니다. 폰 설정에서 진동을 꺼두었다면 울리지 않을 수 있습니다.</string>
     <string name="help_faq_install_q">새 버전이 설치되지 않아요.</string>
     <string name="help_faq_install_a">다른 곳에서 빌드한 APK는 서명이 달라 기존 앱 위에 설치되지 않습니다. 기존 앱을 삭제한 뒤 설치해 주세요. 이 경우 설정이 초기화됩니다.</string>
     <string name="help_faq_battery_q">배터리를 많이 쓰나요?</string>
-    <string name="help_faq_battery_a">소리가 날 때만 그리고, 조용하면 대기 상태로 내려갑니다. 다만 소리를 계속 받기 때문에 쓰지 않을 때는 꺼두는 것을 권장합니다.</string>
+    <string name="help_faq_battery_a">소리가 날 때만 그리고, 조용하면 대기 상태로 내려갑니다. 화면이 꺼져 있는 동안에는 기본적으로 소리 받기도 멈춥니다. 다만 화면이 켜져 있으면 소리를 계속 받기 때문에 쓰지 않을 때는 꺼두는 것을 권장합니다.</string>
     <string name="help_faq_language_q">앱 언어는 어떻게 바꾸나요?</string>
     <string name="help_faq_language_a">설정 탭 맨 위의 ‘언어’를 눌러 고릅니다. ‘시스템 기본값’을 고르면 폰의 언어를 따릅니다. Android 13 이상에서는 폰 설정의 ‘앱 언어’에서도 바꿀 수 있습니다.</string>
 

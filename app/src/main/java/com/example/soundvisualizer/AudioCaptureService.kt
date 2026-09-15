@@ -78,16 +78,16 @@ class AudioCaptureService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     /**
-     * 서비스가 스스로 멈추며 남긴 이유. 처음 것을 지킨다. 뒤따라 오는 실패(프로젝션이 끊겨 read 오류 등)보다
-     * 먼저 난 원인이 정확하기 때문이다. null 이면 아직 멈추는 중이 아니다. 메인 스레드 전용.
+     * 멈추는 중인지와 처음 남긴 이유. 뒤따라 오는 실패(프로젝션이 끊겨 read 오류 등)보다 먼저 난 원인이 정확하고,
+     * 내려간 뒤 늦게 도착한 콜백은 다음 실행을 건드리면 안 된다. 메인 스레드 전용.
      */
-    private var stopReason: StopReason? = null
-
-    /** onDestroy 가 시작됐는지. 늦게 도착한 콜백이 다음 실행의 오버레이를 내리지 않게 한다. 메인 스레드 전용. */
-    private var destroyed = false
+    private val stopLatch = StopLatch()
 
     /** 화면이 꺼져 쉬는 중인지. 메인 스레드 전용. */
     private val screenPause = ScreenOffPause()
+
+    /** 화면이 켜진 뒤 미뤄 둔 AI 재시작. 취소할 수 있게 들고 있는다. 메인 스레드 전용. ([scheduleAiResume]) */
+    private var aiResumeRunnable: Runnable? = null
 
     private var screenReceiverRegistered = false
 
@@ -129,6 +129,9 @@ class AudioCaptureService : Service() {
 
         /** 캡처 스레드가 끝나기를 기다리는 최대 시간. stop() 으로 read() 가 풀리므로 보통 바로 끝난다. */
         private const val CAPTURE_JOIN_TIMEOUT_MS = 2000L
+
+        /** 화면이 켜진 뒤 AI 를 다시 시작하기까지 미루는 시간. 추론 한 번(수십 ms)보다 넉넉히 길게 잡는다. ([scheduleAiResume]) */
+        private const val AI_RESUME_DELAY_MS = 300L
 
         /** 프로세스 내에서 서비스가 살아있는지 (액티비티 UI 상태 복원용). */
         @Volatile
@@ -254,6 +257,7 @@ class AudioCaptureService : Service() {
      * 추론과 진동 알림을 시작한다. aiLock 안에서 부른다.
      * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
      * start() 는 링버퍼·후처리·마지막 결과를 비우므로 쉬기 직전의 소리를 다시 분류하지 않는다.
+     * 비우기 직전까지 돌던 추론 한 번이 뒤늦게 덮어쓰지 않도록 [scheduleAiResume] 가 그만큼 기다렸다 부른다.
      */
     private fun startAiLocked(pipeline: RealtimeAiPipeline) {
         pipeline.start()
@@ -471,12 +475,12 @@ class AudioCaptureService : Service() {
 
     private fun onScreenOff() {
         // 이미 내려가는 중이면 건드리지 않는다.
-        if (stopReason != null || destroyed) return
+        if (stopLatch.isStopping) return
         if (screenPause.onScreenOff(SettingsManager.pauseWhenScreenOff.value)) pauseForScreenOff()
     }
 
     private fun onScreenOn() {
-        if (stopReason != null || destroyed) return
+        if (stopLatch.isStopping) return
         if (screenPause.onScreenOn()) resumeAfterScreenOff()
     }
 
@@ -489,6 +493,8 @@ class AudioCaptureService : Service() {
      */
     private fun pauseForScreenOff() {
         Log.i(TAG, "screen off: pausing capture, AI and haptics")
+        // 화면을 켰다가 바로 껐으면 미뤄 둔 AI 재시작이 쉬는 중에 깨어난다.
+        cancelAiResume()
         // 오버레이가 쉬기로 내려오면 폴링을 멈추게 먼저 알린다.
         SettingsManager.setCapturePaused(true)
         val (pipeline, haptics) = synchronized(aiLock) {
@@ -510,7 +516,7 @@ class AudioCaptureService : Service() {
         AudioEngine.reset()
     }
 
-    /** 화면이 켜져 다시 켠다. 캡처 → AI → 진동 순이다. */
+    /** 화면이 켜져 다시 켠다. 캡처를 먼저 켜고, AI 와 진동은 [scheduleAiResume] 가 조금 뒤에 켠다. */
     private fun resumeAfterScreenOff() {
         Log.i(TAG, "screen on: resuming capture, AI and haptics")
         // 동의 직후 꺼져서 아직 AudioRecord 가 없으면 onStartCommand 가 이어서 시작한다.
@@ -520,12 +526,38 @@ class AudioCaptureService : Service() {
             stopEverything(StopReason.CaptureError)
             return
         }
-        synchronized(aiLock) {
-            aiPaused = false
-            // 모델이 아직 로딩 중이면 로딩이 끝날 때 시작한다.
-            aiPipeline?.let(::startAiLocked)
-        }
+        scheduleAiResume()
         SettingsManager.setCapturePaused(false)
+    }
+
+    /**
+     * AI 와 진동 알림만 [AI_RESUME_DELAY_MS] 뒤에 켠다. 캡처는 바로 켠다.
+     *
+     * 쉴 때 부르는 파이프라인의 stop() 은 이미 돌고 있던 추론 한 번을 기다리지 않는다. 화면을 껐다 바로 켜서
+     * 그 추론이 start() 로 비운 뒤에 끝나면, 쉬기 직전의 결과가 되살아나 첫 소리에 위협음 진동이 잘못 울린다.
+     * 추론 한 번보다 길게 기다렸다 시작해 그 사이를 비운다. 그때까지 aiPaused 를 세워 두어,
+     * 늦게 끝난 모델 로딩도 추론을 먼저 시작하지 않는다.
+     */
+    private fun scheduleAiResume() {
+        cancelAiResume()
+        val runnable = Runnable {
+            aiResumeRunnable = null
+            // 기다리는 사이에 내려갔거나 화면이 다시 꺼졌으면 켜지 않는다.
+            if (stopLatch.isStopping || screenPause.isPaused) return@Runnable
+            synchronized(aiLock) {
+                aiPaused = false
+                // 모델이 아직 로딩 중이면 로딩이 끝날 때 시작한다.
+                aiPipeline?.let(::startAiLocked)
+            }
+        }
+        aiResumeRunnable = runnable
+        mainHandler.postDelayed(runnable, AI_RESUME_DELAY_MS)
+    }
+
+    /** 미뤄 둔 AI 재시작을 없앤다. 여러 번 불러도 된다. */
+    private fun cancelAiResume() {
+        aiResumeRunnable?.let { mainHandler.removeCallbacks(it) }
+        aiResumeRunnable = null
     }
 
     // ---------------- 종료 ----------------
@@ -542,9 +574,10 @@ class AudioCaptureService : Service() {
      */
     @SuppressLint("ImplicitSamInstance")
     private fun stopEverything(reason: StopReason) {
-        if (destroyed) return
-        if (stopReason == null) {
-            stopReason = reason
+        if (stopLatch.isDestroyed) return
+        // 미뤄 둔 AI 재시작이 남아 있으면 내리는 중에 추론과 진동이 다시 붙는다.
+        cancelAiResume()
+        if (stopLatch.claimAlert(reason)) {
             stopHapticsBeforeAlert()
             StopAlert.show(this, reason)
         }
@@ -566,9 +599,10 @@ class AudioCaptureService : Service() {
     }
 
     override fun onDestroy() {
-        destroyed = true
+        stopLatch.onDestroy()
         isRunning = false
         instance = null
+        cancelAiResume()
         SettingsManager.setServiceRunning(false)
 
         if (screenReceiverRegistered) {
@@ -627,9 +661,12 @@ class AudioCaptureService : Service() {
     /**
      * 실행 중 알림을 지금 상태(AI 사용 가능 여부)에 맞게 다시 올린다. 메인 스레드에서 부른다.
      * 내려가는 중이면 올리지 않는다. 포그라운드 알림이 치워진 뒤 같은 번호로 올리면 지워지지 않는 알림이 남는다.
+     *
+     * 앱 버튼이나 타일로 끄면 stopService 로 바로 내려가 onDestroy 전까지 래치가 비어 있다.
+     * 그때는 같은 클릭에서 이미 false 가 된 실행 상태로 거른다.
      */
     private fun refreshOngoingNotification() {
-        if (destroyed || stopReason != null) return
+        if (stopLatch.isStopping || !SettingsManager.isServiceRunning.value) return
         StopAlert.post(this, CHANNEL_ID, NOTIFICATION_ID, createNotification())
     }
 

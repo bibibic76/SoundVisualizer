@@ -110,6 +110,8 @@ fun HelpTab() {
         }
         item {
             SettingsExpander(stringResource(R.string.help_faq_title)) {
+                // 직접 끄지 않았는데 꺼진 경우를 맨 위에 둔다. 알림을 못 봤으면 여기서 찾게 된다.
+                TitledItem(R.string.help_faq_stopped_q, R.string.help_faq_stopped_a)
                 TitledItem(R.string.help_faq_no_graphic_q, R.string.help_faq_no_graphic_a)
                 TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_a)
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)

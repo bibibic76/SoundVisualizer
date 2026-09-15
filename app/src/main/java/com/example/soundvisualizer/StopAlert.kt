@@ -138,6 +138,7 @@ object StopAlert {
     fun textFor(reason: StopReason): Int = when (reason) {
         StopReason.ProjectionStopped -> R.string.stopped_text_projection
         StopReason.CaptureError -> R.string.stopped_text_capture_error
+        StopReason.OverlayFailed -> R.string.stopped_text_overlay_failed
         // 사용자가 끈 경우에는 알림을 만들지 않지만 when 을 빠짐없이 채우려고 가장 일반적인 문구를 둔다.
         StopReason.StartFailed, StopReason.UserRequested -> R.string.stopped_text_start_failed
     }

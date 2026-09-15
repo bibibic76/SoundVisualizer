@@ -120,9 +120,10 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     /**
      * 오버레이를 띄울 수 없으면 오디오 캡처도 의미가 없으므로 같이 정리한다.
      * 동의까지 받았는데 켜지지 않은 것이라 사용자가 끈 게 아니다. 캡처 서비스가 멈추며 알리도록 이유를 넘긴다.
+     * 소리 받기는 대개 이미 시작된 뒤라, 소리가 아니라 오버레이가 문제라고 알린다.
      */
     private fun stopEverything() {
-        AudioCaptureService.stopForFailure(this, StopReason.StartFailed)
+        AudioCaptureService.stopForFailure(this, StopReason.OverlayFailed)
         SettingsManager.setServiceRunning(false)
         stopSelf()
     }

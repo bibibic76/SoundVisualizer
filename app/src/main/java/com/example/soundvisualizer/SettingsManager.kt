@@ -37,6 +37,16 @@ object SettingsManager {
     private const val PREFS_NAME = "SoundVisualizerPrefs"
     private lateinit var prefs: SharedPreferences
 
+    /**
+     * "화면이 꺼지면 일시정지"의 기본값. 켜 두는 쪽이 배터리를 아낀다.
+     *
+     * 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 테스트가 통과하므로 한 곳에만 둔다.
+     */
+    internal const val PAUSE_WHEN_SCREEN_OFF_DEFAULT = true
+
+    private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
+    private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
+
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
 
@@ -86,7 +96,7 @@ object SettingsManager {
     val tileAdded: StateFlow<Boolean> = _tileAdded
 
     // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
-    private val _pauseWhenScreenOff = MutableStateFlow(true)
+    private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
     val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
 
     /**
@@ -135,10 +145,8 @@ object SettingsManager {
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
 
         _tileAdded.value = prefs.getBoolean("tile_added", false)
-        _pauseWhenScreenOff.value = prefs.getBoolean("pause_when_screen_off", true)
-        // 이름으로 저장한다. 모르는 이름이면 알릴 것이 없는 것으로 본다.
-        _lastUnexpectedStop.value = prefs.getString("last_unexpected_stop", null)
-            ?.let { name -> StopReason.values().firstOrNull { it.name == name } }
+        _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
+        _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -153,6 +161,23 @@ object SettingsManager {
 
     private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
         enumValues<T>().firstOrNull { it.name == name } ?: default
+
+    /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+
+    /**
+     * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
+     * 알릴 것이 없는 것으로 본다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (StopNoticeSettingsTest).
+     */
+    internal fun loadLastUnexpectedStop(source: SharedPreferences): StopReason? =
+        source.getString(KEY_LAST_UNEXPECTED_STOP, null)
+            ?.let { name -> StopReason.values().firstOrNull { it.name == name } }
+
+    /** [loadLastUnexpectedStop] 와 같은 키로 적는다. [reason] 이 null 이면 키를 지운다. */
+    internal fun putLastUnexpectedStop(editor: SharedPreferences.Editor, reason: StopReason?) {
+        if (reason == null) editor.remove(KEY_LAST_UNEXPECTED_STOP) else editor.putString(KEY_LAST_UNEXPECTED_STOP, reason.name)
+    }
 
     fun setVisualMode(mode: VisualMode) {
         _visualMode.value = mode
@@ -296,7 +321,7 @@ object SettingsManager {
 
     fun setPauseWhenScreenOff(enabled: Boolean) {
         _pauseWhenScreenOff.value = enabled
-        prefs.edit { putBoolean("pause_when_screen_off", enabled) }
+        prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
     }
 
     /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
@@ -311,8 +336,6 @@ object SettingsManager {
     /** [reason] 이 null 이면 지운다. */
     fun setLastUnexpectedStop(reason: StopReason?) {
         _lastUnexpectedStop.value = reason
-        prefs.edit {
-            if (reason == null) remove("last_unexpected_stop") else putString("last_unexpected_stop", reason.name)
-        }
+        prefs.edit { putLastUnexpectedStop(this, reason) }
     }
 }

@@ -20,8 +20,52 @@ enum class StopReason {
     /** 오디오 서버 재시작 등으로 캡처를 계속 읽을 수 없다. */
     CaptureError,
 
-    /** 동의까지 받았는데 캡처나 오버레이를 시작하지 못했다. 사용자는 아무 일도 안 일어난 것처럼 보게 된다. */
-    StartFailed
+    /** 동의까지 받았는데 캡처를 시작하지 못했다. 사용자는 아무 일도 안 일어난 것처럼 보게 된다. */
+    StartFailed,
+
+    /**
+     * 캡처는 시작했는데 오버레이를 띄우지 못했다. "다른 앱 위에 표시" 권한이 없거나 addView 가 실패한 경우다.
+     * 소리 받기가 안 된 것처럼 알리면 엉뚱한 곳을 보게 되므로 이유를 따로 둔다.
+     */
+    OverlayFailed
+}
+
+/**
+ * 서비스가 멈추는 중인지와 처음 남긴 이유를 지킨다. 안드로이드에 의존하지 않아 JVM 에서 테스트한다.
+ *
+ * 프로젝션이 끊기면 뒤따라 읽기 오류가 나므로, 먼저 난 원인만 알려야 한다.
+ * 내려간 뒤(onDestroy)에 늦게 도착한 콜백은 다음 실행의 상태를 건드리지 않게 아무것도 하지 않는다.
+ *
+ * 메인 스레드에서만 부른다.
+ */
+class StopLatch {
+
+    /** 처음 멈추기로 한 이유. 아직 멈추는 중이 아니면 null. */
+    var reason: StopReason? = null
+        private set
+
+    /** onDestroy 가 시작됐는지. */
+    var isDestroyed: Boolean = false
+        private set
+
+    /** 멈추는 중이거나 이미 내려갔는지. 화면 꺼짐·알림 갱신처럼 지금 건드리면 안 되는 일을 거른다. */
+    val isStopping: Boolean get() = reason != null || isDestroyed
+
+    /**
+     * 이번 [reason] 으로 알릴 차례인지.
+     *
+     * @return 처음 멈추는 것이면 true. 이미 멈추는 중이거나 내려간 뒤면 false
+     */
+    fun claimAlert(reason: StopReason): Boolean {
+        if (isStopping) return false
+        this.reason = reason
+        return true
+    }
+
+    /** 내려갔다. 뒤늦게 도착한 이유로는 더 알리지 않는다. */
+    fun onDestroy() {
+        isDestroyed = true
+    }
 }
 
 /**

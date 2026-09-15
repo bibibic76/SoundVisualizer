@@ -25,6 +25,9 @@ class HapticNotifier(
 ) {
     private companion object {
         const val TICK_MS = 100L
+
+        /** [stop] 이 진동 스레드를 기다리는 최대 시간. 틱 하나가 짧아 보통 바로 끝난다. */
+        const val JOIN_TIMEOUT_MS = 200L
     }
 
     private val player = HapticPlayer(context)
@@ -73,6 +76,13 @@ class HapticNotifier(
         handler = null
         h.removeCallbacks(tick)
         thread.quitSafely()
+        // 이미 울리기로 정해진 진동 한 번이 stop() 뒤에 나가지 않도록 스레드가 끝나기를 잠깐 기다린다.
+        // 기다리지 않으면 꺼짐 알림 진동이 늦은 진동에 끊길 수 있다(Android 11 이하).
+        try {
+            thread.join(JOIN_TIMEOUT_MS)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
         player.cancel()
     }
 }

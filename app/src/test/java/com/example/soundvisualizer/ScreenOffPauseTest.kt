@@ -75,4 +75,18 @@ class ScreenOffPauseTest {
         assertFalse(pause.onScreenOn())
         assertTrue("설정을 켠 뒤 다음 꺼짐부터 쉰다", pause.onScreenOff(pauseEnabled = true))
     }
+
+    @Test
+    fun `새로 설치하면 배터리를 아끼는 쪽으로 켜져 있다`() {
+        assertTrue("기본값을 끄려면 이 테스트부터 고쳐야 한다", SettingsManager.PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+        assertTrue("저장값이 없으면 기본값", SettingsManager.loadPauseWhenScreenOff(MemoryPrefs()))
+        assertTrue("흐름의 초기값도 같은 상수를 쓴다", SettingsManager.pauseWhenScreenOff.value)
+    }
+
+    @Test
+    fun `저장해 둔 설정을 그대로 읽는다`() {
+        val prefs = MemoryPrefs()
+        prefs.edit().putBoolean("pause_when_screen_off", false)
+        assertFalse("꺼 둔 사용자는 화면이 꺼져도 계속 받는다", SettingsManager.loadPauseWhenScreenOff(prefs))
+    }
 }
