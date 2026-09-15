@@ -84,7 +84,7 @@ class RealtimeAiPipeline private constructor(
     private val running = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
     private val lastResult = AtomicReference<AiClassificationResult?>(null)
-    private val silenceGate = AiSilenceGate()
+    private val captureInferenceGate = AiCaptureInferenceGate(audioBuffer)
     private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
     private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
     private var lastLogMs = 0L
@@ -108,9 +108,11 @@ class RealtimeAiPipeline private constructor(
         if (closed.get()) return
         if (!running.compareAndSet(false, true)) return
         audioBuffer.reset()
-        silenceGate.reset()
+        captureInferenceGate.reset()
         postProcessor.reset()
         lastResult.set(null)
+        inferenceExecutions.set(0)
+        silenceSkippedTicks.set(0)
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
                 try {
@@ -160,16 +162,17 @@ class RealtimeAiPipeline private constructor(
 
     fun resetState() {
         audioBuffer.reset()
-        silenceGate.reset()
+        captureInferenceGate.reset()
         postProcessor.reset()
         lastResult.set(null)
+        inferenceExecutions.set(0)
+        silenceSkippedTicks.set(0)
     }
 
     private fun ingestInterleaved(pcm: FloatArray, floatCount: Int) {
         // Evaluate the original channels before downmixing, then always retain the
         // samples in the ring so an input that reopens the gate has full context.
-        silenceGate.onInterleavedPcm(pcm, floatCount, SystemClock.elapsedRealtime())
-        audioBuffer.ingestInterleaved(pcm, floatCount)
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime())
     }
 
     /**
@@ -180,7 +183,7 @@ class RealtimeAiPipeline private constructor(
     private fun runTickInternal(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         if (closed.get()) return null
         if (!audioBuffer.hasEnoughForYamnetWindow()) return null
-        if (!silenceGate.isOpen(SystemClock.elapsedRealtime())) {
+        if (!captureInferenceGate.isInferenceOpen(SystemClock.elapsedRealtime())) {
             silenceSkippedTicks.incrementAndGet()
             return null
         }

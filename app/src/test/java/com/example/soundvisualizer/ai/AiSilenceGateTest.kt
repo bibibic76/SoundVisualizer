@@ -19,13 +19,13 @@ class AiSilenceGateTest {
     }
 
     @Test
-    fun `above-threshold input opens immediately and release holds for 400ms`() {
+    fun `above-threshold input stays open through AI release then closes`() {
         val gate = AiSilenceGate()
         gate.onInterleavedPcm(floatArrayOf(0.0101f, 0f), 2, nowMs = 100)
 
         assertTrue(gate.isOpen(100))
-        assertTrue(gate.isOpen(500))
-        assertFalse(gate.isOpen(501))
+        assertTrue(gate.isOpen(100 + AiSilenceGate.RELEASE_MS))
+        assertFalse(gate.isOpen(101 + AiSilenceGate.RELEASE_MS))
     }
 
     @Test
@@ -38,15 +38,24 @@ class AiSilenceGateTest {
     }
 
     @Test
-    fun `ring keeps receiving silence while gate is closed`() {
-        val buffer = AiAudioBuffer(captureSampleRate = 16000, channels = 2)
+    fun `new active input reopens a closed gate immediately`() {
         val gate = AiSilenceGate()
-        val quiet = floatArrayOf(0.001f, -0.001f, 0.002f, -0.002f)
 
-        gate.onInterleavedPcm(quiet, quiet.size, nowMs = 0)
-        buffer.ingestInterleaved(quiet, quiet.size)
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
+        assertFalse(gate.isOpen(AiSilenceGate.RELEASE_MS + 1))
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = AiSilenceGate.RELEASE_MS + 1)
 
-        assertFalse(gate.isOpen(0))
-        assertEquals(2, buffer.availableSamples)
+        assertTrue(gate.isOpen(AiSilenceGate.RELEASE_MS + 1))
+    }
+
+    @Test
+    fun `AI release covers YAMNet window and coarse hysteresis`() {
+        val yamnetWindowMs =
+            AudioPreprocessor.REQUIRED_MONO_16K_SAMPLES * 1000L / AudioPreprocessor.SAMPLE_RATE
+        val hysteresisMs =
+            AiPostProcessor.COARSE_HYSTERESIS_THRESHOLD * RealtimeAiPipeline.AI_PREDICT_INTERVAL_MS
+
+        assertTrue(AiSilenceGate.RELEASE_MS >= yamnetWindowMs + hysteresisMs)
+        assertEquals(1600L, AiSilenceGate.RELEASE_MS)
     }
 }
