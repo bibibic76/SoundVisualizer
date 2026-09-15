@@ -1,20 +1,24 @@
 package com.example.soundvisualizer
 
-import android.Manifest
-import android.annotation.SuppressLint
+import android.app.StatusBarManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Icon
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.service.quicksettings.TileService
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -45,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
+import com.example.soundvisualizer.tile.VisualizerTileService
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
 
@@ -60,34 +65,34 @@ class MainActivity : ComponentActivity() {
     private val mediaProjectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == RESULT_OK && result.data != null) {
-            val serviceIntent = Intent(this, AudioCaptureService::class.java).apply {
-                putExtra(AudioCaptureService.EXTRA_RESULT_CODE, result.resultCode)
-                putExtra(AudioCaptureService.EXTRA_RESULT_DATA, result.data)
-            }
-            startForegroundService(serviceIntent)
-            // Start the visual overlay
-            startService(Intent(this, OverlayService::class.java))
-            // 여기서 true 로 두지 않는다. 서비스가 실제로 뜨면 스스로 알린다.
+        val data = result.data
+        if (result.resultCode == RESULT_OK && data != null) {
+            // 여기서 실행 중으로 표시하지 않는다. 서비스가 실제로 뜨면 스스로 알린다.
+            VisualizerController.start(this, result.resultCode, data)
         }
     }
 
-    // RECORD_AUDIO 는 내부 오디오 캡처(AudioPlaybackCapture)에 필수. POST_NOTIFICATIONS 는 FGS 알림 표시용(선택).
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { grants ->
-        if (grants[Manifest.permission.RECORD_AUDIO] == true) {
+    ) {
+        if (VisualizerController.hasCapturePermission(this)) {
             launchProjectionRequest()
         } else {
             Toast.makeText(this, R.string.permission_record_audio_required, Toast.LENGTH_LONG).show()
         }
     }
 
+    /** 보이는 탭. 빠른 설정 타일을 길게 눌러 들어오면 설정 탭을 연다. */
+    private val selectedTab = mutableIntStateOf(TAB_HOME)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SettingsManager.init(this)
         // 오버레이 권한은 [실행]을 눌렀을 때 요청한다 (startMediaProjectionRequest).
         // 여기서 요청하면 앱을 열 때마다, 화면을 돌릴 때마다 설명 없이 설정 화면으로 튕긴다.
+
+        if (savedInstanceState == null) openTabFor(intent)
+        addOnNewIntentListener { openTabFor(it) }
 
         setContent {
             SoundVisualizerTheme {
@@ -96,10 +101,42 @@ class MainActivity : ComponentActivity() {
                     color = BgColor
                 ) {
                     LauncherApp(
+                        selectedTab = selectedTab.intValue,
+                        onSelectTab = { selectedTab.intValue = it },
                         onStart = { startMediaProjectionRequest() },
-                        onStop = { stopVisualizer() }
+                        onStop = { VisualizerController.stop(this) },
+                        onAddTile = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
+                        }
                     )
                 }
+            }
+        }
+    }
+
+    private fun openTabFor(intent: Intent?) {
+        if (intent?.action == TileService.ACTION_QS_TILE_PREFERENCES) selectedTab.intValue = TAB_SETTINGS
+    }
+
+    /** 시스템의 "빠른 설정에 추가" 창을 띄운다. 거절하면 아무것도 하지 않고, 실패하면 직접 추가하는 방법을 안내한다. */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun requestAddTile() {
+        val statusBar = getSystemService(StatusBarManager::class.java)
+        if (statusBar == null) {
+            Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+            return
+        }
+        statusBar.requestAddTileService(
+            ComponentName(this, VisualizerTileService::class.java),
+            getString(R.string.tile_label),
+            Icon.createWithResource(this, R.drawable.ic_notification),
+            ContextCompat.getMainExecutor(this)
+        ) { result ->
+            when (result) {
+                StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED,
+                StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> SettingsManager.setTileAdded(true)
+                StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_NOT_ADDED -> Unit
+                else -> Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -114,14 +151,6 @@ class MainActivity : ComponentActivity() {
         super.onPause()
         // 설정 화면에서 바꾸고 손을 떼기 전에 나가도 값이 남도록 한 번 더 저장한다.
         SettingsManager.flushModeSettings()
-    }
-
-    // 새로 만든 Intent 로 stopService 를 부르는 건 정상이다. Lint(ImplicitSamInstance) 오탐.
-    @SuppressLint("ImplicitSamInstance")
-    private fun stopVisualizer() {
-        stopService(Intent(this, AudioCaptureService::class.java))
-        stopService(Intent(this, OverlayService::class.java))
-        SettingsManager.setServiceRunning(false)
     }
 
     private fun requestOverlayPermission() {
@@ -139,15 +168,11 @@ class MainActivity : ComponentActivity() {
             requestOverlayPermission()
             return
         }
-        val needed = ArrayList<String>(2)
-        if (!isGranted(Manifest.permission.RECORD_AUDIO)) needed.add(Manifest.permission.RECORD_AUDIO)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !isGranted(Manifest.permission.POST_NOTIFICATIONS)) {
-            needed.add(Manifest.permission.POST_NOTIFICATIONS)
-        }
+        val needed = VisualizerController.requiredPermissions(Build.VERSION.SDK_INT, ::isGranted)
         if (needed.isEmpty()) {
             launchProjectionRequest()
         } else {
-            permissionLauncher.launch(needed.toTypedArray())
+            permissionLauncher.launch(needed)
         }
     }
 
@@ -158,22 +183,31 @@ class MainActivity : ComponentActivity() {
 
     private fun isGranted(permission: String): Boolean =
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+    private companion object {
+        const val TAB_HOME = 0
+        const val TAB_SETTINGS = 1
+    }
 }
 
 @Composable
-fun LauncherApp(onStart: () -> Unit, onStop: () -> Unit) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-
+fun LauncherApp(
+    selectedTab: Int,
+    onSelectTab: (Int) -> Unit,
+    onStart: () -> Unit,
+    onStop: () -> Unit,
+    onAddTile: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow
         Row(modifier = Modifier.padding(24.dp)) {
-            TabButton(stringResource(R.string.tab_home), selectedTab == 0) { selectedTab = 0 }
+            TabButton(stringResource(R.string.tab_home), selectedTab == 0) { onSelectTab(0) }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { selectedTab = 1 }
+            TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { onSelectTab(1) }
         }
 
         if (selectedTab == 0) {
-            HomeTab(onStart, onStop)
+            HomeTab(onStart, onStop, onAddTile)
         } else {
             SettingsTab()
         }
@@ -211,8 +245,9 @@ fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun HomeTab(onStart: () -> Unit, onStop: () -> Unit) {
+fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
     val isRunning by SettingsManager.isServiceRunning.collectAsState()
+    val tileAdded by SettingsManager.tileAdded.collectAsState()
 
     Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Text(stringResource(R.string.home_title), fontSize = 36.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
@@ -249,6 +284,28 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit) {
                 modifier = Modifier.weight(1f).height(56.dp)
             ) {
                 Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = if (!isRunning) SecondaryTextColor else Color.White)
+            }
+        }
+
+        // 빠른 설정 타일은 사용자가 알림창에 직접 추가해야 보인다. 추가했으면 숨긴다.
+        if (!tileAdded) {
+            Spacer(modifier = Modifier.height(24.dp))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                OutlinedButton(
+                    onClick = onAddTile,
+                    border = BorderStroke(1.dp, AccentColor),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth().height(52.dp)
+                ) {
+                    Text(stringResource(R.string.home_add_tile), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor)
+                }
+                Text(
+                    stringResource(R.string.home_add_tile_desc),
+                    fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 8.dp)
+                )
+            } else {
+                // Android 12 이하는 앱에서 추가 창을 띄울 수 없어 방법만 안내한다.
+                Text(stringResource(R.string.home_add_tile_manual), fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp)
             }
         }
     }

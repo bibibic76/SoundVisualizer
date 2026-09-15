@@ -75,6 +75,10 @@ object SettingsManager {
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
 
+    // 빠른 설정 타일이 알림창에 추가돼 있는지. 타일 서비스가 추가·제거될 때 알려준다.
+    private val _tileAdded = MutableStateFlow(false)
+    val tileAdded: StateFlow<Boolean> = _tileAdded
+
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -112,6 +116,8 @@ object SettingsManager {
 
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
+
+        _tileAdded.value = prefs.getBoolean("tile_added", false)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -231,5 +237,10 @@ object SettingsManager {
 
     fun setServiceRunning(isRunning: Boolean) {
         _isServiceRunning.value = isRunning
+    }
+
+    fun setTileAdded(added: Boolean) {
+        _tileAdded.value = added
+        prefs.edit { putBoolean("tile_added", added) }
     }
 }

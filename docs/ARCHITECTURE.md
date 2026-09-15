@@ -20,6 +20,7 @@ graph TD
 | 단계 | 코드 | 언어 |
 |---|---|---|
 | 시작·설정 화면 | `MainActivity`, `SettingsManager` | Kotlin (Compose) |
+| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일) | Kotlin |
 | 캡처 | `AudioCaptureService` | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
@@ -31,16 +32,25 @@ graph TD
 
 ## 1. 시작과 종료
 
-**시작** (`MainActivity`)
+시작과 종료는 앱의 버튼과 빠른 설정 타일이 같은 코드(`VisualizerController`)를 씁니다. 권한 목록(`requiredPermissions`), 서비스 시작(`start`), 종료(`stop`)가 여기 있습니다.
+
+**앱에서 시작** (`MainActivity`)
 
 1. 다른 앱 위에 표시 권한(`SYSTEM_ALERT_WINDOW`)을 확인하고, 없으면 설정 화면으로 보냅니다.
-2. 녹음(`RECORD_AUDIO`)과 알림(`POST_NOTIFICATIONS`, Android 13 이상) 권한을 요청합니다.
+2. 녹음(`RECORD_AUDIO`)과 알림(`POST_NOTIFICATIONS`, Android 13 이상) 권한을 요청합니다. 알림 권한은 거부해도 이어서 켭니다.
 3. 화면 녹화 동의 창(`MediaProjection`)을 띄웁니다. 오디오 캡처에도 이 동의가 필요합니다.
 4. 동의하면 `AudioCaptureService`(포그라운드 서비스)와 `OverlayService`를 함께 시작합니다.
 
+**빠른 설정 타일에서 시작** (`tile/VisualizerTileService` → `tile/StartVisualizerActivity`)
+
+- 권한 팝업과 동의 창은 액티비티에서만 띄울 수 있어서, 타일은 내용 없는 투명 화면을 열고 알림창을 접습니다. 잠금 화면이면 잠금 해제를 먼저 요구합니다(`unlockAndRun`).
+- 투명 화면은 위 2~4단계를 그대로 밟고 닫힙니다. 오버레이 권한만은 설정 화면이 필요해 앱을 열어 안내합니다.
+- 투명 화면은 `taskAffinity=""`로 앱과 다른 작업에 뜹니다. 그래서 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고, 닫히면 보던 게임·영상으로 돌아갑니다.
+- 타일은 알림창이 열려 있는 동안 `SettingsManager.isServiceRunning`을 구독해 켜짐·꺼짐을 표시합니다. 추가·제거될 때는 `SettingsManager.tileAdded`에 기록해 홈 화면의 "빠른 설정에 추가" 버튼을 숨기거나 보입니다.
+
 **종료**: 아래 경우 모두 캡처·오버레이·AI·진동을 함께 내립니다.
 
-- 앱의 중지 버튼, 또는 알림의 **중지** 버튼(`ACTION_STOP`)
+- 앱의 실행 종료 버튼, 켜진 상태에서 타일 누르기, 또는 알림의 **중지** 버튼(`ACTION_STOP`)
 - 사용자가 시스템 UI에서 화면 녹화를 끈 경우(`MediaProjection.Callback.onStop`)
 - 오디오 서버 재시작 등으로 캡처 읽기가 실패한 경우
 
