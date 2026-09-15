@@ -103,6 +103,15 @@ object SettingsManager {
     private val _isCapturePaused = MutableStateFlow(false)
     val isCapturePaused: StateFlow<Boolean> = _isCapturePaused
 
+    /**
+     * 사용자가 끄지 않았는데 마지막으로 꺼진 이유. 없으면 null. 홈 화면이 앱을 열었을 때 보여준다. (StopAlert)
+     *
+     * 앱 알림을 꺼 두면 꺼짐 알림도 올라가지 않고, 게임 위에서는 토스트도 시스템이 막아 진동만 남는다.
+     * 무엇이 꺼졌는지 나중에라도 알 수 있게, 프로세스가 끝나도 남도록 저장한다. 다시 켜거나 홈에서 닫으면 지운다.
+     */
+    private val _lastUnexpectedStop = MutableStateFlow<StopReason?>(null)
+    val lastUnexpectedStop: StateFlow<StopReason?> = _lastUnexpectedStop
+
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -127,6 +136,9 @@ object SettingsManager {
 
         _tileAdded.value = prefs.getBoolean("tile_added", false)
         _pauseWhenScreenOff.value = prefs.getBoolean("pause_when_screen_off", true)
+        // 이름으로 저장한다. 모르는 이름이면 알릴 것이 없는 것으로 본다.
+        _lastUnexpectedStop.value = prefs.getString("last_unexpected_stop", null)
+            ?.let { name -> StopReason.values().firstOrNull { it.name == name } }
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -294,5 +306,13 @@ object SettingsManager {
 
     fun setCapturePaused(paused: Boolean) {
         _isCapturePaused.value = paused
+    }
+
+    /** [reason] 이 null 이면 지운다. */
+    fun setLastUnexpectedStop(reason: StopReason?) {
+        _lastUnexpectedStop.value = reason
+        prefs.edit {
+            if (reason == null) remove("last_unexpected_stop") else putString("last_unexpected_stop", reason.name)
+        }
     }
 }

@@ -275,6 +275,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
     val isRunning by SettingsManager.isServiceRunning.collectAsState()
     val tileAdded by SettingsManager.tileAdded.collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
+    val lastUnexpectedStop by SettingsManager.lastUnexpectedStop.collectAsState()
 
     Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Text(stringResource(R.string.home_title), fontSize = 36.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
@@ -300,6 +301,28 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
                     fontSize = 14.sp, color = WarningColor, lineHeight = 21.sp,
                     modifier = Modifier.padding(start = 20.dp, top = 8.dp)
                 )
+            }
+            // 사용자가 끄지 않았는데 꺼졌으면 앱을 열었을 때 알린다. 앱 알림을 꺼 두면 알림도 토스트도 뜨지 못해
+            // 진동만 울리므로, 무엇이 꺼졌는지 알 수 있는 곳이 여기뿐이다. 다시 켜면 캡처 서비스가 지운다.
+            // 다시 켜는 버튼은 따로 두지 않는다. 바로 아래 실행 버튼이 같은 일을 한다.
+            val stop = lastUnexpectedStop
+            if (!isRunning && stop != null) {
+                Column(modifier = Modifier.padding(start = 20.dp, top = 8.dp)) {
+                    Text(
+                        stringResource(R.string.stopped_title),
+                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = WarningColor, lineHeight = 21.sp
+                    )
+                    Text(
+                        stringResource(StopAlert.textFor(stop)),
+                        fontSize = 14.sp, color = WarningColor, lineHeight = 21.sp
+                    )
+                    TextButton(
+                        onClick = { SettingsManager.setLastUnexpectedStop(null) },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(stringResource(R.string.home_stopped_dismiss), color = SecondaryTextColor, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
 

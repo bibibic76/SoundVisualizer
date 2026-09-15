@@ -1,6 +1,5 @@
 package com.example.soundvisualizer
 
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -53,32 +52,5 @@ class StopReasonTest {
         assertFalse("진동", plan.vibrate)
         assertTrue("알림", plan.notify)
         assertTrue("토스트 대체", plan.toastAfter(posted = false))
-    }
-
-    @Test
-    fun `서비스가 스스로 남긴 이유가 밖에서 받은 이유보다 먼저다`() {
-        // 캡처가 끊겨 내리는 중에 오버레이도 실패를 알려 온 경우. 먼저 난 원인을 알린다.
-        assertEquals(
-            StopReason.CaptureError,
-            StopReason.resolve(recorded = StopReason.CaptureError, external = StopReason.StartFailed)
-        )
-    }
-
-    @Test
-    fun `스스로 남긴 이유가 없으면 오버레이가 남긴 이유를 쓴다`() {
-        assertEquals(StopReason.StartFailed, StopReason.resolve(recorded = null, external = StopReason.StartFailed))
-    }
-
-    @Test
-    fun `이유 없이 밖에서 멈추면 앱 버튼이나 타일로 사용자가 끈 것으로 본다`() {
-        assertEquals(StopReason.UserRequested, StopReason.resolve(recorded = null, external = null))
-    }
-
-    @Test
-    fun `알림의 중지 버튼으로 끈 경우는 밖에서 받은 실패 이유보다 먼저다`() {
-        assertEquals(
-            StopReason.UserRequested,
-            StopReason.resolve(recorded = StopReason.UserRequested, external = StopReason.StartFailed)
-        )
     }
 }

@@ -22,8 +22,11 @@ import com.example.soundvisualizer.tile.StartVisualizerActivity
  */
 object StopAlert {
 
-    /** 실행 중 알림(AudioCaptureService)과 다른 채널. 그쪽은 조용한 저중요도라 이 알림을 묻는다. */
-    private const val CHANNEL_ID = "VisualizerStoppedChannel"
+    /**
+     * 실행 중 알림(AudioCaptureService)과 다른 채널. 그쪽은 조용한 저중요도라 이 알림을 묻는다.
+     * 채널의 소리·진동은 처음 만든 뒤로 앱이 바꿀 수 없으므로, 둘을 바꾸려면 ID 도 바꿔야 한다.
+     */
+    private const val CHANNEL_ID = "VisualizerStoppedAlertChannel"
 
     /** 실행 중 알림은 1 번이다. */
     private const val NOTIFICATION_ID = 2
@@ -35,8 +38,10 @@ object StopAlert {
      * 채널을 만든다. 여러 번 불러도 된다. 사용자가 바꾼 중요도·소리 설정은 시스템이 지킨다.
      *
      * 중요도는 HIGH 다. 청각장애 사용자는 알림음을 못 들으니, 게임 화면 위로 잠깐 내려오는 팝업(헤드업)이
-     * 없으면 상태 표시줄 아이콘만으로는 꺼진 줄 모른다. 자주 뜨지 않는 알림이라 방해도 적다.
-     * 채널 진동은 끈다. 시스템 알림 진동이 뒤따라 울리면 앞서 울린 고유 진동이 끊겨 그 알림 진동으로 바뀐다.
+     * 없으면 상태 표시줄 아이콘만으로는 꺼진 줄 모른다. 자주 뜨지 않는 알림이라 방해도 적다. 헤드업은 중요도만 보고 소리는 필요 없다.
+     *
+     * 채널의 소리와 진동은 모두 끈다. 앱이 먼저 울린 고유 진동을 시스템 알림 진동이 끊고 덮어쓰지 않게 하기 위해서다.
+     * 진동만 끄고 소리를 남기면, 진동 모드(청각장애 사용자에게 흔하다)에서 시스템이 소리 대신 기본 알림 진동을 울린다.
      */
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -45,27 +50,35 @@ object StopAlert {
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = context.getString(R.string.stopped_channel_desc)
+            setSound(null, null)
             enableVibration(false)
         }
         context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 
-    /** 다시 켜졌으면 지난 "꺼졌습니다" 알림은 틀린 정보라 치운다. */
+    /** 다시 켜졌으면 지난 "꺼졌습니다" 알림과 홈 화면 안내는 틀린 정보라 치운다. */
     fun cancel(context: Context) {
         context.getSystemService(NotificationManager::class.java)?.cancel(NOTIFICATION_ID)
+        SettingsManager.setLastUnexpectedStop(null)
     }
 
     /**
      * 멈춘 이유에 맞게 알린다. 사용자가 끈 경우에는 아무것도 하지 않는다. 메인 스레드에서 부른다(토스트).
      *
-     * 진동은 진동 알림을 멈춘 뒤에 불러야 한다. 진동 알림의 cancel() 이 이 진동까지 끊는다.
+     * 캡처 서비스를 내리기 전, 아직 포그라운드일 때 부른다. 내린 뒤에는 진동이 백그라운드 앱의 것으로 막힐 수 있다.
+     * 진동 알림을 멈춘 뒤에 불러야 한다. 진동 알림의 cancel() 이 이 진동까지 끊는다.
      */
     fun show(context: Context, reason: StopReason) {
         val player = HapticPlayer(context)
         val plan = StopAlertPlan.decide(reason, player.hasVibrator)
         if (plan.vibrate) player.playStoppedAlert()
-        val posted = plan.notify && post(context, CHANNEL_ID, NOTIFICATION_ID, buildNotification(context, reason))
+        if (!plan.notify) return
+        // 알림이 올라가도 남긴다. 알림을 밀어서 치웠거나 못 보고 앱을 열어도 무엇이 꺼졌는지 알 수 있다.
+        SettingsManager.setLastUnexpectedStop(reason)
+        val posted = post(context, CHANNEL_ID, NOTIFICATION_ID, buildNotification(context, reason))
         if (plan.toastAfter(posted)) {
+            // 앱 알림이 꺼져 있으면 시스템은 앱이 맨 앞에 있을 때만 토스트를 보여준다. 게임 위에서는 막히므로
+            // 그때는 진동과, 앱을 열었을 때의 홈 안내가 알린다.
             // 서비스는 곧 사라지므로 앱 컨텍스트로 띄우고, 문구는 앱 언어가 입혀진 넘겨받은 컨텍스트에서 꺼낸다.
             Toast.makeText(context.applicationContext, context.getString(R.string.stopped_toast), Toast.LENGTH_LONG).show()
         }
@@ -120,8 +133,9 @@ object StopAlert {
             .build()
     }
 
+    /** 무엇이 꺼졌는지 알리는 문구. 알림과 홈 화면 안내가 같이 쓴다. */
     @StringRes
-    private fun textFor(reason: StopReason): Int = when (reason) {
+    fun textFor(reason: StopReason): Int = when (reason) {
         StopReason.ProjectionStopped -> R.string.stopped_text_projection
         StopReason.CaptureError -> R.string.stopped_text_capture_error
         // 사용자가 끈 경우에는 알림을 만들지 않지만 when 을 빠짐없이 채우려고 가장 일반적인 문구를 둔다.

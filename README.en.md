@@ -115,7 +115,7 @@ You can also find how to use it, why permissions are needed and the FAQ in the a
    | **Display over other apps** | To show graphics on top of games and videos. |
    | **Microphone (audio recording)** | To capture sound playing on your phone. The permission is called microphone, but **sounds around you are not recorded.** |
    | **Screen recording / casting** | Android only lets apps capture your phone's sound through this permission. **Your screen itself is not captured.** |
-   | **Notifications** (Android 13+) | To show the running notification and its Stop button, and to tell you when it turns off without you stopping it. The app still works if you deny it, and a short message tells you when it turns off instead. |
+   | **Notifications** (Android 13+) | To show the running notification and its Stop button, and to tell you when it turns off without you stopping it. The app still works if you deny it. If it then turns off, only the vibration tells you, and Home shows what turned off when you open the app. |
 
    The app explains why it needs the microphone before asking. If you've denied it several times and Android stops asking, tap **Open settings** when the app prompts you, and allow the microphone under Permissions in the app info.
 
@@ -139,7 +139,7 @@ The first time you turn it on, the microphone and notification permissions are a
 - **It can tell left from right, but not front from back.** Phone audio has two channels, left and right, and direction comes from the difference between them. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space. They don't pick out sounds actually coming from behind you.
 - **Sounds that are identical on the left and right (mono) have no direction.** They're shown only toward the front.
 - **Not every sound is captured.** Only media and game sounds are captured. Phone calls, notification sounds and alarms are not. Some apps (such as copy-protected video apps) block audio capture and can't be visualized.
-- **Starting screen recording, screen sharing or casting turns it off.** The app captures sound through the screen recording consent, and Android lets only one app use it at a time. If it turns off without you stopping it, your phone **vibrates three long times** and shows a notification with a **Turn on again** button. If notifications are off, a short message appears instead.
+- **Starting screen recording, screen sharing or casting turns it off.** The app captures sound through the screen recording consent, and Android lets only one app use it at a time. If it turns off without you stopping it, your phone **vibrates three long times** and shows a notification with a **Turn on again** button. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.
 - **AI classification is for reference only.** It can get the sound type wrong. Don't rely on this app as your only safeguard when safety is at stake.
 
 ---

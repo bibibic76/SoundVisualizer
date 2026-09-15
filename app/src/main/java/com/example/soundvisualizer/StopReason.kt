@@ -21,30 +21,21 @@ enum class StopReason {
     CaptureError,
 
     /** 동의까지 받았는데 캡처나 오버레이를 시작하지 못했다. 사용자는 아무 일도 안 일어난 것처럼 보게 된다. */
-    StartFailed;
-
-    companion object {
-        /**
-         * onDestroy 에서 최종 이유를 고른다.
-         *
-         * @param recorded 서비스가 스스로 멈추며 남긴 이유. 먼저 난 실패가 뒤따르는 부수 실패보다 정확하다.
-         * @param external 서비스 밖(오버레이)이 실패로 멈추며 남긴 이유
-         * @return 둘 다 없으면 stopService 로 밖에서 내린 것이고, 그런 호출은 사용자의 끄기뿐이다.
-         */
-        fun resolve(recorded: StopReason?, external: StopReason?): StopReason =
-            recorded ?: external ?: UserRequested
-    }
+    StartFailed
 }
 
 /**
  * 멈췄을 때 사용자에게 알리는 방법.
  *
  * - 진동: 게임 중이거나 폰이 주머니에 있어도 느낄 수 있다. 소리 종류별 진동 설정과 상관없이 울린다.
+ *   앱 알림을 꺼 둔 채 게임 중이면 바로 알리는 수단은 이것뿐이다.
  * - 알림: 무엇이 꺼졌는지와 "다시 켜기" 버튼을 남긴다.
+ * - 홈 안내: 알림을 올렸는지와 상관없이 남겨, 앱을 열면 무엇이 꺼졌는지 보여준다.
  * - 토스트: 알림을 올릴 수 없을 때(권한 거부, 앱·채널 알림 끄기)만 대신 띄운다. 알림 권한은 거부해도 앱이 돌기 때문이다.
+ *   다만 앱 알림이 꺼져 있으면 시스템이 앱이 맨 앞에 있을 때만 보여주므로 덤일 뿐이다.
  *
  * @property vibrate 고유한 진동을 울릴지
- * @property notify 알림을 올려 볼지. 실제로 올라갔는지는 [toastAfter] 로 넘긴다.
+ * @property notify 알림을 올려 보고 홈 안내를 남길지. 알림이 실제로 올라갔는지는 [toastAfter] 로 넘긴다.
  */
 data class StopAlertPlan(val vibrate: Boolean, val notify: Boolean) {
 

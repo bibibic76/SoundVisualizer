@@ -136,25 +136,32 @@ class AudioCaptureService : Service() {
             private set
 
         /**
-         * 서비스 밖에서 실패로 멈추게 할 때 남기는 이유. stopService 로는 이유를 넘길 수 없어서 먼저 적어 두고
-         * onDestroy 가 읽어 간다. 새로 켜질 때(onCreate) 지운다. 메인 스레드 전용.
+         * 떠 있는 캡처 서비스. [stopForFailure] 가 서비스를 내리기 전에 알리도록 부른다.
+         * onCreate 에서 넣고 onDestroy 에서 비우므로 서비스가 내려간 뒤까지 붙잡지 않는다. 메인 스레드 전용.
          */
-        private var pendingStopReason: StopReason? = null
+        @SuppressLint("StaticFieldLeak")
+        private var instance: AudioCaptureService? = null
 
         // stopService 는 Intent 의 대상 컴포넌트로 서비스를 찾으므로 새로 만든 Intent 로 멈추는 게 맞다.
         // Lint(ImplicitSamInstance)는 새 인스턴스라 아무것도 멈추지 못한다고 보지만 오탐이다.
         /**
          * 서비스 밖(오버레이)이 실패해서 캡처를 내린다. 사용자가 끈 게 아니므로 캡처 서비스가 멈추며 알린다.
          *
+         * stopService 로 내리면 이유를 넘길 수 없고, onDestroy 까지 기다리면 포그라운드에서 내려온 뒤라 진동이 막힌다.
+         * 그래서 떠 있는 서비스에 직접 이유를 넘겨 알린 뒤 내리게 한다.
          * 이유를 인텐트에 실어 startService 로 보내지 않는 이유: 캡처 서비스가 이미 내려가는 중이면
          * startService 가 새 인스턴스를 만들고, 동의 없이 mediaProjection 포그라운드 서비스를 띄우려다 죽는다.
-         * stopService 는 서비스를 만들지 않는다.
          */
         @MainThread
         @SuppressLint("ImplicitSamInstance")
         fun stopForFailure(context: Context, reason: StopReason) {
-            if (isRunning) pendingStopReason = reason
-            context.stopService(Intent(context, AudioCaptureService::class.java))
+            val service = instance
+            if (service != null) {
+                service.stopEverything(reason)
+            } else {
+                // 떠 있는 서비스가 없다(onCreate 전이거나 이미 내려갔다). 켜진 적이 없으니 알릴 것도 없고, 내리기만 한다.
+                context.stopService(Intent(context, AudioCaptureService::class.java))
+            }
         }
     }
 
@@ -166,7 +173,7 @@ class AudioCaptureService : Service() {
     override fun onCreate() {
         super.onCreate()
         SettingsManager.init(applicationContext)
-        pendingStopReason = null
+        instance = this
         // 이번 실행의 모델 로딩 결과는 아직 모른다. 로딩 중에는 실패로 보이지 않게 둔다.
         SettingsManager.setAiAvailable(true)
         SettingsManager.setCapturePaused(false)
@@ -179,7 +186,7 @@ class AudioCaptureService : Service() {
             createNotification(),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
         )
-        // 다시 켜졌으니 지난번에 꺼졌다고 알린 알림은 틀린 정보다.
+        // 다시 켜졌으니 지난번에 꺼졌다고 알린 알림과 홈 안내는 틀린 정보다.
         StopAlert.cancel(this)
         AudioEngine.reset()
         isRunning = true
@@ -527,24 +534,42 @@ class AudioCaptureService : Service() {
     // Lint(ImplicitSamInstance)는 새 인스턴스라 아무것도 멈추지 못한다고 보지만 오탐이다.
     /**
      * 캡처, 오버레이, 자기 자신을 모두 정리한다. 여러 번 호출해도 안전. 메인 스레드에서 부른다.
-     * 알림은 정리가 끝난 onDestroy 에서 [reason] 으로 정한다.
+     *
+     * 처음 멈출 때만 [reason] 으로 알린다. 뒤따라 오는 실패보다 먼저 난 원인이 정확하기 때문이다.
+     * 알림은 서비스를 내리기 **전에** 한다. onDestroy 에서는 포그라운드 서비스와 오버레이가 이미 내려가
+     * 안드로이드가 이 앱을 백그라운드로 보고 진동을 버릴 수 있다. 게임 화면 위에서 꺼지는, 알려야 할 바로 그 경우다.
+     * 앱 버튼이나 타일로 끄면 이 함수를 거치지 않고 stopService 로 바로 내려가므로 알리지 않는다.
      */
     @SuppressLint("ImplicitSamInstance")
     private fun stopEverything(reason: StopReason) {
         if (destroyed) return
-        if (stopReason == null) stopReason = reason
+        if (stopReason == null) {
+            stopReason = reason
+            stopHapticsBeforeAlert()
+            StopAlert.show(this, reason)
+        }
         stopService(Intent(this, OverlayService::class.java))
         SettingsManager.setServiceRunning(false)
         stopSelf()
     }
 
+    /**
+     * 멈춤 진동을 울리기 전에 진동 알림을 떼어 멈춘다. 진동 알림의 cancel() 이 멈춤 진동까지 끊기 때문이다.
+     * aiPaused 를 세워, onDestroy 전에 모델 로딩이 끝나도 진동 알림을 새로 붙이지 않게 한다(추론도 시작하지 않는다).
+     */
+    private fun stopHapticsBeforeAlert() {
+        val haptics = synchronized(aiLock) {
+            aiPaused = true
+            hapticNotifier.also { hapticNotifier = null }
+        }
+        haptics?.stop()
+    }
+
     override fun onDestroy() {
         destroyed = true
         isRunning = false
+        instance = null
         SettingsManager.setServiceRunning(false)
-        // 스스로 남긴 이유도, 밖에서 남긴 이유도 없으면 앱 버튼이나 타일로 사용자가 끈 것이다.
-        val reason = StopReason.resolve(stopReason, pendingStopReason)
-        pendingStopReason = null
 
         if (screenReceiverRegistered) {
             unregisterReceiver(screenReceiver)
@@ -585,9 +610,6 @@ class AudioCaptureService : Service() {
         SettingsManager.setCapturePaused(false)
         // 다음 실행의 로딩 결과와 섞이지 않게 되돌린다. 꺼져 있을 때는 알릴 것이 없다.
         SettingsManager.setAiAvailable(true)
-
-        // 진동 알림을 멈춘 뒤에 알린다. 진동 알림의 cancel() 이 앞서 울린 멈춤 진동까지 끊기 때문이다.
-        StopAlert.show(this, reason)
         super.onDestroy()
     }
 
