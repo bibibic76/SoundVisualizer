@@ -130,6 +130,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 `WindowManager`에 `TYPE_APPLICATION_OVERLAY` 창을 띄우고 그 안에 `ComposeView`를 둡니다.
 
 - `FLAG_NOT_TOUCHABLE`, `FLAG_NOT_FOCUSABLE`: 터치와 입력이 아래 앱(게임)으로 그대로 전달됩니다.
+- 창 불투명도(`alpha`): Android 12 이상은 `InputManager.maximumObscuringOpacityForTouch`(기본 0.8)로 맞춥니다. 다른 앱 위에 겹친 창이 이 값보다 불투명하면 시스템이 아래 앱으로 가는 터치를 막기 때문입니다(신뢰할 수 없는 터치 차단).
 - `FLAG_LAYOUT_NO_LIMITS`, `FLAG_LAYOUT_IN_SCREEN`: 상태바·내비게이션 바 영역까지 화면 전체에 그립니다.
 
 ### 렌더 루프 (`VisualizerOverlay`)
