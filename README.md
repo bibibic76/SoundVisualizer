@@ -83,9 +83,10 @@
 
 **요구 사항**: Android 10 이상
 
-1. 전달받은 APK 파일을 폰에서 엽니다.
-2. "알 수 없는 앱 설치" 허용을 묻는 창이 뜨면 허용합니다.
-3. 설치를 누릅니다.
+1. [Releases](https://github.com/bibibic76/SoundVisualizer/releases)에서 원하는 버전의 `SoundVisualizer-버전.apk`를 폰으로 받습니다. APK 파일을 직접 전달받았다면 그 파일을 씁니다.
+2. 받은 APK 파일을 폰에서 엽니다.
+3. "알 수 없는 앱 설치" 허용을 묻는 창이 뜨면 허용합니다.
+4. 설치를 누릅니다.
 
 ---
 
@@ -160,6 +161,7 @@
   - 새로 생긴 **오류**가 있으면 CI 가 실패하고, **경고**는 개수와 위치만 표시합니다. PR 의 파일 화면에도 해당 줄에 표시됩니다.
   - 이미 알고 미뤄둔 문제(targetSdk, 라이브러리 업데이트 알림)는 기준선 `app/lint-baseline.xml` 에 기록되어 있어 실패로 치지 않습니다.
   - 전체 리포트는 **Artifacts** 의 `lint-report-run번호` 에 있습니다. 로컬에서는 `./gradlew lintDebug` 로 같은 검사를 돌립니다.
+- **릴리스 APK**: `main` 에 `v1.0.0` 같은 버전 태그를 push 하면 그 코드로 폰용 APK 를 빌드해 [Releases](https://github.com/bibibic76/SoundVisualizer/releases) 에 붙입니다. 이 워크플로가 생기기 전 커밋에 단 태그는 **Actions → 릴리스 APK → Run workflow** 에서 태그 이름을 넣어 돌립니다.
 - **계측 테스트**는 기기가 필요해서 CI 에서는 돌리지 않습니다.
 
 #### 같은 서명으로 빌드하기 (저장소 관리자가 한 번 설정)
