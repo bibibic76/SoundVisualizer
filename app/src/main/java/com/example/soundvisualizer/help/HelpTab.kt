@@ -98,7 +98,14 @@ fun HelpTab() {
         }
         item {
             SettingsExpander(stringResource(R.string.help_notes_title)) {
-                Bullets(R.string.help_note_direction, R.string.help_note_mono, R.string.help_note_sources, R.string.help_note_ai)
+                Bullets(
+                    R.string.help_note_direction,
+                    R.string.help_note_mono,
+                    R.string.help_note_sources,
+                    R.string.help_note_stopped,
+                    R.string.help_note_screen_off,
+                    R.string.help_note_ai
+                )
             }
         }
         item {

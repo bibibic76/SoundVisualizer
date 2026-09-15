@@ -1,6 +1,5 @@
 package com.example.soundvisualizer
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -118,11 +117,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
 
-    // 새로 만든 Intent 로 stopService 를 부르는 건 정상이다. Lint(ImplicitSamInstance) 오탐.
-    /** 오버레이를 띄울 수 없으면 오디오 캡처도 의미가 없으므로 같이 정리한다. */
-    @SuppressLint("ImplicitSamInstance")
+    /**
+     * 오버레이를 띄울 수 없으면 오디오 캡처도 의미가 없으므로 같이 정리한다.
+     * 동의까지 받았는데 켜지지 않은 것이라 사용자가 끈 게 아니다. 캡처 서비스가 멈추며 알리도록 이유를 넘긴다.
+     */
     private fun stopEverything() {
-        stopService(Intent(this, AudioCaptureService::class.java))
+        AudioCaptureService.stopForFailure(this, StopReason.StartFailed)
         SettingsManager.setServiceRunning(false)
         stopSelf()
     }

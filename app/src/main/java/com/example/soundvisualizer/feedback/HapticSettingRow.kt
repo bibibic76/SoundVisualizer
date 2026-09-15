@@ -34,6 +34,7 @@ import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
+import com.example.soundvisualizer.WarningColor
 import com.example.soundvisualizer.wrappingLabelStyle
 
 /**
@@ -51,11 +52,16 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val context = LocalContext.current
     val player = remember { HapticPlayer(context) }
     val settings by SettingsManager.hapticSettings(label).collectAsState()
+    val aiAvailable by SettingsManager.aiAvailable.collectAsState()
 
     val switchEnabled = shown && player.hasVibrator
+    // 소리 종류 구분(AI)을 못 불러오면 진동 알림 자체가 돌지 않는다. 스위치는 켜진 그대로라
+    // 위협음 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 설정값은 다음 실행을 위해 바꾸지 않는다.
+    val aiNote = !aiAvailable && switchEnabled && settings.enabled
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
         !shown -> R.string.haptic_requires_display
+        aiNote -> R.string.haptic_ai_unavailable
         else -> null
     }
 
@@ -89,7 +95,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             Text(
                 stringResource(noteRes),
                 fontSize = 13.sp,
-                color = SecondaryTextColor,
+                color = if (aiNote) WarningColor else SecondaryTextColor,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

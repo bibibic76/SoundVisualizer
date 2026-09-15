@@ -7,8 +7,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
@@ -21,10 +23,13 @@ import android.media.projection.MediaProjectionManager
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import android.os.Process
 import android.util.Log
+import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.HapticNotifier
@@ -37,11 +42,15 @@ import java.nio.ByteOrder
  *
  * 캡처 루프는 코루틴 대신 전용 스레드(URGENT_AUDIO 우선순위)에서 돌며,
  * AudioRecord → direct ByteBuffer → JNI 로 복사 없이 넘긴다.
+ *
+ * 사용자가 끈 게 아닌데 멈추면 [StopAlert] 로 알린다. 화면이 꺼지면 [ScreenOffPause] 에 따라 쉰다.
  */
 class AudioCaptureService : Service() {
 
     private var mediaProjection: MediaProjection? = null
     private var audioRecord: AudioRecord? = null
+
+    /** 지금 도는 캡처 스레드. 메인 스레드에서만 바꾸고 읽는다. */
     private var captureThread: Thread? = null
 
     @Volatile
@@ -51,11 +60,14 @@ class AudioCaptureService : Service() {
     @Volatile
     private var aiPipeline: RealtimeAiPipeline? = null
 
-    /** aiPipeline 부착과 서비스 종료 사이의 경합을 막는다. */
+    /** aiPipeline 부착과 서비스 종료·화면 꺼짐 사이의 경합을 막는다. */
     private val aiLock = Any()
 
-    /** onDestroy 가 지났는지. 늦게 끝난 초기화가 스스로 정리하도록 알린다. */
+    /** onDestroy 가 지났는지. 늦게 끝난 초기화가 스스로 정리하도록 알린다. aiLock 으로 보호. */
     private var aiDestroyed = false
+
+    /** 화면이 꺼져 AI 와 진동을 쉬는 중인지. 늦게 끝난 초기화가 쉬는 중에 추론을 시작하지 않도록 알린다. aiLock 으로 보호. */
+    private var aiPaused = false
 
     /** 분류 결과에 맞춰 진동을 준다. AI 파이프라인이 붙은 뒤에만 생긴다. aiLock 으로 보호. */
     private var hapticNotifier: HapticNotifier? = null
@@ -65,11 +77,35 @@ class AudioCaptureService : Service() {
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    /**
+     * 서비스가 스스로 멈추며 남긴 이유. 처음 것을 지킨다. 뒤따라 오는 실패(프로젝션이 끊겨 read 오류 등)보다
+     * 먼저 난 원인이 정확하기 때문이다. null 이면 아직 멈추는 중이 아니다. 메인 스레드 전용.
+     */
+    private var stopReason: StopReason? = null
+
+    /** onDestroy 가 시작됐는지. 늦게 도착한 콜백이 다음 실행의 오버레이를 내리지 않게 한다. 메인 스레드 전용. */
+    private var destroyed = false
+
+    /** 화면이 꺼져 쉬는 중인지. 메인 스레드 전용. */
+    private val screenPause = ScreenOffPause()
+
+    private var screenReceiverRegistered = false
+
     private val projectionCallback = object : MediaProjection.Callback() {
-        // 사용자가 상태바/시스템 UI 에서 캡처를 중단한 경우
+        // 다른 앱이 화면 녹화·공유·전송을 시작했거나(안드로이드는 한 번에 한 앱만 허용한다),
+        // 사용자가 시스템 UI 에서 캡처를 끈 경우. 콜백만으로는 둘을 구분할 수 없다.
         override fun onStop() {
             Log.i(TAG, "MediaProjection stopped by system/user")
-            stopEverything()
+            stopEverything(StopReason.ProjectionStopped)
+        }
+    }
+
+    private val screenReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Intent.ACTION_SCREEN_OFF -> onScreenOff()
+                Intent.ACTION_SCREEN_ON -> onScreenOn()
+            }
         }
     }
 
@@ -77,6 +113,8 @@ class AudioCaptureService : Service() {
         private const val TAG = "AudioCaptureService"
         const val EXTRA_RESULT_CODE = "RESULT_CODE"
         const val EXTRA_RESULT_DATA = "RESULT_DATA"
+
+        /** 실행 중 알림의 중지 버튼. 사용자가 끈 것으로 본다. */
         const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
         private const val CHANNEL_ID = "AudioCaptureChannel"
         private const val NOTIFICATION_ID = 1
@@ -89,10 +127,35 @@ class AudioCaptureService : Service() {
         private const val READ_FLOATS = 1024
         private const val BYTES_PER_FLOAT = 4
 
+        /** 캡처 스레드가 끝나기를 기다리는 최대 시간. stop() 으로 read() 가 풀리므로 보통 바로 끝난다. */
+        private const val CAPTURE_JOIN_TIMEOUT_MS = 2000L
+
         /** 프로세스 내에서 서비스가 살아있는지 (액티비티 UI 상태 복원용). */
         @Volatile
         var isRunning: Boolean = false
             private set
+
+        /**
+         * 서비스 밖에서 실패로 멈추게 할 때 남기는 이유. stopService 로는 이유를 넘길 수 없어서 먼저 적어 두고
+         * onDestroy 가 읽어 간다. 새로 켜질 때(onCreate) 지운다. 메인 스레드 전용.
+         */
+        private var pendingStopReason: StopReason? = null
+
+        // stopService 는 Intent 의 대상 컴포넌트로 서비스를 찾으므로 새로 만든 Intent 로 멈추는 게 맞다.
+        // Lint(ImplicitSamInstance)는 새 인스턴스라 아무것도 멈추지 못한다고 보지만 오탐이다.
+        /**
+         * 서비스 밖(오버레이)이 실패해서 캡처를 내린다. 사용자가 끈 게 아니므로 캡처 서비스가 멈추며 알린다.
+         *
+         * 이유를 인텐트에 실어 startService 로 보내지 않는 이유: 캡처 서비스가 이미 내려가는 중이면
+         * startService 가 새 인스턴스를 만들고, 동의 없이 mediaProjection 포그라운드 서비스를 띄우려다 죽는다.
+         * stopService 는 서비스를 만들지 않는다.
+         */
+        @MainThread
+        @SuppressLint("ImplicitSamInstance")
+        fun stopForFailure(context: Context, reason: StopReason) {
+            if (isRunning) pendingStopReason = reason
+            context.stopService(Intent(context, AudioCaptureService::class.java))
+        }
     }
 
     // Android 12 이하에서 알림 문구를 앱 언어로 보여준다. 13 이상은 시스템이 적용한다.
@@ -103,7 +166,12 @@ class AudioCaptureService : Service() {
     override fun onCreate() {
         super.onCreate()
         SettingsManager.init(applicationContext)
+        pendingStopReason = null
+        // 이번 실행의 모델 로딩 결과는 아직 모른다. 로딩 중에는 실패로 보이지 않게 둔다.
+        SettingsManager.setAiAvailable(true)
+        SettingsManager.setCapturePaused(false)
         createNotificationChannel()
+        StopAlert.createChannel(this)
         // Android 14+: getMediaProjection() 이전에 mediaProjection 타입 FGS 가 먼저 떠 있어야 한다.
         ServiceCompat.startForeground(
             this,
@@ -111,12 +179,17 @@ class AudioCaptureService : Service() {
             createNotification(),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
         )
+        // 다시 켜졌으니 지난번에 꺼졌다고 알린 알림은 틀린 정보다.
+        StopAlert.cancel(this)
         AudioEngine.reset()
         isRunning = true
         // 실행 상태는 서비스가 직접 알린다. 액티비티가 startForegroundService() 직후에
         // 표시하면 아직 onCreate 가 안 돌아 false 로 덮어써진다.
         SettingsManager.setServiceRunning(true)
         sampleRate = pickSampleRate()
+
+        // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
+        registerScreenReceiver()
 
         // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화 실패해도 캡처는 계속한다.
         startAiPipelineAsync()
@@ -143,24 +216,44 @@ class AudioCaptureService : Service() {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
                 null
             }
-            if (pipeline != null) {
-                synchronized(aiLock) {
-                    if (aiDestroyed) {
-                        pipeline.close()
-                    } else {
-                        pipeline.start()
-                        aiPipeline = pipeline
-                        AiClassification.attach { pipeline.lastClassification() }
-                        // 첫 분류 결과가 나오기 전(null)에는 울리지 않는다.
-                        hapticNotifier = HapticNotifier(appContext) { pipeline.lastClassification()?.coarse }
-                            .also { it.start() }
-                    }
-                }
-            }
+            synchronized(aiLock) { onAiPipelineLoadedLocked(pipeline) }
         }, "SV-AiInit").apply {
             isDaemon = true
             start()
         }
+    }
+
+    /** 모델 로딩이 끝났다. aiLock 안에서 부른다. [pipeline] 이 null 이면 로딩에 실패한 것이다. */
+    private fun onAiPipelineLoadedLocked(pipeline: RealtimeAiPipeline?) {
+        if (aiDestroyed) {
+            // 로딩 중에 서비스가 내려갔다. 다음 실행의 상태와 섞이지 않게 아무것도 알리지 않는다.
+            pipeline?.close()
+            return
+        }
+        if (pipeline == null) {
+            // 캡처와 시각화는 계속한다. 대신 모든 소리가 환경음으로 그려지고 진동 알림이 돌지 않는다는 걸
+            // 홈·설정 화면과 실행 중 알림에 알린다. 알리지 않으면 위협음 진동이 켜진 줄 믿게 된다.
+            SettingsManager.setAiAvailable(false)
+            mainHandler.post { refreshOngoingNotification() }
+            return
+        }
+        aiPipeline = pipeline
+        AiClassification.attach { pipeline.lastClassification() }
+        // 화면이 꺼져 쉬는 중이면 켜질 때 resumeAfterScreenOff 가 시작한다.
+        if (!aiPaused) startAiLocked(pipeline)
+    }
+
+    /**
+     * 추론과 진동 알림을 시작한다. aiLock 안에서 부른다.
+     * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
+     * start() 는 링버퍼·후처리·마지막 결과를 비우므로 쉬기 직전의 소리를 다시 분류하지 않는다.
+     */
+    private fun startAiLocked(pipeline: RealtimeAiPipeline) {
+        pipeline.start()
+        if (hapticNotifier != null) return
+        // 첫 분류 결과가 나오기 전(null)에는 울리지 않는다.
+        hapticNotifier = HapticNotifier(applicationContext) { pipeline.lastClassification()?.coarse }
+            .also { it.start() }
     }
 
     /**
@@ -188,7 +281,7 @@ class AudioCaptureService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
-            stopEverything()
+            stopEverything(StopReason.UserRequested)
             return START_NOT_STICKY
         }
         if (intent != null && audioRecord == null) {
@@ -196,10 +289,10 @@ class AudioCaptureService : Service() {
             val resultData = IntentCompat.getParcelableExtra(intent, EXTRA_RESULT_DATA, Intent::class.java)
             if (resultCode != 0 && resultData != null) {
                 if (!startAudioCapture(resultCode, resultData)) {
-                    stopEverything()
+                    stopEverything(StopReason.StartFailed)
                 }
             } else {
-                stopEverything()
+                stopEverything(StopReason.StartFailed)
             }
         }
         return START_NOT_STICKY
@@ -262,13 +355,24 @@ class AudioCaptureService : Service() {
         }
 
         audioRecord = record
-        isRecording = true
-        record.startRecording()
+        // 동의 직후 화면이 꺼져 쉬는 중이면 녹음은 화면이 켜질 때 시작한다.
+        if (screenPause.isPaused) return true
+        return startCaptureLoop(record)
+    }
+
+    /** 녹음을 시작하고 캡처 스레드를 띄운다. 처음 켤 때와 화면이 다시 켜질 때 쓴다. 녹음이 시작되지 않으면 false. */
+    private fun startCaptureLoop(record: AudioRecord): Boolean {
+        try {
+            record.startRecording()
+        } catch (e: IllegalStateException) {
+            Log.e(TAG, "AudioRecord.startRecording failed", e)
+            return false
+        }
         if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
             Log.e(TAG, "AudioRecord failed to start recording")
             return false
         }
-
+        isRecording = true
         captureThread = Thread({ captureLoop(record) }, "SV-AudioCapture").apply {
             isDaemon = true
             start()
@@ -276,8 +380,34 @@ class AudioCaptureService : Service() {
         return true
     }
 
+    /**
+     * 캡처 루프를 멈추고 스레드가 끝나기를 기다린다. AudioRecord 는 해제하지 않는다.
+     *
+     * isRecording 을 먼저 내려야 stop() 으로 read() 가 풀리며 내는 오류를 진짜 캡처 오류로 보지 않는다.
+     *
+     * @return 스레드가 끝났거나 없었으면 true. 끝나지 않았으면 스레드 참조를 남기고 false.
+     *         아직 read() 안에 있는데 release() 하면 네이티브에서 해제된 AudioRecord 를 건드려 SIGSEGV 가 나고,
+     *         같은 AudioRecord 로 새 스레드를 띄우면 두 스레드가 한 버퍼를 읽는다.
+     */
+    private fun stopCaptureLoop(): Boolean {
+        isRecording = false
+        audioRecord?.let { record ->
+            try { record.stop() } catch (e: IllegalStateException) { /* already stopped */ }
+        }
+        val thread = captureThread ?: return true
+        try {
+            thread.join(CAPTURE_JOIN_TIMEOUT_MS)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
+        if (thread.isAlive) return false
+        captureThread = null
+        return true
+    }
+
     private fun captureLoop(record: AudioRecord) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
+        val loopThread = Thread.currentThread()
         // direct buffer: AudioRecord 가 직접 채우고 JNI 가 주소로 읽는다 (Kotlin 힙 복사 0회, GC 0회).
         val buffer = ByteBuffer.allocateDirect(READ_FLOATS * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder())
         // AI 경로는 FloatArray 를 받으므로 뷰와 스크래치를 한 번만 만들어 재사용한다.
@@ -298,43 +428,131 @@ class AudioCaptureService : Service() {
                 Log.w(TAG, "AudioRecord.read error $bytes, stopping capture loop")
                 // 우리가 멈춘 게 아닌데 캡처가 끊겼다 (오디오 서버 재시작 등).
                 // 서비스만 남으면 화면은 "실행 중"인데 시각화는 멈추고, AI 는 링버퍼에 남은
-                // 마지막 소리를 계속 다시 분류한다. 전부 내린다.
-                // 정상 종료 중에도 read 가 에러를 낼 수 있으니 isRecording 으로 구분한다.
-                if (isRecording) mainHandler.post { if (isRecording) stopEverything() }
+                // 마지막 소리를 계속 다시 분류한다. 전부 내리고 사용자에게 알린다.
+                // 종료나 화면 꺼짐으로 멈추는 중에도 read 가 에러를 낼 수 있으니 isRecording 으로 구분한다.
+                // 그사이 화면을 껐다 켜서 새 캡처 스레드가 떴다면, 이 스레드의 오래된 오류로 새 캡처를 내리지 않는다.
+                if (isRecording) {
+                    mainHandler.post {
+                        if (isRecording && captureThread === loopThread) stopEverything(StopReason.CaptureError)
+                    }
+                }
                 break
             }
         }
     }
 
+    // ---------------- 화면 꺼짐 일시정지 ----------------
+
+    /**
+     * 화면 켜짐·꺼짐 방송을 받는다. 두 방송은 매니페스트에 적어서는 받을 수 없어 실행 중에만 등록한다.
+     *
+     * 둘 다 시스템만 보낼 수 있는 보호된 방송이라 다른 앱이 흉내 낼 수 없다. 그래도 RECEIVER_NOT_EXPORTED 를 준다.
+     * Android 13(API 33) 부터 동적 수신기는 내보냄 여부를 밝히게 됐고(targetSdk 34 부터는 보호되지 않은 방송에서 필수),
+     * 이 수신기는 앱 밖에서 보낼 이유가 없다. ContextCompat 은 13 이상에서는 플래그를 그대로 넘기고,
+     * 그 아래에서는 앱 서명 권한을 요구하는 방식으로 같은 효과를 낸다. 시스템이 보낸 방송은 그 검사를 통과한다.
+     */
+    private fun registerScreenReceiver() {
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+        }
+        ContextCompat.registerReceiver(this, screenReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        screenReceiverRegistered = true
+        // 등록 전에 이미 꺼졌다면 꺼짐 방송은 다시 오지 않는다. (동의 직후 바로 전원 버튼을 누른 경우)
+        if (getSystemService(PowerManager::class.java)?.isInteractive == false) onScreenOff()
+    }
+
+    private fun onScreenOff() {
+        // 이미 내려가는 중이면 건드리지 않는다.
+        if (stopReason != null || destroyed) return
+        if (screenPause.onScreenOff(SettingsManager.pauseWhenScreenOff.value)) pauseForScreenOff()
+    }
+
+    private fun onScreenOn() {
+        if (stopReason != null || destroyed) return
+        if (screenPause.onScreenOn()) resumeAfterScreenOff()
+    }
+
+    /**
+     * 화면이 꺼져 쉰다. 진동 → AI → 캡처 순으로 멈추고, 남은 소리 크기를 지운다.
+     *
+     * MediaProjection 과 AudioRecord 는 놓지 않는다. 놓으면 화면을 켤 때마다 화면 녹화 동의를 다시 받아야 한다.
+     * 녹음만 멈춰도 오디오 서버가 앱 몫으로 쥐고 있던 wake lock 을 놓아 CPU 가 잠들 수 있다.
+     * 사용자가 끈 것도 실패도 아니므로 멈춤 알림을 띄우지 않는다.
+     */
+    private fun pauseForScreenOff() {
+        Log.i(TAG, "screen off: pausing capture, AI and haptics")
+        // 오버레이가 쉬기로 내려오면 폴링을 멈추게 먼저 알린다.
+        SettingsManager.setCapturePaused(true)
+        val (pipeline, haptics) = synchronized(aiLock) {
+            aiPaused = true
+            (aiPipeline to hapticNotifier).also { hapticNotifier = null }
+        }
+        // 진동부터 멈춘다. 캡처를 멈춘 뒤 남은 결과로 주머니 속에서 한 번 더 울리지 않도록.
+        haptics?.stop()
+        // 파이프라인은 닫지 않는다. 다시 켤 때 start() 가 링버퍼·후처리·마지막 결과를 비운다.
+        // 비우지 않으면 쉬기 직전 1초 남짓한 소리를 켜자마자 다시 분류한다.
+        pipeline?.stop()
+        if (!stopCaptureLoop()) {
+            // 캡처 스레드가 끝나지 않으면 같은 AudioRecord 로 다시 켤 수 없다. 이어갈 수 없으니 알리고 내린다.
+            Log.w(TAG, "capture thread did not stop for screen-off pause")
+            stopEverything(StopReason.CaptureError)
+            return
+        }
+        // 네이티브에 마지막 소리 크기가 남으면 진동 판단과 오버레이가 그 소리가 계속 나는 것으로 본다.
+        AudioEngine.reset()
+    }
+
+    /** 화면이 켜져 다시 켠다. 캡처 → AI → 진동 순이다. */
+    private fun resumeAfterScreenOff() {
+        Log.i(TAG, "screen on: resuming capture, AI and haptics")
+        // 동의 직후 꺼져서 아직 AudioRecord 가 없으면 onStartCommand 가 이어서 시작한다.
+        val record = audioRecord
+        if (record != null && !startCaptureLoop(record)) {
+            // 쉬는 사이 오디오 서버가 재시작되는 등 녹음을 다시 시작할 수 없다. 조용히 멈춘 채 두지 않는다.
+            stopEverything(StopReason.CaptureError)
+            return
+        }
+        synchronized(aiLock) {
+            aiPaused = false
+            // 모델이 아직 로딩 중이면 로딩이 끝날 때 시작한다.
+            aiPipeline?.let(::startAiLocked)
+        }
+        SettingsManager.setCapturePaused(false)
+    }
+
+    // ---------------- 종료 ----------------
+
     // stopService 는 Intent 의 대상 컴포넌트로 서비스를 찾으므로 새로 만든 Intent 로 멈추는 게 맞다.
     // Lint(ImplicitSamInstance)는 새 인스턴스라 아무것도 멈추지 못한다고 보지만 오탐이다.
-    /** 캡처, 오버레이, 자기 자신을 모두 정리한다. 여러 번 호출해도 안전. */
+    /**
+     * 캡처, 오버레이, 자기 자신을 모두 정리한다. 여러 번 호출해도 안전. 메인 스레드에서 부른다.
+     * 알림은 정리가 끝난 onDestroy 에서 [reason] 으로 정한다.
+     */
     @SuppressLint("ImplicitSamInstance")
-    private fun stopEverything() {
+    private fun stopEverything(reason: StopReason) {
+        if (destroyed) return
+        if (stopReason == null) stopReason = reason
         stopService(Intent(this, OverlayService::class.java))
         SettingsManager.setServiceRunning(false)
         stopSelf()
     }
 
     override fun onDestroy() {
+        destroyed = true
         isRunning = false
         SettingsManager.setServiceRunning(false)
-        isRecording = false
+        // 스스로 남긴 이유도, 밖에서 남긴 이유도 없으면 앱 버튼이나 타일로 사용자가 끈 것이다.
+        val reason = StopReason.resolve(stopReason, pendingStopReason)
+        pendingStopReason = null
 
-        // read() 블로킹을 풀기 위해 먼저 stop, 그 다음 스레드 종료를 기다린 뒤 해제한다.
-        audioRecord?.let { record ->
-            try { record.stop() } catch (e: IllegalStateException) { /* already stopped */ }
+        if (screenReceiverRegistered) {
+            unregisterReceiver(screenReceiver)
+            screenReceiverRegistered = false
         }
-        // 스레드가 실제로 끝났는지 확인한다. 아직 read() 안에 있는데 release() 하면
-        // 네이티브에서 해제된 AudioRecord 를 건드려 SIGSEGV 가 난다.
-        var terminated = true
-        captureThread?.let { t ->
-            try { t.join(2000) } catch (e: InterruptedException) { Thread.currentThread().interrupt() }
-            terminated = !t.isAlive
-        }
-        captureThread = null
 
-        if (terminated) {
+        // 스레드가 실제로 끝났을 때만 해제한다 (stopCaptureLoop 설명 참고).
+        if (stopCaptureLoop()) {
             audioRecord?.release()
         } else {
             // 크래시보다는 누수가 낫다. 프로세스가 살아있는 동안만 남는다.
@@ -364,6 +582,12 @@ class AudioCaptureService : Service() {
         pipeline?.close()
 
         AudioEngine.reset()
+        SettingsManager.setCapturePaused(false)
+        // 다음 실행의 로딩 결과와 섞이지 않게 되돌린다. 꺼져 있을 때는 알릴 것이 없다.
+        SettingsManager.setAiAvailable(true)
+
+        // 진동 알림을 멈춘 뒤에 알린다. 진동 알림의 cancel() 이 앞서 울린 멈춤 진동까지 끊기 때문이다.
+        StopAlert.show(this, reason)
         super.onDestroy()
     }
 
@@ -376,6 +600,15 @@ class AudioCaptureService : Service() {
             NotificationManager.IMPORTANCE_LOW
         )
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+    }
+
+    /**
+     * 실행 중 알림을 지금 상태(AI 사용 가능 여부)에 맞게 다시 올린다. 메인 스레드에서 부른다.
+     * 내려가는 중이면 올리지 않는다. 포그라운드 알림이 치워진 뒤 같은 번호로 올리면 지워지지 않는 알림이 남는다.
+     */
+    private fun refreshOngoingNotification() {
+        if (destroyed || stopReason != null) return
+        StopAlert.post(this, CHANNEL_ID, NOTIFICATION_ID, createNotification())
     }
 
     private fun createNotification(): Notification {
@@ -391,9 +624,14 @@ class AudioCaptureService : Service() {
             Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+        // AI 를 못 불러왔으면 알림창에서도 소리 종류 구분과 진동 알림이 꺼졌다는 걸 알 수 있게 한다.
+        val text = getString(
+            if (SettingsManager.aiAvailable.value) R.string.notification_text else R.string.notification_text_ai_unavailable
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notification_title))
-            .setContentText(getString(R.string.notification_text))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
             .addAction(0, getString(R.string.notification_stop), stopIntent)

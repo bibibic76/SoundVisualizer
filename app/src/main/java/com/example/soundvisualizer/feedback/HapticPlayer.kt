@@ -23,9 +23,33 @@ class HapticPlayer(context: Context) {
     val hasAmplitudeControl: Boolean = hasVibrator && vibrator?.hasAmplitudeControl() == true
 
     fun play(pattern: HapticPattern, strength: HapticStrength) {
+        val timings = when (pattern) {
+            HapticPattern.Tap -> TAP
+            HapticPattern.DoubleTap, HapticPattern.Repeat -> DOUBLE_TAP
+            HapticPattern.Hold -> HOLD
+        }
+        vibrate(timings, strength)
+    }
+
+    /**
+     * 시각화가 뜻하지 않게 꺼졌을 때의 진동. 소리 종류별 진동 설정과 상관없이 울린다.
+     *
+     * 사용자가 소리 종류에 고를 수 있는 패턴(한 번·두 번·길게·반복)과 겹치면 위협음 진동으로 착각하므로,
+     * 그 어느 것과도 다른 "길게 세 번"을 가장 센 세기로 울린다.
+     * 진동 알림을 멈출 때 부르는 [cancel] 은 이 진동까지 끊으므로, 그보다 뒤에 불러야 끝까지 울린다.
+     */
+    fun playStoppedAlert() {
+        vibrate(STOPPED_ALERT, HapticStrength.Strong)
+    }
+
+    fun cancel() {
+        vibrator?.cancel()
+    }
+
+    private fun vibrate(timings: LongArray, strength: HapticStrength) {
         val v = vibrator ?: return
         if (!hasVibrator) return
-        val effect = buildEffect(pattern, strength)
+        val effect = buildEffect(timings, strength)
         // 접근성 용도로 울린다. 무음 모드나 백그라운드에서 막히는 기기가 확인되면
         // 두 갈래 모두 알람 용도(VibrationAttributes.USAGE_ALARM / AudioAttributes.USAGE_ALARM)로 바꾼다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -37,17 +61,8 @@ class HapticPlayer(context: Context) {
         }
     }
 
-    fun cancel() {
-        vibrator?.cancel()
-    }
-
-    private fun buildEffect(pattern: HapticPattern, strength: HapticStrength): VibrationEffect {
+    private fun buildEffect(timings: LongArray, strength: HapticStrength): VibrationEffect {
         // 반복은 HapticPolicy 가 간격마다 다시 부르는 방식이다. OS 반복을 쓰면 멈출 때 따로 끊어야 한다.
-        val timings = when (pattern) {
-            HapticPattern.Tap -> TAP
-            HapticPattern.DoubleTap, HapticPattern.Repeat -> DOUBLE_TAP
-            HapticPattern.Hold -> HOLD
-        }
         return if (hasAmplitudeControl) {
             // 짝수 칸은 쉼, 홀수 칸은 울림
             val amplitudes = IntArray(timings.size) { i -> if (i % 2 == 1) strength.amplitude else 0 }
@@ -64,6 +79,7 @@ class HapticPlayer(context: Context) {
         val TAP = longArrayOf(0, 60)
         val DOUBLE_TAP = longArrayOf(0, 60, 80, 60)
         val HOLD = longArrayOf(0, 350)
+        val STOPPED_ALERT = longArrayOf(0, 300, 150, 300, 150, 300)
 
         val LEGACY_AUDIO_ATTRIBUTES: AudioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)

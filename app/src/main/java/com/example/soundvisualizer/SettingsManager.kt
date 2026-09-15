@@ -85,6 +85,24 @@ object SettingsManager {
     private val _tileAdded = MutableStateFlow(false)
     val tileAdded: StateFlow<Boolean> = _tileAdded
 
+    // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
+    private val _pauseWhenScreenOff = MutableStateFlow(true)
+    val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
+
+    /**
+     * 이번 실행에서 소리 종류 구분(AI)을 쓸 수 있는지. 캡처 서비스가 알려주며 저장하지 않는다.
+     *
+     * 모델 로딩이 실패해도 캡처와 시각화는 돈다. 그러면 모든 소리가 환경음 색으로 그려지고 진동 알림은 아예 돌지 않는데,
+     * 설정 화면은 위협음 진동이 켜진 것처럼 보인다. 홈과 설정 화면이 이 값으로 그 사실을 알린다.
+     * 로딩 중에는 true 로 둔다(보통 1초 안팎). 꺼져 있을 때도 true 다.
+     */
+    private val _aiAvailable = MutableStateFlow(true)
+    val aiAvailable: StateFlow<Boolean> = _aiAvailable
+
+    /** 화면이 꺼져 캡처를 쉬는 중인지. 오버레이가 이 동안 폴링을 멈춘다. 저장하지 않는다. */
+    private val _isCapturePaused = MutableStateFlow(false)
+    val isCapturePaused: StateFlow<Boolean> = _isCapturePaused
+
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -108,6 +126,7 @@ object SettingsManager {
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
 
         _tileAdded.value = prefs.getBoolean("tile_added", false)
+        _pauseWhenScreenOff.value = prefs.getBoolean("pause_when_screen_off", true)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -261,5 +280,19 @@ object SettingsManager {
     fun setTileAdded(added: Boolean) {
         _tileAdded.value = added
         prefs.edit { putBoolean("tile_added", added) }
+    }
+
+    fun setPauseWhenScreenOff(enabled: Boolean) {
+        _pauseWhenScreenOff.value = enabled
+        prefs.edit { putBoolean("pause_when_screen_off", enabled) }
+    }
+
+    /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
+    fun setAiAvailable(available: Boolean) {
+        _aiAvailable.value = available
+    }
+
+    fun setCapturePaused(paused: Boolean) {
+        _isCapturePaused.value = paused
     }
 }

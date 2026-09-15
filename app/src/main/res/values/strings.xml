@@ -12,6 +12,7 @@
     <string name="home_subtitle">Draws the sounds you can\'t see right on your screen.\nFrom gaming to movies, try a whole new experience.</string>
     <string name="home_status_running">Status: Running</string>
     <string name="home_status_idle">Status: Ready</string>
+    <string name="home_ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color and vibration alerts are off.</string>
     <string name="home_start">Start</string>
     <string name="home_stop">Stop</string>
     <string name="home_add_tile">Add to Quick Settings</string>
@@ -46,6 +47,7 @@
     <string name="settings_mode_picker_desc">Choose the basic shape of the graphics drawn on screen.</string>
     <string name="settings_section_mode_detail">Settings by mode</string>
     <string name="settings_section_ai">Sound types (AI)</string>
+    <string name="settings_section_battery">Battery</string>
 
     <!-- Language -->
     <string name="settings_language_title">Language</string>
@@ -76,14 +78,20 @@
     <string name="setting_ripple">Spatial ripple</string>
     <string name="setting_ripple_desc">Adds a slight delay so sound seems to spread from front to back.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pause while the screen is off</string>
+    <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
     <string name="ai_show_speech">Show speech</string>
     <string name="ai_show_danger">Show danger sounds</string>
+    <string name="ai_unavailable">Sound type detection couldn\'t start, so every sound is shown in the ambient color.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>
     <string name="haptic_requires_display">Vibration works only when this sound type is shown.</string>
+    <string name="haptic_ai_unavailable">It won\'t vibrate while sound type detection isn\'t working.</string>
     <string name="haptic_unsupported">This device doesn\'t support vibration.</string>
     <string name="haptic_no_amplitude">This device can\'t adjust vibration strength, so it vibrates at the default strength.</string>
     <string name="haptic_strength">Strength</string>
@@ -114,6 +122,17 @@
     <string name="notification_title" translatable="false">SoundVisualizer</string>
     <string name="notification_text">Visualizing sound.</string>
     <string name="notification_stop">Stop</string>
+    <string name="notification_text_ai_unavailable">Visualizing sound. Sound type detection isn\'t working, so vibration alerts are off.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visualizer turned off</string>
+    <string name="stopped_channel_desc">Tells you when the sound visualizer turns off without you stopping it.</string>
+    <string name="stopped_title">Sound visualizer turned off</string>
+    <string name="stopped_text_projection">Sound capture ended, so graphics and vibration alerts are off. This happens when screen recording, screen sharing or casting starts, or when the system stops sound capture.</string>
+    <string name="stopped_text_capture_error">Sound capture stopped because of an error, so graphics and vibration alerts are off.</string>
+    <string name="stopped_text_start_failed">Sound capture couldn\'t start, so graphics and vibration alerts are off.</string>
+    <string name="stopped_turn_on">Turn on again</string>
+    <string name="stopped_toast">Sound visualizer turned off. Graphics and vibration alerts are off.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Sound visualizer</string>
@@ -160,6 +179,8 @@
     <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>
     <string name="help_note_mono">Sounds that are identical on the left and right (mono) are shown only toward the front.</string>
     <string name="help_note_sources">Only media and game sounds are captured. Phone calls, notification sounds and alarms are not, and apps that block audio capture (such as some video apps) can\'t be visualized.</string>
+    <string name="help_note_stopped">Starting screen recording, screen sharing or casting turns the visualizer off, because it uses the same screen recording consent and Android lets only one app use it at a time. If it turns off without you stopping it, your phone vibrates three times and shows a notification with a “Turn on again” button (or a short message if notifications are off).</string>
+    <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in the Settings tab.</string>
     <string name="help_note_ai">AI classification can be wrong. Don\'t rely on this app as your only safeguard when safety is at stake.</string>
 
     <string name="help_faq_title">FAQ</string>

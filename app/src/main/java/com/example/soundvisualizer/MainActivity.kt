@@ -67,6 +67,8 @@ val AccentColor = Color(0xFF3182F6)
 val DangerColor = Color(0xFFE53935)
 val PrimaryTextColor = Color(0xFFF2F4F6)
 val SecondaryTextColor = Color(0xFF8B95A1)
+/** 기능이 꺼져 있다는 안내 글자. DangerColor 는 어두운 배경에서 작은 글자로 읽기 어려워 밝은 주황을 쓴다. */
+val WarningColor = Color(0xFFFFB74D)
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -272,6 +274,7 @@ fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
 fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
     val isRunning by SettingsManager.isServiceRunning.collectAsState()
     val tileAdded by SettingsManager.tileAdded.collectAsState()
+    val aiAvailable by SettingsManager.aiAvailable.collectAsState()
 
     Column(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Text(stringResource(R.string.home_title), fontSize = 36.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
@@ -280,13 +283,24 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
             fontSize = 16.sp, color = SecondaryTextColor, lineHeight = 26.sp, modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 24.dp)) {
-            Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(if (isRunning) AccentColor else SecondaryTextColor))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                stringResource(if (isRunning) R.string.home_status_running else R.string.home_status_idle),
-                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
-            )
+        Column(modifier = Modifier.padding(bottom = 24.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(if (isRunning) AccentColor else SecondaryTextColor))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    stringResource(if (isRunning) R.string.home_status_running else R.string.home_status_idle),
+                    fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
+                )
+            }
+            // AI 모델을 못 불러와도 캡처와 시각화는 돌아 "실행 중"으로 보인다. 그대로 두면 위협음 색과 진동이
+            // 켜진 줄 믿으므로 상태 바로 아래에 알린다. 글자는 상태 점 너비(12dp + 8dp)만큼 들여 상태 글자와 줄을 맞춘다.
+            if (isRunning && !aiAvailable) {
+                Text(
+                    stringResource(R.string.home_ai_unavailable),
+                    fontSize = 14.sp, color = WarningColor, lineHeight = 21.sp,
+                    modifier = Modifier.padding(start = 20.dp, top = 8.dp)
+                )
+            }
         }
 
         // 번역된 이름이 길면 버튼 안에서 가운데 정렬로 두 줄까지 들어간다(56dp 안에 두 줄).
@@ -431,6 +445,17 @@ fun SettingsTab() {
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
+                    // 모델을 못 불러온 채 실행 중이면 색 설정이 먹지 않는 이유를 카드 맨 위에 알린다.
+                    // 진동이 울리지 않는다는 안내는 켜 둔 진동 스위치 바로 아래에 붙는다 (HapticSettingRow).
+                    val aiAvailable by SettingsManager.aiAvailable.collectAsState()
+                    if (!aiAvailable) {
+                        Text(
+                            stringResource(R.string.ai_unavailable),
+                            fontSize = 14.sp, lineHeight = 21.sp, color = WarningColor,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
                     val showAmbient by SettingsManager.showAmbient.collectAsState()
                     val colorAmbient by SettingsManager.colorAmbient.collectAsState()
                     ColorSettingRow(stringResource(R.string.ai_show_ambient), showAmbient, colorAmbient,
@@ -451,6 +476,25 @@ fun SettingsTab() {
                         onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorDanger = it) })
                     HapticSettingRow(AiClassification.DANGER, showDanger)
+                }
+            }
+
+            Text(stringResource(R.string.settings_section_battery), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardColor),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    // 화면이 꺼질 때 읽으므로 실행 중에 바꿔도 다음 꺼짐부터 바로 적용된다.
+                    val pauseWhenScreenOff by SettingsManager.pauseWhenScreenOff.collectAsState()
+                    ModernSwitch(
+                        stringResource(R.string.setting_pause_screen_off),
+                        stringResource(R.string.setting_pause_screen_off_desc),
+                        pauseWhenScreenOff
+                    ) {
+                        SettingsManager.setPauseWhenScreenOff(it)
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(100.dp))
