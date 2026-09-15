@@ -28,6 +28,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.HapticNotifier
+import com.example.soundvisualizer.language.AppLanguage
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -92,6 +93,11 @@ class AudioCaptureService : Service() {
         @Volatile
         var isRunning: Boolean = false
             private set
+    }
+
+    // Android 12 이하에서 알림 문구를 앱 언어로 보여준다. 13 이상은 시스템이 적용한다.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
     }
 
     override fun onCreate() {

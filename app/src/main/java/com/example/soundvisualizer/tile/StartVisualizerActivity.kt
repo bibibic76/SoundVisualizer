@@ -1,5 +1,6 @@
 package com.example.soundvisualizer.tile
 
+import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
@@ -14,6 +15,7 @@ import com.example.soundvisualizer.CapturePermissionFlow
 import com.example.soundvisualizer.MainActivity
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.VisualizerController
+import com.example.soundvisualizer.language.AppLanguage
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 
 /**
@@ -40,6 +42,11 @@ class StartVisualizerActivity : ComponentActivity() {
         finish()
     }
 
+    // Android 12 이하에서 권한 안내 창과 토스트 문구를 앱 언어로 보여준다.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 회전 뒤에도 떠 있던 안내 창을 다시 그려야 하므로 아래의 재생성 검사보다 먼저 붙인다.
@@ -57,7 +64,8 @@ class StartVisualizerActivity : ComponentActivity() {
         when {
             VisualizerController.isRunning -> finish()
             !Settings.canDrawOverlays(this) -> {
-                Toast.makeText(applicationContext, R.string.tile_overlay_permission_needed, Toast.LENGTH_LONG).show()
+                // 이 화면은 바로 닫히므로 앱 컨텍스트로 띄우되, 문구는 앱 언어가 입혀진 이 화면에서 꺼낸다.
+                Toast.makeText(applicationContext, getString(R.string.tile_overlay_permission_needed), Toast.LENGTH_LONG).show()
                 // 이 화면은 따로 떨어진 작업(taskAffinity="")이라, 앱은 새 작업으로 띄워야 앱 쪽 작업에 붙는다.
                 startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 finish()

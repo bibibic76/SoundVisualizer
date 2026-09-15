@@ -1,175 +1,184 @@
 <resources>
-    <string name="app_name">SoundVisualizer</string>
+    <!-- Brand name. Never translated. -->
+    <string name="app_name" translatable="false">SoundVisualizer</string>
 
-    <!-- 탭 -->
-    <string name="tab_home">홈</string>
-    <string name="tab_settings">설정</string>
-    <string name="tab_help">도움말</string>
+    <!-- Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tab_help">Help</string>
 
-    <!-- 홈 -->
-    <string name="home_title">Sound Visualizer</string>
-    <string name="home_subtitle">보이지 않던 소리를 화면에 그려냅니다.\n게이밍부터 영화 감상까지 새로운 경험을 시작하세요.</string>
-    <string name="home_status_running">상태: 실행 중</string>
-    <string name="home_status_idle">상태: 실행 대기 중</string>
-    <string name="home_start">실행</string>
-    <string name="home_stop">실행 종료</string>
-    <string name="home_add_tile">빠른 설정에 추가</string>
-    <string name="home_add_tile_desc">알림창을 내려 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
-    <string name="home_add_tile_manual">알림창을 내려 편집(연필) 버튼에서 ‘소리 시각화’를 추가하면, 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <!-- Home -->
+    <string name="home_title" translatable="false">Sound Visualizer</string>
+    <string name="home_subtitle">Draws the sounds you can\'t see right on your screen.\nFrom gaming to movies, try a whole new experience.</string>
+    <string name="home_status_running">Status: Running</string>
+    <string name="home_status_idle">Status: Ready</string>
+    <string name="home_start">Start</string>
+    <string name="home_stop">Stop</string>
+    <string name="home_add_tile">Add to Quick Settings</string>
+    <string name="home_add_tile_desc">Turn it on or off from the notification shade, right over your game or video.</string>
+    <string name="home_add_tile_manual">Pull down the notification shade, tap Edit (pencil) and add “Sound visualizer” to turn it on or off right over your game or video.</string>
 
-    <!-- 권한 -->
-    <string name="permission_record_audio_required">오디오 캡처를 위해 마이크(오디오 녹음) 권한이 필요합니다.</string>
-    <string name="permission_mic_rationale_title">마이크 권한이 필요한 이유</string>
-    <string name="permission_mic_rationale_message">폰 안에서 재생되는 소리를 받으려면 안드로이드가 마이크 권한을 요구합니다. 주변 소리는 녹음하지 않습니다.</string>
-    <string name="permission_mic_settings_title">설정에서 마이크를 허용해 주세요</string>
-    <string name="permission_mic_settings_message">마이크 권한이 허용되지 않았습니다. 권한 창이 다시 뜨지 않으면 ‘설정 열기’를 누른 뒤 ‘권한’에서 ‘마이크’를 허용해 주세요. 폰 안의 소리를 받는 데만 쓰고, 주변 소리는 녹음하지 않습니다.</string>
-    <string name="permission_continue">계속</string>
-    <string name="permission_cancel">취소</string>
-    <string name="permission_open_settings">설정 열기</string>
-    <string name="permission_close">닫기</string>
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">Microphone (audio recording) permission is required to capture audio.</string>
+    <string name="permission_mic_rationale_title">Why the microphone permission?</string>
+    <string name="permission_mic_rationale_message">Android requires the microphone permission to capture sound playing on your phone. Sounds around you are not recorded.</string>
+    <string name="permission_mic_settings_title">Allow the microphone in Settings</string>
+    <string name="permission_mic_settings_message">Microphone permission wasn\'t granted. If the permission prompt doesn\'t appear again, tap “Open settings”, go to “Permissions” and allow “Microphone”. It\'s only used to capture sound playing on your phone. Sounds around you are not recorded.</string>
+    <string name="permission_continue">Continue</string>
+    <string name="permission_cancel">Cancel</string>
+    <string name="permission_open_settings">Open settings</string>
+    <string name="permission_close">Close</string>
 
-    <!-- 표현 모드 -->
-    <string name="mode_wave">파도</string>
-    <string name="mode_pad">패드</string>
-    <string name="mode_circle">원형</string>
-    <string name="mode_outline">외곽선</string>
+    <!-- Visual modes -->
+    <string name="mode_wave">Wave</string>
+    <string name="mode_pad">Pad</string>
+    <string name="mode_circle">Circle</string>
+    <string name="mode_outline">Outline</string>
 
-    <string name="mode_card_wave">파도 모드</string>
-    <string name="mode_card_pad">패드 모드</string>
-    <string name="mode_card_circle">원형 모드</string>
-    <string name="mode_card_outline">외곽선 모드</string>
+    <string name="mode_card_wave">Wave mode</string>
+    <string name="mode_card_pad">Pad mode</string>
+    <string name="mode_card_circle">Circle mode</string>
+    <string name="mode_card_outline">Outline mode</string>
 
-    <!-- 설정 화면 머리말 -->
-    <string name="settings_section_mode">모드 설정</string>
-    <string name="settings_mode_picker_title">표현 모드</string>
-    <string name="settings_mode_picker_desc">화면에 그려질 그래픽의 기본 형태를 선택합니다.</string>
-    <string name="settings_section_mode_detail">모드별 상세 설정</string>
-    <string name="settings_section_ai">소리 분류 표시 (AI)</string>
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Mode settings</string>
+    <string name="settings_mode_picker_title">Visual mode</string>
+    <string name="settings_mode_picker_desc">Choose the basic shape of the graphics drawn on screen.</string>
+    <string name="settings_section_mode_detail">Settings by mode</string>
+    <string name="settings_section_ai">Sound types (AI)</string>
 
-    <!-- 모드별 상세 설정 -->
-    <string name="setting_size_lock">크기 고정</string>
-    <string name="setting_size_lock_desc">그래픽 크기를 고정하고, 소리 세기는 진하기로 표현합니다.</string>
-    <string name="setting_fixed_size">고정 크기</string>
-    <string name="setting_fixed_size_desc">그래픽이 유지할 고정 크기입니다.</string>
-    <string name="setting_max_opacity">최대 진하기</string>
-    <string name="setting_max_opacity_desc">소리가 가장 클 때 도달할 진하기입니다.</string>
-    <string name="setting_size">크기</string>
-    <string name="setting_size_desc">그래픽의 크기와 전체적인 볼륨감을 조절합니다.</string>
-    <string name="setting_radius">반지름</string>
-    <string name="setting_radius_desc">원형 모드에서 가운데 중심부의 반지름을 개별 조절합니다.</string>
-    <string name="setting_opacity">진하기</string>
-    <string name="setting_opacity_desc">값이 클수록 진하고, 작을수록 옅고 투명해집니다.</string>
-    <string name="setting_speed">속도</string>
-    <string name="setting_speed_desc">소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.</string>
-    <string name="setting_sensitivity">민감도</string>
-    <string name="setting_sensitivity_desc">소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.</string>
-    <string name="setting_glow">광원</string>
-    <string name="setting_glow_desc">그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.</string>
-    <string name="setting_glow_intensity">광원 강도</string>
-    <string name="setting_glow_intensity_desc">광원 효과가 퍼지는 정도를 조절합니다.</string>
-    <string name="setting_ripple">공간 리플 효과</string>
-    <string name="setting_ripple_desc">소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.</string>
+    <!-- Language -->
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_cancel">Cancel</string>
 
-    <!-- 소리 분류 표시 -->
-    <string name="ai_show_ambient">환경음 표시</string>
-    <string name="ai_show_speech">대화음 표시</string>
-    <string name="ai_show_danger">위협음 표시</string>
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Lock size</string>
+    <string name="setting_size_lock_desc">Keeps the graphics at a fixed size and shows loudness as opacity instead.</string>
+    <string name="setting_fixed_size">Fixed size</string>
+    <string name="setting_fixed_size_desc">The size the graphics stay at.</string>
+    <string name="setting_max_opacity">Max opacity</string>
+    <string name="setting_max_opacity_desc">How opaque the graphics get at the loudest sound.</string>
+    <string name="setting_size">Size</string>
+    <string name="setting_size_desc">Adjusts how large and full the graphics look.</string>
+    <string name="setting_radius">Radius</string>
+    <string name="setting_radius_desc">Sets the radius of the center ring in Circle mode.</string>
+    <string name="setting_opacity">Opacity</string>
+    <string name="setting_opacity_desc">Higher values look bolder; lower values look fainter and more transparent.</string>
+    <string name="setting_speed">Speed</string>
+    <string name="setting_speed_desc">How fast the graphics move to a new position when the sound changes direction.</string>
+    <string name="setting_sensitivity">Sensitivity</string>
+    <string name="setting_sensitivity_desc">How quickly the graphics react (pulse) to changes in loudness.</string>
+    <string name="setting_glow">Glow</string>
+    <string name="setting_glow_desc">Adds a soft neon glow around the graphics. Note: uses extra resources.</string>
+    <string name="setting_glow_intensity">Glow strength</string>
+    <string name="setting_glow_intensity_desc">How far the glow spreads.</string>
+    <string name="setting_ripple">Spatial ripple</string>
+    <string name="setting_ripple_desc">Adds a slight delay so sound seems to spread from front to back.</string>
 
-    <!-- 진동 -->
-    <string name="haptic_vibrate">진동</string>
-    <string name="haptic_requires_display">화면 표시를 켜야 진동합니다.</string>
-    <string name="haptic_unsupported">이 기기는 진동을 지원하지 않습니다.</string>
-    <string name="haptic_no_amplitude">이 기기는 진동 세기 조절을 지원하지 않아 기본 세기로 울립니다.</string>
-    <string name="haptic_strength">세기</string>
-    <string name="haptic_strength_weak">약</string>
-    <string name="haptic_strength_medium">중</string>
-    <string name="haptic_strength_strong">강</string>
-    <string name="haptic_pattern">패턴</string>
-    <string name="haptic_pattern_tap">한 번</string>
-    <string name="haptic_pattern_double">두 번</string>
-    <string name="haptic_pattern_hold">길게</string>
-    <string name="haptic_pattern_repeat">계속 반복</string>
-    <string name="haptic_preview_hint">선택지를 누르면 진동을 미리 느껴볼 수 있습니다.</string>
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Show ambient sounds</string>
+    <string name="ai_show_speech">Show speech</string>
+    <string name="ai_show_danger">Show danger sounds</string>
 
-    <!-- 색상 선택 -->
-    <string name="color_picker_title">색상 선택</string>
-    <string name="color_picker_presets">자주 쓰는 색</string>
-    <string name="color_picker_confirm">확인</string>
-    <string name="color_picker_cancel">취소</string>
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Vibrate</string>
+    <string name="haptic_requires_display">Vibration works only when this sound type is shown.</string>
+    <string name="haptic_unsupported">This device doesn\'t support vibration.</string>
+    <string name="haptic_no_amplitude">This device can\'t adjust vibration strength, so it vibrates at the default strength.</string>
+    <string name="haptic_strength">Strength</string>
+    <string name="haptic_strength_weak">Light</string>
+    <string name="haptic_strength_medium">Medium</string>
+    <string name="haptic_strength_strong">Strong</string>
+    <string name="haptic_pattern">Pattern</string>
+    <string name="haptic_pattern_tap">Once</string>
+    <string name="haptic_pattern_double">Twice</string>
+    <string name="haptic_pattern_hold">Long</string>
+    <string name="haptic_pattern_repeat">Repeat</string>
+    <string name="haptic_preview_hint">Tap an option to feel a preview.</string>
 
-    <!-- 접근성 -->
-    <string name="cd_pick_color">색상 선택 열기</string>
-    <string name="cd_expand">펼치기</string>
-    <string name="cd_collapse">접기</string>
+    <!-- Color picker -->
+    <string name="color_picker_title">Pick a color</string>
+    <string name="color_picker_presets">Common colors</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">Cancel</string>
 
-    <!-- 알림 -->
-    <string name="notification_channel_name">오디오 캡처</string>
-    <string name="notification_title">SoundVisualizer</string>
-    <string name="notification_text">소리를 시각화하는 중입니다.</string>
-    <string name="notification_stop">중지</string>
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Open color picker</string>
+    <string name="cd_expand">Expand</string>
+    <string name="cd_collapse">Collapse</string>
+    <string name="cd_change_language">Change language</string>
 
-    <!-- 빠른 설정 타일 -->
-    <string name="tile_label">소리 시각화</string>
-    <string name="tile_state_on">켜짐</string>
-    <string name="tile_state_off">꺼짐</string>
-    <string name="tile_overlay_permission_needed">다른 앱 위에 표시 권한이 필요합니다. 앱에서 실행을 눌러 허용해 주세요.</string>
+    <!-- Notification -->
+    <string name="notification_channel_name">Audio capture</string>
+    <string name="notification_title" translatable="false">SoundVisualizer</string>
+    <string name="notification_text">Visualizing sound.</string>
+    <string name="notification_stop">Stop</string>
 
-    <!-- 도움말 -->
-    <string name="help_start_title">시작하기</string>
-    <string name="help_start_1">홈에서 실행을 누릅니다.</string>
-    <string name="help_start_2">권한을 허용합니다. 화면 녹화 동의는 안드로이드 정책상 켤 때마다 묻습니다.</string>
-    <string name="help_start_3">게임이나 영상을 켜면 화면 테두리에 소리가 그려집니다.</string>
-    <string name="help_start_4">끌 때는 홈의 실행 종료나 알림의 중지 버튼을 누릅니다.</string>
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Sound visualizer</string>
+    <string name="tile_state_on">On</string>
+    <string name="tile_state_off">Off</string>
+    <string name="tile_overlay_permission_needed">“Display over other apps” permission is required. Tap “Start” in the app to allow it.</string>
 
-    <string name="help_tile_title">알림창에서 켜고 끄기</string>
-    <string name="help_tile_body">홈의 ‘빠른 설정에 추가’를 누르면 알림창에 ‘소리 시각화’ 버튼이 생깁니다. 앱으로 나가지 않고 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
-    <string name="help_tile_use">누르면 켜지고, 켜져 있을 때 다시 누르면 꺼집니다. 길게 누르면 이 앱의 설정 화면이 열립니다.</string>
-    <string name="help_tile_old">Android 12 이하는 알림창의 편집(연필) 버튼에서 ‘소리 시각화’를 직접 끌어다 놓습니다.</string>
+    <!-- Help -->
+    <string name="help_start_title">Getting started</string>
+    <string name="help_start_1">On Home, tap “Start”.</string>
+    <string name="help_start_2">Allow the permissions. Android asks for screen recording consent every time you turn it on.</string>
+    <string name="help_start_3">Open a game or video, and sounds are drawn along the edges of the screen.</string>
+    <string name="help_start_4">To turn it off, tap “Stop” on Home or in the notification.</string>
 
-    <string name="help_permissions_title">권한이 필요한 이유</string>
-    <string name="help_perm_overlay">다른 앱 위에 표시</string>
-    <string name="help_perm_overlay_desc">게임과 영상 위에 그래픽을 띄우기 위해 필요합니다.</string>
-    <string name="help_perm_mic">마이크 (오디오 녹음)</string>
-    <string name="help_perm_mic_desc">폰 안에서 재생되는 소리를 받으려면 안드로이드가 이 권한을 요구합니다. 주변 소리는 녹음하지 않습니다.</string>
-    <string name="help_perm_capture">화면 녹화</string>
-    <string name="help_perm_capture_desc">안드로이드는 폰 안의 소리를 이 동의를 거쳐서만 받을 수 있게 합니다. 화면은 캡처하지 않습니다.</string>
-    <string name="help_perm_notification">알림 (Android 13 이상)</string>
-    <string name="help_perm_notification_desc">실행 중 알림과 중지 버튼을 보여줍니다. 거부해도 앱은 동작합니다.</string>
+    <string name="help_tile_title">Turn on and off from the notification shade</string>
+    <string name="help_tile_body">Tap “Add to Quick Settings” on Home to add a “Sound visualizer” button to your notification shade. You can then turn it on or off right over your game or video without switching apps.</string>
+    <string name="help_tile_use">Tap to turn it on, and tap again to turn it off. Long-press to open this app\'s settings.</string>
+    <string name="help_tile_old">On Android 12 and earlier, open the notification shade, tap Edit (pencil) and drag “Sound visualizer” in yourself.</string>
 
-    <string name="help_modes_title">표현 모드</string>
-    <string name="help_mode_wave_desc">화면 테두리 전체가 소리 세기만큼 안쪽으로 밀려듭니다. 소리가 나는 쪽이 더 깊게 밀려옵니다.</string>
-    <string name="help_mode_pad_desc">화면 가장자리 8곳에 막대가 떠오릅니다. 방향을 가장 또렷하게 볼 수 있습니다.</string>
-    <string name="help_mode_outline_desc">파도의 윤곽선만 가늘게 그려 게임 화면을 덜 가립니다.</string>
-    <string name="help_mode_circle_desc">화면 가운데의 고리가 소리 나는 쪽으로 부풀어 오릅니다.</string>
-    <string name="help_modes_note">크기·진하기 같은 설정은 모드마다 따로 저장되고, 설정 탭에서 바꿀 수 있습니다.</string>
+    <string name="help_permissions_title">Why permissions are needed</string>
+    <string name="help_perm_overlay">Display over other apps</string>
+    <string name="help_perm_overlay_desc">Needed to show graphics on top of games and videos.</string>
+    <string name="help_perm_mic">Microphone (audio recording)</string>
+    <string name="help_perm_mic_desc">Android requires this permission to capture sound playing on your phone. Sounds around you are not recorded.</string>
+    <string name="help_perm_capture">Screen recording</string>
+    <string name="help_perm_capture_desc">Android only lets apps capture your phone\'s sound through this consent. Your screen is not captured.</string>
+    <string name="help_perm_notification">Notifications (Android 13+)</string>
+    <string name="help_perm_notification_desc">Shows the running notification with a Stop button. The app still works if you deny it.</string>
 
-    <string name="help_sound_title">소리 종류와 진동</string>
-    <string name="help_sound_kinds">AI가 들리는 소리를 환경음·대화음·위협음으로 나눕니다. 기본색은 환경음 흰색, 대화음 노란색, 위협음 빨간색이고, 설정 탭에서 종류마다 색과 표시 여부를 바꿀 수 있습니다.</string>
-    <string name="help_sound_danger">위협음(총소리 등)이 감지되면 색이 서서히 바뀌지 않고 즉시 바뀝니다.</string>
-    <string name="help_sound_haptic">화면을 보고 있지 않아도 진동으로 알려줍니다. 처음에는 위협음만 켜져 있고, 종류마다 세기(약·중·강)와 패턴(한 번·두 번·길게·계속 반복)을 고를 수 있습니다.</string>
-    <string name="help_sound_haptic_rule">화면 표시가 켜진 종류만 진동합니다. 같은 종류는 2초 안에 다시 울리지 않고, ‘계속 반복’은 소리가 이어지는 동안 1.5초마다 울립니다.</string>
+    <string name="help_modes_title">Visual modes</string>
+    <string name="help_mode_wave_desc">The whole edge of the screen pushes inward with the loudness. The side the sound comes from pushes in deeper.</string>
+    <string name="help_mode_pad_desc">Bars light up at 8 spots around the edge of the screen. Shows direction most clearly.</string>
+    <string name="help_mode_outline_desc">Draws only a thin outline of the wave, so it covers less of your game.</string>
+    <string name="help_mode_circle_desc">A ring in the center of the screen swells toward the sound.</string>
+    <string name="help_modes_note">Settings like size and opacity are saved separately for each mode and can be changed in the Settings tab.</string>
 
-    <string name="help_notes_title">알아두세요</string>
-    <string name="help_note_direction">좌우는 구분하지만 앞뒤는 구분하지 못합니다. 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감 효과를 나타냅니다.</string>
-    <string name="help_note_mono">좌우가 똑같은 소리(모노)는 정면 쪽으로만 표시됩니다.</string>
-    <string name="help_note_sources">미디어와 게임 소리만 받습니다. 전화 통화, 알림음, 알람은 대상이 아니고, 소리 캡처를 막아둔 앱(일부 영상 앱 등)은 시각화되지 않습니다.</string>
-    <string name="help_note_ai">AI 분류는 틀릴 수 있습니다. 안전이 걸린 상황에서 이 앱을 유일한 수단으로 쓰지 마세요.</string>
+    <string name="help_sound_title">Sound types and vibration</string>
+    <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
+    <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
+    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a strength (Light, Medium, Strong) and pattern (Once, Twice, Long, Repeat) for each type.</string>
+    <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The same type won\'t vibrate again within 2 seconds, and “Repeat” vibrates every 1.5 seconds while the sound continues.</string>
 
-    <string name="help_faq_title">자주 묻는 질문</string>
-    <string name="help_faq_no_graphic_q">그래픽이 보이지 않아요.</string>
-    <string name="help_faq_no_graphic_a">재생 중인 앱이 소리 캡처를 막는 앱인지 확인해 주세요. 설정에서 진하기가 너무 낮지 않은지, 지금 나는 소리 종류의 표시가 꺼져 있지 않은지도 확인해 주세요.</string>
-    <string name="help_faq_no_vibration_q">진동이 오지 않아요.</string>
-    <string name="help_faq_no_vibration_a">설정의 소리 분류에서 해당 종류의 표시와 진동이 모두 켜져 있는지 확인해 주세요. 폰 설정에서 진동을 꺼두었다면 울리지 않을 수 있습니다.</string>
-    <string name="help_faq_install_q">새 버전이 설치되지 않아요.</string>
-    <string name="help_faq_install_a">다른 곳에서 빌드한 APK는 서명이 달라 기존 앱 위에 설치되지 않습니다. 기존 앱을 삭제한 뒤 설치해 주세요. 이 경우 설정이 초기화됩니다.</string>
-    <string name="help_faq_battery_q">배터리를 많이 쓰나요?</string>
-    <string name="help_faq_battery_a">소리가 날 때만 그리고, 조용하면 대기 상태로 내려갑니다. 다만 소리를 계속 받기 때문에 쓰지 않을 때는 꺼두는 것을 권장합니다.</string>
+    <string name="help_notes_title">Good to know</string>
+    <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>
+    <string name="help_note_mono">Sounds that are identical on the left and right (mono) are shown only toward the front.</string>
+    <string name="help_note_sources">Only media and game sounds are captured. Phone calls, notification sounds and alarms are not, and apps that block audio capture (such as some video apps) can\'t be visualized.</string>
+    <string name="help_note_ai">AI classification can be wrong. Don\'t rely on this app as your only safeguard when safety is at stake.</string>
 
-    <string name="help_about_title">앱 정보</string>
-    <string name="help_about_version">버전 %1$s</string>
-    <string name="help_about_team">만든 팀: SOVIS</string>
-    <string name="help_about_license">이 앱은 Apache License 2.0으로 배포됩니다.</string>
-    <string name="help_licenses_button">오픈소스 라이선스</string>
-    <string name="help_licenses_title">오픈소스 라이선스</string>
-    <string name="help_close">닫기</string>
+    <string name="help_faq_title">FAQ</string>
+    <string name="help_faq_no_graphic_q">I don\'t see any graphics.</string>
+    <string name="help_faq_no_graphic_a">Check whether the app you\'re playing blocks audio capture. Also make sure opacity isn\'t too low in Settings, and that showing the current sound type isn\'t turned off.</string>
+    <string name="help_faq_no_vibration_q">It doesn\'t vibrate.</string>
+    <string name="help_faq_no_vibration_a">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. If vibration is turned off in your phone\'s settings, it may not vibrate.</string>
+    <string name="help_faq_install_q">A new version won\'t install.</string>
+    <string name="help_faq_install_a">An APK built elsewhere has a different signature and can\'t be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.</string>
+    <string name="help_faq_battery_q">Does it use a lot of battery?</string>
+    <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. Because it keeps capturing sound, though, we recommend turning it off when you\'re not using it.</string>
+    <string name="help_faq_language_q">How do I change the app language?</string>
+    <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
+
+    <string name="help_about_title">About</string>
+    <string name="help_about_version">Version %1$s</string>
+    <string name="help_about_team">Made by team SOVIS</string>
+    <string name="help_about_license">This app is distributed under the Apache License 2.0.</string>
+    <string name="help_licenses_button">Open source licenses</string>
+    <string name="help_licenses_title">Open source licenses</string>
+    <string name="help_close">Close</string>
 </resources>

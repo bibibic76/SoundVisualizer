@@ -1,0 +1,179 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">Główna</string>
+    <string name="tab_settings">Ustawienia</string>
+    <string name="tab_help">Pomoc</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Pokazuje na ekranie dźwięki, których nie widać.\nOd gier po filmy – odkryj zupełnie nowe wrażenia.</string>
+    <string name="home_status_running">Stan: działa</string>
+    <string name="home_status_idle">Stan: w gotowości</string>
+    <string name="home_start">Uruchom</string>
+    <string name="home_stop">Zatrzymaj</string>
+    <string name="home_add_tile">Dodaj do Szybkich ustawień</string>
+    <string name="home_add_tile_desc">Włączaj i wyłączaj wizualizację z panelu powiadomień, nie wychodząc z gry ani filmu.</string>
+    <string name="home_add_tile_manual">Rozwiń panel powiadomień, naciśnij Edytuj (ołówek) i dodaj kafelek „Wizualizacja audio”. Możesz wtedy włączać i wyłączać wizualizację, nie wychodząc z gry ani filmu.</string>
+
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">Do przechwytywania dźwięku potrzebne jest uprawnienie Mikrofon (nagrywanie dźwięku).</string>
+    <string name="permission_mic_rationale_title">Po co uprawnienie do mikrofonu?</string>
+    <string name="permission_mic_rationale_message">Android wymaga uprawnienia do mikrofonu, aby aplikacja mogła przechwytywać dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
+    <string name="permission_mic_settings_title">Włącz dostęp do mikrofonu w ustawieniach</string>
+    <string name="permission_mic_settings_message">Nie przyznano uprawnienia do mikrofonu. Jeśli prośba o uprawnienie nie pojawi się ponownie, naciśnij „Otwórz ustawienia”, przejdź do sekcji „Uprawnienia”, wybierz „Mikrofon” i zezwól na dostęp. Uprawnienie służy tylko do przechwytywania dźwięku odtwarzanego na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
+    <string name="permission_continue">Dalej</string>
+    <string name="permission_cancel">Anuluj</string>
+    <string name="permission_open_settings">Otwórz ustawienia</string>
+    <string name="permission_close">Zamknij</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">Fala</string>
+    <string name="mode_pad">Pad</string>
+    <string name="mode_circle">Okrąg</string>
+    <string name="mode_outline">Kontur</string>
+
+    <string name="mode_card_wave">Tryb Fala</string>
+    <string name="mode_card_pad">Tryb Pad</string>
+    <string name="mode_card_circle">Tryb Okrąg</string>
+    <string name="mode_card_outline">Tryb Kontur</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Ustawienia trybu</string>
+    <string name="settings_mode_picker_title">Tryb wizualizacji</string>
+    <string name="settings_mode_picker_desc">Wybierz podstawowy kształt grafiki rysowanej na ekranie.</string>
+    <string name="settings_section_mode_detail">Ustawienia każdego trybu</string>
+    <string name="settings_section_ai">Rodzaje dźwięków (AI)</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Język</string>
+    <string name="settings_language_system">Domyślny język systemu</string>
+    <string name="settings_language_cancel">Anuluj</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Zablokuj rozmiar</string>
+    <string name="setting_size_lock_desc">Utrzymuje stały rozmiar grafiki, a głośność pokazuje za pomocą krycia.</string>
+    <string name="setting_fixed_size">Stały rozmiar</string>
+    <string name="setting_fixed_size_desc">Rozmiar, w jakim grafika jest stale wyświetlana.</string>
+    <string name="setting_max_opacity">Maks. krycie</string>
+    <string name="setting_max_opacity_desc">Określa krycie grafiki przy najgłośniejszym dźwięku.</string>
+    <string name="setting_size">Rozmiar</string>
+    <string name="setting_size_desc">Reguluje, jak duża i obszerna wydaje się grafika.</string>
+    <string name="setting_radius">Promień</string>
+    <string name="setting_radius_desc">Ustawia promień pierścienia na środku ekranu w trybie Okrąg.</string>
+    <string name="setting_opacity">Krycie</string>
+    <string name="setting_opacity_desc">Im wyższa wartość, tym grafika jest wyraźniejsza; im niższa, tym bledsza i bardziej przezroczysta.</string>
+    <string name="setting_speed">Szybkość</string>
+    <string name="setting_speed_desc">Określa, jak szybko grafika przesuwa się w nowe miejsce, gdy zmienia się kierunek dźwięku.</string>
+    <string name="setting_sensitivity">Czułość</string>
+    <string name="setting_sensitivity_desc">Określa, jak szybko grafika reaguje (pulsuje) na zmiany głośności.</string>
+    <string name="setting_glow">Poświata</string>
+    <string name="setting_glow_desc">Dodaje wokół grafiki delikatną neonową poświatę. Uwaga: zużywa więcej zasobów.</string>
+    <string name="setting_glow_intensity">Moc poświaty</string>
+    <string name="setting_glow_intensity_desc">Określa, jak daleko rozchodzi się poświata.</string>
+    <string name="setting_ripple">Efekt przestrzenny</string>
+    <string name="setting_ripple_desc">Dodaje lekkie opóźnienie, dzięki któremu dźwięk wydaje się rozchodzić od przodu do tyłu.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Pokaż dźwięki otoczenia</string>
+    <string name="ai_show_speech">Pokaż mowę</string>
+    <string name="ai_show_danger">Pokaż dźwięki zagrożenia</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Wibracje</string>
+    <string name="haptic_requires_display">Wibracje działają tylko wtedy, gdy ten rodzaj dźwięku jest pokazywany.</string>
+    <string name="haptic_unsupported">To urządzenie nie obsługuje wibracji.</string>
+    <string name="haptic_no_amplitude">To urządzenie nie pozwala regulować siły wibracji, więc wibruje z domyślną siłą.</string>
+    <string name="haptic_strength">Siła</string>
+    <string name="haptic_strength_weak">Słaba</string>
+    <string name="haptic_strength_medium">Średnia</string>
+    <string name="haptic_strength_strong">Mocna</string>
+    <string name="haptic_pattern">Wzór</string>
+    <string name="haptic_pattern_tap">Raz</string>
+    <string name="haptic_pattern_double">Dwa razy</string>
+    <string name="haptic_pattern_hold">Długo</string>
+    <string name="haptic_pattern_repeat">Powtarzaj</string>
+    <string name="haptic_preview_hint">Naciśnij opcję, aby poczuć próbną wibrację.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">Wybierz kolor</string>
+    <string name="color_picker_presets">Popularne kolory</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">Anuluj</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Otwórz wybór koloru</string>
+    <string name="cd_expand">Rozwiń</string>
+    <string name="cd_collapse">Zwiń</string>
+    <string name="cd_change_language">Zmień język</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Przechwytywanie dźwięku</string>
+    <string name="notification_text">Trwa wizualizacja dźwięku.</string>
+    <string name="notification_stop">Zatrzymaj</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Wizualizacja audio</string>
+    <string name="tile_state_on">Włączone</string>
+    <string name="tile_state_off">Wyłączone</string>
+    <string name="tile_overlay_permission_needed">Wymagane jest uprawnienie „Wyświetlanie nad innymi aplikacjami”. Naciśnij „Uruchom” w aplikacji, aby je przyznać.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">Pierwsze kroki</string>
+    <string name="help_start_1">Na karcie „Główna” naciśnij „Uruchom”.</string>
+    <string name="help_start_2">Przyznaj uprawnienia. Android prosi o zgodę na nagrywanie ekranu za każdym razem, gdy włączasz wizualizację.</string>
+    <string name="help_start_3">Otwórz grę lub film, a dźwięki będą rysowane wzdłuż krawędzi ekranu.</string>
+    <string name="help_start_4">Aby wyłączyć, naciśnij „Zatrzymaj” na karcie „Główna” lub w powiadomieniu.</string>
+
+    <string name="help_tile_title">Sterowanie z panelu powiadomień</string>
+    <string name="help_tile_body">Naciśnij „Dodaj do Szybkich ustawień” na karcie „Główna”, aby dodać kafelek „Wizualizacja audio” do panelu powiadomień. Możesz wtedy włączać i wyłączać wizualizację podczas gry lub filmu, bez przełączania aplikacji.</string>
+    <string name="help_tile_use">Naciśnij, aby włączyć, i naciśnij ponownie, aby wyłączyć. Naciśnij i przytrzymaj, aby otworzyć ustawienia tej aplikacji.</string>
+    <string name="help_tile_old">W systemie Android 12 lub starszym otwórz panel powiadomień, naciśnij Edytuj (ołówek) i ręcznie przeciągnij kafelek „Wizualizacja audio” do Szybkich ustawień.</string>
+
+    <string name="help_permissions_title">Do czego potrzebne są uprawnienia</string>
+    <string name="help_perm_overlay">Wyświetlanie nad innymi aplikacjami</string>
+    <string name="help_perm_overlay_desc">Potrzebne, aby wyświetlać grafikę nad grami i filmami.</string>
+    <string name="help_perm_mic">Mikrofon (nagrywanie dźwięku)</string>
+    <string name="help_perm_mic_desc">Android wymaga tego uprawnienia, aby aplikacja mogła przechwytywać dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
+    <string name="help_perm_capture">Nagrywanie ekranu</string>
+    <string name="help_perm_capture_desc">Android pozwala aplikacjom przechwytywać dźwięk z telefonu tylko po udzieleniu tej zgody. Obraz ekranu nie jest przechwytywany.</string>
+    <string name="help_perm_notification">Powiadomienia (Android 13 lub nowszy)</string>
+    <string name="help_perm_notification_desc">Pozwala wyświetlać powiadomienie o działaniu aplikacji z przyciskiem „Zatrzymaj”. Jeśli odmówisz, aplikacja i tak będzie działać.</string>
+
+    <string name="help_modes_title">Tryby wizualizacji</string>
+    <string name="help_mode_wave_desc">Cała krawędź ekranu przesuwa się do środka – tym dalej, im głośniejszy dźwięk. Po stronie, z której dochodzi dźwięk, sięga głębiej.</string>
+    <string name="help_mode_pad_desc">W 8 miejscach wzdłuż krawędzi ekranu podświetlają się paski. Ten tryb najwyraźniej pokazuje kierunek.</string>
+    <string name="help_mode_outline_desc">Rysuje tylko cienki kontur fali, więc mniej zasłania grę.</string>
+    <string name="help_mode_circle_desc">Pierścień na środku ekranu wybrzusza się w stronę, z której dochodzi dźwięk.</string>
+    <string name="help_modes_note">Ustawienia takie jak „Rozmiar” i „Krycie” są zapisywane osobno dla każdego trybu. Możesz je zmienić na karcie „Ustawienia”.</string>
+
+    <string name="help_sound_title">Rodzaje dźwięków i wibracje</string>
+    <string name="help_sound_kinds">AI dzieli to, co słychać, na dźwięki otoczenia, mowę i dźwięki zagrożenia. Domyślnie dźwięki otoczenia są oznaczane na biało, mowa na żółto, a dźwięki zagrożenia na czerwono. Na karcie „Ustawienia” możesz zmienić kolor każdego rodzaju i to, czy jest pokazywany.</string>
+    <string name="help_sound_danger">Gdy zostanie wykryty dźwięk zagrożenia (np. strzał), kolor zmienia się natychmiast, a nie stopniowo.</string>
+    <string name="help_sound_haptic">Wibracje dadzą Ci znać o dźwięku, nawet gdy nie patrzysz na ekran. Domyślnie wibracje są włączone tylko dla dźwięków zagrożenia. Dla każdego rodzaju możesz wybrać siłę (Słaba, Średnia, Mocna) i wzór (Raz, Dwa razy, Długo, Powtarzaj).</string>
+    <string name="help_sound_haptic_rule">Wibracje działają tylko dla rodzajów dźwięków pokazywanych na ekranie. Ten sam rodzaj dźwięku nie wywoła kolejnej wibracji w ciągu 2 sekund, a wzór „Powtarzaj” wibruje co 1,5 sekundy, dopóki dźwięk trwa.</string>
+
+    <string name="help_notes_title">Warto wiedzieć</string>
+    <string name="help_note_direction">Aplikacja odróżnia lewą stronę od prawej, ale nie przód od tyłu. Grafika u góry i u dołu ekranu pokazuje dźwięki słyszalne jednakowo z obu stron oraz wrażenie przestrzeni.</string>
+    <string name="help_note_mono">Dźwięki identyczne po lewej i prawej stronie (mono) są pokazywane tylko jako dochodzące z przodu.</string>
+    <string name="help_note_sources">Przechwytywane są tylko dźwięki multimediów i gier. Rozmowy telefoniczne, dźwięki powiadomień i alarmy nie są przechwytywane. Nie da się też pokazać dźwięku z aplikacji, które blokują jego przechwytywanie (np. niektórych aplikacji wideo).</string>
+    <string name="help_note_ai">Klasyfikacja AI może być błędna. Gdy chodzi o bezpieczeństwo, nie polegaj na tej aplikacji jako jedynym zabezpieczeniu.</string>
+
+    <string name="help_faq_title">Najczęstsze pytania</string>
+    <string name="help_faq_no_graphic_q">Nie widzę żadnej grafiki.</string>
+    <string name="help_faq_no_graphic_a">Sprawdź, czy aplikacja, której używasz, nie blokuje przechwytywania dźwięku. Upewnij się też, że na karcie „Ustawienia” wartość „Krycie” nie jest zbyt niska, a pokazywanie rodzaju dźwięku, który właśnie słychać, nie jest wyłączone.</string>
+    <string name="help_faq_no_vibration_q">Telefon nie wibruje.</string>
+    <string name="help_faq_no_vibration_a">Na karcie „Ustawienia” w sekcji „Rodzaje dźwięków (AI)” sprawdź, czy dla danego rodzaju włączone są obie opcje: „Pokaż” i „Wibracje”. Jeśli wibracje są wyłączone w ustawieniach telefonu, telefon może nie wibrować.</string>
+    <string name="help_faq_install_q">Nie mogę zainstalować nowej wersji.</string>
+    <string name="help_faq_install_a">Plik APK zbudowany w innym miejscu ma inny podpis, więc nie może zastąpić zainstalowanej aplikacji. Najpierw odinstaluj obecną aplikację, a potem zainstaluj nową wersję. Spowoduje to zresetowanie ustawień.</string>
+    <string name="help_faq_battery_q">Czy aplikacja mocno zużywa baterię?</string>
+    <string name="help_faq_battery_a">Aplikacja rysuje grafikę tylko wtedy, gdy słychać dźwięk, a w ciszy przechodzi w stan spoczynku. Ponieważ jednak cały czas przechwytuje dźwięk, zalecamy ją wyłączać, gdy z niej nie korzystasz.</string>
+    <string name="help_faq_language_q">Jak zmienić język aplikacji?</string>
+    <string name="help_faq_language_a">Naciśnij „Język” u góry karty „Ustawienia” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
+
+    <string name="help_about_title">O aplikacji</string>
+    <string name="help_about_version">Wersja %1$s</string>
+    <string name="help_about_team">Autorzy: zespół SOVIS</string>
+    <string name="help_about_license">Ta aplikacja jest udostępniana na warunkach Apache License 2.0.</string>
+    <string name="help_licenses_button">Licencje open source</string>
+    <string name="help_licenses_title">Licencje open source</string>
+    <string name="help_close">Zamknij</string>
+</resources>

@@ -1,0 +1,179 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">หน้าแรก</string>
+    <string name="tab_settings">การตั้งค่า</string>
+    <string name="tab_help">ความช่วยเหลือ</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">เปลี่ยนเสียงที่มองไม่เห็นให้เป็นภาพบนหน้าจอ\nตั้งแต่เล่นเกมไปจนถึงดูภาพยนตร์ มาสัมผัสประสบการณ์ใหม่กันเลย</string>
+    <string name="home_status_running">สถานะ: กำลังทำงาน</string>
+    <string name="home_status_idle">สถานะ: พร้อมใช้งาน</string>
+    <string name="home_start">เริ่ม</string>
+    <string name="home_stop">หยุด</string>
+    <string name="home_add_tile">เพิ่มลงในการตั้งค่าด่วน</string>
+    <string name="home_add_tile_desc">เปิดหรือปิดได้ทันทีจากแผงการแจ้งเตือน ขณะเล่นเกมหรือดูวิดีโอ</string>
+    <string name="home_add_tile_manual">ดึงแผงการแจ้งเตือนลงมา แตะแก้ไข (รูปดินสอ) แล้วเพิ่ม “แสดงภาพเสียง” เพื่อเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอ</string>
+
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">ต้องมีสิทธิ์ไมโครโฟน (บันทึกเสียง) เพื่อจับเสียง</string>
+    <string name="permission_mic_rationale_title">เหตุผลที่ต้องใช้สิทธิ์ไมโครโฟน</string>
+    <string name="permission_mic_rationale_message">Android กำหนดให้ต้องมีสิทธิ์ไมโครโฟนเพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์ของคุณ แอปจะไม่บันทึกเสียงรอบตัวคุณ</string>
+    <string name="permission_mic_settings_title">โปรดอนุญาตไมโครโฟนในการตั้งค่า</string>
+    <string name="permission_mic_settings_message">ยังไม่ได้รับสิทธิ์ไมโครโฟน หากหน้าต่างขอสิทธิ์ไม่แสดงขึ้นอีก ให้แตะ “เปิดการตั้งค่า” ไปที่ “สิทธิ์” แล้วอนุญาต “ไมโครโฟน” แอปใช้สิทธิ์นี้เพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น และจะไม่บันทึกเสียงรอบตัวคุณ</string>
+    <string name="permission_continue">ดำเนินการต่อ</string>
+    <string name="permission_cancel">ยกเลิก</string>
+    <string name="permission_open_settings">เปิดการตั้งค่า</string>
+    <string name="permission_close">ปิด</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">คลื่น</string>
+    <string name="mode_pad">แพด</string>
+    <string name="mode_circle">วงกลม</string>
+    <string name="mode_outline">เส้นขอบ</string>
+
+    <string name="mode_card_wave">โหมดคลื่น</string>
+    <string name="mode_card_pad">โหมดแพด</string>
+    <string name="mode_card_circle">โหมดวงกลม</string>
+    <string name="mode_card_outline">โหมดเส้นขอบ</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">การตั้งค่าโหมด</string>
+    <string name="settings_mode_picker_title">โหมดการแสดงผล</string>
+    <string name="settings_mode_picker_desc">เลือกรูปแบบพื้นฐานของกราฟิกที่จะวาดบนหน้าจอ</string>
+    <string name="settings_section_mode_detail">การตั้งค่าแต่ละโหมด</string>
+    <string name="settings_section_ai">ประเภทเสียง (AI)</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">ภาษา</string>
+    <string name="settings_language_system">ค่าเริ่มต้นของระบบ</string>
+    <string name="settings_language_cancel">ยกเลิก</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">ล็อกขนาด</string>
+    <string name="setting_size_lock_desc">ให้กราฟิกมีขนาดคงที่ และแสดงความดังของเสียงเป็นความเข้มแทน</string>
+    <string name="setting_fixed_size">ขนาดคงที่</string>
+    <string name="setting_fixed_size_desc">ขนาดที่กราฟิกจะคงไว้</string>
+    <string name="setting_max_opacity">ความเข้มสูงสุด</string>
+    <string name="setting_max_opacity_desc">ความเข้มของกราฟิกเมื่อเสียงดังที่สุด</string>
+    <string name="setting_size">ขนาด</string>
+    <string name="setting_size_desc">ปรับว่ากราฟิกจะดูใหญ่และหนาแน่นแค่ไหน</string>
+    <string name="setting_radius">รัศมี</string>
+    <string name="setting_radius_desc">ปรับรัศมีของวงแหวนตรงกลางในโหมดวงกลม</string>
+    <string name="setting_opacity">ความเข้ม</string>
+    <string name="setting_opacity_desc">ค่ายิ่งสูงจะยิ่งดูเข้มชัด ค่ายิ่งต่ำจะยิ่งดูจางและโปร่งใส</string>
+    <string name="setting_speed">ความเร็ว</string>
+    <string name="setting_speed_desc">ความเร็วที่กราฟิกเคลื่อนไปยังตำแหน่งใหม่เมื่อทิศทางของเสียงเปลี่ยน</string>
+    <string name="setting_sensitivity">ความไว</string>
+    <string name="setting_sensitivity_desc">ความเร็วที่กราฟิกตอบสนอง (เต้นตาม) เมื่อความดังของเสียงเปลี่ยนแปลง</string>
+    <string name="setting_glow">แสงเรือง</string>
+    <string name="setting_glow_desc">เพิ่มแสงเรืองแบบนีออนที่นุ่มนวลรอบกราฟิก หมายเหตุ: ใช้ทรัพยากรเครื่องมากขึ้น</string>
+    <string name="setting_glow_intensity">ระดับแสงเรือง</string>
+    <string name="setting_glow_intensity_desc">ระยะที่แสงเรืองแผ่ออกไป</string>
+    <string name="setting_ripple">ระลอกเชิงพื้นที่</string>
+    <string name="setting_ripple_desc">เพิ่มการหน่วงเวลาเล็กน้อย เพื่อให้เสียงดูเหมือนแผ่จากด้านหน้าไปด้านหลัง</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">แสดงเสียงแวดล้อม</string>
+    <string name="ai_show_speech">แสดงเสียงพูด</string>
+    <string name="ai_show_danger">แสดงเสียงอันตราย</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">สั่น</string>
+    <string name="haptic_requires_display">สั่นได้เฉพาะเมื่อเปิดการแสดงเสียงประเภทนี้</string>
+    <string name="haptic_unsupported">อุปกรณ์นี้ไม่รองรับการสั่น</string>
+    <string name="haptic_no_amplitude">อุปกรณ์นี้ปรับความแรงของการสั่นไม่ได้ จึงสั่นด้วยความแรงเริ่มต้น</string>
+    <string name="haptic_strength">ความแรง</string>
+    <string name="haptic_strength_weak">เบา</string>
+    <string name="haptic_strength_medium">กลาง</string>
+    <string name="haptic_strength_strong">แรง</string>
+    <string name="haptic_pattern">รูปแบบ</string>
+    <string name="haptic_pattern_tap">1 ครั้ง</string>
+    <string name="haptic_pattern_double">2 ครั้ง</string>
+    <string name="haptic_pattern_hold">ยาว</string>
+    <string name="haptic_pattern_repeat">ซ้ำ</string>
+    <string name="haptic_preview_hint">แตะตัวเลือกเพื่อลองสัมผัสการสั่น</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">เลือกสี</string>
+    <string name="color_picker_presets">สีที่ใช้บ่อย</string>
+    <string name="color_picker_confirm">ตกลง</string>
+    <string name="color_picker_cancel">ยกเลิก</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">เปิดตัวเลือกสี</string>
+    <string name="cd_expand">ขยาย</string>
+    <string name="cd_collapse">ยุบ</string>
+    <string name="cd_change_language">เปลี่ยนภาษา</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">การจับเสียง</string>
+    <string name="notification_text">กำลังแสดงภาพเสียง</string>
+    <string name="notification_stop">หยุด</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">แสดงภาพเสียง</string>
+    <string name="tile_state_on">เปิด</string>
+    <string name="tile_state_off">ปิด</string>
+    <string name="tile_overlay_permission_needed">ต้องมีสิทธิ์ “แสดงทับแอปอื่น” โปรดแตะ “เริ่ม” ในแอปเพื่ออนุญาต</string>
+
+    <!-- Help -->
+    <string name="help_start_title">เริ่มต้นใช้งาน</string>
+    <string name="help_start_1">ในแท็บหน้าแรก ให้แตะ “เริ่ม”</string>
+    <string name="help_start_2">อนุญาตสิทธิ์ที่จำเป็น Android จะขอความยินยอมในการบันทึกหน้าจอทุกครั้งที่คุณเปิดใช้งาน</string>
+    <string name="help_start_3">เปิดเกมหรือวิดีโอ แล้วเสียงจะแสดงเป็นภาพตามขอบหน้าจอ</string>
+    <string name="help_start_4">หากต้องการปิด ให้แตะ “หยุด” ในแท็บหน้าแรกหรือในการแจ้งเตือน</string>
+
+    <string name="help_tile_title">เปิดและปิดจากแผงการแจ้งเตือน</string>
+    <string name="help_tile_body">แตะ “เพิ่มลงในการตั้งค่าด่วน” ในแท็บหน้าแรกเพื่อเพิ่มปุ่ม “แสดงภาพเสียง” ลงในแผงการแจ้งเตือน จากนั้นคุณจะเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอโดยไม่ต้องสลับแอป</string>
+    <string name="help_tile_use">แตะเพื่อเปิด และแตะอีกครั้งเพื่อปิด แตะค้างไว้เพื่อเปิดการตั้งค่าของแอปนี้</string>
+    <string name="help_tile_old">ใน Android 12 และเวอร์ชันก่อนหน้า ให้เปิดแผงการแจ้งเตือน แตะแก้ไข (รูปดินสอ) แล้วลาก “แสดงภาพเสียง” มาวางเอง</string>
+
+    <string name="help_permissions_title">เหตุผลที่ต้องใช้สิทธิ์</string>
+    <string name="help_perm_overlay">แสดงทับแอปอื่น</string>
+    <string name="help_perm_overlay_desc">จำเป็นสำหรับการแสดงกราฟิกทับเกมและวิดีโอ</string>
+    <string name="help_perm_mic">ไมโครโฟน (บันทึกเสียง)</string>
+    <string name="help_perm_mic_desc">Android กำหนดให้ต้องมีสิทธิ์นี้เพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์ของคุณ แอปจะไม่บันทึกเสียงรอบตัวคุณ</string>
+    <string name="help_perm_capture">การบันทึกหน้าจอ</string>
+    <string name="help_perm_capture_desc">Android อนุญาตให้แอปจับเสียงในโทรศัพท์ได้ผ่านความยินยอมนี้เท่านั้น แอปจะไม่บันทึกภาพหน้าจอของคุณ</string>
+    <string name="help_perm_notification">การแจ้งเตือน (Android 13 ขึ้นไป)</string>
+    <string name="help_perm_notification_desc">แสดงการแจ้งเตือนขณะทำงานพร้อมปุ่ม “หยุด” หากคุณปฏิเสธ แอปก็ยังทำงานได้</string>
+
+    <string name="help_modes_title">โหมดการแสดงผล</string>
+    <string name="help_mode_wave_desc">ขอบหน้าจอทั้งหมดจะดันเข้าด้านในตามความดังของเสียง และด้านที่เสียงมาจะดันเข้าไปลึกกว่า</string>
+    <string name="help_mode_pad_desc">แถบจะสว่างขึ้นที่ 8 จุดรอบขอบหน้าจอ แสดงทิศทางได้ชัดเจนที่สุด</string>
+    <string name="help_mode_outline_desc">วาดเฉพาะเส้นขอบบางของคลื่น จึงบังหน้าจอเกมน้อยกว่า</string>
+    <string name="help_mode_circle_desc">วงแหวนตรงกลางหน้าจอจะพองออกไปทางทิศทางที่เสียงมา</string>
+    <string name="help_modes_note">การตั้งค่าต่างๆ เช่น ขนาดและความเข้ม จะบันทึกแยกกันในแต่ละโหมด และเปลี่ยนได้ในแท็บการตั้งค่า</string>
+
+    <string name="help_sound_title">ประเภทเสียงและการสั่น</string>
+    <string name="help_sound_kinds">AI จะแยกเสียงที่ได้ยินออกเป็นเสียงแวดล้อม เสียงพูด และเสียงอันตราย สีเริ่มต้นคือ เสียงแวดล้อมสีขาว เสียงพูดสีเหลือง และเสียงอันตรายสีแดง ในแท็บการตั้งค่า คุณสามารถเปลี่ยนสีของแต่ละประเภทและเลือกได้ว่าจะแสดงหรือไม่</string>
+    <string name="help_sound_danger">เมื่อตรวจพบเสียงอันตราย (เช่น เสียงปืน) สีจะเปลี่ยนทันทีแทนที่จะค่อยๆ เปลี่ยน</string>
+    <string name="help_sound_haptic">การสั่นช่วยแจ้งให้คุณทราบแม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะเปิดการสั่นไว้เฉพาะเสียงอันตราย และคุณเลือกความแรง (เบา, กลาง, แรง) กับรูปแบบ (1 ครั้ง, 2 ครั้ง, ยาว, ซ้ำ) ของแต่ละประเภทได้</string>
+    <string name="help_sound_haptic_rule">จะสั่นเฉพาะเสียงประเภทที่แสดงบนหน้าจอเท่านั้น เสียงประเภทเดียวกันจะไม่สั่นอีกภายใน 2 วินาที และรูปแบบ “ซ้ำ” จะสั่นทุก 1.5 วินาทีตราบใดที่เสียงยังดังต่อเนื่อง</string>
+
+    <string name="help_notes_title">ข้อควรทราบ</string>
+    <string name="help_note_direction">แอปแยกเสียงซ้ายกับขวาได้ แต่แยกด้านหน้ากับด้านหลังไม่ได้ กราฟิกที่ด้านบนและด้านล่างของหน้าจอแสดงถึงเสียงที่ได้ยินเท่าๆ กันทั้งสองข้าง รวมถึงมิติเชิงพื้นที่</string>
+    <string name="help_note_mono">เสียงที่เหมือนกันทั้งซ้ายและขวา (โมโน) จะแสดงทางด้านหน้าเท่านั้น</string>
+    <string name="help_note_sources">จับเฉพาะเสียงจากสื่อและเกมเท่านั้น ไม่รวมเสียงการโทร เสียงแจ้งเตือน และเสียงนาฬิกาปลุก ส่วนแอปที่บล็อกการจับเสียง (เช่น แอปวิดีโอบางแอป) จะแสดงเป็นภาพไม่ได้</string>
+    <string name="help_note_ai">AI อาจจำแนกเสียงผิดพลาดได้ โปรดอย่าพึ่งพาแอปนี้เพียงอย่างเดียวในสถานการณ์ที่เกี่ยวข้องกับความปลอดภัย</string>
+
+    <string name="help_faq_title">คำถามที่พบบ่อย</string>
+    <string name="help_faq_no_graphic_q">ไม่เห็นกราฟิกเลย</string>
+    <string name="help_faq_no_graphic_a">โปรดตรวจสอบว่าแอปที่คุณกำลังใช้อยู่บล็อกการจับเสียงหรือไม่ และตรวจสอบในแท็บการตั้งค่าว่าไม่ได้ตั้งความเข้มไว้ต่ำเกินไป รวมถึงไม่ได้ปิดการแสดงเสียงประเภทที่กำลังดังอยู่</string>
+    <string name="help_faq_no_vibration_q">เครื่องไม่สั่น</string>
+    <string name="help_faq_no_vibration_a">ในแท็บการตั้งค่า ส่วน “ประเภทเสียง (AI)” ให้ตรวจสอบว่าได้เปิดทั้ง “แสดง” และ “สั่น” สำหรับเสียงประเภทนั้นแล้ว หากปิดการสั่นไว้ในการตั้งค่าของโทรศัพท์ เครื่องอาจไม่สั่น</string>
+    <string name="help_faq_install_q">ติดตั้งเวอร์ชันใหม่ไม่ได้</string>
+    <string name="help_faq_install_a">APK ที่บิลด์จากที่อื่นมีลายเซ็นต่างกัน จึงติดตั้งทับแอปเดิมไม่ได้ ให้ถอนการติดตั้งแอปเดิมก่อนแล้วจึงติดตั้ง การทำเช่นนี้จะรีเซ็ตการตั้งค่าของคุณ</string>
+    <string name="help_faq_battery_q">ใช้แบตเตอรี่มากไหม</string>
+    <string name="help_faq_battery_a">แอปจะวาดภาพเฉพาะเมื่อมีเสียง และจะพักการทำงานเมื่อเงียบ แต่เนื่องจากแอปจับเสียงอยู่ตลอดขณะทำงาน เราจึงแนะนำให้ปิดเมื่อไม่ได้ใช้งาน</string>
+    <string name="help_faq_language_q">เปลี่ยนภาษาของแอปได้อย่างไร</string>
+    <string name="help_faq_language_a">แตะ “ภาษา” ที่ด้านบนของแท็บการตั้งค่า แล้วเลือกภาษาที่ต้องการ หากเลือก “ค่าเริ่มต้นของระบบ” แอปจะใช้ภาษาเดียวกับโทรศัพท์ ใน Android 13 ขึ้นไป คุณยังเปลี่ยนภาษาได้ที่ “ภาษาของแอป” ในการตั้งค่าของโทรศัพท์</string>
+
+    <string name="help_about_title">เกี่ยวกับแอป</string>
+    <string name="help_about_version">เวอร์ชัน %1$s</string>
+    <string name="help_about_team">สร้างโดยทีม SOVIS</string>
+    <string name="help_about_license">แอปนี้เผยแพร่ภายใต้ Apache License 2.0</string>
+    <string name="help_licenses_button">ใบอนุญาตโอเพนซอร์ส</string>
+    <string name="help_licenses_title">ใบอนุญาตโอเพนซอร์ส</string>
+    <string name="help_close">ปิด</string>
+</resources>

@@ -19,7 +19,7 @@ graph TD
 
 | 단계 | 코드 | 언어 |
 |---|---|---|
-| 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/` | Kotlin (Compose) |
+| 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일) | Kotlin |
 | 캡처 | `AudioCaptureService` | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
@@ -206,3 +206,45 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 | AI 입력 소리 | 캡처 | AI 코루틴 | `AiAudioBuffer` (`synchronized` 링버퍼) |
 | 분류 결과 | AI 코루틴 | 메인, `SV-Haptic` | `AtomicReference` |
 | 설정 | 메인 (설정 화면) | 메인 (오버레이), `SV-Haptic` | `StateFlow.value` |
+
+---
+
+## 8. 앱 언어 (`language/`)
+
+### 문구
+
+- 화면의 문구는 모두 `res/values*/strings.xml`에 있습니다. 기본 폴더 `values`가 **영어**이고(`res/resources.properties`의 `unqualifiedResLocale=en-US`), 한국어는 `values-ko`, 그 밖의 언어는 `values-xx`입니다.
+- 폰 언어의 폴더가 없거나 문구 하나가 빠져 있으면 안드로이드가 기본 폴더의 영어를 씁니다. 그래서 영어·한국어는 빠짐없이 두고(`StringResourcesTest`), 다른 언어는 빠져도 Lint 경고(`MissingTranslation`)로만 둡니다.
+- 브랜드 이름(`app_name` 등)은 `values`에만 `translatable="false"`로 둡니다.
+- 지원 언어 목록은 `AppLanguages`(태그, 폴더, 그 언어로 쓴 이름)입니다. 안드로이드 코드를 쓰지 않아 JVM 테스트가 `values-xx` 폴더와 목록을 맞춰 봅니다.
+
+### 언어 적용 (`AppLanguage`)
+
+사용자가 고른 언어가 없으면 폰 언어를 따릅니다. 설정 탭 맨 위의 언어 카드(`LanguageSettingCard`)에서 고르면 다음처럼 적용됩니다.
+
+| | Android 13 이상 | Android 10~12 |
+|---|---|---|
+| 저장 | 시스템의 앱별 언어 (`LocaleManager.applicationLocales`, 비어 있으면 폰 언어) | 전용 `SharedPreferences` 파일(`AppLanguagePrefs`)의 태그 |
+| 적용 | 시스템이 앱 프로세스 전체에 적용 | 글자를 보여주는 컴포넌트가 `attachBaseContext`에서 `AppLanguage.wrap`으로 `createConfigurationContext` 한 컨텍스트를 씀 |
+| 바꾼 뒤 | 시스템이 액티비티를 다시 만듦 | `Activity.recreate()` |
+| 폰 설정의 앱 언어 | 같은 값이라 어느 쪽에서 바꿔도 맞음 | 없음 |
+
+- Android 12 이하에서 `wrap`을 거는 곳: `MainActivity`, `tile/StartVisualizerActivity`, `AudioCaptureService`(알림), `OverlayService`, `tile/VisualizerTileService`(타일 이름). 이 버전에서는 `applicationContext`의 언어가 바뀌지 않으므로, 토스트 문구는 액티비티에서 꺼내 넘깁니다.
+- 같은 버전에서 기본 로캘(`LocaleList.setDefault`)도 고른 언어로 맞춥니다. Compose 글자가 기본 로캘로 글꼴(간체·번체·일본어 한자 모양)과 줄바꿈을 고르기 때문입니다.
+- 언어 설정 파일은 `SettingsManager`와 따로 둡니다. `attachBaseContext`가 `SettingsManager.init`보다 먼저 불리기 때문입니다. 폰을 13 이상으로 올리면 앱을 처음 열 때 이 값을 시스템 설정으로 옮깁니다(`migrateLegacyChoice`).
+- 언어를 바꿔 액티비티가 다시 만들어져도 `MainActivity`가 보던 탭을 저장해 두어 설정 탭에 남습니다.
+- 숫자 표시는 언어와 상관없이 `Locale.US`로 형식을 맞춥니다.
+
+### 폰 설정에 뜨는 언어 목록
+
+`app/build.gradle.kts`의 `androidResources { generateLocaleConfig = true }`로, 빌드할 때 `values-xx` 폴더를 모아 locale config(`_generated_res_locale_config.xml`)를 만들고 매니페스트의 `android:localeConfig`에 넣습니다. Android 13 이상의 폰 설정 **앱 언어**에 이 목록이 뜹니다. 폴더를 추가하면 목록도 따라 바뀌므로 따로 고칠 파일이 없습니다.
+
+App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지지 않도록 언어별 분할은 꺼 두었습니다(`bundle { language { enableSplit = false } }`).
+
+### 긴 번역
+
+번역은 영어·한국어보다 길 수 있어서, 짧은 이름표 자리는 글자가 잘리지 않게 해 두었습니다.
+
+- 탭 줄은 넘치면 옆으로 밀립니다.
+- 홈의 실행·실행 종료 버튼, 모드 선택 칸, 진동 세기·패턴 선택지는 가운데 정렬로 줄을 바꾸고, 같은 줄의 칸 높이를 함께 맞춥니다.
+- 슬라이더 이름 칸은 너비가 고정이라 줄을 바꾸고, 긴 단어는 하이픈을 넣어 끊습니다(`wrappingLabelStyle`, 하이픈 규칙이 있는 언어만).

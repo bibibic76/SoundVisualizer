@@ -1,0 +1,179 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">首页</string>
+    <string name="tab_settings">设置</string>
+    <string name="tab_help">帮助</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">将看不见的声音呈现在屏幕上。\n从游戏到观影，开启全新体验。</string>
+    <string name="home_status_running">状态：运行中</string>
+    <string name="home_status_idle">状态：待启动</string>
+    <string name="home_start">启动</string>
+    <string name="home_stop">停止</string>
+    <string name="home_add_tile">添加到快捷设置</string>
+    <string name="home_add_tile_desc">下拉通知栏，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="home_add_tile_manual">下拉通知栏，点按“修改”（铅笔图标）并添加“声音可视化”，即可在游戏或视频画面上直接开启或关闭。</string>
+
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">需要麦克风（录音）权限才能捕获音频。</string>
+    <string name="permission_mic_rationale_title">为什么需要麦克风权限？</string>
+    <string name="permission_mic_rationale_message">根据 Android 的要求，需要麦克风权限才能捕获手机上播放的声音。本应用不会录制您周围的声音。</string>
+    <string name="permission_mic_settings_title">请在设置中允许使用麦克风</string>
+    <string name="permission_mic_settings_message">未获得麦克风权限。如果权限请求窗口没有再次出现，请点按“打开设置”，然后在“权限”中允许“麦克风”。此权限仅用于捕获手机上播放的声音，不会录制您周围的声音。</string>
+    <string name="permission_continue">继续</string>
+    <string name="permission_cancel">取消</string>
+    <string name="permission_open_settings">打开设置</string>
+    <string name="permission_close">关闭</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">波浪</string>
+    <string name="mode_pad">光条</string>
+    <string name="mode_circle">圆环</string>
+    <string name="mode_outline">轮廓</string>
+
+    <string name="mode_card_wave">波浪模式</string>
+    <string name="mode_card_pad">光条模式</string>
+    <string name="mode_card_circle">圆环模式</string>
+    <string name="mode_card_outline">轮廓模式</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">模式设置</string>
+    <string name="settings_mode_picker_title">显示模式</string>
+    <string name="settings_mode_picker_desc">选择屏幕上所绘图形的基本形状。</string>
+    <string name="settings_section_mode_detail">各模式详细设置</string>
+    <string name="settings_section_ai">声音类型（AI）</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">语言</string>
+    <string name="settings_language_system">系统默认</string>
+    <string name="settings_language_cancel">取消</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">锁定大小</string>
+    <string name="setting_size_lock_desc">将图形保持在固定大小，改用不透明度来表示声音强弱。</string>
+    <string name="setting_fixed_size">固定大小</string>
+    <string name="setting_fixed_size_desc">图形始终保持的大小。</string>
+    <string name="setting_max_opacity">最大不透明度</string>
+    <string name="setting_max_opacity_desc">声音最大时图形达到的不透明度。</string>
+    <string name="setting_size">大小</string>
+    <string name="setting_size_desc">调整图形的大小和整体饱满程度。</string>
+    <string name="setting_radius">半径</string>
+    <string name="setting_radius_desc">调整圆环模式下中央圆环的半径。</string>
+    <string name="setting_opacity">不透明度</string>
+    <string name="setting_opacity_desc">数值越大，图形越浓重；数值越小，图形越淡、越透明。</string>
+    <string name="setting_speed">速度</string>
+    <string name="setting_speed_desc">声音方向改变时，图形移动到新位置的速度。</string>
+    <string name="setting_sensitivity">灵敏度</string>
+    <string name="setting_sensitivity_desc">图形对声音大小变化的反应（跳动）速度。</string>
+    <string name="setting_glow">发光</string>
+    <string name="setting_glow_desc">在图形周围添加柔和的霓虹光晕效果。注意：会占用额外资源。</string>
+    <string name="setting_glow_intensity">发光强度</string>
+    <string name="setting_glow_intensity_desc">光晕向外扩散的范围。</string>
+    <string name="setting_ripple">空间涟漪</string>
+    <string name="setting_ripple_desc">加入轻微延迟，让声音仿佛由前向后扩散。</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">显示环境音</string>
+    <string name="ai_show_speech">显示人声</string>
+    <string name="ai_show_danger">显示危险音</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">振动</string>
+    <string name="haptic_requires_display">需开启此声音类型的显示才会振动。</string>
+    <string name="haptic_unsupported">此设备不支持振动。</string>
+    <string name="haptic_no_amplitude">此设备无法调节振动强度，将以默认强度振动。</string>
+    <string name="haptic_strength">强度</string>
+    <string name="haptic_strength_weak">弱</string>
+    <string name="haptic_strength_medium">中</string>
+    <string name="haptic_strength_strong">强</string>
+    <string name="haptic_pattern">振动方式</string>
+    <string name="haptic_pattern_tap">一次</string>
+    <string name="haptic_pattern_double">两次</string>
+    <string name="haptic_pattern_hold">长振动</string>
+    <string name="haptic_pattern_repeat">重复</string>
+    <string name="haptic_preview_hint">点按选项即可预览振动效果。</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">选择颜色</string>
+    <string name="color_picker_presets">常用颜色</string>
+    <string name="color_picker_confirm">确定</string>
+    <string name="color_picker_cancel">取消</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">打开颜色选择器</string>
+    <string name="cd_expand">展开</string>
+    <string name="cd_collapse">收起</string>
+    <string name="cd_change_language">更改语言</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">音频捕获</string>
+    <string name="notification_text">正在进行声音可视化。</string>
+    <string name="notification_stop">停止</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">声音可视化</string>
+    <string name="tile_state_on">已开启</string>
+    <string name="tile_state_off">已关闭</string>
+    <string name="tile_overlay_permission_needed">需要“显示在其他应用的上层”权限。请在应用中点按“启动”进行授权。</string>
+
+    <!-- Help -->
+    <string name="help_start_title">开始使用</string>
+    <string name="help_start_1">在“首页”点按“启动”。</string>
+    <string name="help_start_2">允许所需权限。根据 Android 的规定，每次开启时都会询问是否同意屏幕录制。</string>
+    <string name="help_start_3">打开游戏或视频后，声音就会以图形显示在屏幕边缘。</string>
+    <string name="help_start_4">如需关闭，请在“首页”或通知中点按“停止”。</string>
+
+    <string name="help_tile_title">在通知栏中开启和关闭</string>
+    <string name="help_tile_body">在“首页”点按“添加到快捷设置”，通知栏中就会出现“声音可视化”按钮。无需切换应用，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="help_tile_use">点按即可开启，开启后再次点按即可关闭。长按可打开本应用的设置。</string>
+    <string name="help_tile_old">在 Android 12 及更低版本中，请打开通知栏，点按“修改”（铅笔图标），然后手动将“声音可视化”拖入。</string>
+
+    <string name="help_permissions_title">为什么需要这些权限</string>
+    <string name="help_perm_overlay">显示在其他应用的上层</string>
+    <string name="help_perm_overlay_desc">用于在游戏和视频上方显示图形。</string>
+    <string name="help_perm_mic">麦克风（录音）</string>
+    <string name="help_perm_mic_desc">根据 Android 的要求，需要此权限才能捕获手机上播放的声音。不会录制您周围的声音。</string>
+    <string name="help_perm_capture">屏幕录制</string>
+    <string name="help_perm_capture_desc">Android 仅允许应用在获得此项同意后捕获手机上的声音。不会录制您的屏幕画面。</string>
+    <string name="help_perm_notification">通知（Android 13 及更高版本）</string>
+    <string name="help_perm_notification_desc">用于显示运行中的通知及其“停止”按钮。即使拒绝，应用仍可正常使用。</string>
+
+    <string name="help_modes_title">显示模式</string>
+    <string name="help_mode_wave_desc">整个屏幕边缘会随声音大小向内推进，声音传来的一侧推进得更深。</string>
+    <string name="help_mode_pad_desc">屏幕边缘的 8 个位置会亮起光条，方向显示最为清晰。</string>
+    <string name="help_mode_outline_desc">只绘制细细的波浪轮廓线，对游戏画面的遮挡更少。</string>
+    <string name="help_mode_circle_desc">屏幕中央的圆环会朝声音传来的方向鼓起。</string>
+    <string name="help_modes_note">“大小”“不透明度”等设置会按模式分别保存，可在“设置”标签页中更改。</string>
+
+    <string name="help_sound_title">声音类型与振动</string>
+    <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
+    <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
+    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择强度（弱、中、强）和振动方式（一次、两次、长振动、重复）。</string>
+    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。同一类型在 2 秒内不会再次振动；选择“重复”时，只要声音持续，每 1.5 秒振动一次。</string>
+
+    <string name="help_notes_title">注意事项</string>
+    <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>
+    <string name="help_note_mono">左右声道完全相同的声音（单声道）只会显示为来自正前方。</string>
+    <string name="help_note_sources">仅捕获媒体和游戏声音。电话通话、通知提示音和闹钟不在捕获范围内；禁止音频捕获的应用（如部分视频应用）的声音无法可视化。</string>
+    <string name="help_note_ai">AI 分类可能出错。在涉及安全的情况下，请勿将本应用作为唯一的保障手段。</string>
+
+    <string name="help_faq_title">常见问题</string>
+    <string name="help_faq_no_graphic_q">看不到任何图形。</string>
+    <string name="help_faq_no_graphic_a">请检查正在播放的应用是否禁止音频捕获。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
+    <string name="help_faq_no_vibration_q">没有振动。</string>
+    <string name="help_faq_no_vibration_a">请在“设置”标签页的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。如果在手机设置中关闭了振动，则可能不会振动。</string>
+    <string name="help_faq_install_q">无法安装新版本。</string>
+    <string name="help_faq_install_a">在其他地方构建的 APK 签名不同，无法在现有应用上覆盖安装。请先卸载现有应用，然后再安装。此操作会重置您的设置。</string>
+    <string name="help_faq_battery_q">耗电量大吗？</string>
+    <string name="help_faq_battery_a">只在有声音时才绘制图形，安静时会进入待机状态。不过，由于需要持续捕获声音，建议您在不使用时将其关闭。</string>
+    <string name="help_faq_language_q">如何更改应用语言？</string>
+    <string name="help_faq_language_a">点按“设置”标签页顶部的“语言”，然后选择一种语言。选择“系统默认”将跟随手机的语言。在 Android 13 及更高版本中，您也可以在手机设置的“应用语言”中更改。</string>
+
+    <string name="help_about_title">关于</string>
+    <string name="help_about_version">版本 %1$s</string>
+    <string name="help_about_team">制作团队：SOVIS</string>
+    <string name="help_about_license">本应用基于 Apache License 2.0 发布。</string>
+    <string name="help_licenses_button">开源许可</string>
+    <string name="help_licenses_title">开源许可</string>
+    <string name="help_close">关闭</string>
+</resources>
