@@ -1,0 +1,179 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">Startseite</string>
+    <string name="tab_settings">Einstellungen</string>
+    <string name="tab_help">Hilfe</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Macht Geräusche direkt auf Ihrem Bildschirm sichtbar.\nOb Gaming oder Film – erleben Sie etwas ganz Neues.</string>
+    <string name="home_status_running">Status: Aktiv</string>
+    <string name="home_status_idle">Status: Bereit</string>
+    <string name="home_start">Starten</string>
+    <string name="home_stop">Beenden</string>
+    <string name="home_add_tile">Schnelleinstellung hinzufügen</string>
+    <string name="home_add_tile_desc">Schalten Sie die Funktion in der Benachrichtigungsleiste ein und aus – direkt über Ihrem Spiel oder Video.</string>
+    <string name="home_add_tile_manual">Ziehen Sie die Benachrichtigungsleiste herunter, tippen Sie auf „Bearbeiten“ (Stiftsymbol) und fügen Sie „Tonvisualisierung“ hinzu. So können Sie die Funktion direkt über Ihrem Spiel oder Video ein- und ausschalten.</string>
+
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">Zum Erfassen von Ton ist die Berechtigung „Mikrofon“ (Audioaufnahme) erforderlich.</string>
+    <string name="permission_mic_rationale_title">Wozu die Mikrofonberechtigung?</string>
+    <string name="permission_mic_rationale_message">Android verlangt die Mikrofonberechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
+    <string name="permission_mic_settings_title">Mikrofon in den Einstellungen zulassen</string>
+    <string name="permission_mic_settings_message">Die Mikrofonberechtigung wurde nicht erteilt. Falls keine Berechtigungsanfrage mehr erscheint, tippen Sie auf „Einstellungen“, öffnen Sie „Berechtigungen“ und lassen Sie unter „Mikrofon“ den Zugriff zu. Die Berechtigung wird nur verwendet, um den auf Ihrem Smartphone wiedergegebenen Ton zu erfassen. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
+    <string name="permission_continue">Weiter</string>
+    <string name="permission_cancel">Abbrechen</string>
+    <string name="permission_open_settings">Einstellungen</string>
+    <string name="permission_close">Schließen</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">Welle</string>
+    <string name="mode_pad">Pad</string>
+    <string name="mode_circle">Kreis</string>
+    <string name="mode_outline">Kontur</string>
+
+    <string name="mode_card_wave">Modus „Welle“</string>
+    <string name="mode_card_pad">Modus „Pad“</string>
+    <string name="mode_card_circle">Modus „Kreis“</string>
+    <string name="mode_card_outline">Modus „Kontur“</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Moduseinstellungen</string>
+    <string name="settings_mode_picker_title">Darstellungsmodus</string>
+    <string name="settings_mode_picker_desc">Wählen Sie die Grundform der Grafiken, die auf dem Bildschirm angezeigt werden.</string>
+    <string name="settings_section_mode_detail">Einstellungen je Modus</string>
+    <string name="settings_section_ai">Geräuscharten (KI)</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Sprache</string>
+    <string name="settings_language_system">Systemstandard</string>
+    <string name="settings_language_cancel">Abbrechen</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Größe fixieren</string>
+    <string name="setting_size_lock_desc">Hält die Grafiken auf einer festen Größe und zeigt die Lautstärke stattdessen über die Deckkraft an.</string>
+    <string name="setting_fixed_size">Feste Größe</string>
+    <string name="setting_fixed_size_desc">Diese Größe behalten die Grafiken bei.</string>
+    <string name="setting_max_opacity">Max. Deckkraft</string>
+    <string name="setting_max_opacity_desc">Wie deckend die Grafiken beim lautesten Geräusch werden.</string>
+    <string name="setting_size">Größe</string>
+    <string name="setting_size_desc">Legt fest, wie groß und voll die Grafiken wirken.</string>
+    <string name="setting_radius">Radius</string>
+    <string name="setting_radius_desc">Legt den Radius des Rings in der Bildschirmmitte im Modus „Kreis“ fest.</string>
+    <string name="setting_opacity">Deckkraft</string>
+    <string name="setting_opacity_desc">Höhere Werte wirken kräftiger, niedrigere blasser und durchsichtiger.</string>
+    <string name="setting_speed">Tempo</string>
+    <string name="setting_speed_desc">Wie schnell sich die Grafiken an eine neue Position bewegen, wenn sich die Richtung des Geräuschs ändert.</string>
+    <string name="setting_sensitivity">Empfindlichkeit</string>
+    <string name="setting_sensitivity_desc">Wie schnell die Grafiken auf Änderungen der Lautstärke reagieren (pulsieren).</string>
+    <string name="setting_glow">Leuchten</string>
+    <string name="setting_glow_desc">Fügt ein weiches Neonleuchten um die Grafiken hinzu. Hinweis: Dies beansprucht zusätzliche Ressourcen.</string>
+    <string name="setting_glow_intensity">Leuchtstärke</string>
+    <string name="setting_glow_intensity_desc">Wie weit sich das Leuchten ausbreitet.</string>
+    <string name="setting_ripple">Räumliche Ausbreitung</string>
+    <string name="setting_ripple_desc">Fügt eine leichte Verzögerung hinzu, sodass sich Geräusche scheinbar von vorne nach hinten ausbreiten.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Umgebungsgeräusche zeigen</string>
+    <string name="ai_show_speech">Stimmen zeigen</string>
+    <string name="ai_show_danger">Gefahrengeräusche zeigen</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Vibrieren</string>
+    <string name="haptic_requires_display">Vibriert nur, wenn diese Geräuschart angezeigt wird.</string>
+    <string name="haptic_unsupported">Dieses Gerät unterstützt keine Vibration.</string>
+    <string name="haptic_no_amplitude">Dieses Gerät kann die Vibrationsstärke nicht anpassen und vibriert daher mit der Standardstärke.</string>
+    <string name="haptic_strength">Stärke</string>
+    <string name="haptic_strength_weak">Leicht</string>
+    <string name="haptic_strength_medium">Mittel</string>
+    <string name="haptic_strength_strong">Stark</string>
+    <string name="haptic_pattern">Muster</string>
+    <string name="haptic_pattern_tap">Einmal</string>
+    <string name="haptic_pattern_double">Zweimal</string>
+    <string name="haptic_pattern_hold">Lang</string>
+    <string name="haptic_pattern_repeat">Wiederholt</string>
+    <string name="haptic_preview_hint">Tippen Sie auf eine Option, um die Vibration vorab zu spüren.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">Farbe auswählen</string>
+    <string name="color_picker_presets">Häufige Farben</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">Abbrechen</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Farbauswahl öffnen</string>
+    <string name="cd_expand">Aufklappen</string>
+    <string name="cd_collapse">Zuklappen</string>
+    <string name="cd_change_language">Sprache ändern</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Audioerfassung</string>
+    <string name="notification_text">Geräusche werden visualisiert.</string>
+    <string name="notification_stop">Stopp</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Tonvisualisierung</string>
+    <string name="tile_state_on">An</string>
+    <string name="tile_state_off">Aus</string>
+    <string name="tile_overlay_permission_needed">Die Berechtigung „Über anderen Apps einblenden“ ist erforderlich. Tippen Sie in der App auf „Starten“, um sie zu erteilen.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">Erste Schritte</string>
+    <string name="help_start_1">Tippen Sie im Tab „Startseite“ auf „Starten“.</string>
+    <string name="help_start_2">Erteilen Sie die Berechtigungen. Android fragt bei jedem Einschalten erneut nach Ihrer Zustimmung zur Bildschirmaufnahme.</string>
+    <string name="help_start_3">Öffnen Sie ein Spiel oder Video. Geräusche werden dann an den Bildschirmrändern dargestellt.</string>
+    <string name="help_start_4">Zum Ausschalten tippen Sie im Tab „Startseite“ auf „Beenden“ oder in der Benachrichtigung auf „Stopp“.</string>
+
+    <string name="help_tile_title">Ein/Aus über die Benachrichtigungsleiste</string>
+    <string name="help_tile_body">Tippen Sie im Tab „Startseite“ auf „Schnelleinstellung hinzufügen“. Dann erscheint in Ihrer Benachrichtigungsleiste die Schaltfläche „Tonvisualisierung“. Damit schalten Sie die Funktion direkt über Ihrem Spiel oder Video ein und aus, ohne die App zu wechseln.</string>
+    <string name="help_tile_use">Tippen Sie darauf, um die Funktion einzuschalten, und tippen Sie erneut, um sie auszuschalten. Durch langes Drücken öffnen Sie die Einstellungen dieser App.</string>
+    <string name="help_tile_old">Unter Android 12 und älter öffnen Sie die Benachrichtigungsleiste, tippen auf „Bearbeiten“ (Stiftsymbol) und ziehen „Tonvisualisierung“ selbst in die Schnelleinstellungen.</string>
+
+    <string name="help_permissions_title">Warum Berechtigungen nötig sind</string>
+    <string name="help_perm_overlay">Über anderen Apps einblenden</string>
+    <string name="help_perm_overlay_desc">Wird benötigt, um Grafiken über Spielen und Videos anzuzeigen.</string>
+    <string name="help_perm_mic">Mikrofon (Audioaufnahme)</string>
+    <string name="help_perm_mic_desc">Android verlangt diese Berechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
+    <string name="help_perm_capture">Bildschirmaufnahme</string>
+    <string name="help_perm_capture_desc">Android erlaubt Apps nur mit dieser Zustimmung, den Ton Ihres Smartphones zu erfassen. Ihr Bildschirm wird nicht aufgezeichnet.</string>
+    <string name="help_perm_notification">Benachrichtigungen (ab Android 13)</string>
+    <string name="help_perm_notification_desc">Zeigt während der Ausführung eine Benachrichtigung mit der Schaltfläche „Stopp“ an. Die App funktioniert auch, wenn Sie dies ablehnen.</string>
+
+    <string name="help_modes_title">Darstellungsmodi</string>
+    <string name="help_mode_wave_desc">Der gesamte Bildschirmrand schiebt sich je nach Lautstärke nach innen. Auf der Seite, von der das Geräusch kommt, schiebt er sich weiter hinein.</string>
+    <string name="help_mode_pad_desc">An 8 Stellen am Bildschirmrand leuchten Balken auf. So ist die Richtung am deutlichsten zu erkennen.</string>
+    <string name="help_mode_outline_desc">Zeichnet nur eine dünne Kontur der Welle und verdeckt so weniger von Ihrem Spiel.</string>
+    <string name="help_mode_circle_desc">Ein Ring in der Bildschirmmitte dehnt sich in Richtung des Geräuschs aus.</string>
+    <string name="help_modes_note">Einstellungen wie „Größe“ und „Deckkraft“ werden für jeden Modus separat gespeichert und lassen sich im Tab „Einstellungen“ ändern.</string>
+
+    <string name="help_sound_title">Geräuscharten und Vibration</string>
+    <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
+    <string name="help_sound_danger">Wird ein Gefahrengeräusch (z. B. ein Schuss) erkannt, wechselt die Farbe sofort statt allmählich.</string>
+    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie eine Stärke (Leicht, Mittel, Stark) und ein Muster (Einmal, Zweimal, Lang, Wiederholt) wählen.</string>
+    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Bei derselben Art vibriert das Smartphone frühestens nach 2 Sekunden erneut. Bei „Wiederholt“ vibriert es alle 1,5 Sekunden, solange das Geräusch anhält.</string>
+
+    <string name="help_notes_title">Gut zu wissen</string>
+    <string name="help_note_direction">Links und rechts werden unterschieden, vorne und hinten jedoch nicht. Grafiken am oberen und unteren Bildschirmrand zeigen Geräusche, die auf beiden Seiten gleich stark zu hören sind, sowie den Raumeindruck.</string>
+    <string name="help_note_mono">Geräusche, die links und rechts identisch sind (Mono), werden nur als von vorne kommend angezeigt.</string>
+    <string name="help_note_sources">Erfasst wird nur der Ton von Medien und Spielen. Anrufe, Benachrichtigungstöne und Wecker gehören nicht dazu. Der Ton von Apps, welche die Audioerfassung blockieren (z. B. manche Video-Apps), kann nicht visualisiert werden.</string>
+    <string name="help_note_ai">Die Einordnung durch die KI kann falsch sein. Verlassen Sie sich in Situationen, in denen es um Sicherheit geht, nicht allein auf diese App.</string>
+
+    <string name="help_faq_title">Häufig gestellte Fragen</string>
+    <string name="help_faq_no_graphic_q">Ich sehe keine Grafiken.</string>
+    <string name="help_faq_no_graphic_a">Prüfen Sie, ob die App, in der Sie gerade etwas abspielen, die Audioerfassung blockiert. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist.</string>
+    <string name="help_faq_no_vibration_q">Das Smartphone vibriert nicht.</string>
+    <string name="help_faq_no_vibration_a">Prüfen Sie im Tab „Einstellungen“ unter „Geräuscharten (KI)“, ob für die betreffende Art sowohl „… zeigen“ als auch „Vibrieren“ eingeschaltet sind. Wenn die Vibration in den Einstellungen Ihres Smartphones deaktiviert ist, vibriert es möglicherweise nicht.</string>
+    <string name="help_faq_install_q">Eine neue Version lässt sich nicht installieren.</string>
+    <string name="help_faq_install_a">Eine anderswo erstellte APK hat eine andere Signatur und kann daher nicht als Update für die vorhandene App installiert werden. Deinstallieren Sie zuerst die vorhandene App und installieren Sie dann die neue Version. Dabei werden Ihre Einstellungen zurückgesetzt.</string>
+    <string name="help_faq_battery_q">Verbraucht die App viel Akku?</string>
+    <string name="help_faq_battery_a">Die App stellt nur dann Grafiken dar, wenn Ton wiedergegeben wird, und ruht bei Stille. Da sie aber laufend Ton erfasst, empfehlen wir, sie auszuschalten, wenn Sie sie nicht verwenden.</string>
+    <string name="help_faq_language_q">Wie ändere ich die App-Sprache?</string>
+    <string name="help_faq_language_a">Tippen Sie oben im Tab „Einstellungen“ auf „Sprache“ und wählen Sie eine Sprache aus. „Systemstandard“ übernimmt die Sprache Ihres Smartphones. Ab Android 13 können Sie die Sprache auch in den Einstellungen Ihres Smartphones unter „App-Sprachen“ ändern.</string>
+
+    <string name="help_about_title">Über diese App</string>
+    <string name="help_about_version">Version %1$s</string>
+    <string name="help_about_team">Entwickelt vom Team SOVIS</string>
+    <string name="help_about_license">Diese App wird unter der Apache License 2.0 bereitgestellt.</string>
+    <string name="help_licenses_button">Open-Source-Lizenzen</string>
+    <string name="help_licenses_title">Open-Source-Lizenzen</string>
+    <string name="help_close">Schließen</string>
+</resources>

@@ -1,0 +1,179 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">Início</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="tab_help">Ajuda</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Desenha na tela os sons que você não consegue ver.\nDos jogos aos filmes, viva uma experiência totalmente nova.</string>
+    <string name="home_status_running">Status: Em execução</string>
+    <string name="home_status_idle">Status: Pronto</string>
+    <string name="home_start">Iniciar</string>
+    <string name="home_stop">Parar</string>
+    <string name="home_add_tile">Pôr nas Configurações rápidas</string>
+    <string name="home_add_tile_desc">Ligue ou desligue pelo painel de notificações, direto por cima do jogo ou vídeo.</string>
+    <string name="home_add_tile_manual">Deslize o painel de notificações para baixo, toque em Editar (lápis) e adicione “Visualizar sons” para ligar ou desligar direto por cima do jogo ou vídeo.</string>
+
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">A permissão do microfone (gravação de áudio) é necessária para capturar o áudio.</string>
+    <string name="permission_mic_rationale_title">Por que a permissão do microfone?</string>
+    <string name="permission_mic_rationale_message">O Android exige a permissão do microfone para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
+    <string name="permission_mic_settings_title">Permita o microfone nas Configurações</string>
+    <string name="permission_mic_settings_message">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. Ela só é usada para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
+    <string name="permission_continue">Continuar</string>
+    <string name="permission_cancel">Cancelar</string>
+    <string name="permission_open_settings">Configurações</string>
+    <string name="permission_close">Fechar</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">Onda</string>
+    <string name="mode_pad">Pad</string>
+    <string name="mode_circle">Círculo</string>
+    <string name="mode_outline">Contorno</string>
+
+    <string name="mode_card_wave">Modo Onda</string>
+    <string name="mode_card_pad">Modo Pad</string>
+    <string name="mode_card_circle">Modo Círculo</string>
+    <string name="mode_card_outline">Modo Contorno</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Ajustes de modo</string>
+    <string name="settings_mode_picker_title">Modo visual</string>
+    <string name="settings_mode_picker_desc">Escolha a forma básica dos gráficos desenhados na tela.</string>
+    <string name="settings_section_mode_detail">Ajustes de cada modo</string>
+    <string name="settings_section_ai">Tipos de som (IA)</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_system">Padrão do sistema</string>
+    <string name="settings_language_cancel">Cancelar</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Fixar tamanho</string>
+    <string name="setting_size_lock_desc">Mantém os gráficos em um tamanho fixo e mostra o volume do som pela opacidade.</string>
+    <string name="setting_fixed_size">Tamanho fixo</string>
+    <string name="setting_fixed_size_desc">O tamanho que os gráficos mantêm.</string>
+    <string name="setting_max_opacity">Opacidade máxima</string>
+    <string name="setting_max_opacity_desc">O quanto os gráficos ficam opacos quando o som está no volume mais alto.</string>
+    <string name="setting_size">Tamanho</string>
+    <string name="setting_size_desc">Ajusta o tamanho dos gráficos e o quanto eles parecem encorpados.</string>
+    <string name="setting_radius">Raio</string>
+    <string name="setting_radius_desc">Define o raio do anel central no modo Círculo.</string>
+    <string name="setting_opacity">Opacidade</string>
+    <string name="setting_opacity_desc">Valores mais altos deixam os gráficos mais fortes; valores mais baixos, mais fracos e transparentes.</string>
+    <string name="setting_speed">Velocidade</string>
+    <string name="setting_speed_desc">A rapidez com que os gráficos se movem para a nova posição quando o som muda de direção.</string>
+    <string name="setting_sensitivity">Sensibilidade</string>
+    <string name="setting_sensitivity_desc">A rapidez com que os gráficos reagem (pulsam) às mudanças no volume do som.</string>
+    <string name="setting_glow">Brilho neon</string>
+    <string name="setting_glow_desc">Adiciona um brilho neon suave ao redor dos gráficos. Atenção: consome mais recursos.</string>
+    <string name="setting_glow_intensity">Intensidade</string>
+    <string name="setting_glow_intensity_desc">Até onde o brilho se espalha.</string>
+    <string name="setting_ripple">Ondulação espacial</string>
+    <string name="setting_ripple_desc">Adiciona um leve atraso para que o som pareça se espalhar da frente para trás.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Mostrar sons ambientes</string>
+    <string name="ai_show_speech">Mostrar vozes</string>
+    <string name="ai_show_danger">Mostrar sons de perigo</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Vibrar</string>
+    <string name="haptic_requires_display">Só vibra quando este tipo de som é mostrado na tela.</string>
+    <string name="haptic_unsupported">Este dispositivo não é compatível com vibração.</string>
+    <string name="haptic_no_amplitude">Este dispositivo não permite ajustar a intensidade da vibração, por isso vibra na intensidade padrão.</string>
+    <string name="haptic_strength">Intensidade</string>
+    <string name="haptic_strength_weak">Leve</string>
+    <string name="haptic_strength_medium">Média</string>
+    <string name="haptic_strength_strong">Forte</string>
+    <string name="haptic_pattern">Padrão</string>
+    <string name="haptic_pattern_tap">Uma vez</string>
+    <string name="haptic_pattern_double">Duas vezes</string>
+    <string name="haptic_pattern_hold">Longa</string>
+    <string name="haptic_pattern_repeat">Repetir</string>
+    <string name="haptic_preview_hint">Toque em uma opção para sentir uma prévia da vibração.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">Escolha uma cor</string>
+    <string name="color_picker_presets">Cores comuns</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">Cancelar</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Abrir seletor de cores</string>
+    <string name="cd_expand">Expandir</string>
+    <string name="cd_collapse">Recolher</string>
+    <string name="cd_change_language">Mudar idioma</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Captura de áudio</string>
+    <string name="notification_text">Visualizando os sons.</string>
+    <string name="notification_stop">Parar</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Visualizar sons</string>
+    <string name="tile_state_on">Ativado</string>
+    <string name="tile_state_off">Desativado</string>
+    <string name="tile_overlay_permission_needed">É necessária a permissão “Sobrepor a outros apps”. Toque em “Iniciar” no app para permitir.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">Primeiros passos</string>
+    <string name="help_start_1">Na aba Início, toque em “Iniciar”.</string>
+    <string name="help_start_2">Conceda as permissões. O Android pede autorização de gravação de tela toda vez que você liga a visualização.</string>
+    <string name="help_start_3">Abra um jogo ou vídeo, e os sons serão desenhados nas bordas da tela.</string>
+    <string name="help_start_4">Para desligar, toque em “Parar” na aba Início ou na notificação.</string>
+
+    <string name="help_tile_title">Liga/desliga no painel de notificações</string>
+    <string name="help_tile_body">Toque em “Pôr nas Configurações rápidas” na aba Início para adicionar o botão “Visualizar sons” ao painel de notificações. Assim, você liga ou desliga direto por cima do jogo ou vídeo, sem trocar de app.</string>
+    <string name="help_tile_use">Toque para ligar e toque de novo para desligar. Toque e mantenha pressionado para abrir a aba Ajustes deste app.</string>
+    <string name="help_tile_old">No Android 12 e versões anteriores, abra o painel de notificações, toque em Editar (lápis) e arraste você mesmo “Visualizar sons” para o painel.</string>
+
+    <string name="help_permissions_title">Por que as permissões são necessárias</string>
+    <string name="help_perm_overlay">Sobrepor a outros apps</string>
+    <string name="help_perm_overlay_desc">Necessária para mostrar os gráficos por cima de jogos e vídeos.</string>
+    <string name="help_perm_mic">Microfone (gravação de áudio)</string>
+    <string name="help_perm_mic_desc">O Android exige esta permissão para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
+    <string name="help_perm_capture">Gravação de tela</string>
+    <string name="help_perm_capture_desc">O Android só permite que apps capturem o som do celular por meio desta autorização. A sua tela não é capturada.</string>
+    <string name="help_perm_notification">Notificações (Android 13+)</string>
+    <string name="help_perm_notification_desc">Mostra uma notificação com o botão “Parar” enquanto o app está em execução. O app funciona mesmo que você não permita.</string>
+
+    <string name="help_modes_title">Modos visuais</string>
+    <string name="help_mode_wave_desc">Toda a borda da tela avança para dentro de acordo com o volume do som. O lado de onde vem o som avança ainda mais.</string>
+    <string name="help_mode_pad_desc">Barras se acendem em 8 pontos ao redor da borda da tela. É o modo que mostra a direção com mais clareza.</string>
+    <string name="help_mode_outline_desc">Desenha só um contorno fino da onda, então cobre menos a tela do jogo.</string>
+    <string name="help_mode_circle_desc">Um anel no centro da tela se expande na direção do som.</string>
+    <string name="help_modes_note">Ajustes como Tamanho e Opacidade são salvos separadamente para cada modo e podem ser alterados na aba Ajustes.</string>
+
+    <string name="help_sound_title">Tipos de som e vibração</string>
+    <string name="help_sound_kinds">A IA separa os sons em três tipos: sons ambientes, vozes e sons de perigo. Por padrão, os sons ambientes aparecem em branco, as vozes em amarelo e os sons de perigo em vermelho. Na aba Ajustes, você pode mudar a cor de cada tipo e escolher se ele é mostrado.</string>
+    <string name="help_sound_danger">Quando um som de perigo (como um tiro) é detectado, a cor muda na hora, sem transição gradual.</string>
+    <string name="help_sound_haptic">A vibração avisa mesmo quando você não está olhando para a tela. Por padrão, só os sons de perigo vibram, e você pode escolher a intensidade (Leve, Média, Forte) e o padrão (Uma vez, Duas vezes, Longa, Repetir) de cada tipo.</string>
+    <string name="help_sound_haptic_rule">Só vibram os tipos mostrados na tela. O mesmo tipo não vibra de novo em menos de 2 segundos, e “Repetir” vibra a cada 1,5 segundo enquanto o som continuar.</string>
+
+    <string name="help_notes_title">Bom saber</string>
+    <string name="help_note_direction">O app diferencia esquerda e direita, mas não frente e trás. Os gráficos nas partes de cima e de baixo da tela representam sons que chegam igualmente dos dois lados e a sensação de espaço.</string>
+    <string name="help_note_mono">Sons idênticos na esquerda e na direita (mono) são mostrados apenas como se viessem da frente.</string>
+    <string name="help_note_sources">Só são capturados sons de mídia e de jogos. Chamadas telefônicas, sons de notificação e alarmes ficam de fora, e o som de apps que bloqueiam a captura de áudio (como alguns apps de vídeo) não pode ser visualizado.</string>
+    <string name="help_note_ai">A IA pode errar na classificação. Não use este app como sua única proteção em situações que envolvam segurança.</string>
+
+    <string name="help_faq_title">Perguntas frequentes</string>
+    <string name="help_faq_no_graphic_q">Não vejo nenhum gráfico.</string>
+    <string name="help_faq_no_graphic_a">Verifique se o app que está tocando bloqueia a captura de áudio. Confira também, na aba Ajustes, se a Opacidade não está baixa demais e se a exibição do tipo de som atual não está desativada.</string>
+    <string name="help_faq_no_vibration_q">Não está vibrando.</string>
+    <string name="help_faq_no_vibration_a">Na aba Ajustes, em “Tipos de som (IA)”, confira se as opções “Mostrar” e “Vibrar” desse tipo estão ativadas. Se a vibração estiver desativada nas configurações do celular, ele pode não vibrar.</string>
+    <string name="help_faq_install_q">Não consigo instalar a nova versão.</string>
+    <string name="help_faq_install_a">Um APK gerado em outro lugar tem uma assinatura diferente e não pode ser instalado por cima do app atual. Desinstale o app atual primeiro e depois instale a nova versão. Isso redefine seus ajustes.</string>
+    <string name="help_faq_battery_q">Gasta muita bateria?</string>
+    <string name="help_faq_battery_a">O app só desenha quando há som e fica em espera quando está tudo em silêncio. Mas, como continua capturando o som, recomendamos desligar quando não estiver usando.</string>
+    <string name="help_faq_language_q">Como mudo o idioma do app?</string>
+    <string name="help_faq_language_a">Toque em “Idioma” no topo da aba Ajustes e escolha um. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
+
+    <string name="help_about_title">Sobre</string>
+    <string name="help_about_version">Versão %1$s</string>
+    <string name="help_about_team">Feito pela equipe SOVIS</string>
+    <string name="help_about_license">Este app é distribuído sob a Apache License 2.0.</string>
+    <string name="help_licenses_button">Licenças de código aberto</string>
+    <string name="help_licenses_title">Licenças de código aberto</string>
+    <string name="help_close">Fechar</string>
+</resources>
