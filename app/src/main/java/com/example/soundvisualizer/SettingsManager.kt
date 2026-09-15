@@ -7,6 +7,12 @@ import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * 표현 모드 하나의 설정.
+ *
+ * 기본값은 이 생성자 한 곳에만 둔다. 저장값이 없는 새 설치도 [SettingsManager.loadMode] 가
+ * 여기 기본값을 그대로 받으므로, 기본값을 바꿀 때는 이곳과 ModeSettingsTest 만 고치면 된다.
+ */
 data class ModeSettings(
     /** 크기 (0~100). 100 이면 파도가 화면 중앙 한계선까지 닿는다. */
     var intensity: Float = 50f,
@@ -40,7 +46,7 @@ object SettingsManager {
     private val _padMode = MutableStateFlow(ModeSettings())
     val padMode: StateFlow<ModeSettings> = _padMode
 
-    private val _circleMode = MutableStateFlow(ModeSettings(circleRadius = 40f))
+    private val _circleMode = MutableStateFlow(ModeSettings())
     val circleMode: StateFlow<ModeSettings> = _circleMode
 
     private val _outlineMode = MutableStateFlow(ModeSettings())
@@ -86,27 +92,11 @@ object SettingsManager {
         
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
-        
-        fun loadMode(prefix: String, defaultRadius: Float = 40f): ModeSettings {
-            return ModeSettings(
-                intensity = prefs.getFloat("${prefix}_intensity", 50f),
-                speed = prefs.getFloat("${prefix}_speed", 20f),
-                opacity = prefs.getFloat("${prefix}_opacity", 50f),
-                circleRadius = prefs.getFloat("${prefix}_radius", defaultRadius),
-                useRippleDelay = prefs.getBoolean("${prefix}_ripple", true),
-                sensitivity = prefs.getFloat("${prefix}_sensitivity", 15f),
-                isGlowMode = prefs.getBoolean("${prefix}_glow", false),
-                glowIntensity = prefs.getFloat("${prefix}_glow_intensity", 0f),
-                intensityAsOpacity = prefs.getBoolean("${prefix}_intensity_as_opacity", false),
-                opacityFixedSize = prefs.getFloat("${prefix}_opacity_fixed_size", 30f),
-                opacityFixedMaxOpacity = prefs.getFloat("${prefix}_opacity_fixed_max", 100f)
-            )
-        }
 
-        _waveMode.value = loadMode("wave")
-        _padMode.value = loadMode("pad")
-        _circleMode.value = loadMode("circle", 40f)
-        _outlineMode.value = loadMode("outline")
+        _waveMode.value = loadMode(prefs, "wave")
+        _padMode.value = loadMode(prefs, "pad")
+        _circleMode.value = loadMode(prefs, "circle")
+        _outlineMode.value = loadMode(prefs, "outline")
 
         _showAmbient.value = prefs.getBoolean("show_ambient", true)
         _colorAmbient.value = prefs.getInt("color_ambient", DEFAULT_COLOR_AMBIENT)
@@ -138,20 +128,49 @@ object SettingsManager {
         prefs.edit { putInt("visualMode", mode.ordinal) }
     }
 
+    /**
+     * [prefix] 모드의 저장값을 읽는다. 저장된 적 없는 항목은 [ModeSettings] 의 기본값을 쓴다.
+     *
+     * 기본값을 여기에 숫자로 한 번 더 적어두면, 데이터 클래스만 고쳤을 때 테스트는 통과해도
+     * 새로 설치한 사용자는 옛 값을 받는다. 그래서 기본값은 데이터 클래스 한 곳에만 둔다.
+     * 원형 모드의 반지름도 [ModeSettings.circleRadius] 기본값을 그대로 쓴다.
+     *
+     * 기기 없이 저장·복원을 검사할 수 있게 프리퍼런스를 인자로 받는다 (ModeSettingsTest).
+     */
+    internal fun loadMode(source: SharedPreferences, prefix: String): ModeSettings {
+        val d = ModeSettings()
+        return ModeSettings(
+            intensity = source.getFloat("${prefix}_intensity", d.intensity),
+            speed = source.getFloat("${prefix}_speed", d.speed),
+            opacity = source.getFloat("${prefix}_opacity", d.opacity),
+            circleRadius = source.getFloat("${prefix}_radius", d.circleRadius),
+            useRippleDelay = source.getBoolean("${prefix}_ripple", d.useRippleDelay),
+            sensitivity = source.getFloat("${prefix}_sensitivity", d.sensitivity),
+            isGlowMode = source.getBoolean("${prefix}_glow", d.isGlowMode),
+            glowIntensity = source.getFloat("${prefix}_glow_intensity", d.glowIntensity),
+            intensityAsOpacity = source.getBoolean("${prefix}_intensity_as_opacity", d.intensityAsOpacity),
+            opacityFixedSize = source.getFloat("${prefix}_opacity_fixed_size", d.opacityFixedSize),
+            opacityFixedMaxOpacity = source.getFloat("${prefix}_opacity_fixed_max", d.opacityFixedMaxOpacity)
+        )
+    }
+
+    /** [loadMode] 와 같은 키로 적는다. 키를 바꾸면 기존 사용자 설정이 기본값으로 돌아간다. */
+    internal fun putMode(editor: SharedPreferences.Editor, prefix: String, settings: ModeSettings) {
+        editor.putFloat("${prefix}_intensity", settings.intensity)
+        editor.putFloat("${prefix}_speed", settings.speed)
+        editor.putFloat("${prefix}_opacity", settings.opacity)
+        editor.putFloat("${prefix}_radius", settings.circleRadius)
+        editor.putBoolean("${prefix}_ripple", settings.useRippleDelay)
+        editor.putFloat("${prefix}_sensitivity", settings.sensitivity)
+        editor.putBoolean("${prefix}_glow", settings.isGlowMode)
+        editor.putFloat("${prefix}_glow_intensity", settings.glowIntensity)
+        editor.putBoolean("${prefix}_intensity_as_opacity", settings.intensityAsOpacity)
+        editor.putFloat("${prefix}_opacity_fixed_size", settings.opacityFixedSize)
+        editor.putFloat("${prefix}_opacity_fixed_max", settings.opacityFixedMaxOpacity)
+    }
+
     private fun saveMode(prefix: String, settings: ModeSettings) {
-        prefs.edit {
-            putFloat("${prefix}_intensity", settings.intensity)
-            putFloat("${prefix}_speed", settings.speed)
-            putFloat("${prefix}_opacity", settings.opacity)
-            putFloat("${prefix}_radius", settings.circleRadius)
-            putBoolean("${prefix}_ripple", settings.useRippleDelay)
-            putFloat("${prefix}_sensitivity", settings.sensitivity)
-            putBoolean("${prefix}_glow", settings.isGlowMode)
-            putFloat("${prefix}_glow_intensity", settings.glowIntensity)
-            putBoolean("${prefix}_intensity_as_opacity", settings.intensityAsOpacity)
-            putFloat("${prefix}_opacity_fixed_size", settings.opacityFixedSize)
-            putFloat("${prefix}_opacity_fixed_max", settings.opacityFixedMaxOpacity)
-        }
+        prefs.edit { putMode(this, prefix, settings) }
     }
 
     /**

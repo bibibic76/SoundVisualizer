@@ -47,6 +47,12 @@ class RealtimeAiPipelineInstrumentedTest {
                 }
 
                 val tick = pipeline.runTickForTest()
+                if (name == "silence") {
+                    assertEquals("silence must skip YAMNet and Booster", 0L, pipeline.inferenceStatsForTest().executed)
+                    assertEquals("silence skip count", 1L, pipeline.inferenceStatsForTest().skippedForSilence)
+                    assertEquals("silence tick", null, tick)
+                    continue
+                }
                 assertNotNull("$name tick", tick)
                 val d = tick!!
 

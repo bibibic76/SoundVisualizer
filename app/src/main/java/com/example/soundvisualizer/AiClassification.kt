@@ -14,6 +14,8 @@ import com.example.soundvisualizer.ai.AiClassificationResult
  */
 object AiClassification {
 
+    // ai/ 코드는 이 상수를 참조하지 않고 같은 문자열을 직접 쓴다. 화면·진동은 모르는 라벨을 환경음으로
+    // 처리해서 이름이 어긋나도 오류가 나지 않으므로, 둘이 같은지는 AiLabelContractTest 가 확인한다.
     const val AMBIENT = "ambient"
     const val SPEECH = "speech"
     const val DANGER = "danger"

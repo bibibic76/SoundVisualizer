@@ -29,6 +29,15 @@ class CaptureAudioPathTest {
     }
 
     @Test
+    fun interleavedPeak_usesBothOriginalChannels() {
+        assertEquals(
+            0.02f,
+            CaptureAudioMath.maxAbsoluteInterleavedPeak(floatArrayOf(0.02f, -0.02f), 2),
+            0f
+        )
+    }
+
+    @Test
     fun ring_ingestStereo_and_rightPadSnapshot() {
         val buf = AiAudioBuffer(44100, 2)
         // 3 frames stereo
