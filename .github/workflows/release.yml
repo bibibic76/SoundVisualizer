@@ -56,13 +56,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       # android.yml 과 같은 서명 키를 쓴다. Secret 이 없으면 임시 키로 서명되어 기존 앱 위에 덮어쓸 수 없다.
+      # 키 경로는 SV_DEBUG_KEYSTORE 로 넘긴다. 이 설정을 읽지 못하는 예전 태그의 빌드 설정은 임시 키로 서명된다.
       - name: 디버그 서명 키 복원
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
           if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
-            mkdir -p ~/.android
-            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+            keystore="$RUNNER_TEMP/debug.keystore"
+            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$keystore"
+            echo "SV_DEBUG_KEYSTORE=$keystore" >> "$GITHUB_ENV"
             echo "공유 디버그 키로 서명합니다."
           else
             echo "::warning title=임시 서명::DEBUG_KEYSTORE_BASE64 Secret 이 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
@@ -90,6 +92,27 @@ jobs:
           cp "$src" "SoundVisualizer-$TAG.apk"
           size=$(du -h "SoundVisualizer-$TAG.apk" | cut -f1)
           echo "::notice title=릴리스 APK::SoundVisualizer-$TAG.apk ($size, $(basename "$src"))"
+
+      # 공유 키로 서명돼야 사용자가 새 버전을 기존 앱 위에 덮어 설치할 수 있다.
+      # 서명 경로 설정(SV_DEBUG_KEYSTORE)이 들어간 버전인데 다른 키로 서명됐으면 실패시키고, 그 전 버전은 경고만 남긴다.
+      - name: APK 서명 확인
+        run: |
+          apk="SoundVisualizer-$TAG.apk"
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          apk_sha=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
+          if [ -z "${SV_DEBUG_KEYSTORE:-}" ]; then
+            echo "::notice title=APK 서명::임시 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+            exit 0
+          fi
+          key_sha=$(keytool -exportcert -alias androiddebugkey -keystore "$SV_DEBUG_KEYSTORE" -storepass android | sha256sum | cut -d' ' -f1)
+          if [ "$apk_sha" = "$key_sha" ]; then
+            echo "::notice title=APK 서명::공유 디버그 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+          elif grep -q SV_DEBUG_KEYSTORE app/build.gradle.kts; then
+            echo "::error title=APK 서명::공유 디버그 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
+            exit 1
+          else
+            echo "::warning title=APK 서명::이 버전의 빌드 설정은 공유 키 경로를 읽지 못해 임시 키로 서명됐습니다. 기존 앱을 지우고 설치해야 합니다."
+          fi
 
       - name: 릴리스에 APK 붙이기
         env:
