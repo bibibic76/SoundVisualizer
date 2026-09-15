@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -27,7 +28,38 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 빠른 설정 타일을 길게 누르면 설정 탭으로 연다. -->
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
         </activity>
+
+        <!--
+            타일에서 켤 때 권한 팝업과 화면 녹화 동의만 띄우는 투명 화면.
+            taskAffinity 를 비워 앱과 다른 작업으로 띄운다. 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고,
+            닫히면 보던 앱(게임 등)으로 돌아간다. noHistory 는 동의 창이 위에 뜨는 순간 닫혀 결과를 못 받으므로 쓰지 않는다.
+        -->
+        <activity
+            android:name=".tile.StartVisualizerActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <service
+            android:name=".tile.VisualizerTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <!-- 켜짐/꺼짐 스위치로 읽히게 한다 (TalkBack, Android 13+). -->
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
 
         <service
             android:name=".AudioCaptureService"

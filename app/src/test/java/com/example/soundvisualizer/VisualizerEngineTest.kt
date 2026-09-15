@@ -68,6 +68,59 @@ private fun VisualizerEngine.advance(
     return t - stepNs
 }
 
+/**
+ * 대기 상태가 될 때까지 60fps 로 틱을 돌리고 다음 타임스탬프를 돌려준다.
+ * 실제 렌더 루프처럼 대기에 들어가면 틱을 멈춘다.
+ */
+private fun VisualizerEngine.tickUntilIdle(startNs: Long = FRAME_60, maxFrames: Int = 600): Long {
+    var t = startNs
+    var frames = 0
+    while (!debugState().idle && frames < maxFrames) {
+        tick(t)
+        t += FRAME_60
+        frames++
+    }
+    assertTrue("대기 상태로 내려가지 않았다 (frames=$frames)", debugState().idle)
+    return t
+}
+
+/** 대기 중 33ms 폴링을 [times] 번. */
+private fun VisualizerEngine.poll(times: Int) = repeat(times) { pollWake() }
+
+/** 분류기가 위협음으로 판정했고, 위협음은 표시가 켜져 있다. */
+private fun FakeInputs.becomeDanger() {
+    label = AiClassification.DANGER
+    shown = true
+}
+
+/** 환경음을 숨기고 위협음만 보이게 한 채, 조용해서 대기로 내려간 엔진. */
+private fun hiddenAmbientIdle(): Pair<VisualizerEngine, FakeInputs> {
+    val fake = FakeInputs(label = AiClassification.AMBIENT, shown = false)
+    val engine = newEngine(fake)
+    engine.tickUntilIdle()
+    return engine to fake
+}
+
+/**
+ * 위협음을 표시 중인 엔진이 같은 소리를 제때 받았을 때 평소 경로가 도달하는 가장 큰 전체 크기.
+ * [loudFrames] 프레임 동안 [loud], 이어서 [tailFrames] 프레임 동안 [tail] 을 좌우에 같게 넣는다.
+ */
+private fun onTimePeakSmoothTotal(loud: Float, loudFrames: Int, tail: Float, tailFrames: Int): Float {
+    val fake = FakeInputs(label = AiClassification.DANGER, shown = true)
+    val engine = newEngine(fake)
+    var t = FRAME_60
+    var peak = 0f
+    repeat(loudFrames + tailFrames) { n ->
+        val v = if (n < loudFrames) loud else tail
+        fake.left = v
+        fake.right = v
+        engine.tick(t)
+        t += FRAME_60
+        peak = maxOf(peak, engine.debugState().smoothTotal)
+    }
+    return peak
+}
+
 class VisualizerEngineTest {
 
     // ---------------------------------------------------------------
@@ -323,6 +376,265 @@ class VisualizerEngineTest {
 
         engine.pollWake()
         assertTrue("여전히 조용하면 idle 을 유지한다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `표시가 꺼진 종류의 소리가 계속 나면 대기 상태로 내려간다`() {
+        val fake = FakeInputs(shown = false)
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue("그릴 것이 없는데 화면 주사율로 계속 돈다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `진하기가 0이면 소리가 나도 대기 상태로 내려간다`() {
+        val fake = FakeInputs(settings = ModeSettings(opacity = 0f))
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+    }
+
+    @Test
+    fun `대기 중 표시 대상이 아닌 소리로는 깨어나지 않는다`() {
+        val fake = FakeInputs(shown = false)
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+
+        engine.pollWake()
+        assertTrue("표시가 꺼진 소리에 깨어났다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `대기 중 표시 대상이 되면 깨어난다`() {
+        val fake = FakeInputs(shown = false)
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+
+        fake.shown = true
+        engine.pollWake()
+        assertFalse("표시를 켰는데 깨어나지 않았다", engine.debugState().idle)
+    }
+
+    // ---------------------------------------------------------------
+    // 늦게 온 위협음 판정: 숨긴 라벨로 먼저 들어온 짧은 소리
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `숨긴 라벨로 지나간 짧은 소리는 늦게 온 위협음 판정에 제때 표시했을 크기로 보인다`() {
+        val (engine, fake) = hiddenAmbientIdle()
+
+        // 총성 한 번(33ms) 뒤로는 약한 잔향만 남는다. 아직 라벨은 숨긴 환경음이다.
+        fake.left = 0.9f
+        fake.right = 0.9f
+        engine.pollWake()
+        fake.left = 0.03f
+        fake.right = 0.03f
+        engine.poll(10)
+        assertTrue("숨긴 라벨의 소리에 깨어났다", engine.debugState().idle)
+
+        // 약 0.36초 뒤 위협음 판정이 도착한다.
+        fake.becomeDanger()
+        engine.pollWake()
+        assertFalse("위협음 판정이 왔는데 깨어나지 않았다", engine.debugState().idle)
+
+        // 위협음을 제때 표시했다면 그렸을 크기로 시작한다. 폴링 한 번(33ms)은 60fps 두 프레임이다.
+        // 보관한 0.9 를 그대로 전체 크기(3.42)로 쓰면 소리가 1초 넘게 이어질 때의 크기라 짧은 총성마다 크기 한도까지 뛴다.
+        val seeded = engine.debugState().smoothTotal
+        val onTime = onTimePeakSmoothTotal(loud = 0.9f, loudFrames = 2, tail = 0.03f, tailFrames = 20)
+        assertEquals("제때 표시했을 때의 크기($onTime)와 다르다 ($seeded)", onTime, seeded, onTime * 0.2f)
+
+        engine.advance(frames = 3, startNs = FRAME_60 * 1000)
+        val state = engine.debugState()
+        // 잔향(0.03)으로 0 에서 자라면 0.01 도 안 되어 보이지 않는다.
+        assertTrue("잔향만으로 그려서 보이지 않는다 (smoothTotal=${state.smoothTotal})", state.visible)
+    }
+
+    @Test
+    fun `제때 표시해도 안 보일 작은 위협음도 늦게 온 판정에서는 보이게 그린다`() {
+        // 전제: 0.1 짜리 짧은 소리는 위협음을 표시 중이어도 파도가 보이는 3dp 에 못 미친다.
+        val onTimeFake = FakeInputs(label = AiClassification.DANGER, shown = true)
+        val onTime = newEngine(onTimeFake)
+        var t = FRAME_60
+        var onTimeVisible = false
+        repeat(32) { n ->
+            val v = if (n < 2) 0.1f else 0f
+            onTimeFake.left = v
+            onTimeFake.right = v
+            onTime.tick(t)
+            t += FRAME_60
+            onTimeVisible = onTimeVisible || onTime.debugState().visible
+        }
+        assertFalse("전제가 틀렸다: 제때 표시해도 보이는 크기다", onTimeVisible)
+
+        // 판정까지 난 위협음은 안 보이면 안 되므로, 늦게 온 판정에서는 보이는 깊이까지 올린다.
+        val (engine, fake) = hiddenAmbientIdle()
+        fake.left = 0.1f
+        fake.right = 0.1f
+        engine.pollWake()
+        fake.left = 0f
+        fake.right = 0f
+        engine.poll(10)
+
+        fake.becomeDanger()
+        engine.pollWake()
+        assertFalse(engine.debugState().idle)
+        engine.advance(frames = 3, startNs = FRAME_60 * 1000)
+        val state = engine.debugState()
+        assertTrue("판정까지 난 작은 위협음이 보이지 않는다 (depths=${state.depths})", state.visible)
+    }
+
+    @Test
+    fun `위협음 판정이 소리가 끝난 뒤에 와도 보관한 방향으로 보인다`() {
+        val (engine, fake) = hiddenAmbientIdle()
+
+        // 왼쪽에서 난 짧은 소리. 판정이 올 때는 완전히 조용하다.
+        fake.left = 0.6f
+        fake.right = 0.2f
+        engine.pollWake()
+        fake.left = 0f
+        fake.right = 0f
+        engine.poll(15)
+
+        fake.becomeDanger()
+        engine.pollWake()
+        assertFalse("소리가 끝났다고 위협음 판정을 무시했다", engine.debugState().idle)
+
+        engine.advance(frames = 3, startNs = FRAME_60 * 1000)
+        val state = engine.debugState()
+        assertTrue(state.visible)
+        // 인덱스 6 = SL(좌측 중앙), 2 = SR(우측 중앙)
+        assertTrue(
+            "좌측(${state.depths[6]}) 이 우측(${state.depths[2]}) 보다 깊어야 한다",
+            state.depths[6] > state.depths[2]
+        )
+    }
+
+    @Test
+    fun `위협음 라벨이어도 숨겨서 놓친 소리가 없으면 보통처럼 서서히 커진다`() {
+        // 위협음을 보이는 중에 조용해서 대기로 내려갔다가 소리가 난다. 보통의 깨어남이다.
+        val fake = FakeInputs(label = AiClassification.DANGER, shown = true)
+        val engine = newEngine(fake)
+        engine.tickUntilIdle()
+        fake.left = 0.9f
+        fake.right = 0.9f
+        engine.pollWake()
+        assertFalse(engine.debugState().idle)
+        engine.tick(FRAME_60 * 1000)
+        val woken = engine.debugState().smoothTotal
+
+        // 처음 켠 엔진이 같은 소리를 첫 프레임에 받았을 때와 같아야 한다.
+        val freshFake = FakeInputs(label = AiClassification.DANGER, shown = true)
+        val fresh = newEngine(freshFake)
+        freshFake.left = 0.9f
+        freshFake.right = 0.9f
+        fresh.tick(FRAME_60)
+
+        assertEquals(fresh.debugState().smoothTotal, woken, 0.0001f)
+        assertTrue("보통의 깨어남이 한 번에 커졌다 ($woken)", woken < 0.5f)
+    }
+
+    @Test
+    fun `숨긴 소리가 끝나고 위협음이 아닌 라벨로 돌아오면 보관한 피크를 쓰지 않는다`() {
+        // 대화음을 숨긴 채 말소리가 지나가고, 끝난 뒤 라벨이 표시 중인 환경음으로 돌아온다.
+        val fake = FakeInputs(label = AiClassification.SPEECH, shown = false)
+        val engine = newEngine(fake)
+        engine.tickUntilIdle()
+        fake.left = 0.7f
+        fake.right = 0.7f
+        engine.poll(5)
+        fake.left = 0f
+        fake.right = 0f
+        engine.poll(5)
+
+        fake.label = AiClassification.AMBIENT
+        fake.shown = true
+        engine.pollWake()
+        assertTrue("지나간 말소리가 환경음으로 그려졌다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `보관한 피크는 약 1초 뒤 사라진다`() {
+        fun wakesAfter(quietPolls: Int): Boolean {
+            val (engine, fake) = hiddenAmbientIdle()
+            fake.left = 0.9f
+            fake.right = 0.9f
+            engine.pollWake()
+            fake.left = 0f
+            fake.right = 0f
+            engine.poll(quietPolls)
+            fake.becomeDanger()
+            engine.pollWake()
+            return !engine.debugState().idle
+        }
+        // 폴링 한 번이 33ms 다.
+        assertTrue("0.8초 전 소리를 벌써 잊었다", wakesAfter(24))
+        assertFalse("1.2초 전 소리로 깨어났다", wakesAfter(36))
+    }
+
+    @Test
+    fun `대기로 내려가기 직전에 숨긴 라벨로 받은 소리도 위협음 판정에 쓴다`() {
+        val fake = FakeInputs(label = AiClassification.AMBIENT, shown = false)
+        val engine = newEngine(fake)
+        // 보이지 않은 지 1초가 안 되어 아직 프레임 루프다.
+        var t = engine.advance(frames = 50) + FRAME_60
+        assertFalse(engine.debugState().idle)
+
+        fake.left = 0.9f
+        fake.right = 0.9f
+        engine.tick(t)
+        t += FRAME_60
+        fake.left = 0f
+        fake.right = 0f
+        t = engine.tickUntilIdle(startNs = t)
+
+        fake.becomeDanger()
+        engine.pollWake()
+        assertFalse("대기로 내려가며 직전 소리를 잊었다", engine.debugState().idle)
+        engine.advance(frames = 3, startNs = t)
+        assertTrue(engine.debugState().visible)
+    }
+
+    @Test
+    fun `깨어 있는 중 위협음 판정이 오면 보관한 크기로 커지고 같은 소리로 두 번 번쩍이지 않는다`() {
+        val fake = FakeInputs(label = AiClassification.AMBIENT, shown = false)
+        val engine = newEngine(fake)
+        var t = engine.advance(frames = 10) + FRAME_60
+
+        fake.left = 0.9f
+        fake.right = 0.9f
+        engine.tick(t)
+        t += FRAME_60
+        fake.left = 0f
+        fake.right = 0f
+        t = engine.advance(frames = 10, startNs = t) + FRAME_60
+        val beforeLabel = engine.debugState().smoothTotal
+
+        fake.becomeDanger()
+        engine.tick(t)
+        t += FRAME_60
+        val state = engine.debugState()
+        assertTrue(state.visible)
+        // 깨어 있는 동안 스무딩은 숨긴 소리도 따라가지만 판정이 올 즈음엔 이미 줄어 있다.
+        // 표시 중이었다면 도달했을 크기로 다시 커져야 한다.
+        assertTrue(
+            "보관한 크기로 커지지 않았다 ($beforeLabel -> ${state.smoothTotal})",
+            state.smoothTotal > beforeLabel * 2f
+        )
+
+        // 다 사라지고 대기로 내려간 뒤, 라벨이 그대로여도 이미 그린 소리로 다시 깨어나면 안 된다.
+        engine.tickUntilIdle(startNs = t)
+        engine.pollWake()
+        assertTrue("이미 그린 소리로 다시 깨어났다", engine.debugState().idle)
     }
 
     // ---------------------------------------------------------------

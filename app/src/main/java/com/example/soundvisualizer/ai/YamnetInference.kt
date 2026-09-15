@@ -5,8 +5,8 @@ import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import ai.onnxruntime.TensorInfo
+import android.util.Log
 import java.io.File
-import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -38,17 +38,17 @@ class YamnetInference private constructor(
         const val LOG_MEL_SIZE = TIME_FRAMES * MEL_BINS
 
         private const val ASSET_DIR = "ai"
-        private const val ONNX_FILE = "yamnet.onnx"
-        private const val DATA_FILE = "yamnet.data"
         private const val FILES_SUBDIR = "ai_models"
+        private const val OBSOLETE_BUNDLE_MANIFEST = "model_bundle.manifest"
+        private const val TAG = "YamnetInference"
 
         /**
-         * Copies assets/ai/yamnet.onnx + yamnet.data into app filesDir so ORT can resolve
-         * external data by filesystem relative path (assets alone are not a real FS for .data).
+         * Verifies and, when needed, copies assets/ai/yamnet.onnx + yamnet.data into app filesDir
+         * so ORT can resolve external data by filesystem relative path (assets are not a real FS).
          */
         fun create(context: Context): YamnetInference {
             val modelDir = ensureModelFiles(context)
-            val onnxPath = File(modelDir, ONNX_FILE).absolutePath
+            val onnxPath = File(modelDir, YamnetModelFiles.onnx.name).absolutePath
 
             val env = OrtEnvironment.getEnvironment()
             val opts = OrtSession.SessionOptions().apply {
@@ -76,39 +76,25 @@ class YamnetInference private constructor(
             return YamnetInference(env, session, inName, outName)
         }
 
+        @Synchronized
         fun ensureModelFiles(context: Context): File {
             val destDir = File(context.filesDir, FILES_SUBDIR)
-            if (!destDir.exists()) destDir.mkdirs()
-
+            removeObsoleteManifest(destDir)
             val am = context.assets
-            copyAssetIfNeeded(am, "$ASSET_DIR/$ONNX_FILE", File(destDir, ONNX_FILE))
-            copyAssetIfNeeded(am, "$ASSET_DIR/$DATA_FILE", File(destDir, DATA_FILE))
-
-            val onnx = File(destDir, ONNX_FILE)
-            val data = File(destDir, DATA_FILE)
-            require(onnx.isFile && onnx.length() > 0) { "Missing $ONNX_FILE after asset copy" }
-            require(data.isFile && data.length() > 0) {
-                "Missing $DATA_FILE after asset copy (external weights required)"
+            val copied = ModelCacheIntegrity.ensureFiles(destDir, YamnetModelFiles.files) { name ->
+                am.open("$ASSET_DIR/$name")
+            }
+            if (copied.isNotEmpty()) {
+                Log.i(TAG, "Model cache written: $copied")
             }
             return destDir
         }
 
-        private fun copyAssetIfNeeded(
-            am: android.content.res.AssetManager,
-            assetPath: String,
-            dest: File
-        ) {
-            if (dest.isFile && dest.length() > 0) {
-                val assetLen = try {
-                    am.openFd(assetPath).use { it.length }
-                } catch (_: Exception) {
-                    -1L
-                }
-                if (assetLen > 0 && assetLen == dest.length()) return
-            }
-            am.open(assetPath).use { input ->
-                FileOutputStream(dest).use { output ->
-                    input.copyTo(output)
+        private fun removeObsoleteManifest(directory: File) {
+            for (name in listOf(OBSOLETE_BUNDLE_MANIFEST, ".$OBSOLETE_BUNDLE_MANIFEST.partial")) {
+                val obsolete = File(directory, name)
+                if (obsolete.exists() && !obsolete.delete()) {
+                    Log.w(TAG, "Unable to remove obsolete model cache metadata: $obsolete")
                 }
             }
         }
@@ -137,7 +123,7 @@ class YamnetInference private constructor(
 
     /**
      * ORT 입력 버퍼. 추론마다 새로 잡으면 힙 밖 메모리가 Cleaner 가 돌 때까지 남으므로
-     * 한 번만 잡아 재사용한다. 호출은 RealtimeAiPipeline 의 inferMutex 로 직렬화된다.
+     * 한 번만 잡아 재사용한다. 호출은 RealtimeAiPipeline 의 inferLock 으로 직렬화된다.
      */
     private val inputBuffer: FloatBuffer = ByteBuffer
         .allocateDirect(LOG_MEL_SIZE * 4)
@@ -191,4 +177,19 @@ class YamnetInference private constructor(
         session.close()
         // OrtEnvironment is process-wide singleton; do not close globally here.
     }
+}
+
+/** Expected bytes for the YAMNet bundle shipped in assets/ai. Update with every bundle update. */
+internal object YamnetModelFiles {
+    val onnx = ModelCacheIntegrity.ExpectedFile(
+        name = "yamnet.onnx",
+        byteCount = 25_592L,
+        sha256 = "290369c40886a4ae948f77671fff901023eec81484ac393465dfb1b342b1ca85"
+    )
+    val data = ModelCacheIntegrity.ExpectedFile(
+        name = "yamnet.data",
+        byteCount = 14_915_108L,
+        sha256 = "aa05b5b196bdfd74fb59ae4cbba22578c5ab25b9e792e52867678844bcecc839"
+    )
+    val files = listOf(onnx, data)
 }

@@ -1,0 +1,203 @@
+# 모든 브랜치에 push 할 때마다 빌드하고 유닛 테스트를 돌린 뒤, 폰용 디버그 APK 를 올리고 Lint 로 검사한다.
+# 브랜치를 develop 에 합치기 전에 깨졌는지 알 수 있고, APK 는 Actions 실행 화면에서 받는다.
+#
+# 계측 테스트(connectedDebugAndroidTest)는 기기가 필요해서 여기서는 돌리지 않는다.
+#
+# job 이름(name)은 develop·main 보호 규칙의 필수 체크 이름이다. 바꾸면 저장소 규칙도 함께 바꿔야 하고,
+# 이전 이름으로 도는 진행 중인 브랜치의 PR 이 머지되지 않는다.
+
+name: Android CI
+
+on:
+  # 브랜치 push 에만 돈다. 버전 태그 push 는 release.yml 이 빌드한다.
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+# 같은 브랜치에 연달아 push 하면 이전 실행은 취소한다.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 빌드 · 유닛 테스트 · APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 코드 받기
+        uses: actions/checkout@v7
+
+      - name: JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle 설정 (의존성 캐시)
+        uses: gradle/actions/setup-gradle@v6
+
+      # 같은 서명으로 빌드해야 팀원 폰에 깔린 앱 위에 새 APK 를 덮어 설치할 수 있다.
+      # 저장소 Secret DEBUG_KEYSTORE_BASE64 가 없으면 실행마다 새 임시 키로 서명되어,
+      # 받은 APK 를 설치하려면 기존 앱을 지워야 한다. (설정 방법은 README 의 "자동 빌드" 참고)
+      # 키 경로는 SV_DEBUG_KEYSTORE 로 넘긴다. ~/.android 에 풀어 두는 것만으로는 빌드 도구가 쓰지 않았다.
+      - name: 디버그 서명 키 복원
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+            keystore="$RUNNER_TEMP/debug.keystore"
+            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$keystore"
+            echo "SV_DEBUG_KEYSTORE=$keystore" >> "$GITHUB_ENV"
+            echo "공유 디버그 키로 서명합니다."
+          else
+            echo "::warning title=임시 서명::DEBUG_KEYSTORE_BASE64 Secret 이 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
+          fi
+
+      - name: 유닛 테스트
+        run: ./gradlew testDebugUnitTest
+
+      # 몇 개가 돌았는지 실행 화면 상단과 요약에 남긴다. 테스트가 실패해도 실행한다.
+      - name: 유닛 테스트 결과 요약
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'PY'
+          import glob, os
+          import xml.etree.ElementTree as ET
+
+          files = glob.glob("app/build/test-results/testDebugUnitTest/*.xml")
+          if not files:
+              print("::warning title=유닛 테스트::결과 파일이 없습니다. 테스트가 실행되지 않았습니다.")
+              raise SystemExit(0)
+
+          total = failures = errors = skipped = 0
+          for path in files:
+              root = ET.parse(path).getroot()
+              total += int(root.get("tests", 0))
+              failures += int(root.get("failures", 0))
+              errors += int(root.get("errors", 0))
+              skipped += int(root.get("skipped", 0))
+          passed = total - failures - errors - skipped
+
+          line = f"{total}개 중 {passed}개 통과 · 실패 {failures} · 오류 {errors} · 건너뜀 {skipped}"
+          level = "notice" if failures == 0 and errors == 0 else "error"
+          print(f"::{level} title=유닛 테스트::{line}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"### 유닛 테스트\n\n{line}\n")
+          PY
+
+      - name: 디버그 APK 빌드
+        run: ./gradlew assembleDebug
+
+      # 공유 키가 있는데 다른 키로 서명됐으면 실패시킨다. 덮어 설치가 안 되는 APK 를 올리지 않기 위해서다.
+      - name: APK 서명 확인
+        run: |
+          apk=app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          apk_sha=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
+          if [ -n "${SV_DEBUG_KEYSTORE:-}" ]; then
+            key_sha=$(keytool -exportcert -alias androiddebugkey -keystore "$SV_DEBUG_KEYSTORE" -storepass android | sha256sum | cut -d' ' -f1)
+            if [ "$apk_sha" != "$key_sha" ]; then
+              echo "::error title=APK 서명::공유 디버그 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
+              exit 1
+            fi
+            echo "::notice title=APK 서명::공유 디버그 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+          else
+            echo "::notice title=APK 서명::임시 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+          fi
+
+      - name: 테스트 결과 올리기 (실패했을 때)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: 폰용 APK 올리기
+        uses: actions/upload-artifact@v7
+        with:
+          name: SoundVisualizer-arm64-run${{ github.run_number }}
+          path: app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      # APK 를 먼저 올려 두고 검사한다. Lint 가 실패해도 기기에서 확인할 APK 는 받을 수 있다.
+      # 기준선(app/lint-baseline.xml)에 있는 기존 문제는 빼고, 새로 생긴 오류만 실패로 본다.
+      - name: Lint
+        run: ./gradlew lintDebug
+
+      # 새 문제의 개수와 위치를 실행 화면과 PR 파일 화면에 남긴다. Lint 가 실패해도 실행한다.
+      - name: Lint 결과 요약
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'PY'
+          import collections, os
+          import xml.etree.ElementTree as ET
+
+          report = "app/build/reports/lint-results-debug.xml"
+          if not os.path.exists(report):
+              print("::warning title=Lint::결과 파일이 없습니다. Lint 가 실행되지 않았습니다.")
+              raise SystemExit(0)
+
+          workspace = os.environ.get("GITHUB_WORKSPACE", os.getcwd()) + "/"
+          issues = []
+          for issue in ET.parse(report).getroot().iter("issue"):
+              severity = issue.get("severity", "Warning")
+              location = issue.find("location")
+              path = line = ""
+              if location is not None:
+                  path = location.get("file", "")
+                  line = location.get("line", "")
+                  # 주석이 PR 파일 화면에 붙으려면 저장소 루트 기준 경로여야 한다.
+                  if path.startswith(workspace):
+                      path = path[len(workspace):]
+                  elif path and not os.path.isabs(path) and not os.path.exists(path) and os.path.exists(os.path.join("app", path)):
+                      path = "app/" + path
+              issues.append((severity, issue.get("id", ""), issue.get("message", ""), path, line))
+
+          errors = [i for i in issues if i[0] in ("Fatal", "Error")]
+          warnings = [i for i in issues if i[0] == "Warning"]
+
+          baselined = 0
+          if os.path.exists("app/lint-baseline.xml"):
+              baselined = sum(1 for _ in ET.parse("app/lint-baseline.xml").getroot().iter("issue"))
+
+          # GitHub 은 한 단계에서 종류별로 주석 10개까지만 보여준다.
+          def annotate(level, items):
+              for _, issue_id, message, path, line in items[:10]:
+                  where = f"file={path},line={line or 1}," if path else ""
+                  message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                  print(f"::{level} {where}title=Lint {issue_id}::{message}")
+
+          annotate("error", errors)
+          annotate("warning", warnings)
+
+          line = f"새 오류 {len(errors)} · 새 경고 {len(warnings)} · 기준선의 기존 문제 {baselined}"
+          print(f"::{'notice' if not errors else 'error'} title=Lint::{line}")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"### Lint\n\n{line}\n")
+              if issues:
+                  summary.write("\n| 심각도 | 검사 | 개수 |\n|---|---|---|\n")
+                  counts = collections.Counter((i[0], i[1]) for i in issues)
+                  for (severity, issue_id), count in sorted(counts.items(), key=lambda kv: (kv[0][0] not in ("Fatal", "Error"), -kv[1])):
+                      summary.write(f"| {severity} | `{issue_id}` | {count} |\n")
+          PY
+
+      - name: Lint 리포트 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-report-run${{ github.run_number }}
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+            app/lint-baseline.xml
+          if-no-files-found: ignore
+          retention-days: 14

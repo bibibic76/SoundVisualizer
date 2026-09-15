@@ -2,10 +2,17 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Color
+import androidx.core.content.edit
+import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * 표현 모드 하나의 설정.
+ *
+ * 기본값은 이 생성자 한 곳에만 둔다. 저장값이 없는 새 설치도 [SettingsManager.loadMode] 가
+ * 여기 기본값을 그대로 받으므로, 기본값을 바꿀 때는 이곳과 ModeSettingsTest 만 고치면 된다.
+ */
 data class ModeSettings(
     /** 크기 (0~100). 100 이면 파도가 화면 중앙 한계선까지 닿는다. */
     var intensity: Float = 50f,
@@ -39,30 +46,44 @@ object SettingsManager {
     private val _padMode = MutableStateFlow(ModeSettings())
     val padMode: StateFlow<ModeSettings> = _padMode
 
-    private val _circleMode = MutableStateFlow(ModeSettings(circleRadius = 40f))
+    private val _circleMode = MutableStateFlow(ModeSettings())
     val circleMode: StateFlow<ModeSettings> = _circleMode
 
     private val _outlineMode = MutableStateFlow(ModeSettings())
     val outlineMode: StateFlow<ModeSettings> = _outlineMode
 
     // AI Classification Display Settings
+    // 기본색 (ARGB): 환경음 흰색, 대화음 노란색, 위협음 빨간색
+    private const val DEFAULT_COLOR_AMBIENT = 0xFFFFFFFF.toInt()
+    private const val DEFAULT_COLOR_SPEECH = 0xFFFFFF00.toInt()
+    private const val DEFAULT_COLOR_DANGER = 0xFFFF0000.toInt()
+
     private val _showAmbient = MutableStateFlow(true)
     val showAmbient: StateFlow<Boolean> = _showAmbient
-    private val _colorAmbient = MutableStateFlow(Color.parseColor("#FFFFFFFF"))
+    private val _colorAmbient = MutableStateFlow(DEFAULT_COLOR_AMBIENT)
     val colorAmbient: StateFlow<Int> = _colorAmbient
 
     private val _showSpeech = MutableStateFlow(true)
     val showSpeech: StateFlow<Boolean> = _showSpeech
-    private val _colorSpeech = MutableStateFlow(Color.parseColor("#FFFFFF00"))
+    private val _colorSpeech = MutableStateFlow(DEFAULT_COLOR_SPEECH)
     val colorSpeech: StateFlow<Int> = _colorSpeech
 
     private val _showDanger = MutableStateFlow(true)
     val showDanger: StateFlow<Boolean> = _showDanger
-    private val _colorDanger = MutableStateFlow(Color.parseColor("#FFFF0000"))
+    private val _colorDanger = MutableStateFlow(DEFAULT_COLOR_DANGER)
     val colorDanger: StateFlow<Int> = _colorDanger
+
+    // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
+    private val hapticFlows: Map<String, MutableStateFlow<HapticSettings>> =
+        listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
+            .associateWith { MutableStateFlow(HapticSettings.defaultFor(it)) }
 
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
+
+    // 빠른 설정 타일이 알림창에 추가돼 있는지. 타일 서비스가 추가·제거될 때 알려준다.
+    private val _tileAdded = MutableStateFlow(false)
+    val tileAdded: StateFlow<Boolean> = _tileAdded
 
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
@@ -71,81 +92,127 @@ object SettingsManager {
         
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
-        
-        fun loadMode(prefix: String, defaultRadius: Float = 40f): ModeSettings {
-            return ModeSettings(
-                intensity = prefs.getFloat("${prefix}_intensity", 50f),
-                speed = prefs.getFloat("${prefix}_speed", 20f),
-                opacity = prefs.getFloat("${prefix}_opacity", 50f),
-                circleRadius = prefs.getFloat("${prefix}_radius", defaultRadius),
-                useRippleDelay = prefs.getBoolean("${prefix}_ripple", true),
-                sensitivity = prefs.getFloat("${prefix}_sensitivity", 15f),
-                isGlowMode = prefs.getBoolean("${prefix}_glow", false),
-                glowIntensity = prefs.getFloat("${prefix}_glow_intensity", 0f),
-                intensityAsOpacity = prefs.getBoolean("${prefix}_intensity_as_opacity", false),
-                opacityFixedSize = prefs.getFloat("${prefix}_opacity_fixed_size", 30f),
-                opacityFixedMaxOpacity = prefs.getFloat("${prefix}_opacity_fixed_max", 100f)
-            )
-        }
 
-        _waveMode.value = loadMode("wave")
-        _padMode.value = loadMode("pad")
-        _circleMode.value = loadMode("circle", 40f)
-        _outlineMode.value = loadMode("outline")
+        _waveMode.value = loadMode(prefs, "wave")
+        _padMode.value = loadMode(prefs, "pad")
+        _circleMode.value = loadMode(prefs, "circle")
+        _outlineMode.value = loadMode(prefs, "outline")
 
         _showAmbient.value = prefs.getBoolean("show_ambient", true)
-        _colorAmbient.value = prefs.getInt("color_ambient", Color.parseColor("#FFFFFFFF"))
+        _colorAmbient.value = prefs.getInt("color_ambient", DEFAULT_COLOR_AMBIENT)
 
         _showSpeech.value = prefs.getBoolean("show_speech", true)
-        _colorSpeech.value = prefs.getInt("color_speech", Color.parseColor("#FFFFFF00"))
+        _colorSpeech.value = prefs.getInt("color_speech", DEFAULT_COLOR_SPEECH)
 
         _showDanger.value = prefs.getBoolean("show_danger", true)
-        _colorDanger.value = prefs.getInt("color_danger", Color.parseColor("#FFFF0000"))
+        _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
+
+        _tileAdded.value = prefs.getBoolean("tile_added", false)
+
+        // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
+        hapticFlows.forEach { (label, flow) ->
+            val default = HapticSettings.defaultFor(label)
+            flow.value = HapticSettings(
+                enabled = prefs.getBoolean("haptic_${label}_enabled", default.enabled),
+                strength = enumByName(prefs.getString("haptic_${label}_strength", null), default.strength),
+                pattern = enumByName(prefs.getString("haptic_${label}_pattern", null), default.pattern)
+            )
+        }
     }
+
+    private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
+        enumValues<T>().firstOrNull { it.name == name } ?: default
 
     fun setVisualMode(mode: VisualMode) {
         _visualMode.value = mode
-        prefs.edit().putInt("visualMode", mode.ordinal).apply()
+        prefs.edit { putInt("visualMode", mode.ordinal) }
+    }
+
+    /**
+     * [prefix] 모드의 저장값을 읽는다. 저장된 적 없는 항목은 [ModeSettings] 의 기본값을 쓴다.
+     *
+     * 기본값을 여기에 숫자로 한 번 더 적어두면, 데이터 클래스만 고쳤을 때 테스트는 통과해도
+     * 새로 설치한 사용자는 옛 값을 받는다. 그래서 기본값은 데이터 클래스 한 곳에만 둔다.
+     * 원형 모드의 반지름도 [ModeSettings.circleRadius] 기본값을 그대로 쓴다.
+     *
+     * 기기 없이 저장·복원을 검사할 수 있게 프리퍼런스를 인자로 받는다 (ModeSettingsTest).
+     */
+    internal fun loadMode(source: SharedPreferences, prefix: String): ModeSettings {
+        val d = ModeSettings()
+        return ModeSettings(
+            intensity = source.getFloat("${prefix}_intensity", d.intensity),
+            speed = source.getFloat("${prefix}_speed", d.speed),
+            opacity = source.getFloat("${prefix}_opacity", d.opacity),
+            circleRadius = source.getFloat("${prefix}_radius", d.circleRadius),
+            useRippleDelay = source.getBoolean("${prefix}_ripple", d.useRippleDelay),
+            sensitivity = source.getFloat("${prefix}_sensitivity", d.sensitivity),
+            isGlowMode = source.getBoolean("${prefix}_glow", d.isGlowMode),
+            glowIntensity = source.getFloat("${prefix}_glow_intensity", d.glowIntensity),
+            intensityAsOpacity = source.getBoolean("${prefix}_intensity_as_opacity", d.intensityAsOpacity),
+            opacityFixedSize = source.getFloat("${prefix}_opacity_fixed_size", d.opacityFixedSize),
+            opacityFixedMaxOpacity = source.getFloat("${prefix}_opacity_fixed_max", d.opacityFixedMaxOpacity)
+        )
+    }
+
+    /** [loadMode] 와 같은 키로 적는다. 키를 바꾸면 기존 사용자 설정이 기본값으로 돌아간다. */
+    internal fun putMode(editor: SharedPreferences.Editor, prefix: String, settings: ModeSettings) {
+        editor.putFloat("${prefix}_intensity", settings.intensity)
+        editor.putFloat("${prefix}_speed", settings.speed)
+        editor.putFloat("${prefix}_opacity", settings.opacity)
+        editor.putFloat("${prefix}_radius", settings.circleRadius)
+        editor.putBoolean("${prefix}_ripple", settings.useRippleDelay)
+        editor.putFloat("${prefix}_sensitivity", settings.sensitivity)
+        editor.putBoolean("${prefix}_glow", settings.isGlowMode)
+        editor.putFloat("${prefix}_glow_intensity", settings.glowIntensity)
+        editor.putBoolean("${prefix}_intensity_as_opacity", settings.intensityAsOpacity)
+        editor.putFloat("${prefix}_opacity_fixed_size", settings.opacityFixedSize)
+        editor.putFloat("${prefix}_opacity_fixed_max", settings.opacityFixedMaxOpacity)
     }
 
     private fun saveMode(prefix: String, settings: ModeSettings) {
-        prefs.edit()
-            .putFloat("${prefix}_intensity", settings.intensity)
-            .putFloat("${prefix}_speed", settings.speed)
-            .putFloat("${prefix}_opacity", settings.opacity)
-            .putFloat("${prefix}_radius", settings.circleRadius)
-            .putBoolean("${prefix}_ripple", settings.useRippleDelay)
-            .putFloat("${prefix}_sensitivity", settings.sensitivity)
-            .putBoolean("${prefix}_glow", settings.isGlowMode)
-            .putFloat("${prefix}_glow_intensity", settings.glowIntensity)
-            .putBoolean("${prefix}_intensity_as_opacity", settings.intensityAsOpacity)
-            .putFloat("${prefix}_opacity_fixed_size", settings.opacityFixedSize)
-            .putFloat("${prefix}_opacity_fixed_max", settings.opacityFixedMaxOpacity)
-            .apply()
+        prefs.edit { putMode(this, prefix, settings) }
     }
 
+    /**
+     * 모드 설정 변경은 화면(StateFlow)에 즉시 반영하고 저장은 미룬다.
+     * 슬라이더는 끄는 동안 값이 계속 바뀌어서 그때마다 저장하면 쓰기가 줄줄이 예약된다.
+     * 설정 화면이 손을 뗄 때와 화면을 벗어날 때 [flushModeSettings] 를 부른다.
+     */
+    private val dirtyModes = mutableSetOf<String>()
+
     fun updateWaveMode(update: ModeSettings.() -> Unit) {
-        val current = _waveMode.value.copy().apply(update)
-        _waveMode.value = current
-        saveMode("wave", current)
+        _waveMode.value = _waveMode.value.copy().apply(update)
+        dirtyModes += "wave"
     }
     
     fun updatePadMode(update: ModeSettings.() -> Unit) {
-        val current = _padMode.value.copy().apply(update)
-        _padMode.value = current
-        saveMode("pad", current)
+        _padMode.value = _padMode.value.copy().apply(update)
+        dirtyModes += "pad"
     }
 
     fun updateCircleMode(update: ModeSettings.() -> Unit) {
-        val current = _circleMode.value.copy().apply(update)
-        _circleMode.value = current
-        saveMode("circle", current)
+        _circleMode.value = _circleMode.value.copy().apply(update)
+        dirtyModes += "circle"
     }
 
     fun updateOutlineMode(update: ModeSettings.() -> Unit) {
-        val current = _outlineMode.value.copy().apply(update)
-        _outlineMode.value = current
-        saveMode("outline", current)
+        _outlineMode.value = _outlineMode.value.copy().apply(update)
+        dirtyModes += "outline"
+    }
+
+    /** 미뤄둔 모드 설정을 저장한다. 바뀐 것이 없으면 아무것도 하지 않는다. 메인 스레드에서 부른다. */
+    fun flushModeSettings() {
+        if (dirtyModes.isEmpty()) return
+        for (prefix in dirtyModes) {
+            val settings = when (prefix) {
+                "wave" -> _waveMode.value
+                "pad" -> _padMode.value
+                "circle" -> _circleMode.value
+                else -> _outlineMode.value
+            }
+            saveMode(prefix, settings)
+        }
+        dirtyModes.clear()
     }
 
     fun updateAISettings(
@@ -163,17 +230,36 @@ object SettingsManager {
         _showDanger.value = showDanger
         _colorDanger.value = colorDanger
 
-        prefs.edit()
-            .putBoolean("show_ambient", showAmbient)
-            .putInt("color_ambient", colorAmbient)
-            .putBoolean("show_speech", showSpeech)
-            .putInt("color_speech", colorSpeech)
-            .putBoolean("show_danger", showDanger)
-            .putInt("color_danger", colorDanger)
-            .apply()
+        prefs.edit {
+            putBoolean("show_ambient", showAmbient)
+            putInt("color_ambient", colorAmbient)
+            putBoolean("show_speech", showSpeech)
+            putInt("color_speech", colorSpeech)
+            putBoolean("show_danger", showDanger)
+            putInt("color_danger", colorDanger)
+        }
+    }
+
+    /** 소리 종류별 진동 설정. 모르는 라벨은 환경음 설정을 돌려준다 (AiClassification 과 같은 규칙). */
+    fun hapticSettings(label: String): StateFlow<HapticSettings> =
+        hapticFlows[label] ?: hapticFlows.getValue(AiClassification.AMBIENT)
+
+    fun updateHaptic(label: String, settings: HapticSettings) {
+        val flow = hapticFlows[label] ?: return
+        flow.value = settings
+        prefs.edit {
+            putBoolean("haptic_${label}_enabled", settings.enabled)
+            putString("haptic_${label}_strength", settings.strength.name)
+            putString("haptic_${label}_pattern", settings.pattern.name)
+        }
     }
 
     fun setServiceRunning(isRunning: Boolean) {
         _isServiceRunning.value = isRunning
+    }
+
+    fun setTileAdded(added: Boolean) {
+        _tileAdded.value = added
+        prefs.edit { putBoolean("tile_added", added) }
     }
 }

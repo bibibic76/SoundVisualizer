@@ -3,7 +3,7 @@ package com.example.soundvisualizer.ai
 /**
  * YAMNet 521 클래스 → 3분류 키워드 매핑.
  * 키워드 우선순위: danger > speech > ambient > 기본 ambient.
- * 이상해 보이는 proxy mapping도 레퍼런스와 동일하게 유지한다.
+ * 임시 proxy 매핑은 제한된 라벨에만 적용한다.
  */
 object YamnetThreeClassMapper {
 
@@ -70,8 +70,6 @@ object YamnetThreeClassMapper {
     private fun matchesTemporaryGunshotProxyDanger(s: String): Boolean {
         if ("plop" in s) return true
         if ("gargling" in s) return true
-        if (s == "rain" || "raindrop" in s || "rain on surface" in s) return true
-        if ("waterfall" in s) return true
         return false
     }
 

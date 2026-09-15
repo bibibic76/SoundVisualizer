@@ -2,6 +2,7 @@ package com.example.soundvisualizer.ai
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.os.SystemClock
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,9 +12,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.system.measureNanoTime
 
 /**
@@ -45,10 +47,19 @@ class RealtimeAiPipeline private constructor(
         val boosterAccepted: Boolean
     )
 
+    /** Lightweight counters for verifying inference suppression in device tests. */
+    data class InferenceStats(
+        val executed: Long,
+        val skippedForSilence: Long
+    )
+
     companion object {
         const val AI_PREDICT_INTERVAL_MS = 250L
         private const val TAG = "RealtimeAiPipeline"
         private const val LOG_THROTTLE_MS = 2000L
+
+        /** close() 는 메인 스레드(onDestroy)에서 불린다 — 무한 대기는 ANR. */
+        private const val CLOSE_WAIT_MS = 1000L
 
         fun create(
             context: Context,
@@ -73,10 +84,14 @@ class RealtimeAiPipeline private constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var schedulerJob: Job? = null
-    private val inferMutex = Mutex()
+    // ReentrantLock 은 획득한 스레드에서 해제해야 하므로 잠금 구간에는 suspend 호출을 넣지 않는다.
+    private val inferLock = ReentrantLock()
     private val running = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
     private val lastResult = AtomicReference<AiClassificationResult?>(null)
+    private val captureInferenceGate = AiCaptureInferenceGate(audioBuffer)
+    private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
+    private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
     private var lastLogMs = 0L
 
     private val captureNeed =
@@ -89,12 +104,20 @@ class RealtimeAiPipeline private constructor(
 
     fun lastClassification(): AiClassificationResult? = lastResult.get()
 
+    fun inferenceStatsForTest(): InferenceStats = InferenceStats(
+        executed = inferenceExecutions.get(),
+        skippedForSilence = silenceSkippedTicks.get()
+    )
+
     fun start() {
         if (closed.get()) return
         if (!running.compareAndSet(false, true)) return
         audioBuffer.reset()
+        captureInferenceGate.reset()
         postProcessor.reset()
         lastResult.set(null)
+        inferenceExecutions.set(0)
+        silenceSkippedTicks.set(0)
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
                 try {
@@ -123,12 +146,12 @@ class RealtimeAiPipeline private constructor(
      */
     fun ingestInterleavedPcm(pcm: FloatArray, floatCount: Int) {
         if (!running.get() || closed.get()) return
-        audioBuffer.ingestInterleaved(pcm, floatCount)
+        ingestInterleaved(pcm, floatCount)
     }
 
     /** Test helper — ingest without requiring [start]. */
     fun ingestInterleavedForTest(pcm: FloatArray, floatCount: Int) {
-        audioBuffer.ingestInterleaved(pcm, floatCount)
+        ingestInterleaved(pcm, floatCount)
     }
 
     fun ingestMonoForTest(mono: FloatArray, length: Int = mono.size) {
@@ -144,8 +167,17 @@ class RealtimeAiPipeline private constructor(
 
     fun resetState() {
         audioBuffer.reset()
+        captureInferenceGate.reset()
         postProcessor.reset()
         lastResult.set(null)
+        inferenceExecutions.set(0)
+        silenceSkippedTicks.set(0)
+    }
+
+    private fun ingestInterleaved(pcm: FloatArray, floatCount: Int) {
+        // Evaluate the original channels before downmixing, then always retain the
+        // samples in the ring so an input that reopens the gate has full context.
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime())
     }
 
     /**
@@ -156,17 +188,24 @@ class RealtimeAiPipeline private constructor(
     private fun runTickInternal(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         if (closed.get()) return null
         if (!audioBuffer.hasEnoughForYamnetWindow()) return null
+        if (!captureInferenceGate.isInferenceOpen(SystemClock.elapsedRealtime())) {
+            silenceSkippedTicks.incrementAndGet()
+            return null
+        }
 
         // Skip if previous tick still running (scheduler overlap)
-        if (!inferMutex.tryLock()) return null
+        if (!inferLock.tryLock()) return null
         try {
+            // close() 가 락을 잡기 직전에 통과했을 수 있으므로 락 안에서 다시 확인한다.
+            if (closed.get()) return null
             return doInference(log, diagnostics)
         } finally {
-            inferMutex.unlock()
+            inferLock.unlock()
         }
     }
 
     private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
+        inferenceExecutions.incrementAndGet()
         val t0 = System.nanoTime()
 
         audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
@@ -277,14 +316,33 @@ class RealtimeAiPipeline private constructor(
         if (!closed.compareAndSet(false, true)) return
         stop()
         scope.cancel()
-        try {
-            yamnet.close()
-        } catch (_: Throwable) {
+
+        // stop()/cancel() 은 다음 틱의 시작만 막는다. 이미 session.run() 안에 들어간 추론이
+        // 있으면 그게 끝날 때까지 기다린 뒤에 네이티브 세션을 해제해야 use-after-free 가 없다.
+        val acquired = try {
+            inferLock.tryLock(CLOSE_WAIT_MS, TimeUnit.MILLISECONDS)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            false
         }
-        try {
-            booster.close()
-        } catch (_: Throwable) {
+        if (acquired) {
+            try {
+                try {
+                    yamnet.close()
+                } catch (_: Throwable) {
+                }
+                try {
+                    booster.close()
+                } catch (_: Throwable) {
+                }
+            } finally {
+                inferLock.unlock()
+            }
+        } else {
+            // 크래시보다는 누수가 낫다 (AudioCaptureService 의 AudioRecord 처리와 동일 원칙).
+            Log.w(TAG, "inference still running; leaking ONNX sessions to avoid use-after-free")
         }
+
         audioBuffer.reset()
         postProcessor.reset()
         lastResult.set(null)

@@ -1,5 +1,7 @@
 package com.example.soundvisualizer
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,6 +9,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -24,6 +27,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
+import com.example.soundvisualizer.feedback.HapticNotifier
+import com.example.soundvisualizer.language.AppLanguage
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -52,8 +57,13 @@ class AudioCaptureService : Service() {
     /** onDestroy 가 지났는지. 늦게 끝난 초기화가 스스로 정리하도록 알린다. */
     private var aiDestroyed = false
 
+    /** 분류 결과에 맞춰 진동을 준다. AI 파이프라인이 붙은 뒤에만 생긴다. aiLock 으로 보호. */
+    private var hapticNotifier: HapticNotifier? = null
+
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
     private var sampleRate = 48000
+
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val projectionCallback = object : MediaProjection.Callback() {
         // 사용자가 상태바/시스템 UI 에서 캡처를 중단한 경우
@@ -83,6 +93,11 @@ class AudioCaptureService : Service() {
         @Volatile
         var isRunning: Boolean = false
             private set
+    }
+
+    // Android 12 이하에서 알림 문구를 앱 언어로 보여준다. 13 이상은 시스템이 적용한다.
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
     }
 
     override fun onCreate() {
@@ -136,6 +151,9 @@ class AudioCaptureService : Service() {
                         pipeline.start()
                         aiPipeline = pipeline
                         AiClassification.attach { pipeline.lastClassification() }
+                        // 첫 분류 결과가 나오기 전(null)에는 울리지 않는다.
+                        hapticNotifier = HapticNotifier(appContext) { pipeline.lastClassification()?.coarse }
+                            .also { it.start() }
                     }
                 }
             }
@@ -188,6 +206,13 @@ class AudioCaptureService : Service() {
     }
 
     private fun startAudioCapture(resultCode: Int, resultData: Intent): Boolean {
+        // 액티비티가 권한을 받은 뒤에 시작하지만, 그 사이 시스템 설정에서 권한을 끌 수 있다.
+        // 프로젝션을 만들기 전에 확인해야 동의만 받고 캡처는 못 하는 상태가 남지 않는다.
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "RECORD_AUDIO not granted")
+            return false
+        }
+
         val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         val projection = try {
             manager.getMediaProjection(resultCode, resultData)
@@ -226,7 +251,7 @@ class AudioCaptureService : Service() {
                 .setAudioPlaybackCaptureConfig(config)
                 .build()
         } catch (e: Exception) {
-            // RECORD_AUDIO 미허용 / 기기 미지원 등
+            // 기기 미지원, 확인 직후 권한 회수 등
             Log.e(TAG, "AudioRecord build failed", e)
             return false
         }
@@ -271,12 +296,20 @@ class AudioCaptureService : Service() {
                 }
             } else if (bytes < 0) {
                 Log.w(TAG, "AudioRecord.read error $bytes, stopping capture loop")
+                // 우리가 멈춘 게 아닌데 캡처가 끊겼다 (오디오 서버 재시작 등).
+                // 서비스만 남으면 화면은 "실행 중"인데 시각화는 멈추고, AI 는 링버퍼에 남은
+                // 마지막 소리를 계속 다시 분류한다. 전부 내린다.
+                // 정상 종료 중에도 read 가 에러를 낼 수 있으니 isRecording 으로 구분한다.
+                if (isRecording) mainHandler.post { if (isRecording) stopEverything() }
                 break
             }
         }
     }
 
+    // stopService 는 Intent 의 대상 컴포넌트로 서비스를 찾으므로 새로 만든 Intent 로 멈추는 게 맞다.
+    // Lint(ImplicitSamInstance)는 새 인스턴스라 아무것도 멈추지 못한다고 보지만 오탐이다.
     /** 캡처, 오버레이, 자기 자신을 모두 정리한다. 여러 번 호출해도 안전. */
+    @SuppressLint("ImplicitSamInstance")
     private fun stopEverything() {
         stopService(Intent(this, OverlayService::class.java))
         SettingsManager.setServiceRunning(false)
@@ -317,10 +350,15 @@ class AudioCaptureService : Service() {
 
         // 캡처 스레드가 멈춘 뒤에 AI 파이프라인을 닫는다 (ingest 가 더 들어오지 않도록).
         // aiDestroyed 를 먼저 세워야 아직 로딩 중인 초기화가 붙지 않고 스스로 닫는다.
-        val pipeline = synchronized(aiLock) {
+        val (pipeline, haptics) = synchronized(aiLock) {
             aiDestroyed = true
-            aiPipeline.also { aiPipeline = null }
+            (aiPipeline to hapticNotifier).also {
+                aiPipeline = null
+                hapticNotifier = null
+            }
         }
+        // 진동부터 멈춘다. 캡처를 끈 뒤에 남은 결과로 한 번 더 울리지 않도록.
+        haptics?.stop()
         // 브릿지를 먼저 끊어야 오버레이가 닫힌 파이프라인을 읽지 않는다.
         AiClassification.detach()
         pipeline?.close()

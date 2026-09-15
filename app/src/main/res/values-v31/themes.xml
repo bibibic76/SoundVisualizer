@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Android 12 이상은 앱을 켤 때 시스템 스플래시가 먼저 뜬다. 배경을 앱 배경색으로 두어 스플래시에서
+        앱 화면으로 넘어갈 때 색이 튀지 않게 한다. (이 속성은 API 31 에서 생겨 이 폴더에만 둔다.)
+        아이콘 배경색(windowSplashScreenIconBackgroundColor)은 따로 두지 않는다. 런처 아이콘 배경(ic_launcher_background)이
+        이 색과 거의 같아 아이콘이 그대로 잘 보이기 때문이다.
+    -->
+    <style name="Theme.SoundVisualizer" parent="Base.Theme.SoundVisualizer">
+        <item name="android:windowSplashScreenBackground">@color/app_background</item>
+    </style>
+</resources>

@@ -26,6 +26,12 @@ object AudioEngine {
      */
     external fun readPeaks(out: FloatArray)
 
+    /**
+     * 가장 최근 버퍼의 좌우 중 큰 피크 (0..1).
+     * [readPeaks] 와 달리 읽어도 초기화하지 않아서, 오버레이 말고 다른 곳(진동 알림)도 함께 읽을 수 있다.
+     */
+    external fun currentLevel(): Float
+
     /** 누적값을 0 으로 돌린다. 캡처 시작·종료 시점에 각각 호출한다. */
     external fun reset()
 }

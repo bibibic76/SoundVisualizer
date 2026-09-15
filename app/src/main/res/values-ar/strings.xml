@@ -1,0 +1,179 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">الرئيسية</string>
+    <string name="tab_settings">الإعدادات</string>
+    <string name="tab_help">المساعدة</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">يرسم على شاشتك الأصوات التي لا تراها.\nمن الألعاب إلى الأفلام، عِش تجربة جديدة كليًا.</string>
+    <string name="home_status_running">الحالة: قيد التشغيل</string>
+    <string name="home_status_idle">الحالة: جاهز للتشغيل</string>
+    <string name="home_start">تشغيل</string>
+    <string name="home_stop">إيقاف</string>
+    <string name="home_add_tile">إضافة إلى الإعدادات السريعة</string>
+    <string name="home_add_tile_desc">يمكنك تشغيله أو إيقافه من لوحة الإشعارات مباشرةً فوق اللعبة أو الفيديو.</string>
+    <string name="home_add_tile_manual">اسحب لوحة الإشعارات للأسفل، وانقر على «تعديل» (رمز القلم)، ثم أضِف «الصوت المرئي» لتشغيله أو إيقافه مباشرةً فوق اللعبة أو الفيديو.</string>
+
+    <!-- Permissions -->
+    <string name="permission_record_audio_required">يلزم منح إذن الميكروفون (تسجيل الصوت) لالتقاط الصوت.</string>
+    <string name="permission_mic_rationale_title">لماذا يلزم إذن الميكروفون؟</string>
+    <string name="permission_mic_rationale_message">يتطلب نظام Android إذن الميكروفون لالتقاط الصوت الذي يتم تشغيله على هاتفك. لا يتم تسجيل الأصوات من حولك.</string>
+    <string name="permission_mic_settings_title">اسمح بإذن الميكروفون من الإعدادات</string>
+    <string name="permission_mic_settings_message">لم يتم منح إذن الميكروفون. إذا لم يظهر طلب الإذن مرة أخرى، فانقر على «فتح الإعدادات»، ثم انتقل إلى «الأذونات» واسمح بإذن «الميكروفون». لا يُستخدم هذا الإذن إلا لالتقاط الصوت الذي يتم تشغيله على هاتفك، ولا يتم تسجيل الأصوات من حولك.</string>
+    <string name="permission_continue">متابعة</string>
+    <string name="permission_cancel">إلغاء</string>
+    <string name="permission_open_settings">فتح الإعدادات</string>
+    <string name="permission_close">إغلاق</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">الموجة</string>
+    <string name="mode_pad">الأشرطة</string>
+    <string name="mode_circle">الدائرة</string>
+    <string name="mode_outline">الإطار</string>
+
+    <string name="mode_card_wave">وضع الموجة</string>
+    <string name="mode_card_pad">وضع الأشرطة</string>
+    <string name="mode_card_circle">وضع الدائرة</string>
+    <string name="mode_card_outline">وضع الإطار</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">إعدادات الوضع</string>
+    <string name="settings_mode_picker_title">وضع العرض</string>
+    <string name="settings_mode_picker_desc">اختر الشكل الأساسي للرسومات التي تظهر على الشاشة.</string>
+    <string name="settings_section_mode_detail">إعدادات كل وضع</string>
+    <string name="settings_section_ai">أنواع الأصوات (AI)</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">اللغة</string>
+    <string name="settings_language_system">الإعداد التلقائي للنظام</string>
+    <string name="settings_language_cancel">إلغاء</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">تثبيت الحجم</string>
+    <string name="setting_size_lock_desc">يُبقي الرسومات بحجم ثابت، ويُظهر شدة الصوت من خلال العتامة بدلًا من الحجم.</string>
+    <string name="setting_fixed_size">الحجم الثابت</string>
+    <string name="setting_fixed_size_desc">الحجم الذي تبقى عليه الرسومات.</string>
+    <string name="setting_max_opacity">أقصى عتامة</string>
+    <string name="setting_max_opacity_desc">مدى عتامة الرسومات عند أعلى مستوى للصوت.</string>
+    <string name="setting_size">الحجم</string>
+    <string name="setting_size_desc">يضبط حجم الرسومات ومدى امتلائها.</string>
+    <string name="setting_radius">نصف القطر</string>
+    <string name="setting_radius_desc">يضبط نصف قطر الحلقة التي تتوسط الشاشة في وضع الدائرة.</string>
+    <string name="setting_opacity">العتامة</string>
+    <string name="setting_opacity_desc">كلما زادت القيمة بدت الرسومات أوضح، وكلما قلّت بدت أبهت وأكثر شفافية.</string>
+    <string name="setting_speed">السرعة</string>
+    <string name="setting_speed_desc">مدى سرعة انتقال الرسومات إلى موضع جديد عند تغيّر اتجاه الصوت.</string>
+    <string name="setting_sensitivity">الحساسية</string>
+    <string name="setting_sensitivity_desc">مدى سرعة استجابة الرسومات (نبضها) لتغيّرات شدة الصوت.</string>
+    <string name="setting_glow">التوهج</string>
+    <string name="setting_glow_desc">يضيف توهجًا ناعمًا يشبه ضوء النيون حول الرسومات. ملاحظة: يستهلك موارد إضافية.</string>
+    <string name="setting_glow_intensity">قوة التوهج</string>
+    <string name="setting_glow_intensity_desc">مدى انتشار التوهج.</string>
+    <string name="setting_ripple">التموج المكاني</string>
+    <string name="setting_ripple_desc">يضيف تأخيرًا بسيطًا ليبدو الصوت كأنه ينتشر من الأمام إلى الخلف.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">إظهار الأصوات المحيطة</string>
+    <string name="ai_show_speech">إظهار الكلام</string>
+    <string name="ai_show_danger">إظهار أصوات الخطر</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">الاهتزاز</string>
+    <string name="haptic_requires_display">لا يعمل الاهتزاز إلا عند إظهار هذا النوع من الأصوات.</string>
+    <string name="haptic_unsupported">لا يدعم هذا الجهاز الاهتزاز.</string>
+    <string name="haptic_no_amplitude">لا يمكن ضبط قوة الاهتزاز على هذا الجهاز، لذا سيهتز بالقوة التلقائية.</string>
+    <string name="haptic_strength">القوة</string>
+    <string name="haptic_strength_weak">خفيف</string>
+    <string name="haptic_strength_medium">متوسط</string>
+    <string name="haptic_strength_strong">قوي</string>
+    <string name="haptic_pattern">النمط</string>
+    <string name="haptic_pattern_tap">مرة</string>
+    <string name="haptic_pattern_double">مرتان</string>
+    <string name="haptic_pattern_hold">طويل</string>
+    <string name="haptic_pattern_repeat">تكرار</string>
+    <string name="haptic_preview_hint">انقر على أي خيار لتجربة الاهتزاز.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">اختيار لون</string>
+    <string name="color_picker_presets">ألوان شائعة</string>
+    <string name="color_picker_confirm">حسنًا</string>
+    <string name="color_picker_cancel">إلغاء</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">فتح أداة اختيار اللون</string>
+    <string name="cd_expand">توسيع</string>
+    <string name="cd_collapse">تصغير</string>
+    <string name="cd_change_language">تغيير اللغة</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">التقاط الصوت</string>
+    <string name="notification_text">جارٍ عرض الأصوات على الشاشة.</string>
+    <string name="notification_stop">إيقاف</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">الصوت المرئي</string>
+    <string name="tile_state_on">مفعّل</string>
+    <string name="tile_state_off">غير مفعّل</string>
+    <string name="tile_overlay_permission_needed">يلزم منح إذن «الظهور فوق التطبيقات الأخرى». انقر على «تشغيل» في التطبيق للسماح به.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">بدء الاستخدام</string>
+    <string name="help_start_1">في «الرئيسية»، انقر على «تشغيل».</string>
+    <string name="help_start_2">امنح الأذونات. يطلب نظام Android الموافقة على تسجيل الشاشة في كل مرة تشغّل فيها التطبيق.</string>
+    <string name="help_start_3">افتح لعبة أو فيديو، وستظهر الأصوات مرسومة على حواف الشاشة.</string>
+    <string name="help_start_4">لإيقافه، انقر على «إيقاف» في «الرئيسية» أو في الإشعار.</string>
+
+    <string name="help_tile_title">التشغيل والإيقاف من لوحة الإشعارات</string>
+    <string name="help_tile_body">انقر على «إضافة إلى الإعدادات السريعة» في «الرئيسية» لإضافة زر «الصوت المرئي» إلى لوحة الإشعارات. بعد ذلك يمكنك تشغيله أو إيقافه مباشرةً فوق اللعبة أو الفيديو دون التبديل بين التطبيقات.</string>
+    <string name="help_tile_use">انقر على الزر للتشغيل، ثم انقر عليه مرة أخرى للإيقاف. انقر عليه مع الاستمرار لفتح إعدادات هذا التطبيق.</string>
+    <string name="help_tile_old">في Android 12 والإصدارات الأقدم، افتح لوحة الإشعارات وانقر على «تعديل» (رمز القلم)، ثم اسحب «الصوت المرئي» وأضِفه بنفسك.</string>
+
+    <string name="help_permissions_title">لماذا يحتاج التطبيق إلى أذونات؟</string>
+    <string name="help_perm_overlay">الظهور فوق التطبيقات الأخرى</string>
+    <string name="help_perm_overlay_desc">يلزم هذا الإذن لعرض الرسومات فوق الألعاب ومقاطع الفيديو.</string>
+    <string name="help_perm_mic">الميكروفون (تسجيل الصوت)</string>
+    <string name="help_perm_mic_desc">يتطلب نظام Android هذا الإذن لالتقاط الصوت الذي يتم تشغيله على هاتفك. لا يتم تسجيل الأصوات من حولك.</string>
+    <string name="help_perm_capture">تسجيل الشاشة</string>
+    <string name="help_perm_capture_desc">لا يسمح نظام Android للتطبيقات بالتقاط صوت هاتفك إلا من خلال هذه الموافقة. لا يتم التقاط محتوى شاشتك.</string>
+    <string name="help_perm_notification">الإشعارات (Android 13 أو أحدث)</string>
+    <string name="help_perm_notification_desc">يعرض إشعارًا أثناء التشغيل يتضمن زر «إيقاف». يظل التطبيق يعمل حتى لو رفضت هذا الإذن.</string>
+
+    <string name="help_modes_title">أوضاع العرض</string>
+    <string name="help_mode_wave_desc">تندفع حافة الشاشة بالكامل نحو الداخل بحسب شدة الصوت، ويندفع الجانب الذي يأتي منه الصوت إلى عمق أكبر.</string>
+    <string name="help_mode_pad_desc">تضيء أشرطة في 8 مواضع حول حافة الشاشة، وهو أوضح وضع لإظهار الاتجاه.</string>
+    <string name="help_mode_outline_desc">يرسم خطًا رفيعًا يمثّل حدود الموجة فقط، لذا يغطي مساحة أقل من شاشة اللعبة.</string>
+    <string name="help_mode_circle_desc">تنتفخ حلقة في وسط الشاشة باتجاه مصدر الصوت.</string>
+    <string name="help_modes_note">تُحفظ إعدادات مثل «الحجم» و«العتامة» بشكل منفصل لكل وضع، ويمكنك تغييرها من علامة تبويب «الإعدادات».</string>
+
+    <string name="help_sound_title">أنواع الأصوات والاهتزاز</string>
+    <string name="help_sound_kinds">يصنّف الذكاء الاصطناعي ما تسمعه إلى أصوات محيطة وكلام وأصوات خطر. الألوان التلقائية هي: الأبيض للأصوات المحيطة، والأصفر للكلام، والأحمر لأصوات الخطر. يمكنك تغيير لون كل نوع واختيار إظهاره أو إخفائه من علامة تبويب «الإعدادات».</string>
+    <string name="help_sound_danger">عند رصد صوت خطر (مثل طلق ناري)، يتغير اللون فورًا وليس تدريجيًا.</string>
+    <string name="help_sound_haptic">ينبّهك الاهتزاز حتى عندما لا تنظر إلى الشاشة. في البداية يكون الاهتزاز مفعّلًا لأصوات الخطر فقط، ويمكنك اختيار القوة (خفيف، متوسط، قوي) والنمط (مرة، مرتان، طويل، تكرار) لكل نوع.</string>
+    <string name="help_sound_haptic_rule">لا يهتز الجهاز إلا لأنواع الأصوات التي تم تفعيل إظهارها على الشاشة. لا يتكرر الاهتزاز للنوع نفسه خلال ثانيتين، أما نمط «تكرار» فيهتز كل 1.5 ثانية طالما استمر الصوت.</string>
+
+    <string name="help_notes_title">معلومات مفيدة</string>
+    <string name="help_note_direction">يميّز التطبيق بين اليسار واليمين، لكنه لا يميّز بين الأمام والخلف. تُمثّل الرسومات في أعلى الشاشة وأسفلها الأصوات المسموعة بالتساوي من الجانبين، كما تعبّر عن الإحساس المكاني.</string>
+    <string name="help_note_mono">الأصوات المتطابقة في اليسار واليمين (أحادية القناة) تظهر باتجاه الأمام فقط.</string>
+    <string name="help_note_sources">يتم التقاط أصوات الوسائط والألعاب فقط. لا يتم التقاط المكالمات الهاتفية وأصوات الإشعارات والمنبّهات، ولا يمكن عرض أصوات التطبيقات التي تمنع التقاط الصوت (مثل بعض تطبيقات الفيديو).</string>
+    <string name="help_note_ai">قد يخطئ الذكاء الاصطناعي في التصنيف. لا تعتمد على هذا التطبيق وحده في المواقف التي تتعلق بسلامتك.</string>
+
+    <string name="help_faq_title">الأسئلة الشائعة</string>
+    <string name="help_faq_no_graphic_q">لا تظهر أي رسومات.</string>
+    <string name="help_faq_no_graphic_a">تحقّق مما إذا كان التطبيق الذي تشغّله يمنع التقاط الصوت. تأكّد أيضًا من أن «العتامة» ليست منخفضة جدًا في علامة تبويب «الإعدادات»، وأن إظهار نوع الصوت الحالي مفعّل.</string>
+    <string name="help_faq_no_vibration_q">الاهتزاز لا يعمل.</string>
+    <string name="help_faq_no_vibration_a">في علامة تبويب «الإعدادات»، ضمن «أنواع الأصوات (AI)»، تأكّد من تفعيل «إظهار» و«الاهتزاز» معًا لهذا النوع. إذا كان الاهتزاز غير مفعّل في إعدادات هاتفك، فقد لا يهتز الجهاز.</string>
+    <string name="help_faq_install_q">لا يتم تثبيت الإصدار الجديد.</string>
+    <string name="help_faq_install_a">ملف APK الذي تم إنشاؤه في مكان آخر له توقيع مختلف، لذا لا يمكن تثبيته فوق التطبيق الحالي. أزِل تثبيت التطبيق الحالي أولًا، ثم ثبّت الإصدار الجديد. سيؤدي ذلك إلى إعادة ضبط إعداداتك.</string>
+    <string name="help_faq_battery_q">هل يستهلك الكثير من البطارية؟</string>
+    <string name="help_faq_battery_a">لا يرسم التطبيق إلا عند وجود صوت، ويدخل في وضع الخمول عندما يسود الهدوء. ولكن لأنه يواصل التقاط الصوت، ننصح بإيقافه عندما لا تستخدمه.</string>
+    <string name="help_faq_language_q">كيف أغيّر لغة التطبيق؟</string>
+    <string name="help_faq_language_a">انقر على «اللغة» في أعلى علامة تبويب «الإعدادات» واختر لغة. عند اختيار «الإعداد التلقائي للنظام» يستخدم التطبيق لغة هاتفك. في Android 13 والإصدارات الأحدث، يمكنك أيضًا تغييرها من «لغات التطبيقات» في إعدادات هاتفك.</string>
+
+    <string name="help_about_title">حول التطبيق</string>
+    <string name="help_about_version">الإصدار %1$s</string>
+    <string name="help_about_team">من تطوير فريق SOVIS</string>
+    <string name="help_about_license">يتم توزيع هذا التطبيق بموجب Apache License 2.0.</string>
+    <string name="help_licenses_button">تراخيص البرامج المفتوحة المصدر</string>
+    <string name="help_licenses_title">تراخيص البرامج المفتوحة المصدر</string>
+    <string name="help_close">إغلاق</string>
+</resources>

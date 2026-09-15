@@ -13,18 +13,12 @@ android {
         // AudioPlaybackCapture(내부 오디오 캡처)는 Android 10(API 29) 이상에서만 동작한다.
         minSdk = 29
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
-        }
-        // 64비트만 낸다. 16KB 페이지 기기는 전부 64비트이고, 32비트 ABI 의 ONNX 런타임은
-        // 4KB 로만 정렬돼 있어 경고를 만든다. 빠지는 만큼 APK 도 절반 아래로 줄어든다.
-        // (x86_64 는 에뮬레이터용으로 남긴다.)
-        ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
         }
         externalNativeBuild {
             cmake {
@@ -32,6 +26,16 @@ android {
                 arguments += "-DANDROID_LD=lld"
                 arguments += "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384"
             }
+        }
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // CI 는 팀 공용 디버그 키를 풀어 두고 그 경로를 SV_DEBUG_KEYSTORE 로 알려준다. 그래야 CI·릴리스 APK 가
+            // 같은 서명이 되어 기존 앱 위에 덮어 설치된다. GitHub 서버에서는 ~/.android/debug.keystore 에 풀어 둬도
+            // 빌드 도구가 그 파일을 쓰지 않고 새 키를 만들어서, 기본 위치에 기대지 않고 경로를 직접 넘긴다.
+            // 환경 변수가 없는 로컬 빌드는 지금처럼 각자의 기본 디버그 키로 서명된다.
+            providers.environmentVariable("SV_DEBUG_KEYSTORE").orNull?.let { storeFile = file(it) }
         }
     }
 
@@ -67,9 +71,47 @@ android {
         }
     }
 
+    splits {
+        // ABI 마다 APK 를 따로 만든다. 폰에는 app-arm64-v8a-*.apk 만 보내면 된다.
+        // .so 를 압축하지 않고 넣으므로(위 useLegacyPackaging) ABI 하나가 APK 크기에 그대로 더해지는데,
+        // 하나로 합치면 폰에 필요 없는 에뮬레이터용 x86_64 ONNX 런타임까지 따라간다.
+        // 32비트 ABI 는 넣지 않는다. 16KB 페이지 기기는 전부 64비트이고, 32비트 ONNX 런타임은 4KB 로만 정렬돼 있다.
+        // (ABI 분할과 ndk.abiFilters 는 함께 쓸 수 없어서 ABI 목록은 여기서만 정한다.)
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = false
+        }
+    }
+
+    bundle {
+        // 앱 안에서 언어를 바꾸므로, App Bundle 로 올리더라도 폰 언어 말고 다른 언어의 문구가 빠지지 않게 한다.
+        language {
+            enableSplit = false
+        }
+    }
+
     androidResources {
         // Avoid aapt compression of ONNX external-data companion files
         noCompress += listOf("onnx", "data")
+        // res 의 values-* 폴더로 지원 언어 목록(locale config)을 만들어 매니페스트에 넣는다.
+        // Android 13 이상의 폰 설정 "앱 언어"에 이 목록이 뜬다. 기본 values 의 언어는 res/resources.properties 에 적는다.
+        generateLocaleConfig = true
+    }
+
+    lint {
+        // 이미 있던 문제는 기준선에 기록해 두고, 새로 생긴 문제만 잡는다.
+        // 기준선에 있는 문제를 고쳤으면 lint-baseline.xml 을 지우고 lintDebug 를 한 번 돌려 다시 만든다.
+        baseline = file("lint-baseline.xml")
+        // 오류만 빌드를 실패시킨다. 경고는 CI 실행 화면에 개수와 위치로만 보인다.
+        abortOnError = true
+        warningsAsErrors = false
+        // 영어·한국어 말고 다른 언어는 번역이 늦어도 영어로 보이므로 경고로만 둔다.
+        // 영어(values)와 한국어(values-ko)가 빠짐없는지는 StringResourcesTest 가 막는다.
+        warning += "MissingTranslation"
+        xmlReport = true
+        htmlReport = true
     }
 }
 
