@@ -4,9 +4,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 
-/** Verifies and atomically refreshes filesystem copies of bundled AI model assets. */
+/** Verifies and atomically refreshes filesystem copies of bundled files. */
 internal object ModelCacheIntegrity {
 
     data class ExpectedFile(
@@ -16,52 +18,63 @@ internal object ModelCacheIntegrity {
     )
 
     fun isValid(file: File, expected: ExpectedFile): Boolean {
-        return runCatching {
-            file.isFile && file.length() == expected.byteCount && sha256(file) == expected.sha256
-        }.getOrDefault(false)
-    }
-
-    /** A bundle is usable only after every file and its completion manifest verify. */
-    fun isBundleValid(directory: File, expectedFiles: List<ExpectedFile>, manifestName: String): Boolean {
-        return runCatching {
-            val manifest = File(directory, manifestName)
-            manifest.isFile && manifest.readText() == manifestContents(expectedFiles) &&
-                expectedFiles.all { expected -> isValid(File(directory, expected.name), expected) }
-        }.getOrDefault(false)
-    }
-
-    /** Writes the completion manifest last, after every member has passed its digest check. */
-    fun writeBundleManifest(directory: File, expectedFiles: List<ExpectedFile>, manifestName: String) {
-        val destination = File(directory, manifestName)
-        val temporary = File(directory, ".${manifestName}.partial")
-        if (temporary.exists()) check(temporary.delete()) { "Unable to remove stale model manifest temp: $temporary" }
-        try {
-            FileOutputStream(temporary).use { output ->
-                output.write(manifestContents(expectedFiles).toByteArray(Charsets.UTF_8))
-                output.fd.sync()
-            }
-            replace(destination, temporary)
-        } finally {
-            if (temporary.exists()) temporary.delete()
-        }
+        return file.isFile && file.length() == expected.byteCount && sha256(file) == expected.sha256
     }
 
     /**
-     * Returns true when an invalid cache file was replaced. The previous file is kept until a
-     * complete replacement has been copied and verified, so an interrupted copy cannot become a
-     * valid-looking cache entry.
+     * Ensures every expected file is independently verified before returning.
+     *
+     * [openSource] is called only for an invalid or missing destination. A successful return means
+     * every member either passed its one initial digest check or was installed from bytes whose
+     * size and digest were checked while copying.
+     */
+    fun ensureFiles(
+        directory: File,
+        expectedFiles: List<ExpectedFile>,
+        openSource: (String) -> InputStream
+    ): List<String> {
+        check(directory.isDirectory || directory.mkdirs()) {
+            "Unable to create cache directory: $directory"
+        }
+        require(expectedFiles.map { it.name }.distinct().size == expectedFiles.size) {
+            "Expected file names must be unique"
+        }
+
+        val replaced = ArrayList<String>(expectedFiles.size)
+        for (expected in expectedFiles) {
+            if (copyIfInvalid(File(directory, expected.name), expected) { openSource(expected.name) }) {
+                replaced += expected.name
+            }
+        }
+        return replaced
+    }
+
+    /**
+     * Returns true when an invalid cache file was replaced. A confirmed-invalid destination is
+     * removed before writing to avoid requiring space for two full copies. New bytes are written
+     * only to a temporary file and atomically installed after their size and digest verify, so an
+     * interrupted copy cannot become a valid-looking cache entry.
      */
     fun copyIfInvalid(
         destination: File,
         expected: ExpectedFile,
         openSource: () -> InputStream
     ): Boolean {
-        if (isValid(destination, expected)) return false
         val parent = destination.parentFile ?: error("Model cache destination has no parent: $destination")
         check(parent.isDirectory || parent.mkdirs()) { "Unable to create model cache directory: $parent" }
-
         val temporary = File(parent, ".${destination.name}.partial")
-        if (temporary.exists()) check(temporary.delete()) { "Unable to remove stale model cache temp: $temporary" }
+
+        if (isValid(destination, expected)) {
+            // A stale temporary is never an input. Its cleanup must not make a valid cache unusable.
+            if (temporary.exists()) temporary.delete()
+            return false
+        }
+        if (temporary.exists()) check(temporary.delete()) {
+            "Unable to remove stale model cache temp: $temporary"
+        }
+        if (destination.exists()) check(destination.delete()) {
+            "Unable to remove invalid model cache: $destination"
+        }
 
         try {
             val copied = openSource().use { input ->
@@ -74,7 +87,6 @@ internal object ModelCacheIntegrity {
             }
             check(copied.sha256 == expected.sha256) { "Unexpected asset digest for ${expected.name}" }
             replace(destination, temporary)
-            check(isValid(destination, expected)) { "Model cache verification failed after copy: ${expected.name}" }
             return true
         } finally {
             if (temporary.exists()) temporary.delete()
@@ -82,16 +94,6 @@ internal object ModelCacheIntegrity {
     }
 
     private data class CopyDigest(val byteCount: Long, val sha256: String)
-
-    private fun manifestContents(expectedFiles: List<ExpectedFile>): String {
-        return buildString {
-            append("soundvisualizer-ai-model-cache-v1\n")
-            for (expected in expectedFiles.sortedBy { it.name }) {
-                append(expected.name).append('\t').append(expected.byteCount).append('\t')
-                    .append(expected.sha256).append('\n')
-            }
-        }
-    }
 
     private fun copyAndDigest(input: InputStream, output: FileOutputStream): CopyDigest {
         val digest = MessageDigest.getInstance("SHA-256")
@@ -109,9 +111,12 @@ internal object ModelCacheIntegrity {
     }
 
     private fun replace(destination: File, temporary: File) {
-        if (temporary.renameTo(destination)) return
-        if (destination.exists()) check(destination.delete()) { "Unable to replace corrupt model cache: $destination" }
-        check(temporary.renameTo(destination)) { "Unable to install verified model cache: $destination" }
+        Files.move(
+            temporary.toPath(),
+            destination.toPath(),
+            StandardCopyOption.ATOMIC_MOVE,
+            StandardCopyOption.REPLACE_EXISTING
+        )
     }
 
     private fun sha256(file: File): String {
@@ -128,20 +133,4 @@ internal object ModelCacheIntegrity {
     }
 
     private fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it.toInt() and 0xff) }
-}
-
-/** Expected bytes for the model bundle shipped in assets/ai. Update with every model bundle update. */
-internal object YamnetModelFiles {
-    val files = listOf(
-        ModelCacheIntegrity.ExpectedFile(
-            name = "yamnet.onnx",
-            byteCount = 25_592L,
-            sha256 = "290369c40886a4ae948f77671fff901023eec81484ac393465dfb1b342b1ca85"
-        ),
-        ModelCacheIntegrity.ExpectedFile(
-            name = "yamnet.data",
-            byteCount = 14_915_108L,
-            sha256 = "aa05b5b196bdfd74fb59ae4cbba22578c5ab25b9e792e52867678844bcecc839"
-        )
-    )
 }

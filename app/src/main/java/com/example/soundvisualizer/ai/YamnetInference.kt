@@ -5,6 +5,7 @@ import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import ai.onnxruntime.TensorInfo
+import android.util.Log
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -37,18 +38,17 @@ class YamnetInference private constructor(
         const val LOG_MEL_SIZE = TIME_FRAMES * MEL_BINS
 
         private const val ASSET_DIR = "ai"
-        private const val ONNX_FILE = "yamnet.onnx"
-        private const val DATA_FILE = "yamnet.data"
         private const val FILES_SUBDIR = "ai_models"
-        private const val BUNDLE_MANIFEST = "model_bundle.manifest"
+        private const val OBSOLETE_BUNDLE_MANIFEST = "model_bundle.manifest"
+        private const val TAG = "YamnetInference"
 
         /**
-         * Copies assets/ai/yamnet.onnx + yamnet.data into app filesDir so ORT can resolve
-         * external data by filesystem relative path (assets alone are not a real FS for .data).
+         * Verifies and, when needed, copies assets/ai/yamnet.onnx + yamnet.data into app filesDir
+         * so ORT can resolve external data by filesystem relative path (assets are not a real FS).
          */
         fun create(context: Context): YamnetInference {
             val modelDir = ensureModelFiles(context)
-            val onnxPath = File(modelDir, ONNX_FILE).absolutePath
+            val onnxPath = File(modelDir, YamnetModelFiles.onnx.name).absolutePath
 
             val env = OrtEnvironment.getEnvironment()
             val opts = OrtSession.SessionOptions().apply {
@@ -79,27 +79,24 @@ class YamnetInference private constructor(
         @Synchronized
         fun ensureModelFiles(context: Context): File {
             val destDir = File(context.filesDir, FILES_SUBDIR)
-            check(destDir.isDirectory || destDir.mkdirs()) {
-                "Unable to create model cache directory: $destDir"
-            }
-
+            removeObsoleteManifest(destDir)
             val am = context.assets
-            if (!ModelCacheIntegrity.isBundleValid(destDir, YamnetModelFiles.files, BUNDLE_MANIFEST)) {
-                for (modelFile in YamnetModelFiles.files) {
-                    ModelCacheIntegrity.copyIfInvalid(File(destDir, modelFile.name), modelFile) {
-                        am.open("$ASSET_DIR/${modelFile.name}")
-                    }
-                }
-                check(YamnetModelFiles.files.all { ModelCacheIntegrity.isValid(File(destDir, it.name), it) }) {
-                    "Model cache files did not verify before bundle completion"
-                }
-                ModelCacheIntegrity.writeBundleManifest(destDir, YamnetModelFiles.files, BUNDLE_MANIFEST)
+            val copied = ModelCacheIntegrity.ensureFiles(destDir, YamnetModelFiles.files) { name ->
+                am.open("$ASSET_DIR/$name")
             }
-
-            check(ModelCacheIntegrity.isBundleValid(destDir, YamnetModelFiles.files, BUNDLE_MANIFEST)) {
-                "Invalid YAMNet model cache after asset copy"
+            if (copied.isNotEmpty()) {
+                Log.i(TAG, "Model cache written: $copied")
             }
             return destDir
+        }
+
+        private fun removeObsoleteManifest(directory: File) {
+            for (name in listOf(OBSOLETE_BUNDLE_MANIFEST, ".$OBSOLETE_BUNDLE_MANIFEST.partial")) {
+                val obsolete = File(directory, name)
+                if (obsolete.exists() && !obsolete.delete()) {
+                    Log.w(TAG, "Unable to remove obsolete model cache metadata: $obsolete")
+                }
+            }
         }
 
         /** Softmax — float32 buffer semantics. */
@@ -180,4 +177,19 @@ class YamnetInference private constructor(
         session.close()
         // OrtEnvironment is process-wide singleton; do not close globally here.
     }
+}
+
+/** Expected bytes for the YAMNet bundle shipped in assets/ai. Update with every bundle update. */
+internal object YamnetModelFiles {
+    val onnx = ModelCacheIntegrity.ExpectedFile(
+        name = "yamnet.onnx",
+        byteCount = 25_592L,
+        sha256 = "290369c40886a4ae948f77671fff901023eec81484ac393465dfb1b342b1ca85"
+    )
+    val data = ModelCacheIntegrity.ExpectedFile(
+        name = "yamnet.data",
+        byteCount = 14_915_108L,
+        sha256 = "aa05b5b196bdfd74fb59ae4cbba22578c5ab25b9e792e52867678844bcecc839"
+    )
+    val files = listOf(onnx, data)
 }
