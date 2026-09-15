@@ -25,7 +25,7 @@ graph TD
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
 | 분류 결과 연결 | `AiClassification` | Kotlin |
-| 오버레이 | `OverlayService` (`VisualizerEngine`, `VisualizerOverlay`) | Kotlin (Compose Canvas) |
+| 오버레이 | `OverlayService`, `VisualizerOverlay`, `VisualizerEngine`, `VisualizerInputs`, `VisualMode` | Kotlin (Compose Canvas) |
 | 진동 | `feedback/` | Kotlin |
 
 ---
@@ -112,9 +112,17 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 ---
 
-## 4. 오버레이 (`OverlayService`)
+## 4. 오버레이
 
-### 창
+| 코드 | 역할 |
+|---|---|
+| `OverlayService` | 오버레이 창을 띄우고 내리는 서비스 |
+| `VisualizerOverlay` | 창 안에서 도는 Compose 렌더 루프 |
+| `VisualizerEngine` | 피크를 8방향 깊이·도형으로 바꾸고 캔버스에 그리는 엔진 |
+| `VisualizerInputs` | 엔진이 읽는 바깥 입력 인터페이스와 실제 연결(`LiveVisualizerInputs`) |
+| `VisualMode` | 네 가지 표현 모드 (파도·패드·원형·외곽선) |
+
+### 창 (`OverlayService`)
 
 `WindowManager`에 `TYPE_APPLICATION_OVERLAY` 창을 띄우고 그 안에 `ComposeView`를 둡니다.
 
