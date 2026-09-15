@@ -202,7 +202,8 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 |---|---|
 | `AudioCaptureService` | 폰 내부 소리를 받는 포그라운드 서비스 |
 | `AudioEngine` / `cpp/native-lib.cpp` | 좌우 채널 최대 진폭 측정 (C++) |
-| `OverlayService` / `VisualizerEngine` | 오버레이 창과 네 가지 모드 렌더링 |
+| `OverlayService` | 화면 가장자리 오버레이 창을 띄우는 서비스 |
+| `VisualizerOverlay` / `VisualizerEngine` | 프레임 렌더 루프와 네 가지 모드(`VisualMode`) 렌더링 |
 | `ai/` | 소리 분류 파이프라인 (전처리 → YAMNet → Gunshot Booster → 후처리) |
 | `AiClassification` | 분류기와 렌더러를 잇는 연결 지점 |
 | `feedback/` | 진동 알림 (사건 판단 → 진동 재생, 종류별 진동 설정 화면) |
