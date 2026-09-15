@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.hardware.input.InputManager
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
@@ -72,6 +73,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             PixelFormat.TRANSLUCENT
         )
         params.gravity = Gravity.TOP or Gravity.START
+        // Android 12 부터 다른 앱 위에 겹친 창은 불투명도가 시스템 기준값(기본 0.8)보다 높으면
+        // FLAG_NOT_TOUCHABLE 이어도 아래 앱으로 가는 터치가 막힌다(신뢰할 수 없는 터치 차단).
+        // 창 전체 불투명도를 그 기준값으로 맞춰야 오버레이를 켠 채로 게임을 조작할 수 있다.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            params.alpha = getSystemService(InputManager::class.java).maximumObscuringOpacityForTouch
+        }
         // 노치/상태바/내비게이션 영역까지 덮어서 파도가 화면 실제 테두리에서 시작하도록 한다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
