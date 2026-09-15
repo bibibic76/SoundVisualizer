@@ -12,6 +12,9 @@
     <string name="home_status_idle">상태: 실행 대기 중</string>
     <string name="home_start">실행</string>
     <string name="home_stop">실행 종료</string>
+    <string name="home_add_tile">빠른 설정에 추가</string>
+    <string name="home_add_tile_desc">알림창을 내려 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="home_add_tile_manual">알림창을 내려 편집(연필) 버튼에서 ‘소리 시각화’를 추가하면, 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
 
     <!-- 권한 -->
     <string name="permission_record_audio_required">오디오 캡처를 위해 마이크(오디오 녹음) 권한이 필요합니다.</string>
@@ -95,4 +98,10 @@
     <string name="notification_title">SoundVisualizer</string>
     <string name="notification_text">소리를 시각화하는 중입니다.</string>
     <string name="notification_stop">중지</string>
+
+    <!-- 빠른 설정 타일 -->
+    <string name="tile_label">소리 시각화</string>
+    <string name="tile_state_on">켜짐</string>
+    <string name="tile_state_off">꺼짐</string>
+    <string name="tile_overlay_permission_needed">다른 앱 위에 표시 권한이 필요합니다. 앱에서 실행을 눌러 허용해 주세요.</string>
 </resources>
