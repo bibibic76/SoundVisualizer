@@ -101,6 +101,26 @@ private fun hiddenAmbientIdle(): Pair<VisualizerEngine, FakeInputs> {
     return engine to fake
 }
 
+/**
+ * 위협음을 표시 중인 엔진이 같은 소리를 제때 받았을 때 평소 경로가 도달하는 가장 큰 전체 크기.
+ * [loudFrames] 프레임 동안 [loud], 이어서 [tailFrames] 프레임 동안 [tail] 을 좌우에 같게 넣는다.
+ */
+private fun onTimePeakSmoothTotal(loud: Float, loudFrames: Int, tail: Float, tailFrames: Int): Float {
+    val fake = FakeInputs(label = AiClassification.DANGER, shown = true)
+    val engine = newEngine(fake)
+    var t = FRAME_60
+    var peak = 0f
+    repeat(loudFrames + tailFrames) { n ->
+        val v = if (n < loudFrames) loud else tail
+        fake.left = v
+        fake.right = v
+        engine.tick(t)
+        t += FRAME_60
+        peak = maxOf(peak, engine.debugState().smoothTotal)
+    }
+    return peak
+}
+
 class VisualizerEngineTest {
 
     // ---------------------------------------------------------------
@@ -410,7 +430,7 @@ class VisualizerEngineTest {
     // ---------------------------------------------------------------
 
     @Test
-    fun `숨긴 라벨로 지나간 짧은 소리는 늦게 온 위협음 판정에 그 크기로 보인다`() {
+    fun `숨긴 라벨로 지나간 짧은 소리는 늦게 온 위협음 판정에 제때 표시했을 크기로 보인다`() {
         val (engine, fake) = hiddenAmbientIdle()
 
         // 총성 한 번(33ms) 뒤로는 약한 잔향만 남는다. 아직 라벨은 숨긴 환경음이다.
@@ -427,11 +447,50 @@ class VisualizerEngineTest {
         engine.pollWake()
         assertFalse("위협음 판정이 왔는데 깨어나지 않았다", engine.debugState().idle)
 
+        // 위협음을 제때 표시했다면 그렸을 크기로 시작한다. 폴링 한 번(33ms)은 60fps 두 프레임이다.
+        // 보관한 0.9 를 그대로 전체 크기(3.42)로 쓰면 소리가 1초 넘게 이어질 때의 크기라 짧은 총성마다 크기 한도까지 뛴다.
+        val seeded = engine.debugState().smoothTotal
+        val onTime = onTimePeakSmoothTotal(loud = 0.9f, loudFrames = 2, tail = 0.03f, tailFrames = 20)
+        assertEquals("제때 표시했을 때의 크기($onTime)와 다르다 ($seeded)", onTime, seeded, onTime * 0.2f)
+
         engine.advance(frames = 3, startNs = FRAME_60 * 1000)
         val state = engine.debugState()
+        // 잔향(0.03)으로 0 에서 자라면 0.01 도 안 되어 보이지 않는다.
         assertTrue("잔향만으로 그려서 보이지 않는다 (smoothTotal=${state.smoothTotal})", state.visible)
-        // 잔향(0.03)으로 0 에서 자라면 0.01 도 안 된다. 보관한 0.9 의 크기(3.42)에서 시작해야 한다.
-        assertTrue("보관한 피크 크기로 시작하지 않았다 (${state.smoothTotal})", state.smoothTotal > 2f)
+    }
+
+    @Test
+    fun `제때 표시해도 안 보일 작은 위협음도 늦게 온 판정에서는 보이게 그린다`() {
+        // 전제: 0.1 짜리 짧은 소리는 위협음을 표시 중이어도 파도가 보이는 3dp 에 못 미친다.
+        val onTimeFake = FakeInputs(label = AiClassification.DANGER, shown = true)
+        val onTime = newEngine(onTimeFake)
+        var t = FRAME_60
+        var onTimeVisible = false
+        repeat(32) { n ->
+            val v = if (n < 2) 0.1f else 0f
+            onTimeFake.left = v
+            onTimeFake.right = v
+            onTime.tick(t)
+            t += FRAME_60
+            onTimeVisible = onTimeVisible || onTime.debugState().visible
+        }
+        assertFalse("전제가 틀렸다: 제때 표시해도 보이는 크기다", onTimeVisible)
+
+        // 판정까지 난 위협음은 안 보이면 안 되므로, 늦게 온 판정에서는 보이는 깊이까지 올린다.
+        val (engine, fake) = hiddenAmbientIdle()
+        fake.left = 0.1f
+        fake.right = 0.1f
+        engine.pollWake()
+        fake.left = 0f
+        fake.right = 0f
+        engine.poll(10)
+
+        fake.becomeDanger()
+        engine.pollWake()
+        assertFalse(engine.debugState().idle)
+        engine.advance(frames = 3, startNs = FRAME_60 * 1000)
+        val state = engine.debugState()
+        assertTrue("판정까지 난 작은 위협음이 보이지 않는다 (depths=${state.depths})", state.visible)
     }
 
     @Test
@@ -565,9 +624,11 @@ class VisualizerEngineTest {
         t += FRAME_60
         val state = engine.debugState()
         assertTrue(state.visible)
+        // 깨어 있는 동안 스무딩은 숨긴 소리도 따라가지만 판정이 올 즈음엔 이미 줄어 있다.
+        // 표시 중이었다면 도달했을 크기로 다시 커져야 한다.
         assertTrue(
             "보관한 크기로 커지지 않았다 ($beforeLabel -> ${state.smoothTotal})",
-            state.smoothTotal > 2f
+            state.smoothTotal > beforeLabel * 2f
         )
 
         // 다 사라지고 대기로 내려간 뒤, 라벨이 그대로여도 이미 그린 소리로 다시 깨어나면 안 된다.

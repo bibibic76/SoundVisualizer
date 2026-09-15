@@ -23,7 +23,7 @@ import kotlin.math.sin
  *  - 프레임당 힙 할당이 0 이 되도록 모든 버퍼/Path/Paint 를 미리 잡아두고
  *  - 스무딩 계수는 60fps 기준으로 시간 정규화해서 90/120Hz 화면에서도 같은 느낌을 내고
  *  - 소리가 없으면 그리기 무효화를 멈추고(GPU 휴식), 1초 뒤엔 저빈도 폴링으로 내려간다.
- *  - 표시가 꺼진 라벨이라 그리지 못한 피크는 약 1초 보관해, 위협음 판정이 늦게 와도 소리 크기대로 그린다.
+ *  - 표시가 꺼진 라벨이라 그리지 못한 피크는 약 1초 보관해, 위협음 판정이 늦게 와도 표시 중이었을 때의 크기로 그린다.
  *
  * 메인 스레드에서만 접근한다.
  *
@@ -81,6 +81,13 @@ class VisualizerEngine(
          */
         private const val HOLD_SLOTS = 30
         private const val HOLD_SLOT_FRAMES = 2f
+
+        /**
+         * 늦게 온 위협음 판정으로 그릴 때 가장 센 방향이 적어도 닿는 깊이.
+         * 파도·외곽선이 보이기 시작하는 3dp 의 두 배 넘게 잡아 민감도 기본값에서 0.4초쯤 보이고,
+         * 패드(깊이 x0.25, 0.5dp)와 원형(깊이 x0.35, 1dp)도 보이는 문턱을 넘는다.
+         */
+        private const val LATE_DANGER_MIN_DP = 8f
     }
 
     // ---------------- 오디오 입력 ----------------
@@ -246,7 +253,7 @@ class VisualizerEngine(
         advanceHold(k)
         if (drawable) {
             if (!shown) holdHidden(peaks[0], peaks[1])
-            else if (coarse == AiClassification.DANGER) releaseHold()
+            else if (coarse == AiClassification.DANGER) releaseHold(s)
         }
 
         // 2. 스테레오 → 8채널 가상 서라운드 (2채널만 받으므로 Mid/Side 로 방향을 합성)
@@ -262,7 +269,7 @@ class VisualizerEngine(
         var total = 0f
         for (i in 0 until CH) total += targets[i]
 
-        val sfTremor = norm(min(1f, max(0.1f, s.sensitivity * SENSITIVITY_UI_SCALE) / 100f), k)
+        val sfTremor = norm(tremorCoef(s), k)
         smoothTotal += (total - smoothTotal) * sfTremor
 
         val sfPosition = norm(min(1f, max(0.1f, s.speed) / 100f), k)
@@ -271,11 +278,8 @@ class VisualizerEngine(
         }
 
         // 4. 깊이(px). Intensity 100% 가 화면 중앙 한계선에 닿도록 매핑
-        var maxBase = min(w, h) / 2f - EDGE_MARGIN_DP * density
-        if (maxBase < EDGE_MARGIN_DP * density) maxBase = EDGE_MARGIN_DP * density
         val useOpacity = s.intensityAsOpacity
-        val currentIntensity = if (useOpacity) s.opacityFixedSize / 2f else s.intensity
-        baseDepth = maxBase * (max(0f, currentIntensity) / 100f)
+        baseDepth = baseDepthFor(s)
         for (i in 0 until CH) {
             val v = if (useOpacity) dist[i] * 4f else smoothTotal * dist[i]
             depths[i] = min(baseDepth, baseDepth * v)
@@ -334,6 +338,18 @@ class VisualizerEngine(
         return potentialAlpha > MIN_VISIBLE_ALPHA && size > 0f
     }
 
+    /** 민감도 → 60fps 한 프레임에 전체 크기가 소리를 따라붙는 비율. 틱과 늦은 위협음 판정이 같은 값을 써야 크기가 맞는다. */
+    private fun tremorCoef(s: ModeSettings): Float =
+        min(1f, max(0.1f, s.sensitivity * SENSITIVITY_UI_SCALE) / 100f)
+
+    /** 크기 100% 가 화면 중앙 한계선에 닿는 깊이(px). 크기 고정 모드는 고정 크기의 절반을 쓴다. */
+    private fun baseDepthFor(s: ModeSettings): Float {
+        var maxBase = min(w, h) / 2f - EDGE_MARGIN_DP * density
+        if (maxBase < EDGE_MARGIN_DP * density) maxBase = EDGE_MARGIN_DP * density
+        val size = if (s.intensityAsOpacity) s.opacityFixedSize / 2f else s.intensity
+        return maxBase * (max(0f, size) / 100f)
+    }
+
     /**
      * 한 프레임의 계산 결과. 테스트에서 확인용으로만 읽는다. 렌더 경로는 쓰지 않는다.
      */
@@ -371,7 +387,8 @@ class VisualizerEngine(
         val loud = peaks[0] > WAKE_THRESHOLD || peaks[1] > WAKE_THRESHOLD
         // 조용하고 보관한 소리도 없으면 설정·라벨을 읽을 필요가 없다. 대기 중 폴링은 대부분 여기서 끝난다.
         if (!loud && holdLiveSlots == 0) return
-        if (!canDraw(inputs.settingsFor(inputs.currentMode()))) return
+        val s = inputs.settingsFor(inputs.currentMode())
+        if (!canDraw(s)) return
         val coarse = inputs.coarseLabel()
         if (!inputs.isShown(coarse)) {
             holdHidden(peaks[0], peaks[1])
@@ -379,7 +396,7 @@ class VisualizerEngine(
         }
         // 위협음 판정이 새로 왔으면 보관한 크기로 시작한다. 소리가 이미 끝났어도 깨어난다.
         // 그 밖의 깨어남은 0 에서 민감도 속도로 자란다.
-        val released = coarse == AiClassification.DANGER && releaseHold()
+        val released = coarse == AiClassification.DANGER && releaseHold(s)
         if (!loud && !released) return
 
         targetL = peaks[0]
@@ -447,20 +464,36 @@ class VisualizerEngine(
     }
 
     /**
-     * 보관한 피크 중 가장 큰 좌우 쌍으로 전체 크기와 방향을 바로 잡고 보관을 비운다.
-     * 판정이 늦게 온 소리를 민감도 스무딩으로 0 에서 키우면 이미 끝난 뒤라 거의 보이지 않으므로
-     * 그 소리 크기에서 시작하고, 줄어드는 것은 이후 프레임에서 평소처럼 민감도 속도를 따른다.
+     * 보관한 소리로 전체 크기와 방향을 바로 잡고 보관을 비운다.
+     * 판정이 늦게 온 소리를 민감도 스무딩으로 0 에서 키우면 이미 끝난 뒤라 거의 보이지 않으므로 미리 키워 두고,
+     * 줄어드는 것은 이후 프레임에서 평소처럼 민감도 속도를 따른다.
      * 한 번 쓰면 비우므로 같은 소리로 두 번 번쩍이지 않는다.
+     *
+     * 크기는 그 종류를 표시 중이었다면 평소 경로가 그렸을 크기다. 보관한 피크를 그대로 전체 크기로 쓰면
+     * 소리가 1초 넘게 이어질 때의 크기라서, 짧은 총성마다 크기 한도까지 뛰고 같은 소리가 직전 라벨에 따라
+     * 열 배 넘게 다르게 그려진다.
      * @return 보관한 피크가 있었으면 true
      */
-    private fun releaseHold(): Boolean {
+    private fun releaseHold(s: ModeSettings): Boolean {
         if (holdLiveSlots == 0) return false
-        var l = holdCurL
-        var r = holdCurR
-        for (i in 0 until HOLD_SLOTS) {
-            if (max(holdL[i], holdR[i]) > max(l, r)) {
-                l = holdL[i]
-                r = holdR[i]
+
+        // 1) 오래된 칸부터 칸 하나(2프레임)씩 평소 스무딩에 다시 흘려, 도달했을 가장 큰 전체 크기를 구한다.
+        //    칸마다 가장 큰 피크만 남아 있고 후면 지연도 없으니 실제보다 조금 크게 나온다. 방향은 가장 큰 쌍으로 잡는다.
+        //    targets 는 틱의 2단계 upmix 가 곧 현재 소리로 다시 채우므로 여기서 덮어써도 된다.
+        val sf = norm(tremorCoef(s), HOLD_SLOT_FRAMES)
+        var ramp = 0f
+        var rampPeak = 0f
+        var l = 0f
+        var r = 0f
+        for (n in 0..HOLD_SLOTS) {
+            val slot = (holdIndex + n) % HOLD_SLOTS
+            val sl = if (n < HOLD_SLOTS) holdL[slot] else holdCurL // 마지막은 채우는 중인 칸
+            val sr = if (n < HOLD_SLOTS) holdR[slot] else holdCurR
+            ramp += (upmixTotal(sl, sr) - ramp) * sf
+            if (ramp > rampPeak) rampPeak = ramp
+            if (max(sl, sr) > max(l, r)) {
+                l = sl
+                r = sr
             }
         }
         holdL.fill(0f)
@@ -470,17 +503,34 @@ class VisualizerEngine(
         holdFrames = 0f
         holdLiveSlots = 0
 
-        // 판정이 올 즈음엔 후면 지연도 이미 따라잡았으므로 앞뒤에 같은 값을 넣는다.
-        // targets 는 틱의 2단계 upmix 가 곧 현재 소리로 다시 채우므로 여기서 덮어써도 된다.
+        val full = upmixTotal(l, r) // 이 소리가 계속 날 때 다다르는 크기. targets 에 방향이 남는다.
+        if (full <= 0f) return true
+        var seed = rampPeak
+        // 2) 그래도 가장 센 방향이 LATE_DANGER_MIN_DP 에 못 미치면 거기까지 올린다. 판정까지 난 위협음이 안 보이면 안 된다.
+        //    크기 고정 모드는 전체 크기가 깊이가 아니라 진하기라서 올리지 않는다.
+        val depth = baseDepthFor(s)
+        if (!s.intensityAsOpacity && depth > 0f) {
+            var maxShare = 0f
+            for (i in 0 until CH) maxShare = max(maxShare, targets[i] / full)
+            seed = max(seed, LATE_DANGER_MIN_DP * density / (depth * maxShare))
+        }
+        // 같은 소리가 계속 날 때보다 크게 그리지는 않는다.
+        seed = min(seed, full)
+
+        // 이미 더 크게 그리는 중이면(지금도 큰 소리가 이어짐) 건드리지 않는다.
+        if (seed > smoothTotal) {
+            smoothTotal = seed
+            for (i in 0 until CH) dist[i] = targets[i] / full
+        }
+        return true
+    }
+
+    /** 앞뒤에 같은 좌우 값을 넣었을 때의 8채널 합. 판정이 올 즈음엔 후면 지연도 따라잡았다고 본다. [targets] 를 덮어쓴다. */
+    private fun upmixTotal(l: Float, r: Float): Float {
         upmix(l, r, l, r)
         var total = 0f
         for (i in 0 until CH) total += targets[i]
-        // 이미 더 크게 그리는 중이면(지금도 큰 소리가 이어짐) 건드리지 않는다.
-        if (total > smoothTotal) {
-            smoothTotal = total
-            for (i in 0 until CH) dist[i] = targets[i] / total
-        }
-        return true
+        return total
     }
 
     /** 프레임당 계수 a 를 k 프레임 분량으로 환산: 1-(1-a)^k */
