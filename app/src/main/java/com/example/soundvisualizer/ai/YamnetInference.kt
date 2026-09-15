@@ -6,7 +6,6 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import ai.onnxruntime.TensorInfo
 import java.io.File
-import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -41,6 +40,7 @@ class YamnetInference private constructor(
         private const val ONNX_FILE = "yamnet.onnx"
         private const val DATA_FILE = "yamnet.data"
         private const val FILES_SUBDIR = "ai_models"
+        private const val BUNDLE_MANIFEST = "model_bundle.manifest"
 
         /**
          * Copies assets/ai/yamnet.onnx + yamnet.data into app filesDir so ORT can resolve
@@ -76,41 +76,30 @@ class YamnetInference private constructor(
             return YamnetInference(env, session, inName, outName)
         }
 
+        @Synchronized
         fun ensureModelFiles(context: Context): File {
             val destDir = File(context.filesDir, FILES_SUBDIR)
-            if (!destDir.exists()) destDir.mkdirs()
+            check(destDir.isDirectory || destDir.mkdirs()) {
+                "Unable to create model cache directory: $destDir"
+            }
 
             val am = context.assets
-            copyAssetIfNeeded(am, "$ASSET_DIR/$ONNX_FILE", File(destDir, ONNX_FILE))
-            copyAssetIfNeeded(am, "$ASSET_DIR/$DATA_FILE", File(destDir, DATA_FILE))
+            if (!ModelCacheIntegrity.isBundleValid(destDir, YamnetModelFiles.files, BUNDLE_MANIFEST)) {
+                for (modelFile in YamnetModelFiles.files) {
+                    ModelCacheIntegrity.copyIfInvalid(File(destDir, modelFile.name), modelFile) {
+                        am.open("$ASSET_DIR/${modelFile.name}")
+                    }
+                }
+                check(YamnetModelFiles.files.all { ModelCacheIntegrity.isValid(File(destDir, it.name), it) }) {
+                    "Model cache files did not verify before bundle completion"
+                }
+                ModelCacheIntegrity.writeBundleManifest(destDir, YamnetModelFiles.files, BUNDLE_MANIFEST)
+            }
 
-            val onnx = File(destDir, ONNX_FILE)
-            val data = File(destDir, DATA_FILE)
-            require(onnx.isFile && onnx.length() > 0) { "Missing $ONNX_FILE after asset copy" }
-            require(data.isFile && data.length() > 0) {
-                "Missing $DATA_FILE after asset copy (external weights required)"
+            check(ModelCacheIntegrity.isBundleValid(destDir, YamnetModelFiles.files, BUNDLE_MANIFEST)) {
+                "Invalid YAMNet model cache after asset copy"
             }
             return destDir
-        }
-
-        private fun copyAssetIfNeeded(
-            am: android.content.res.AssetManager,
-            assetPath: String,
-            dest: File
-        ) {
-            if (dest.isFile && dest.length() > 0) {
-                val assetLen = try {
-                    am.openFd(assetPath).use { it.length }
-                } catch (_: Exception) {
-                    -1L
-                }
-                if (assetLen > 0 && assetLen == dest.length()) return
-            }
-            am.open(assetPath).use { input ->
-                FileOutputStream(dest).use { output ->
-                    input.copyTo(output)
-                }
-            }
         }
 
         /** Softmax — float32 buffer semantics. */
