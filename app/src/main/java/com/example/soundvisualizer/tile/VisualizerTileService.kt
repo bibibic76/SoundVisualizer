@@ -1,5 +1,6 @@
 package com.example.soundvisualizer.tile
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
@@ -71,6 +72,10 @@ class VisualizerTileService : TileService() {
         if (isLocked) unlockAndRun { launchStart() } else launchStart()
     }
 
+    // Intent 버전은 Android 14 부터 targetSdk 34 이상 앱에서 예외를 던지지만, PendingIntent 버전은 14 에 생겼다.
+    // 그래서 14 이상은 PendingIntent, 13 이하는 Intent 로 나눈다. Lint(StartActivityAndCollapseDeprecated)는
+    // 버전 분기와 상관없이 Intent 버전 호출을 오류로 보므로 이 함수에서만 끈다.
+    @SuppressLint("StartActivityAndCollapseDeprecated")
     private fun launchStart() {
         val intent = Intent(this, StartVisualizerActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -83,7 +88,6 @@ class VisualizerTileService : TileService() {
             )
             startActivityAndCollapse(pending)
         } else {
-            // Android 14 부터 Intent 버전은 targetSdk 34 이상 앱에서 예외를 던진다. 13 이하에서만 쓴다.
             @Suppress("DEPRECATION")
             startActivityAndCollapse(intent)
         }
