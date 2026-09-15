@@ -2,6 +2,7 @@ package com.example.soundvisualizer.ai
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.os.SystemClock
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +46,12 @@ class RealtimeAiPipeline private constructor(
         val boosterAccepted: Boolean
     )
 
+    /** Lightweight counters for verifying inference suppression in device tests. */
+    data class InferenceStats(
+        val executed: Long,
+        val skippedForSilence: Long
+    )
+
     companion object {
         const val AI_PREDICT_INTERVAL_MS = 250L
         private const val TAG = "RealtimeAiPipeline"
@@ -77,6 +84,9 @@ class RealtimeAiPipeline private constructor(
     private val running = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
     private val lastResult = AtomicReference<AiClassificationResult?>(null)
+    private val captureInferenceGate = AiCaptureInferenceGate(audioBuffer)
+    private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
+    private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
     private var lastLogMs = 0L
 
     private val captureNeed =
@@ -89,12 +99,20 @@ class RealtimeAiPipeline private constructor(
 
     fun lastClassification(): AiClassificationResult? = lastResult.get()
 
+    fun inferenceStatsForTest(): InferenceStats = InferenceStats(
+        executed = inferenceExecutions.get(),
+        skippedForSilence = silenceSkippedTicks.get()
+    )
+
     fun start() {
         if (closed.get()) return
         if (!running.compareAndSet(false, true)) return
         audioBuffer.reset()
+        captureInferenceGate.reset()
         postProcessor.reset()
         lastResult.set(null)
+        inferenceExecutions.set(0)
+        silenceSkippedTicks.set(0)
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
                 try {
@@ -123,12 +141,12 @@ class RealtimeAiPipeline private constructor(
      */
     fun ingestInterleavedPcm(pcm: FloatArray, floatCount: Int) {
         if (!running.get() || closed.get()) return
-        audioBuffer.ingestInterleaved(pcm, floatCount)
+        ingestInterleaved(pcm, floatCount)
     }
 
     /** Test helper — ingest without requiring [start]. */
     fun ingestInterleavedForTest(pcm: FloatArray, floatCount: Int) {
-        audioBuffer.ingestInterleaved(pcm, floatCount)
+        ingestInterleaved(pcm, floatCount)
     }
 
     fun ingestMonoForTest(mono: FloatArray, length: Int = mono.size) {
@@ -144,8 +162,17 @@ class RealtimeAiPipeline private constructor(
 
     fun resetState() {
         audioBuffer.reset()
+        captureInferenceGate.reset()
         postProcessor.reset()
         lastResult.set(null)
+        inferenceExecutions.set(0)
+        silenceSkippedTicks.set(0)
+    }
+
+    private fun ingestInterleaved(pcm: FloatArray, floatCount: Int) {
+        // Evaluate the original channels before downmixing, then always retain the
+        // samples in the ring so an input that reopens the gate has full context.
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime())
     }
 
     /**
@@ -156,6 +183,10 @@ class RealtimeAiPipeline private constructor(
     private fun runTickInternal(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         if (closed.get()) return null
         if (!audioBuffer.hasEnoughForYamnetWindow()) return null
+        if (!captureInferenceGate.isInferenceOpen(SystemClock.elapsedRealtime())) {
+            silenceSkippedTicks.incrementAndGet()
+            return null
+        }
 
         // Skip if previous tick still running (scheduler overlap)
         if (!inferMutex.tryLock()) return null
@@ -167,6 +198,7 @@ class RealtimeAiPipeline private constructor(
     }
 
     private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
+        inferenceExecutions.incrementAndGet()
         val t0 = System.nanoTime()
 
         audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
