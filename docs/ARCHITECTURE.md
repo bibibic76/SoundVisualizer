@@ -32,19 +32,22 @@ graph TD
 
 ## 1. 시작과 종료
 
-시작과 종료는 앱의 버튼과 빠른 설정 타일이 같은 코드(`VisualizerController`)를 씁니다. 권한 목록(`requiredPermissions`), 서비스 시작(`start`), 종료(`stop`)가 여기 있습니다.
+시작과 종료는 앱의 버튼과 빠른 설정 타일이 같은 코드(`VisualizerController`)를 씁니다. 권한 목록(`requiredPermissions`), 서비스 시작(`start`), 종료(`stop`)가 여기 있습니다. 권한을 묻고 거부됐을 때 안내하는 흐름과 그 안내 창(`CapturePermissionFlow`)도 함께 씁니다.
 
 **앱에서 시작** (`MainActivity`)
 
 1. 다른 앱 위에 표시 권한(`SYSTEM_ALERT_WINDOW`)을 확인하고, 없으면 설정 화면으로 보냅니다.
 2. 녹음(`RECORD_AUDIO`)과 알림(`POST_NOTIFICATIONS`, Android 13 이상) 권한을 요청합니다. 알림 권한은 거부해도 이어서 켭니다.
+   - 녹음 권한이 필요하면 시스템 창보다 먼저 이유를 설명하는 창을 띄웁니다. 시스템 창에는 "마이크"라고만 떠서 녹음 앱으로 오해하고 거부하기 쉽기 때문입니다. 알림 권한만 필요하면 바로 묻습니다.
+   - 녹음 권한이 거부됐는데 `shouldShowRequestPermissionRationale`이 `false`면 시스템이 더는 창을 띄우지 않는 상태로 보고, 앱 정보 화면(`ACTION_APPLICATION_DETAILS_SETTINGS`)을 여는 안내 창을 띄웁니다. 그 밖의 거부는 토스트로 알리고 멈춥니다.
+   - 안내 창 상태는 액티비티의 저장 상태(`SavedStateRegistry`)에 두어 화면을 돌려도 남습니다. 창을 다시 그릴 뿐 권한 요청이나 동의 창을 다시 띄우지 않습니다.
 3. 화면 녹화 동의 창(`MediaProjection`)을 띄웁니다. 오디오 캡처에도 이 동의가 필요합니다.
 4. 동의하면 `AudioCaptureService`(포그라운드 서비스)와 `OverlayService`를 함께 시작합니다.
 
 **빠른 설정 타일에서 시작** (`tile/VisualizerTileService` → `tile/StartVisualizerActivity`)
 
 - 권한 팝업과 동의 창은 액티비티에서만 띄울 수 있어서, 타일은 내용 없는 투명 화면을 열고 알림창을 접습니다. 잠금 화면이면 잠금 해제를 먼저 요구합니다(`unlockAndRun`).
-- 투명 화면은 위 2~4단계를 그대로 밟고 닫힙니다. 오버레이 권한만은 설정 화면이 필요해 앱을 열어 안내합니다.
+- 투명 화면은 위 2~4단계를 그대로 밟고 닫힙니다. 권한 안내 창도 이 화면 위에 그리고, 취소하거나 설정 화면으로 보내면 바로 닫힙니다. 오버레이 권한만은 설정 화면이 필요해 앱을 열어 안내합니다.
 - 투명 화면은 `taskAffinity=""`로 앱과 다른 작업에 뜹니다. 그래서 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고, 닫히면 보던 게임·영상으로 돌아갑니다.
 - 타일은 알림창이 열려 있는 동안 `SettingsManager.isServiceRunning`을 구독해 켜짐·꺼짐을 표시합니다. 추가·제거될 때는 `SettingsManager.tileAdded`에 기록해 홈 화면의 "빠른 설정에 추가" 버튼을 숨기거나 보입니다.
 
