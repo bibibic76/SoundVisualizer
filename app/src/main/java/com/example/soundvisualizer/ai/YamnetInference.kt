@@ -137,7 +137,7 @@ class YamnetInference private constructor(
 
     /**
      * ORT 입력 버퍼. 추론마다 새로 잡으면 힙 밖 메모리가 Cleaner 가 돌 때까지 남으므로
-     * 한 번만 잡아 재사용한다. 호출은 RealtimeAiPipeline 의 inferMutex 로 직렬화된다.
+     * 한 번만 잡아 재사용한다. 호출은 RealtimeAiPipeline 의 inferLock 으로 직렬화된다.
      */
     private val inputBuffer: FloatBuffer = ByteBuffer
         .allocateDirect(LOG_MEL_SIZE * 4)
