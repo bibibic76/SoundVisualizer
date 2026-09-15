@@ -374,7 +374,7 @@ class ReferenceClassifier:
     ) -> Tuple[InferenceResult, Optional[FrameTrace], Dict[str, Any]]:
         """
         One-shot path matching realtime preprocess:
-        mono@captureSR → linear resample to 15600@16k → PredictFromMono16k → optional hysteresis.
+        mono@captureSR → FIR anti-aliased resample to 15600@16k → PredictFromMono16k → optional hysteresis.
         """
         mono_capture = np.asarray(mono_capture, dtype=np.float32).reshape(-1)
         need = capture_samples_for_one_yamnet_window(capture_sample_rate)
