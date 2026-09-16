@@ -51,29 +51,30 @@ class YamnetInference private constructor(
             val onnxPath = File(modelDir, YamnetModelFiles.onnx.name).absolutePath
 
             val env = OrtEnvironment.getEnvironment()
-            val opts = OrtSession.SessionOptions().apply {
-                setIntraOpNumThreads(1)
-                setInterOpNumThreads(1)
-                setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
+            val session = OrtSession.SessionOptions().use { opts ->
+                opts.setIntraOpNumThreads(1)
+                opts.setInterOpNumThreads(1)
+                opts.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
+                env.createSession(onnxPath, opts)
             }
-            val session = env.createSession(onnxPath, opts)
+            return session.closeOnFailure { ownedSession ->
+                val inName = ownedSession.inputNames.firstOrNull()
+                    ?: throw IllegalStateException("YAMNet session has no inputs")
+                val outName = ownedSession.outputNames.firstOrNull()
+                    ?: throw IllegalStateException("YAMNet session has no outputs")
 
-            val inName = session.inputNames.firstOrNull()
-                ?: throw IllegalStateException("YAMNet session has no inputs")
-            val outName = session.outputNames.firstOrNull()
-                ?: throw IllegalStateException("YAMNet session has no outputs")
+                // Validate metadata against the expected contract
+                val inInfo = ownedSession.inputInfo[inName]?.info as? TensorInfo
+                    ?: throw IllegalStateException("Missing TensorInfo for input $inName")
+                val shape = inInfo.shape
+                require(inName == INPUT_NAME) { "Expected input '$INPUT_NAME', got '$inName'" }
+                require(outName == OUTPUT_NAME) { "Expected output '$OUTPUT_NAME', got '$outName'" }
+                require(shape.contentEquals(longArrayOf(1, 1, 96, 64))) {
+                    "Expected input shape [1,1,96,64], got ${shape.contentToString()}"
+                }
 
-            // Validate metadata against the expected contract
-            val inInfo = session.inputInfo[inName]?.info as? TensorInfo
-                ?: throw IllegalStateException("Missing TensorInfo for input $inName")
-            val shape = inInfo.shape
-            require(inName == INPUT_NAME) { "Expected input '$INPUT_NAME', got '$inName'" }
-            require(outName == OUTPUT_NAME) { "Expected output '$OUTPUT_NAME', got '$outName'" }
-            require(shape.contentEquals(longArrayOf(1, 1, 96, 64))) {
-                "Expected input shape [1,1,96,64], got ${shape.contentToString()}"
+                YamnetInference(env, ownedSession, inName, outName)
             }
-
-            return YamnetInference(env, session, inName, outName)
         }
 
         @Synchronized

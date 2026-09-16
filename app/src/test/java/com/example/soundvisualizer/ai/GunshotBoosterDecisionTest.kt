@@ -60,6 +60,7 @@ class GunshotBoosterDecisionTest {
 
         private fun assertMatchesMeta(name: String, actual: GunshotBoosterDecision.Result) {
             val exp = meta.getJSONObject("cases").getJSONObject(name)
+            assertTrue(name, actual.boosterAvailable)
             assertEquals(name, exp.getBoolean("accepted"), actual.accepted)
             assertEquals(name, exp.getString("reason"), actual.reason)
             assertEquals(name, exp.getJSONObject("pre").getString("coarse"), actual.preBoosterCoarse)
@@ -200,5 +201,22 @@ class GunshotBoosterDecisionTest {
         assertMatchesMeta("alarm", r)
         assertFalse(r.accepted)
         assertEquals("ambient", r.postBoosterCoarse)
+    }
+
+    @Test
+    fun boosterUnavailable_keepsYamnetResultWithoutInventingAScore() {
+        val probs = loadProbs("gunshot")
+        val pre = coarse.classify(probs)
+
+        val result = GunshotBoosterDecision.unavailable(probs, classNames, pre)
+
+        assertFalse(result.boosterAvailable)
+        assertTrue(result.gunshotScore.isNaN())
+        assertFalse(result.accepted)
+        assertEquals("booster_unavailable", result.reason)
+        assertEquals(pre.coarse, result.preBoosterCoarse)
+        assertEquals(pre.coarse, result.postBoosterCoarse)
+        assertEquals(pre.displayName, result.postBoosterDisplay)
+        assertEquals(pre.confidence, result.postBoosterConfidence, 0f)
     }
 }
