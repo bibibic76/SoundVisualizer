@@ -122,6 +122,15 @@ object SettingsManager {
     private val _lastUnexpectedStop = MutableStateFlow<StopReason?>(null)
     val lastUnexpectedStop: StateFlow<StopReason?> = _lastUnexpectedStop
 
+    /**
+     * 안내를 새로 저장할 때마다 1 씩 오르는 번호. 같은 이유로 또 꺼져도 다른 안내로 구분된다.
+     *
+     * 홈 탭으로 한 번만 옮기는 판단([StopNoticeRouting])에 쓴다. 저장하지 않으므로 프로세스가 다시 뜨면 0 부터
+     * 시작하는데, 그때는 화면 상태도 함께 사라져 남아 있던 안내를 한 번 더 보여줄 뿐이다.
+     */
+    private val _lastUnexpectedStopSeq = MutableStateFlow(0)
+    val lastUnexpectedStopSeq: StateFlow<Int> = _lastUnexpectedStopSeq
+
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -335,6 +344,7 @@ object SettingsManager {
 
     /** [reason] 이 null 이면 지운다. */
     fun setLastUnexpectedStop(reason: StopReason?) {
+        if (reason != null) _lastUnexpectedStopSeq.value++
         _lastUnexpectedStop.value = reason
         prefs.edit { putLastUnexpectedStop(this, reason) }
     }

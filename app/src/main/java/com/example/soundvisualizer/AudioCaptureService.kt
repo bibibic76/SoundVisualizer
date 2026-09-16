@@ -317,6 +317,8 @@ class AudioCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 내려가기 전에 다시 켜면 onCreate 없이 여기로 온다. 지난 끄기는 이번 실행과 상관없다.
+        if (intent?.action != ACTION_STOP) stopRequested = false
         if (intent?.action == ACTION_STOP) {
             stopEverything(StopReason.UserRequested)
             return START_NOT_STICKY
