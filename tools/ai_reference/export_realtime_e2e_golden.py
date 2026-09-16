@@ -11,6 +11,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -23,9 +25,12 @@ from preprocess import (
 from wav_io import load_wav_as_capture_mono
 
 REPO = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parent
 OUT_TEST = REPO / "app" / "src" / "test" / "resources" / "ai_reference"
 OUT_ANDROID = REPO / "app" / "src" / "androidTest" / "assets" / "ai_reference"
-MODEL_DIR = Path("app/src/main/assets/ai")
+MODEL_DIR = REPO / "app" / "src" / "main" / "assets" / "ai"
+DEFAULT_SOURCE_DIR = REPO / "data" / "preprocessed"
+SOURCE_MANIFEST = ROOT / "realtime_e2e_sources.json"
 
 CAPTURE_SR = 44100
 CAPTURE_RESAMPLE_TAPS = 192
@@ -34,29 +39,49 @@ CAPTURE_RESAMPLE_KAISER_BETA = 12.0
 EXPECTED_SEMANTICS = {
     "silence": ("ambient", False, "ambient"),
     "gunshot": ("ambient", True, "danger"),
-    "alarm": ("ambient", False, "ambient"),
+    "alarm": ("ambient", True, "danger"),
 }
-SOURCE_WAVS = {
-    "gunshot": REPO / "data" / "preprocessed" / "Gunshot, gunfire_short-explosion-1694.wav",
-    "alarm": REPO / "data" / "preprocessed" / "Alarm_classic-alarm-995.wav",
-}
-
-
 def write_f32(path: Path, arr: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(np.asarray(arr, dtype=np.float32).reshape(-1).astype("<f4").tobytes())
 
 
-def source_missing_error(names: tuple[str, ...]) -> RuntimeError | None:
-    missing = [str(SOURCE_WAVS[name]) for name in names if name in SOURCE_WAVS and not SOURCE_WAVS[name].is_file()]
+def load_source_manifest() -> dict[str, dict[str, object]]:
+    payload = json.loads(SOURCE_MANIFEST.read_text(encoding="utf-8"))
+    return payload["sources"]
+
+
+def source_paths(
+    source_dir: Path,
+    metadata: dict[str, dict[str, object]],
+) -> dict[str, Path]:
+    return {
+        name: source_dir / str(values["fixture_filename"])
+        for name, values in metadata.items()
+    }
+
+
+def source_missing_error(names: tuple[str, ...], paths: dict[str, Path]) -> RuntimeError | None:
+    missing = [str(paths[name]) for name in names if name in paths and not paths[name].is_file()]
     if not missing:
         return None
     return RuntimeError(
         "Refusing to overwrite semantic E2E goldens: provenance-backed source WAV(s) are missing:\n"
         + "\n".join(f"  - {path}" for path in missing)
         + "\nThe existing gunshot/alarm E2E binaries are legacy linear-round-trip fixtures, "
-        "not FIR semantic sources. Add the original WAV with source/license/checksum metadata first."
+        "not FIR semantic sources. Acquire the licensed WAVs documented in "
+        f"{SOURCE_MANIFEST.name}, or pass --source-dir with the recovered training data."
     )
+
+
+def validate_source(path: Path, metadata: dict[str, object]) -> str:
+    actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    expected = str(metadata["sha256"])
+    if actual != expected:
+        raise RuntimeError(
+            f"Source checksum mismatch for {path}: expected {expected}, got {actual}"
+        )
+    return actual
 
 
 def band_limited_capture_resample(source: np.ndarray, source_rate: int, dest_length: int) -> np.ndarray:
@@ -89,54 +114,103 @@ def band_limited_capture_resample(source: np.ndarray, source_rate: int, dest_len
     return destination
 
 
-def source_capture(name: str, capture_length: int) -> tuple[np.ndarray, dict[str, object]]:
+def source_capture(
+    name: str,
+    capture_length: int,
+    paths: dict[str, Path],
+    metadata: dict[str, dict[str, object]],
+) -> tuple[np.ndarray, dict[str, object]]:
     if name == "silence":
         return np.zeros(capture_length, dtype=np.float32), {
             "type": "procedural_silence", "sample_rate": CAPTURE_SR, "sha256": None,
         }
-    path = SOURCE_WAVS[name]
+    path = paths[name]
+    source_metadata = metadata[name]
+    checksum = validate_source(path, source_metadata)
     mono, sample_rate, channels = load_wav_as_capture_mono(path)
     return band_limited_capture_resample(mono, sample_rate, capture_length), {
-        "type": "wav", "path": str(path.relative_to(REPO)), "sample_rate": sample_rate,
-        "channels": channels, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "capture_resampler": {"taps": CAPTURE_RESAMPLE_TAPS, "window": "Kaiser", "beta": CAPTURE_RESAMPLE_KAISER_BETA, "cutoff_hz": CAPTURE_RESAMPLE_CUTOFF_HZ},
+        "type": "wav",
+        "title": source_metadata["title"],
+        "provider": source_metadata["provider"],
+        "asset_id": source_metadata["asset_id"],
+        "download_filename": source_metadata["download_filename"],
+        "fixture_filename": source_metadata["fixture_filename"],
+        "catalog_url": source_metadata["catalog_url"],
+        "license": source_metadata["license"],
+        "license_url": source_metadata["license_url"],
+        "sample_rate": sample_rate,
+        "channels": channels,
+        "sha256": checksum,
+        "capture_resampler": {
+            "taps": CAPTURE_RESAMPLE_TAPS,
+            "window": "Kaiser",
+            "beta": CAPTURE_RESAMPLE_KAISER_BETA,
+            "cutoff_hz": CAPTURE_RESAMPLE_CUTOFF_HZ,
+        },
     }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixtures", nargs="+", choices=("silence", "gunshot", "alarm"), default=("silence", "gunshot", "alarm"))
-    names = tuple(parser.parse_args().fixtures)
-    missing = source_missing_error(names)
+    parser.add_argument(
+        "--source-dir",
+        type=Path,
+        default=DEFAULT_SOURCE_DIR,
+        help="Directory containing licensed source WAVs (not committed to git)",
+    )
+    args = parser.parse_args()
+    names = tuple(args.fixtures)
+    source_metadata = load_source_manifest()
+    paths = source_paths(args.source_dir, source_metadata)
+    missing = source_missing_error(names, paths)
     if missing is not None:
         raise missing
 
-    from classifier import ReferenceClassifier
-
     capture_length = capture_samples_for_one_yamnet_window(CAPTURE_SR)
     generated: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, object]]] = {}
-    for name in names:
-        mono_capture, provenance = source_capture(name, capture_length)
-        classifier = ReferenceClassifier(MODEL_DIR)
-        classifier.reset_state()
-        result, trace, diag = classifier.classify_mono_capture_once(mono_capture, CAPTURE_SR, confidence_threshold=0.25, apply_hysteresis=True)
-        expected_pre, expected_boost, expected_ui = EXPECTED_SEMANTICS[name]
-        assert diag["yamnet_coarse_before_booster"] == expected_pre, diag
-        assert bool(diag["booster_accepted"]) == expected_boost, diag
-        assert (trace.ui_coarse if trace else result.coarse_class) == expected_ui, diag
+    original_working_directory = Path.cwd()
+    with tempfile.TemporaryDirectory(prefix="soundvisualizer-e2e-") as runtime_directory:
+        os.chdir(runtime_directory)
+        try:
+            from classifier import ReferenceClassifier
 
-        mono16 = np.asarray(diag["mono16k"], dtype=np.float32)
-        logmel = compute_log_mel_spectrogram(mono16)
-        probs = np.asarray(diag["probs"], dtype=np.float32)
-        stereo = np.empty(capture_length * 2, dtype=np.float32)
-        stereo[0::2] = mono_capture
-        stereo[1::2] = mono_capture
-        generated[name] = (stereo, mono16, logmel, probs, {
-            "source": provenance, "pre_booster_coarse": diag["yamnet_coarse_before_booster"],
-            "gunshot_score": float(diag["gunshot_score"]), "booster_accepted": bool(diag["booster_accepted"]),
-            "ui_coarse": trace.ui_coarse if trace else result.coarse_class,
-            "ui_display": trace.ui_display if trace else result.yamnet_display_name,
-        })
+            for name in names:
+                mono_capture, provenance = source_capture(
+                    name,
+                    capture_length,
+                    paths,
+                    source_metadata,
+                )
+                classifier = ReferenceClassifier(MODEL_DIR)
+                classifier.reset_state()
+                result, trace, diag = classifier.classify_mono_capture_once(
+                    mono_capture,
+                    CAPTURE_SR,
+                    confidence_threshold=0.25,
+                    apply_hysteresis=True,
+                )
+                expected_pre, expected_boost, expected_ui = EXPECTED_SEMANTICS[name]
+                assert diag["yamnet_coarse_before_booster"] == expected_pre, diag
+                assert bool(diag["booster_accepted"]) == expected_boost, diag
+                assert (trace.ui_coarse if trace else result.coarse_class) == expected_ui, diag
+
+                mono16 = np.asarray(diag["mono16k"], dtype=np.float32)
+                logmel = compute_log_mel_spectrogram(mono16)
+                probs = np.asarray(diag["probs"], dtype=np.float32)
+                stereo = np.empty(capture_length * 2, dtype=np.float32)
+                stereo[0::2] = mono_capture
+                stereo[1::2] = mono_capture
+                generated[name] = (stereo, mono16, logmel, probs, {
+                    "source": provenance,
+                    "pre_booster_coarse": diag["yamnet_coarse_before_booster"],
+                    "gunshot_score": float(diag["gunshot_score"]),
+                    "booster_accepted": bool(diag["booster_accepted"]),
+                    "ui_coarse": trace.ui_coarse if trace else result.coarse_class,
+                    "ui_display": trace.ui_display if trace else result.yamnet_display_name,
+                })
+        finally:
+            os.chdir(original_working_directory)
 
     # Do not write anything until every source and semantic assertion has passed.
     for out_dir in (OUT_TEST, OUT_ANDROID):
@@ -152,8 +226,10 @@ def main() -> None:
         (out_dir / "yamnet_e2e_meta.json").write_text(
             json.dumps(
                 {
+                    "description": "Semantic realtime E2E: 44.1k stereo -> FIR resample -> YAMNet + Booster",
                     "capture_sample_rate": CAPTURE_SR,
                     "required_mono_16k": REQUIRED_MONO_16K_SAMPLES,
+                    "capture_window_samples": capture_length,
                     "cases": cases,
                 },
                 indent=2,

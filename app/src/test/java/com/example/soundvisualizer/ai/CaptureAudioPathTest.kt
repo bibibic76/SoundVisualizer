@@ -19,6 +19,7 @@ class CaptureAudioPathTest {
     @Test
     fun captureSamplesForWindow_44100() {
         assertEquals(42998, CaptureAudioMath.captureSamplesForOneYamnetWindow(44100))
+        assertEquals(46800, CaptureAudioMath.captureSamplesForOneYamnetWindow(48000))
     }
 
     @Test
@@ -56,10 +57,12 @@ class CaptureAudioPathTest {
     }
 
     @Test
-    fun e2eFixtures_resampleAndLogMel_haveFixedFiniteShape() {
+    fun e2eFixtures_resampleAndLogMel_matchPython() {
         val names = listOf("silence", "gunshot", "alarm")
         for (name in names) {
             val stereo = loadResource("ai_reference/e2e_${name}_stereo44100.bin")
+            val expectedMono16 = loadResource("ai_reference/e2e_${name}_mono16k.bin")
+            val expectedLogMel = loadResource("ai_reference/e2e_${name}_logmel.bin")
 
             val buf = AiAudioBuffer(44100, 2)
             // Simulate AudioRecord chunked reads of 1024 floats
@@ -79,12 +82,12 @@ class CaptureAudioPathTest {
             val mono16 = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
             CaptureAudioMath.resampleMonoFloatTo16kCustom(capture, need, 44100, mono16)
 
-            assertEquals(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES, mono16.size)
-            assertTrue("$name mono16k finite", mono16.all { it.isFinite() })
+            assertEquals(expectedMono16.size, mono16.size)
+            assertTrue("$name mono16k maxAbs", maxAbs(mono16, expectedMono16) < 1e-5f)
 
             val logMel = AudioPreprocessor().computeLogMelSpectrogram(mono16)
-            assertEquals(AudioPreprocessor.LOG_MEL_SIZE, logMel.size)
-            assertTrue("$name logmel finite", logMel.all { it.isFinite() })
+            assertEquals(expectedLogMel.size, logMel.size)
+            assertTrue("$name logmel maxAbs", maxAbs(logMel, expectedLogMel) < 1e-4f)
         }
     }
 
@@ -139,13 +142,21 @@ class CaptureAudioPathTest {
     @Test
     fun antiAliasedResample_keepsYamnetWindowLengthAt44100And48000() {
         for (sampleRate in listOf(44100, 48000)) {
-            val source = FloatArray(CaptureAudioMath.captureSamplesForOneYamnetWindow(sampleRate))
+            val sourceLength = CaptureAudioMath.captureSamplesForOneYamnetWindow(sampleRate)
+            val source = FloatArray(sourceLength) { 1f }
             val destination = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
 
             CaptureAudioMath.resampleMonoFloatTo16kCustom(source, source.size, sampleRate, destination)
 
-            assertEquals(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES, destination.size)
-            assertTrue(destination.all { it == 0f })
+            assertTrue("$sampleRate output must stay finite", destination.all { it.isFinite() })
+            assertTrue(
+                "$sampleRate edge response must stay bounded",
+                destination.all { it in 0.5f..1.2f }
+            )
+            for (index in 16 until destination.size - 16) {
+                assertEquals("$sampleRate interior[$index]", 1f, destination[index], 1e-3f)
+            }
+            assertTrue("$sampleRate final sample must be populated", destination.last() != 0f)
         }
     }
 

@@ -172,17 +172,22 @@ def resample_mono_float_to_16k_custom(
         return destination
 
     coefficients, phase_count = _fir_table_for_sample_rate(int(source_sample_rate))
-    for i in range(dest_length):
-        position_numerator = i * int(source_sample_rate)
-        center = position_numerator // SAMPLE_RATE
-        phase = _phase_index(position_numerator % SAMPLE_RATE, phase_count)
-        coeffs = coefficients[phase]
-        total = 0.0
-        for tap in range(FIR_TAPS):
-            source_index = center + tap - (FIR_TAPS // 2) + 1
-            if 0 <= source_index < source_length:
-                total += float(coeffs[tap]) * float(source[source_index])
-        destination[i] = total
+    output_indices = np.arange(dest_length, dtype=np.int64)
+    position_numerators = output_indices * int(source_sample_rate)
+    centers = position_numerators // SAMPLE_RATE
+    if phase_count == 1:
+        phases = np.zeros(dest_length, dtype=np.int64)
+    else:
+        phases = (
+            (position_numerators % SAMPLE_RATE) * phase_count + SAMPLE_RATE // 2
+        ) // SAMPLE_RATE % phase_count
+    tap_offsets = np.arange(FIR_TAPS, dtype=np.int64) - (FIR_TAPS // 2) + 1
+    source_indices = centers[:, None] + tap_offsets[None, :]
+    valid = (source_indices >= 0) & (source_indices < source_length)
+    clipped_indices = np.clip(source_indices, 0, source_length - 1)
+    samples = np.where(valid, source[clipped_indices], 0.0).astype(np.float64)
+    weights = coefficients[phases].astype(np.float64)
+    destination[:] = np.einsum("ij,ij->i", weights, samples).astype(np.float32)
     return destination
 
 

@@ -1,7 +1,7 @@
 package com.example.soundvisualizer.ai
 
-import kotlin.math.ceil
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.sin
 
 /**
@@ -115,12 +115,12 @@ object CaptureAudioMath {
             val center = (positionNumerator / TARGET_SAMPLE_RATE).toInt()
             val phase = phaseIndex(positionNumerator % TARGET_SAMPLE_RATE, table.phaseCount)
             val coefficients = table.coefficients[phase]
+            val base = center - FIR_HALF_TAPS + 1
+            val firstTap = maxOf(0, -base)
+            val lastTapExclusive = minOf(FIR_TAPS, sourceAvailable - base)
             var sum = 0.0
-            for (tap in 0 until FIR_TAPS) {
-                val sourceIndex = center + tap - FIR_HALF_TAPS + 1
-                if (sourceIndex in 0 until sourceAvailable) {
-                    sum += coefficients[tap].toDouble() * source[sourceIndex].toDouble()
-                }
+            for (tap in firstTap until lastTapExclusive) {
+                sum += coefficients[tap].toDouble() * source[base + tap].toDouble()
             }
             destination[i] = sum.toFloat()
         }

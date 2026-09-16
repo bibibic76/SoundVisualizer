@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "gunshot": {
+      "title": "8-bit explosion gun",
+      "provider": "Mixkit",
+      "asset_id": 2779,
+      "download_filename": "mixkit-8-bit-explosion-gun-2779.wav",
+      "fixture_filename": "Gunshot, gunfire_8-bit-explosion-gun-2779.wav",
+      "catalog_url": "https://mixkit.co/free-sound-effects/explosion/",
+      "license": "Mixkit Sound Effects Free License",
+      "license_url": "https://mixkit.co/license/#sfxFree",
+      "sha256": "5b76ee075ae48fa2ee26a4099a0c643855a4d66c477f7e99966edd835ca64b8a"
+    },
+    "alarm": {
+      "title": "Classic alarm",
+      "provider": "Mixkit",
+      "asset_id": 995,
+      "download_filename": "mixkit-classic-alarm-995.wav",
+      "fixture_filename": "Alarm_classic-alarm-995.wav",
+      "catalog_url": "https://mixkit.co/free-sound-effects/alarm/",
+      "license": "Mixkit Sound Effects Free License",
+      "license_url": "https://mixkit.co/license/#sfxFree",
+      "sha256": "5c0302cd06e7eb3c19a4c17e4f4ec60e869a2840e555947bed3422a47bb92d7c"
+    }
+  }
+}
