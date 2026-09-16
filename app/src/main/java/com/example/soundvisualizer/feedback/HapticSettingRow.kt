@@ -37,8 +37,6 @@ import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.DependentSettings
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
-import com.example.soundvisualizer.RowPressIndication
-import com.example.soundvisualizer.RowPressShape
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.WarningColor
@@ -81,11 +79,11 @@ fun HapticSettingRow(label: String, shown: Boolean) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clip(RowPressShape)
                 .toggleable(
                     value = settings.enabled,
+                    // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 스위치가 움직이는 것으로 충분하다.
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = RowPressIndication,
+                    indication = null,
                     enabled = switchEnabled,
                     role = Role.Switch,
                     onValueChange = { SettingsManager.updateHaptic(label, settings.copy(enabled = it)) }

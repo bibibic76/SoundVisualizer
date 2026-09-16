@@ -54,7 +54,6 @@ import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
-import com.example.soundvisualizer.RowPressIndication
 import com.example.soundvisualizer.SecondaryTextColor
 import java.util.Locale
 import kotlin.math.sqrt
@@ -90,8 +89,9 @@ fun LanguageSettingCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(
+                    // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 선택 창이 뜨는 것으로 충분하다.
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = RowPressIndication,
+                    indication = null,
                     onClickLabel = stringResource(R.string.cd_change_language)
                 ) { showDialog = true }
                 .padding(horizontal = 24.dp, vertical = 20.dp)

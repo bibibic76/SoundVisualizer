@@ -19,6 +19,14 @@ internal class AiCaptureInferenceGate(
 
     fun isInferenceOpen(nowMs: Long): Boolean = silenceGate.isOpen(nowMs)
 
+    fun onInferenceCompleted(snapshotTimeMs: Long) {
+        silenceGate.onInferenceCompleted(snapshotTimeMs)
+    }
+
+    fun onInferenceFailed(snapshotTimeMs: Long) {
+        silenceGate.onInferenceFailed(snapshotTimeMs)
+    }
+
     fun reset() {
         silenceGate.reset()
     }
