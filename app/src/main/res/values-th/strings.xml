@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">เลือกสี</string>
     <string name="color_picker_presets">สีที่ใช้บ่อย</string>
+    <string name="cd_preset_white">สีขาว</string>
+    <string name="cd_preset_red">สีแดง</string>
+    <string name="cd_preset_orange">สีส้ม</string>
+    <string name="cd_preset_yellow">สีเหลือง</string>
+    <string name="cd_preset_green">สีเขียว</string>
+    <string name="cd_preset_cyan">สีฟ้า</string>
+    <string name="cd_preset_blue">สีน้ำเงิน</string>
+    <string name="cd_preset_magenta">สีบานเย็น</string>
     <string name="color_picker_confirm">ตกลง</string>
     <string name="color_picker_cancel">ยกเลิก</string>
 

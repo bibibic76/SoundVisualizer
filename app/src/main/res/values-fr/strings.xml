@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">Choisir une couleur</string>
     <string name="color_picker_presets">Couleurs courantes</string>
+    <string name="cd_preset_white">Blanc</string>
+    <string name="cd_preset_red">Rouge</string>
+    <string name="cd_preset_orange">Orange</string>
+    <string name="cd_preset_yellow">Jaune</string>
+    <string name="cd_preset_green">Vert</string>
+    <string name="cd_preset_cyan">Turquoise</string>
+    <string name="cd_preset_blue">Bleu</string>
+    <string name="cd_preset_magenta">Magenta</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">Annuler</string>
 

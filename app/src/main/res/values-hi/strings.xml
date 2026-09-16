@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">रंग चुनें</string>
     <string name="color_picker_presets">अक्सर इस्तेमाल होने वाले रंग</string>
+    <string name="cd_preset_white">सफ़ेद</string>
+    <string name="cd_preset_red">लाल</string>
+    <string name="cd_preset_orange">नारंगी</string>
+    <string name="cd_preset_yellow">पीला</string>
+    <string name="cd_preset_green">हरा</string>
+    <string name="cd_preset_cyan">आसमानी</string>
+    <string name="cd_preset_blue">नीला</string>
+    <string name="cd_preset_magenta">मैजेंटा</string>
     <string name="color_picker_confirm">ठीक है</string>
     <string name="color_picker_cancel">रद्द करें</string>
 

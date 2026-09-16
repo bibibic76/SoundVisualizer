@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">Pilih warna</string>
     <string name="color_picker_presets">Warna umum</string>
+    <string name="cd_preset_white">Putih</string>
+    <string name="cd_preset_red">Merah</string>
+    <string name="cd_preset_orange">Oranye</string>
+    <string name="cd_preset_yellow">Kuning</string>
+    <string name="cd_preset_green">Hijau</string>
+    <string name="cd_preset_cyan">Sian</string>
+    <string name="cd_preset_blue">Biru</string>
+    <string name="cd_preset_magenta">Magenta</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">Batal</string>
 
