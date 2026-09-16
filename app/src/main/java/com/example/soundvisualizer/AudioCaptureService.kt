@@ -28,6 +28,7 @@ import android.os.Process
 import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.MainThread
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -251,13 +252,12 @@ class AudioCaptureService : Service() {
         // 표시하면 아직 onCreate 가 안 돌아 false 로 덮어써진다.
         SettingsManager.setServiceRunning(true)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        sampleRate = pickSampleRate()
 
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
         registerScreenReceiver()
 
-        // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화 실패해도 캡처는 계속한다.
-        startAiPipelineAsync()
+        // AI 는 캡처가 실제로 열린 뒤에 시작한다. 어느 레이트로 열릴지는 열어 봐야 알고
+        // ([openAudioRecord]), AI 는 그 레이트에 맞춰 만들어야 한다.
     }
 
     /**
@@ -333,24 +333,69 @@ class AudioCaptureService : Service() {
     }
 
     /**
-     * AI 가 검증된 48/44.1kHz를 우선한다. 기기 native rate가 그중 하나면 그대로 써서
-     * 시스템 리샘플링을 피한다. 고 native rate에서는 검증된 rate를 먼저 요청하고,
-     * 둘 다 불가능할 때만 native rate를 시각화 전용 fallback으로 유지한다.
+     * 후보 레이트를 차례로 **실제로 열어 보고** 처음 열린 것을 쓴다. [sampleRate] 도 여기서 정해진다.
+     *
+     * AI 가 검증한 48/44.1kHz 를 우선한다. 기기가 보고한 레이트가 그중 하나면 그대로 써서 시스템
+     * 리샘플링을 피하고, 고 레이트 기기에서는 검증된 레이트를 먼저 요청한다. 둘 다 열리지 않을 때만
+     * 기기 레이트를 시각화 전용으로 쓴다 ([AiCaptureSampleRatePolicy]).
+     *
+     * **한 번 실패했다고 포기하지 않는다.** `getMinBufferSize` 는 "이 조합이 말이 된다" 만 알려줄 뿐,
+     * 그 레이트로 `AudioRecord` 가 실제로 열린다는 보장이 아니다. 예전에는 기기가 보고한 레이트를 첫
+     * 후보로 써서 실패 가능성이 낮았지만, 지금은 AI 가 검증한 레이트를 먼저 요청한다(#69). 여기서
+     * 물러나지 않으면, 예전이라면 "AI 만 사용 불가" 로 끝났을 기기에서 시각화까지 켜지지 않는다.
+     *
+     * 마이크 권한은 부르는 쪽이 확인한다. 예전에는 확인과 생성이 한 함수에 있어 Lint 가 짝을 볼 수
+     * 있었는데, 여기로 떼어 내면서 보이지 않게 됐다. 필요한 권한을 표시해 Lint 가 호출부의 확인을
+     * 다시 짝지을 수 있게 한다.
      */
-    private fun pickSampleRate(): Int {
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    private fun openAudioRecord(config: AudioPlaybackCaptureConfiguration): AudioRecord? {
         val reported = audioManager
             ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
             ?.toIntOrNull()
-        var accepted = false
-        val selected = AiCaptureSampleRatePolicy.selectCaptureRate(reported) { rate ->
-            (AudioRecord.getMinBufferSize(rate, CHANNEL_CONFIG, AUDIO_FORMAT) > 0).also {
-                if (it) accepted = true
+        val candidates = AiCaptureSampleRatePolicy.orderedCaptureCandidates(reported)
+
+        for (rate in candidates) {
+            val minBufferSize = AudioRecord.getMinBufferSize(rate, CHANNEL_CONFIG, AUDIO_FORMAT)
+            if (minBufferSize <= 0) {
+                Log.w(TAG, "sample rate $rate: getMinBufferSize returned $minBufferSize")
+                continue
             }
+            val bufferSize = maxOf(minBufferSize * 2, READ_FLOATS * BYTES_PER_FLOAT * 4)
+            val audioFormat = AudioFormat.Builder()
+                .setEncoding(AUDIO_FORMAT)
+                .setSampleRate(rate)
+                .setChannelMask(CHANNEL_CONFIG)
+                .build()
+            val record = try {
+                AudioRecord.Builder()
+                    .setAudioFormat(audioFormat)
+                    .setBufferSizeInBytes(bufferSize)
+                    .setAudioPlaybackCaptureConfig(config)
+                    .build()
+            } catch (e: Exception) {
+                // 기기 미지원, 확인 직후 권한 회수 등
+                Log.w(TAG, "sample rate $rate: AudioRecord build failed", e)
+                continue
+            }
+            if (record.state != AudioRecord.STATE_INITIALIZED) {
+                Log.w(TAG, "sample rate $rate: AudioRecord not initialized")
+                record.release()
+                continue
+            }
+
+            sampleRate = rate
+            val fallback = if (rate == candidates.first()) "" else ", fell back from ${candidates.first()}"
+            Log.i(
+                TAG,
+                "capture sample rate: $rate (device reported $reported, " +
+                    "AI supported=${AiCaptureSampleRatePolicy.isSupportedForAi(rate)}$fallback)"
+            )
+            return record
         }
-        val message = "capture sample rate: $selected (device reported $reported, " +
-            "AI supported=${AiCaptureSampleRatePolicy.isSupportedForAi(selected)})"
-        if (accepted) Log.i(TAG, message) else Log.w(TAG, "no candidate accepted; $message")
-        return selected
+
+        Log.e(TAG, "no sample rate could open AudioRecord (tried ${candidates.joinToString()})")
+        return null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -399,37 +444,12 @@ class AudioCaptureService : Service() {
         CAPTURED_USAGES.forEach { configBuilder.addMatchingUsage(it) }
         val config = configBuilder.build()
 
-        val audioFormat = AudioFormat.Builder()
-            .setEncoding(AUDIO_FORMAT)
-            .setSampleRate(sampleRate)
-            .setChannelMask(CHANNEL_CONFIG)
-            .build()
-
-        val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, CHANNEL_CONFIG, AUDIO_FORMAT)
-        if (minBufferSize <= 0) {
-            Log.e(TAG, "getMinBufferSize failed: $minBufferSize")
-            return false
-        }
-        val bufferSize = maxOf(minBufferSize * 2, READ_FLOATS * BYTES_PER_FLOAT * 4)
-
-        val record = try {
-            AudioRecord.Builder()
-                .setAudioFormat(audioFormat)
-                .setBufferSizeInBytes(bufferSize)
-                .setAudioPlaybackCaptureConfig(config)
-                .build()
-        } catch (e: Exception) {
-            // 기기 미지원, 확인 직후 권한 회수 등
-            Log.e(TAG, "AudioRecord build failed", e)
-            return false
-        }
-        if (record.state != AudioRecord.STATE_INITIALIZED) {
-            Log.e(TAG, "AudioRecord not initialized")
-            record.release()
-            return false
-        }
+        val record = openAudioRecord(config) ?: return false
 
         audioRecord = record
+        // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화에 실패해도 캡처는 계속한다.
+        // 열린 레이트가 정해진 뒤에 시작해야 AI 가 같은 레이트로 만들어진다.
+        startAiPipelineAsync()
         // 동의 직후 화면이 꺼져 쉬는 중이면 녹음은 화면이 켜질 때 시작한다.
         if (screenPause.isPaused) return true
         return startCaptureLoop(record)
