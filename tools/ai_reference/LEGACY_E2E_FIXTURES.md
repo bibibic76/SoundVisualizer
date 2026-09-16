@@ -26,8 +26,11 @@ gunshot case. The historic asset 1694 no longer exercises the Booster adoption
 path after FIR preprocessing, while asset 2779 preserves the intended
 `ambient -> Booster accepted -> danger` regression contract. The alarm case now
 expects the real alarm's danger result instead of preserving the legacy
-synthetic fixture's misleading ambient label. Booster thresholds and mapping
-rules are not changed by fixture generation.
+synthetic fixture's misleading ambient label. Its current `Gunshot, gunfire`
+display is retained as diagnostic metadata but is deliberately not asserted:
+that relabeling is a known Booster false positive, not the alarm fixture's
+semantic contract. It is tracked in GitHub issue #116. Booster thresholds and
+mapping rules are not changed by fixture generation.
 
 To regenerate the derived semantic fixtures from an authorized local copy:
 

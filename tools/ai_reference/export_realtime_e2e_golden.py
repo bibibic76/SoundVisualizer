@@ -208,6 +208,10 @@ def main() -> None:
                     "booster_accepted": bool(diag["booster_accepted"]),
                     "ui_coarse": trace.ui_coarse if trace else result.coarse_class,
                     "ui_display": trace.ui_display if trace else result.yamnet_display_name,
+                    # Alarm is semantically danger, but its current Gunshot display is a
+                    # known Booster false positive and must not become a test contract.
+                    "assert_ui_display": name != "alarm",
+                    **({"ui_display_follow_up_issue": 116} if name == "alarm" else {}),
                 })
         finally:
             os.chdir(original_working_directory)

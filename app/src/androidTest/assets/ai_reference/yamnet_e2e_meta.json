@@ -68,7 +68,9 @@
       "gunshot_score": 0.5055438280105591,
       "booster_accepted": true,
       "ui_coarse": "danger",
-      "ui_display": "Gunshot, gunfire"
+      "ui_display": "Gunshot, gunfire",
+      "assert_ui_display": false,
+      "ui_display_follow_up_issue": 116
     }
   }
 }
