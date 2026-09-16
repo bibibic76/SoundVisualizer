@@ -8,6 +8,8 @@
     <string name="home_subtitle">يرسم على شاشتك الأصوات التي لا تراها.\nمن الألعاب إلى الأفلام، عِش تجربة جديدة كليًا.</string>
     <string name="home_status_running">الحالة: قيد التشغيل</string>
     <string name="home_status_idle">الحالة: جاهز للتشغيل</string>
+    <string name="home_ai_unavailable">لا يمكن تحديد نوع الصوت حاليًا، لذا تظهر جميع الأصوات بلون الأصوات المحيطة وتنبيهات الاهتزاز معطّلة. جرّب إيقاف الصوت المرئي ثم تشغيله مرة أخرى.</string>
+    <string name="home_stopped_dismiss">إخفاء التنبيه</string>
     <string name="home_start">تشغيل</string>
     <string name="home_stop">إيقاف</string>
     <string name="home_add_tile">إضافة إلى الإعدادات السريعة</string>
@@ -15,6 +17,8 @@
     <string name="home_add_tile_manual">اسحب لوحة الإشعارات للأسفل، وانقر على «تعديل» (رمز القلم)، ثم أضِف «الصوت المرئي» لتشغيله أو إيقافه مباشرةً فوق اللعبة أو الفيديو.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">اسمح بإذن «الظهور فوق التطبيقات الأخرى»</string>
+    <string name="permission_overlay_message">تُرسم الأصوات فوق اللعبة أو الفيديو، ولهذا يطلب نظام Android هذا الإذن. إذا ظهرت قائمة بالتطبيقات في الإعدادات، فابحث عن SoundVisualizer وفعّل مفتاحه، ثم ارجع. بعد ذلك يواصل التطبيق ما بدأته تلقائيًا.</string>
     <string name="permission_record_audio_required">يلزم منح إذن الميكروفون (تسجيل الصوت) لالتقاط الصوت.</string>
     <string name="permission_mic_rationale_title">لماذا يلزم إذن الميكروفون؟</string>
     <string name="permission_mic_rationale_message">يتطلب نظام Android إذن الميكروفون لالتقاط الصوت الذي يتم تشغيله على هاتفك. لا يتم تسجيل الأصوات من حولك.</string>
@@ -42,6 +46,7 @@
     <string name="settings_mode_picker_desc">اختر الشكل الأساسي للرسومات التي تظهر على الشاشة.</string>
     <string name="settings_section_mode_detail">إعدادات كل وضع</string>
     <string name="settings_section_ai">أنواع الأصوات (AI)</string>
+    <string name="settings_section_battery">البطارية</string>
 
     <!-- Language -->
     <string name="settings_language_title">اللغة</string>
@@ -72,14 +77,20 @@
     <string name="setting_ripple">التموج المكاني</string>
     <string name="setting_ripple_desc">يضيف تأخيرًا بسيطًا ليبدو الصوت كأنه ينتشر من الأمام إلى الخلف.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">التوقف المؤقت عند انطفاء الشاشة</string>
+    <string name="setting_pause_screen_off_desc">أثناء انطفاء الشاشة يتوقف التطبيق عن التقاط الصوت وتحديد أنواع الأصوات والاهتزاز لتوفير البطارية، ثم يواصل عمله عند تشغيل الشاشة. أوقف هذا الخيار إذا أردت أن تصلك تنبيهات الاهتزاز والشاشة مطفأة.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">إظهار الأصوات المحيطة</string>
     <string name="ai_show_speech">إظهار الكلام</string>
     <string name="ai_show_danger">إظهار أصوات الخطر</string>
+    <string name="ai_unavailable">لا يمكن تحديد نوع الصوت حاليًا، لذا تظهر جميع الأصوات بلون الأصوات المحيطة. جرّب إيقاف الصوت المرئي ثم تشغيله مرة أخرى.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">الاهتزاز</string>
     <string name="haptic_requires_display">لا يعمل الاهتزاز إلا عند إظهار هذا النوع من الأصوات.</string>
+    <string name="haptic_ai_unavailable">لن يهتز الجهاز ما دام تحديد نوع الصوت غير متاح.</string>
     <string name="haptic_unsupported">لا يدعم هذا الجهاز الاهتزاز.</string>
     <string name="haptic_no_amplitude">لا يمكن ضبط قوة الاهتزاز على هذا الجهاز، لذا سيهتز بالقوة التلقائية.</string>
     <string name="haptic_strength">القوة</string>
@@ -101,6 +112,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">فتح أداة اختيار اللون</string>
+    <string name="cd_color_ambient">لون الأصوات المحيطة</string>
+    <string name="cd_color_speech">لون الكلام</string>
+    <string name="cd_color_danger">لون أصوات الخطر</string>
     <string name="cd_expand">توسيع</string>
     <string name="cd_collapse">تصغير</string>
     <string name="cd_change_language">تغيير اللغة</string>
@@ -109,6 +123,18 @@
     <string name="notification_channel_name">التقاط الصوت</string>
     <string name="notification_text">جارٍ عرض الأصوات على الشاشة.</string>
     <string name="notification_stop">إيقاف</string>
+    <string name="notification_text_ai_unavailable">جارٍ عرض الأصوات على الشاشة. لا يمكن تحديد نوع الصوت، لذا تنبيهات الاهتزاز معطّلة.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">توقّف الصوت المرئي</string>
+    <string name="stopped_channel_desc">يخبرك عندما يتوقف الصوت المرئي دون أن توقفه بنفسك.</string>
+    <string name="stopped_title">تم إيقاف الصوت المرئي</string>
+    <string name="stopped_text_projection">انتهى التقاط الصوت، لذا توقفت الرسومات وتنبيهات الاهتزاز. يحدث هذا عند بدء تسجيل الشاشة أو مشاركة الشاشة أو البث، أو عندما يوقف النظام التقاط الصوت. إذا كان تطبيق آخر يسجّل أو يشارك أو يبثّ، فإن إعادة التشغيل تُنهي ذلك.</string>
+    <string name="stopped_text_capture_error">توقف التقاط الصوت بسبب خطأ، لذا توقفت الرسومات وتنبيهات الاهتزاز.</string>
+    <string name="stopped_text_start_failed">تعذّر بدء التقاط الصوت، لذا توقفت الرسومات وتنبيهات الاهتزاز.</string>
+    <string name="stopped_text_overlay_failed">تعذّر عرض الرسومات فوق التطبيقات الأخرى، لذا توقف الصوت المرئي. تأكّد من السماح بإذن «الظهور فوق التطبيقات الأخرى».</string>
+    <string name="stopped_turn_on">إعادة التشغيل</string>
+    <string name="stopped_toast">تم إيقاف الصوت المرئي. الرسومات وتنبيهات الاهتزاز معطّلة.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">الصوت المرئي</string>
@@ -155,9 +181,13 @@
     <string name="help_note_direction">يميّز التطبيق بين اليسار واليمين، لكنه لا يميّز بين الأمام والخلف. تُمثّل الرسومات في أعلى الشاشة وأسفلها الأصوات المسموعة بالتساوي من الجانبين، كما تعبّر عن الإحساس المكاني.</string>
     <string name="help_note_mono">الأصوات المتطابقة في اليسار واليمين (أحادية القناة) تظهر باتجاه الأمام فقط.</string>
     <string name="help_note_sources">يتم التقاط أصوات الوسائط والألعاب فقط. لا يتم التقاط المكالمات الهاتفية وأصوات الإشعارات والمنبّهات، ولا يمكن عرض أصوات التطبيقات التي تمنع التقاط الصوت (مثل بعض تطبيقات الفيديو).</string>
+    <string name="help_note_stopped">يؤدي بدء تسجيل الشاشة أو مشاركة الشاشة أو البث إلى إيقاف الصوت المرئي، لأنه يستخدم موافقة تسجيل الشاشة نفسها، ولا يسمح نظام Android إلا لتطبيق واحد باستخدامها في الوقت نفسه. إذا كان تطبيق آخر يسجّل أو يشارك أو يبثّ، فإن إعادة التشغيل تُنهي ذلك. في معظم الحالات، عندما يتوقف دون أن توقفه بنفسك، يهتز هاتفك ثلاث مرات طويلة ويعرض إشعارًا يتضمن زر «إعادة التشغيل». وإذا أوقفت التقاط الصوت من عناصر التحكم في مشاركة الشاشة على هاتفك، يظهر التنبيه نفسه، أما الإيقاف القسري أو تعطّل التطبيق فلا يمكن التنبيه إليه إطلاقًا. وإذا كانت الإشعارات معطّلة، ينبّهك الاهتزاز وحده، وتعرض «الرئيسية» ما الذي توقف عند فتح التطبيق.</string>
+    <string name="help_note_screen_off">أثناء انطفاء الشاشة يتوقف التطبيق مؤقتًا لتوفير البطارية، ثم يواصل عمله عند تشغيل الشاشة. يمكنك تغيير ذلك من «البطارية» في علامة تبويب «الإعدادات».</string>
     <string name="help_note_ai">قد يخطئ الذكاء الاصطناعي في التصنيف. لا تعتمد على هذا التطبيق وحده في المواقف التي تتعلق بسلامتك.</string>
 
     <string name="help_faq_title">الأسئلة الشائعة</string>
+    <string name="help_faq_stopped_q">توقف الصوت المرئي دون أن أوقفه بنفسي.</string>
+    <string name="help_faq_stopped_a">يتوقف الصوت المرئي عند بدء تسجيل الشاشة أو مشاركة الشاشة أو البث، أو عند توقف التقاط الصوت بسبب خطأ. انقر على «إعادة التشغيل» في الإشعار، أو شغّله من «الرئيسية» أو من الإعدادات السريعة. يطلب نظام Android الموافقة على تسجيل الشاشة في كل مرة، وإعادة التشغيل تُنهي أي تسجيل أو مشاركة أو بث قيد العمل.</string>
     <string name="help_faq_no_graphic_q">لا تظهر أي رسومات.</string>
     <string name="help_faq_no_graphic_a">تحقّق مما إذا كان التطبيق الذي تشغّله يمنع التقاط الصوت. تأكّد أيضًا من أن «العتامة» ليست منخفضة جدًا في علامة تبويب «الإعدادات»، وأن إظهار نوع الصوت الحالي مفعّل.</string>
     <string name="help_faq_no_vibration_q">الاهتزاز لا يعمل.</string>

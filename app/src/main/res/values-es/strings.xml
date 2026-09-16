@@ -8,6 +8,8 @@
     <string name="home_subtitle">Dibuja en tu pantalla los sonidos que no puedes ver.\nDe los juegos al cine, descubre una experiencia nueva.</string>
     <string name="home_status_running">Estado: en ejecución</string>
     <string name="home_status_idle">Estado: listo</string>
+    <string name="home_ai_unavailable">La detección del tipo de sonido no funciona, así que todos los sonidos se muestran en el color del sonido ambiente y los avisos por vibración están desactivados. Prueba a apagar y volver a encender la visualización.</string>
+    <string name="home_stopped_dismiss">Cerrar aviso</string>
     <string name="home_start">Iniciar</string>
     <string name="home_stop">Detener</string>
     <string name="home_add_tile">Añadir a Ajustes rápidos</string>
@@ -15,6 +17,8 @@
     <string name="home_add_tile_manual">Desliza hacia abajo el panel de notificaciones, toca Editar (lápiz) y añade “Visor de sonido” para encenderlo o apagarlo sin salir de tu juego o video.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">Permite “Mostrar sobre otras apps”</string>
+    <string name="permission_overlay_message">Los sonidos se dibujan sobre tu juego o video, así que Android necesita este permiso. Si Ajustes muestra una lista de apps, busca SoundVisualizer, activa su interruptor y vuelve aquí. Al volver, la visualización continúa por su cuenta.</string>
     <string name="permission_record_audio_required">Se necesita el permiso de micrófono (grabación de audio) para capturar el audio.</string>
     <string name="permission_mic_rationale_title">¿Por qué el permiso de micrófono?</string>
     <string name="permission_mic_rationale_message">Android exige el permiso de micrófono para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
@@ -42,6 +46,7 @@
     <string name="settings_mode_picker_desc">Elige la forma básica de los gráficos que se dibujan en la pantalla.</string>
     <string name="settings_section_mode_detail">Ajustes por modo</string>
     <string name="settings_section_ai">Tipos de sonido (IA)</string>
+    <string name="settings_section_battery">Batería</string>
 
     <!-- Language -->
     <string name="settings_language_title">Idioma</string>
@@ -72,14 +77,20 @@
     <string name="setting_ripple">Ondulación espacial</string>
     <string name="setting_ripple_desc">Añade un ligero retraso para que el sonido parezca extenderse de delante hacia atrás.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pausar con la pantalla apagada</string>
+    <string name="setting_pause_screen_off_desc">Con la pantalla apagada, deja de capturar el sonido, de detectar tipos de sonido y de vibrar para ahorrar batería, y se reanuda al encender la pantalla. Desactívalo para seguir recibiendo avisos por vibración con la pantalla apagada.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Mostrar sonido ambiente</string>
     <string name="ai_show_speech">Mostrar voz</string>
     <string name="ai_show_danger">Mostrar peligro</string>
+    <string name="ai_unavailable">La detección del tipo de sonido no funciona, así que todos los sonidos se muestran en el color del sonido ambiente. Prueba a apagar y volver a encender la visualización.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrar</string>
     <string name="haptic_requires_display">Solo vibra si este tipo de sonido se muestra en pantalla.</string>
+    <string name="haptic_ai_unavailable">No vibrará mientras la detección del tipo de sonido no funcione.</string>
     <string name="haptic_unsupported">Este dispositivo no admite la vibración.</string>
     <string name="haptic_no_amplitude">Este dispositivo no permite ajustar la intensidad de la vibración, así que vibra con la intensidad predeterminada.</string>
     <string name="haptic_strength">Intensidad</string>
@@ -101,6 +112,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Abrir selector de color</string>
+    <string name="cd_color_ambient">Color del sonido ambiente</string>
+    <string name="cd_color_speech">Color de la voz</string>
+    <string name="cd_color_danger">Color del sonido de peligro</string>
     <string name="cd_expand">Expandir</string>
     <string name="cd_collapse">Contraer</string>
     <string name="cd_change_language">Cambiar idioma</string>
@@ -109,6 +123,18 @@
     <string name="notification_channel_name">Captura de audio</string>
     <string name="notification_text">Visualizando el sonido.</string>
     <string name="notification_stop">Detener</string>
+    <string name="notification_text_ai_unavailable">Visualizando el sonido. La detección del tipo de sonido no funciona, así que los avisos por vibración están desactivados.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visor de sonido apagado</string>
+    <string name="stopped_channel_desc">Te avisa cuando el visor de sonido se apaga sin que lo hayas detenido tú.</string>
+    <string name="stopped_title">El visor de sonido se apagó</string>
+    <string name="stopped_text_projection">La captura de sonido terminó, así que los gráficos y los avisos por vibración están desactivados. Esto pasa cuando se inicia una grabación de pantalla, se comparte la pantalla o se transmite a otro dispositivo, o cuando el sistema detiene la captura de sonido. Si otra app está grabando, compartiendo o transmitiendo, al volver a encender el visor se detendrá esa grabación, pantalla compartida o transmisión.</string>
+    <string name="stopped_text_capture_error">La captura de sonido se detuvo por un error, así que los gráficos y los avisos por vibración están desactivados.</string>
+    <string name="stopped_text_start_failed">La captura de sonido no pudo iniciarse, así que los gráficos y los avisos por vibración están desactivados.</string>
+    <string name="stopped_text_overlay_failed">No se pudieron mostrar los gráficos sobre otras apps, así que el visor de sonido se apagó. Comprueba que el permiso “Mostrar sobre otras apps” esté concedido.</string>
+    <string name="stopped_turn_on">Volver a encender</string>
+    <string name="stopped_toast">El visor de sonido se apagó. Los gráficos y los avisos por vibración están desactivados.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visor de sonido</string>
@@ -155,9 +181,13 @@
     <string name="help_note_direction">La app distingue la izquierda de la derecha, pero no lo que está delante de lo que está detrás. Los gráficos de las partes superior e inferior de la pantalla representan los sonidos que se oyen por igual en ambos lados y la sensación de espacio.</string>
     <string name="help_note_mono">Los sonidos idénticos a izquierda y derecha (mono) solo se muestran hacia el frente.</string>
     <string name="help_note_sources">Solo se captura el sonido multimedia y de juegos. Las llamadas, los sonidos de notificación y las alarmas no se capturan, y las apps que bloquean la captura de audio (como algunas apps de video) no se pueden visualizar.</string>
+    <string name="help_note_stopped">Si inicias una grabación de pantalla, compartes la pantalla o transmites a otro dispositivo, el visor de sonido se apaga: usa el mismo consentimiento de grabación de pantalla y Android solo deja que una app lo use a la vez. Si otra app está grabando, compartiendo o transmitiendo, al volver a encender el visor se detendrá esa grabación, pantalla compartida o transmisión. Cuando se apaga sin que lo hayas detenido tú, lo normal es que el teléfono vibre tres veces de forma larga y muestre una notificación con el botón “Volver a encender”. Si detienes la captura de sonido desde los controles de pantalla compartida del teléfono, aparece el mismo aviso; un cierre forzado o un fallo de la app no pueden avisarte. Si las notificaciones están desactivadas, solo te avisa la vibración, y la pestaña Inicio te muestra qué se apagó cuando abres la app.</string>
+    <string name="help_note_screen_off">Con la pantalla apagada, la app se pausa para ahorrar batería y se reanuda al encender la pantalla. Puedes cambiarlo en Batería, en la pestaña Ajustes.</string>
     <string name="help_note_ai">La IA puede equivocarse al clasificar los sonidos. No confíes solo en esta app cuando tu seguridad esté en juego.</string>
 
     <string name="help_faq_title">Preguntas frecuentes</string>
+    <string name="help_faq_stopped_q">Se apagó sin que yo lo detuviera.</string>
+    <string name="help_faq_stopped_a">Se apaga cuando se inicia una grabación de pantalla, se comparte la pantalla o se transmite a otro dispositivo, o cuando la captura de sonido se detiene por un error. Toca “Volver a encender” en la notificación, o enciéndelo desde la pestaña Inicio o desde Ajustes rápidos. Android pide el consentimiento de grabación de pantalla cada vez y, al volver a encenderlo, se detiene cualquier grabación, pantalla compartida o transmisión en curso.</string>
     <string name="help_faq_no_graphic_q">No veo ningún gráfico.</string>
     <string name="help_faq_no_graphic_a">Comprueba si la app que estás usando bloquea la captura de audio. En la pestaña Ajustes, asegúrate también de que la Opacidad no esté demasiado baja y de que “Mostrar” no esté desactivado para el tipo de sonido que se está reproduciendo.</string>
     <string name="help_faq_no_vibration_q">No vibra.</string>

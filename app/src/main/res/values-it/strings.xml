@@ -8,6 +8,8 @@
     <string name="home_subtitle">Disegna sullo schermo i suoni che non puoi vedere.\nDai giochi ai film, prova un\'esperienza tutta nuova.</string>
     <string name="home_status_running">Stato: in esecuzione</string>
     <string name="home_status_idle">Stato: pronto</string>
+    <string name="home_ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e gli avvisi con vibrazione sono disattivati. Prova a disattivare e riattivare la visualizzazione.</string>
+    <string name="home_stopped_dismiss">Chiudi avviso</string>
     <string name="home_start">Avvia</string>
     <string name="home_stop">Interrompi</string>
     <string name="home_add_tile">Aggiungi a Impostazioni rapide</string>
@@ -15,6 +17,8 @@
     <string name="home_add_tile_manual">Apri l\'area notifiche, tocca Modifica (matita) e aggiungi “Visualizza suoni” per attivare o disattivare la visualizzazione direttamente sopra il gioco o il video.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">Consenti “Mostra sopra altre app”</string>
+    <string name="permission_overlay_message">I suoni vengono disegnati sopra il gioco o il video, quindi Android richiede questa autorizzazione. Se in Impostazioni compare un elenco di app, trova SoundVisualizer, attiva il suo interruttore e torna qui: l\'avvio riprende da solo.</string>
     <string name="permission_record_audio_required">Per acquisire l\'audio serve l\'autorizzazione Microfono (registrazione audio).</string>
     <string name="permission_mic_rationale_title">Perché serve l\'accesso al microfono?</string>
     <string name="permission_mic_rationale_message">Android richiede l\'autorizzazione Microfono per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
@@ -42,6 +46,7 @@
     <string name="settings_mode_picker_desc">Scegli la forma di base della grafica disegnata sullo schermo.</string>
     <string name="settings_section_mode_detail">Opzioni per modalità</string>
     <string name="settings_section_ai">Tipi di suono (IA)</string>
+    <string name="settings_section_battery">Batteria</string>
 
     <!-- Language -->
     <string name="settings_language_title">Lingua</string>
@@ -72,14 +77,20 @@
     <string name="setting_ripple">Increspatura spaziale</string>
     <string name="setting_ripple_desc">Aggiunge un leggero ritardo, così il suono sembra propagarsi da davanti verso dietro.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pausa a schermo spento</string>
+    <string name="setting_pause_screen_off_desc">A schermo spento interrompe l\'acquisizione dell\'audio, il riconoscimento dei tipi di suono e la vibrazione per risparmiare batteria, e riprende quando riaccendi lo schermo. Disattiva questa opzione per continuare a ricevere gli avvisi con vibrazione a schermo spento.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Mostra suoni ambientali</string>
     <string name="ai_show_speech">Mostra voci</string>
     <string name="ai_show_danger">Mostra suoni di pericolo</string>
+    <string name="ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali. Prova a disattivare e riattivare la visualizzazione.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrazione</string>
     <string name="haptic_requires_display">La vibrazione funziona solo se questo tipo di suono viene mostrato.</string>
+    <string name="haptic_ai_unavailable">Il telefono non vibra mentre il riconoscimento del tipo di suono non funziona.</string>
     <string name="haptic_unsupported">Questo dispositivo non supporta la vibrazione.</string>
     <string name="haptic_no_amplitude">Questo dispositivo non può regolare l\'intensità della vibrazione, quindi vibra con l\'intensità predefinita.</string>
     <string name="haptic_strength">Intensità</string>
@@ -101,6 +112,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Apri il selettore colori</string>
+    <string name="cd_color_ambient">Colore suoni ambientali</string>
+    <string name="cd_color_speech">Colore voci</string>
+    <string name="cd_color_danger">Colore suoni di pericolo</string>
     <string name="cd_expand">Espandi</string>
     <string name="cd_collapse">Comprimi</string>
     <string name="cd_change_language">Cambia lingua</string>
@@ -109,6 +123,18 @@
     <string name="notification_channel_name">Acquisizione audio</string>
     <string name="notification_text">Visualizzazione del suono in corso.</string>
     <string name="notification_stop">Interrompi</string>
+    <string name="notification_text_ai_unavailable">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi gli avvisi con vibrazione sono disattivati.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visualizzazione disattivata</string>
+    <string name="stopped_channel_desc">Ti avvisa quando la visualizzazione dei suoni si disattiva senza che tu l\'abbia interrotta.</string>
+    <string name="stopped_title">Visualizzazione suoni disattivata</string>
+    <string name="stopped_text_projection">L\'acquisizione dell\'audio è terminata, quindi la grafica e gli avvisi con vibrazione sono disattivati. Succede quando inizia una registrazione dello schermo, una condivisione dello schermo o una trasmissione, oppure quando il sistema interrompe l\'acquisizione. Se un\'altra app sta registrando, condividendo o trasmettendo, riattivando la visualizzazione ne interrompi l\'attività.</string>
+    <string name="stopped_text_capture_error">L\'acquisizione dell\'audio si è interrotta per un errore, quindi la grafica e gli avvisi con vibrazione sono disattivati.</string>
+    <string name="stopped_text_start_failed">Non è stato possibile avviare l\'acquisizione dell\'audio, quindi la grafica e gli avvisi con vibrazione sono disattivati.</string>
+    <string name="stopped_text_overlay_failed">Non è stato possibile mostrare la grafica sopra le altre app, quindi la visualizzazione si è disattivata. Verifica che l\'autorizzazione “Mostra sopra altre app” sia concessa.</string>
+    <string name="stopped_turn_on">Riattiva</string>
+    <string name="stopped_toast">Visualizzazione dei suoni disattivata. La grafica e gli avvisi con vibrazione sono disattivati.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualizza suoni</string>
@@ -155,9 +181,13 @@
     <string name="help_note_direction">L\'app distingue la sinistra dalla destra, ma non il davanti dal dietro. La grafica in alto e in basso sullo schermo rappresenta i suoni che arrivano in modo simile da entrambi i lati e il senso di spazio.</string>
     <string name="help_note_mono">I suoni identici a sinistra e a destra (mono) vengono mostrati solo in direzione frontale.</string>
     <string name="help_note_sources">Viene acquisito solo l\'audio di contenuti multimediali e giochi. Telefonate, suoni di notifica e sveglie sono esclusi, e l\'audio delle app che bloccano l\'acquisizione (come alcune app video) non può essere visualizzato.</string>
+    <string name="help_note_stopped">Se avvii la registrazione dello schermo, la condivisione dello schermo o la trasmissione, la visualizzazione si disattiva: usa lo stesso consenso alla registrazione dello schermo e Android lo concede a una sola app per volta. Se un\'altra app sta registrando, condividendo o trasmettendo, riattivando la visualizzazione ne interrompi l\'attività. Nella maggior parte dei casi, quando si disattiva senza che tu l\'abbia interrotta, il telefono vibra tre volte a lungo e mostra una notifica con il pulsante “Riattiva”. Anche interrompendo l\'acquisizione dell\'audio dai controlli di condivisione dello schermo del telefono compare lo stesso avviso, mentre in caso di chiusura forzata o di arresto anomalo non è possibile avvisarti. Se le notifiche sono disattivate, ti avvisa solo la vibrazione e, quando apri l\'app, la scheda Home mostra che cosa si è disattivato.</string>
+    <string name="help_note_screen_off">A schermo spento la visualizzazione va in pausa per risparmiare batteria e riprende quando riaccendi lo schermo. Puoi cambiare questa impostazione in Batteria, nella scheda Impostazioni.</string>
     <string name="help_note_ai">La classificazione dell\'IA può essere errata. Non affidarti a questa app come unica protezione quando è in gioco la sicurezza.</string>
 
     <string name="help_faq_title">Domande frequenti</string>
+    <string name="help_faq_stopped_q">La visualizzazione si è disattivata senza che l\'abbia interrotta.</string>
+    <string name="help_faq_stopped_a">Si disattiva quando inizia una registrazione dello schermo, una condivisione dello schermo o una trasmissione, oppure quando l\'acquisizione dell\'audio si interrompe per un errore. Tocca “Riattiva” nella notifica, oppure riattivala dalla scheda Home o dalle Impostazioni rapide. Android chiede il consenso alla registrazione dello schermo ogni volta e, riattivando la visualizzazione, interrompi la registrazione, la condivisione o la trasmissione in corso.</string>
     <string name="help_faq_no_graphic_q">Non vedo nessuna grafica.</string>
     <string name="help_faq_no_graphic_a">Verifica se l\'app che stai usando blocca l\'acquisizione audio. Nella scheda Impostazioni controlla anche che l\'Opacità non sia troppo bassa e che la visualizzazione del tipo di suono in riproduzione non sia disattivata.</string>
     <string name="help_faq_no_vibration_q">Il telefono non vibra.</string>

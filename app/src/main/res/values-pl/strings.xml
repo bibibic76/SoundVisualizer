@@ -8,6 +8,8 @@
     <string name="home_subtitle">Pokazuje na ekranie dźwięki, których nie widać.\nOd gier po filmy – odkryj zupełnie nowe wrażenia.</string>
     <string name="home_status_running">Stan: działa</string>
     <string name="home_status_idle">Stan: w gotowości</string>
+    <string name="home_ai_unavailable">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia, a wibracje są wyłączone. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
+    <string name="home_stopped_dismiss">Zamknij komunikat</string>
     <string name="home_start">Uruchom</string>
     <string name="home_stop">Zatrzymaj</string>
     <string name="home_add_tile">Dodaj do Szybkich ustawień</string>
@@ -15,6 +17,8 @@
     <string name="home_add_tile_manual">Rozwiń panel powiadomień, naciśnij Edytuj (ołówek) i dodaj kafelek „Wizualizacja audio”. Możesz wtedy włączać i wyłączać wizualizację, nie wychodząc z gry ani filmu.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">Zezwól na „Wyświetlanie nad innymi aplikacjami”</string>
+    <string name="permission_overlay_message">Dźwięki są rysowane na wierzchu gry lub filmu, dlatego Android wymaga tego uprawnienia. Jeśli w ustawieniach pojawi się lista aplikacji, znajdź SoundVisualizer, włącz przy niej przełącznik i wróć tutaj – uruchamianie będzie kontynuowane automatycznie.</string>
     <string name="permission_record_audio_required">Do przechwytywania dźwięku potrzebne jest uprawnienie Mikrofon (nagrywanie dźwięku).</string>
     <string name="permission_mic_rationale_title">Po co uprawnienie do mikrofonu?</string>
     <string name="permission_mic_rationale_message">Android wymaga uprawnienia do mikrofonu, aby aplikacja mogła przechwytywać dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
@@ -42,6 +46,7 @@
     <string name="settings_mode_picker_desc">Wybierz podstawowy kształt grafiki rysowanej na ekranie.</string>
     <string name="settings_section_mode_detail">Ustawienia każdego trybu</string>
     <string name="settings_section_ai">Rodzaje dźwięków (AI)</string>
+    <string name="settings_section_battery">Bateria</string>
 
     <!-- Language -->
     <string name="settings_language_title">Język</string>
@@ -72,14 +77,20 @@
     <string name="setting_ripple">Efekt przestrzenny</string>
     <string name="setting_ripple_desc">Dodaje lekkie opóźnienie, dzięki któremu dźwięk wydaje się rozchodzić od przodu do tyłu.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pauza przy wyłączonym ekranie</string>
+    <string name="setting_pause_screen_off_desc">Gdy ekran jest wyłączony, aplikacja przestaje przechwytywać dźwięk, rozpoznawać jego rodzaj i wibrować, aby oszczędzać baterię, a po włączeniu ekranu wraca do pracy. Wyłącz tę opcję, aby otrzymywać wibracje także przy wyłączonym ekranie.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Pokaż dźwięki otoczenia</string>
     <string name="ai_show_speech">Pokaż mowę</string>
     <string name="ai_show_danger">Pokaż dźwięki zagrożenia</string>
+    <string name="ai_unavailable">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Wibracje</string>
     <string name="haptic_requires_display">Wibracje działają tylko wtedy, gdy ten rodzaj dźwięku jest pokazywany.</string>
+    <string name="haptic_ai_unavailable">Gdy rozpoznawanie rodzaju dźwięku nie działa, telefon nie wibruje.</string>
     <string name="haptic_unsupported">To urządzenie nie obsługuje wibracji.</string>
     <string name="haptic_no_amplitude">To urządzenie nie pozwala regulować siły wibracji, więc wibruje z domyślną siłą.</string>
     <string name="haptic_strength">Siła</string>
@@ -101,6 +112,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Otwórz wybór koloru</string>
+    <string name="cd_color_ambient">Kolor dźwięków otoczenia</string>
+    <string name="cd_color_speech">Kolor mowy</string>
+    <string name="cd_color_danger">Kolor dźwięków zagrożenia</string>
     <string name="cd_expand">Rozwiń</string>
     <string name="cd_collapse">Zwiń</string>
     <string name="cd_change_language">Zmień język</string>
@@ -109,6 +123,18 @@
     <string name="notification_channel_name">Przechwytywanie dźwięku</string>
     <string name="notification_text">Trwa wizualizacja dźwięku.</string>
     <string name="notification_stop">Zatrzymaj</string>
+    <string name="notification_text_ai_unavailable">Trwa wizualizacja dźwięku. Rozpoznawanie rodzaju dźwięku nie działa, więc wibracje są wyłączone.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Wyłączenie wizualizacji</string>
+    <string name="stopped_channel_desc">Informuje, gdy wizualizacja dźwięku wyłączy się bez Twojego udziału.</string>
+    <string name="stopped_title">Wizualizacja dźwięku wyłączona</string>
+    <string name="stopped_text_projection">Przechwytywanie dźwięku zostało zakończone, więc grafika i wibracje są wyłączone. Dzieje się tak, gdy rozpoczyna się nagrywanie ekranu, udostępnianie ekranu lub przesyłanie obrazu albo gdy system zakończy przechwytywanie dźwięku. Jeśli inna aplikacja nagrywa, udostępnia lub przesyła obraz, ponowne włączenie wizualizacji to przerwie.</string>
+    <string name="stopped_text_capture_error">Przechwytywanie dźwięku zostało przerwane przez błąd, więc grafika i wibracje są wyłączone.</string>
+    <string name="stopped_text_start_failed">Nie udało się rozpocząć przechwytywania dźwięku, więc grafika i wibracje są wyłączone.</string>
+    <string name="stopped_text_overlay_failed">Nie udało się wyświetlić grafiki nad innymi aplikacjami, więc wizualizacja została wyłączona. Sprawdź, czy uprawnienie „Wyświetlanie nad innymi aplikacjami” jest przyznane.</string>
+    <string name="stopped_turn_on">Włącz ponownie</string>
+    <string name="stopped_toast">Wizualizacja dźwięku wyłączona. Grafika i wibracje są wyłączone.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Wizualizacja audio</string>
@@ -155,9 +181,13 @@
     <string name="help_note_direction">Aplikacja odróżnia lewą stronę od prawej, ale nie przód od tyłu. Grafika u góry i u dołu ekranu pokazuje dźwięki słyszalne jednakowo z obu stron oraz wrażenie przestrzeni.</string>
     <string name="help_note_mono">Dźwięki identyczne po lewej i prawej stronie (mono) są pokazywane tylko jako dochodzące z przodu.</string>
     <string name="help_note_sources">Przechwytywane są tylko dźwięki multimediów i gier. Rozmowy telefoniczne, dźwięki powiadomień i alarmy nie są przechwytywane. Nie da się też pokazać dźwięku z aplikacji, które blokują jego przechwytywanie (np. niektórych aplikacji wideo).</string>
+    <string name="help_note_stopped">Rozpoczęcie nagrywania ekranu, udostępniania ekranu lub przesyłania obrazu wyłącza wizualizację, ponieważ korzysta ona z tej samej zgody na nagrywanie ekranu, a Android pozwala używać jej tylko jednej aplikacji naraz. Jeśli inna aplikacja nagrywa, udostępnia lub przesyła obraz, ponowne włączenie wizualizacji to przerwie. Zwykle, gdy wizualizacja wyłączy się bez Twojego udziału, telefon wibruje trzy razy długo i wyświetla powiadomienie z przyciskiem „Włącz ponownie”. Zatrzymanie przechwytywania dźwięku z panelu udostępniania ekranu w telefonie daje ten sam komunikat, a o wymuszonym zatrzymaniu aplikacji lub jej awarii nie da się Cię powiadomić. Jeśli powiadomienia są wyłączone, dowiesz się tylko z wibracji, a po otwarciu aplikacji karta „Główna” pokaże, co się wyłączyło.</string>
+    <string name="help_note_screen_off">Gdy ekran jest wyłączony, wizualizacja wstrzymuje się, aby oszczędzać baterię, a po włączeniu ekranu wraca do pracy. Możesz to zmienić w sekcji „Bateria” na karcie „Ustawienia”.</string>
     <string name="help_note_ai">Klasyfikacja AI może być błędna. Gdy chodzi o bezpieczeństwo, nie polegaj na tej aplikacji jako jedynym zabezpieczeniu.</string>
 
     <string name="help_faq_title">Najczęstsze pytania</string>
+    <string name="help_faq_stopped_q">Wizualizacja wyłączyła się bez mojego udziału.</string>
+    <string name="help_faq_stopped_a">Wizualizacja wyłącza się, gdy rozpocznie się nagrywanie ekranu, udostępnianie ekranu lub przesyłanie obrazu, albo gdy przechwytywanie dźwięku przerwie błąd. Naciśnij „Włącz ponownie” w powiadomieniu lub włącz wizualizację na karcie „Główna” albo w Szybkich ustawieniach. Android za każdym razem prosi o zgodę na nagrywanie ekranu, a ponowne włączenie wizualizacji przerywa trwające nagrywanie, udostępnianie lub przesyłanie obrazu.</string>
     <string name="help_faq_no_graphic_q">Nie widzę żadnej grafiki.</string>
     <string name="help_faq_no_graphic_a">Sprawdź, czy aplikacja, której używasz, nie blokuje przechwytywania dźwięku. Upewnij się też, że na karcie „Ustawienia” wartość „Krycie” nie jest zbyt niska, a pokazywanie rodzaju dźwięku, który właśnie słychać, nie jest wyłączone.</string>
     <string name="help_faq_no_vibration_q">Telefon nie wibruje.</string>
