@@ -146,8 +146,18 @@ object SettingsManager {
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
-        prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        
+        load(context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))
+    }
+
+    /**
+     * 저장된 값을 흐름에 싣는다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다
+     * ([loadPauseWhenScreenOff] 와 같은 이유. LiveVisualizerInputsTest 가 쓴다).
+     *
+     * [init] 의 "최초 한 번만" 규칙은 여기 없다. 테스트는 값을 달리 세운 가짜 프리퍼런스로 여러 번 부른다.
+     */
+    internal fun load(source: SharedPreferences) {
+        prefs = source
+
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
 

@@ -222,6 +222,8 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 `VisualizerEngine`은 바깥 입력(피크, 설정, 라벨, 색)을 `VisualizerInputs` 인터페이스로만 받습니다. 실제 구동은 `LiveVisualizerInputs`, 테스트(`VisualizerEngineTest`)는 가짜 입력을 넣어 기기 없이 검증합니다.
 
+가짜 입력을 쓰면 **실제 배선은 한 줄도 지나가지 않습니다.** 그래서 `LiveVisualizerInputs`가 라벨을 제 색·표시 여부로, 모드를 제 설정으로 잇는지는 `LiveVisualizerInputsTest`가 따로 고정합니다. 이 배선이 어긋나면 위협음이 대화음 색으로 그려지는데, 엔진 테스트와 `AiLabelContractTest`(라벨 문자열이 `ai/`와 같은지 보는 쪽)는 둘 다 통과합니다.
+
 ---
 
 ## 5. 진동 알림 (`feedback/`)
