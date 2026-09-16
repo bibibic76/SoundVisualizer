@@ -19,13 +19,31 @@ class AiSilenceGateTest {
     }
 
     @Test
-    fun `above-threshold input stays open through AI release then closes`() {
+    fun `slow inference ticks stay open until two fully silent completions`() {
         val gate = AiSilenceGate()
         gate.onInterleavedPcm(floatArrayOf(0.0101f, 0f), 2, nowMs = 100)
 
         assertTrue(gate.isOpen(100))
-        assertTrue(gate.isOpen(100 + AiSilenceGate.RELEASE_MS))
-        assertFalse(gate.isOpen(101 + AiSilenceGate.RELEASE_MS))
+        val firstSilentSnapshot = 100 + AiSilenceGate.YAMNET_WINDOW_MS
+        assertTrue(gate.isOpen(firstSilentSnapshot + 10_000))
+
+        gate.onInferenceCompleted(firstSilentSnapshot)
+        assertTrue(gate.isOpen(firstSilentSnapshot + 350))
+
+        gate.onInferenceCompleted(firstSilentSnapshot + 350)
+        assertFalse(gate.isOpen(firstSilentSnapshot + 350))
+    }
+
+    @Test
+    fun `inferences completed before active input leaves window do not close gate`() {
+        val gate = AiSilenceGate()
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
+
+        repeat(AiSilenceGate.REQUIRED_SILENT_INFERENCE_COMPLETIONS) {
+            gate.onInferenceCompleted(AiSilenceGate.YAMNET_WINDOW_MS - 1)
+        }
+
+        assertTrue(gate.isOpen(AiSilenceGate.YAMNET_WINDOW_MS + 10_000))
     }
 
     @Test
@@ -42,20 +60,26 @@ class AiSilenceGateTest {
         val gate = AiSilenceGate()
 
         gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
-        assertFalse(gate.isOpen(AiSilenceGate.RELEASE_MS + 1))
-        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = AiSilenceGate.RELEASE_MS + 1)
+        repeat(AiSilenceGate.REQUIRED_SILENT_INFERENCE_COMPLETIONS) { index ->
+            gate.onInferenceCompleted(AiSilenceGate.YAMNET_WINDOW_MS + index * 350L)
+        }
+        assertFalse(gate.isOpen(AiSilenceGate.YAMNET_WINDOW_MS + 350))
 
-        assertTrue(gate.isOpen(AiSilenceGate.RELEASE_MS + 1))
+        val newActiveMs = AiSilenceGate.YAMNET_WINDOW_MS + 351
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = newActiveMs)
+
+        assertTrue(gate.isOpen(newActiveMs))
     }
 
     @Test
-    fun `AI release covers YAMNet window and coarse hysteresis`() {
+    fun `cleanup contract uses YAMNet window and coarse hysteresis constants`() {
         val yamnetWindowMs =
             AudioPreprocessor.REQUIRED_MONO_16K_SAMPLES * 1000L / AudioPreprocessor.SAMPLE_RATE
-        val hysteresisMs =
-            AiPostProcessor.COARSE_HYSTERESIS_THRESHOLD * RealtimeAiPipeline.AI_PREDICT_INTERVAL_MS
 
-        assertTrue(AiSilenceGate.RELEASE_MS >= yamnetWindowMs + hysteresisMs)
-        assertEquals(1600L, AiSilenceGate.RELEASE_MS)
+        assertEquals(yamnetWindowMs, AiSilenceGate.YAMNET_WINDOW_MS)
+        assertEquals(
+            AiPostProcessor.COARSE_HYSTERESIS_THRESHOLD,
+            AiSilenceGate.REQUIRED_SILENT_INFERENCE_COMPLETIONS
+        )
     }
 }

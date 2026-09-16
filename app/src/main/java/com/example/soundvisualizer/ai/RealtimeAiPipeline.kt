@@ -198,7 +198,10 @@ class RealtimeAiPipeline private constructor(
         try {
             // close() 가 락을 잡기 직전에 통과했을 수 있으므로 락 안에서 다시 확인한다.
             if (closed.get()) return null
-            return doInference(log, diagnostics)
+            val snapshotTimeMs = SystemClock.elapsedRealtime()
+            val result = doInference(log, diagnostics)
+            captureInferenceGate.onInferenceCompleted(snapshotTimeMs)
+            return result
         } finally {
             inferLock.unlock()
         }
