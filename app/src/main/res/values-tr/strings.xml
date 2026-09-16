@@ -8,6 +8,8 @@
     <string name="home_subtitle">Göremediğiniz sesleri doğrudan ekranınıza çizer.\nOyunlardan filmlere, yepyeni bir deneyim yaşayın.</string>
     <string name="home_status_running">Durum: Çalışıyor</string>
     <string name="home_status_idle">Durum: Hazır</string>
+    <string name="home_ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve titreşim uyarıları kapalı. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
+    <string name="home_stopped_dismiss">Uyarıyı kapat</string>
     <string name="home_start">Başlat</string>
     <string name="home_stop">Durdur</string>
     <string name="home_add_tile">Hızlı Ayarlar\'a ekle</string>
@@ -15,6 +17,8 @@
     <string name="home_add_tile_manual">Bildirim panelini aşağı çekin, Düzenle (kalem) simgesine dokunun ve “Ses görselleştirme” düğmesini ekleyin. Böylece oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">“Diğer uygulamaların üzerinde göster” iznini verin</string>
+    <string name="permission_overlay_message">Sesler oyununuzun veya videonuzun üzerine çizildiği için Android bu izni gerektirir. Ayarlar\'da bir uygulama listesi görünürse SoundVisualizer\'ı bulup düğmesini açın ve geri dönün. Uygulama kaldığı yerden kendiliğinden devam eder.</string>
     <string name="permission_record_audio_required">Sesi yakalamak için Mikrofon (ses kaydı) izni gerekiyor.</string>
     <string name="permission_mic_rationale_title">Mikrofon izni neden gerekli?</string>
     <string name="permission_mic_rationale_message">Android, telefonunuzda çalan sesin yakalanabilmesi için mikrofon izni gerektirir. Çevrenizdeki sesler kaydedilmez.</string>
@@ -42,6 +46,7 @@
     <string name="settings_mode_picker_desc">Ekranda çizilecek grafiklerin temel şeklini seçin.</string>
     <string name="settings_section_mode_detail">Modlara özel ayarlar</string>
     <string name="settings_section_ai">Ses türleri (yapay zeka)</string>
+    <string name="settings_section_battery">Pil</string>
 
     <!-- Language -->
     <string name="settings_language_title">Dil</string>
@@ -72,14 +77,20 @@
     <string name="setting_ripple">Uzamsal dalgalanma</string>
     <string name="setting_ripple_desc">Sesin önden arkaya doğru yayılıyormuş gibi görünmesi için hafif bir gecikme ekler.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Ekran kapalıyken duraklat</string>
+    <string name="setting_pause_screen_off_desc">Ekran kapalıyken pilden tasarruf etmek için ses yakalamayı, ses türü algılamayı ve titreşimi durdurur; ekranı açtığınızda kaldığı yerden devam eder. Ekran kapalıyken de titreşim uyarısı almak için bunu kapatın.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Ortam seslerini göster</string>
     <string name="ai_show_speech">Konuşmayı göster</string>
     <string name="ai_show_danger">Tehlike seslerini göster</string>
+    <string name="ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Titreşim</string>
     <string name="haptic_requires_display">Titreşim yalnızca bu ses türü ekranda gösterildiğinde çalışır.</string>
+    <string name="haptic_ai_unavailable">Ses türü algılama çalışmadığı sürece telefon titreşmez.</string>
     <string name="haptic_unsupported">Bu cihaz titreşimi desteklemiyor.</string>
     <string name="haptic_no_amplitude">Bu cihaz titreşim yoğunluğunun ayarlanmasını desteklemediği için varsayılan yoğunlukta titreşir.</string>
     <string name="haptic_strength">Yoğunluk</string>
@@ -101,6 +112,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Renk seçiciyi aç</string>
+    <string name="cd_color_ambient">Ortam sesi rengi</string>
+    <string name="cd_color_speech">Konuşma rengi</string>
+    <string name="cd_color_danger">Tehlike sesi rengi</string>
     <string name="cd_expand">Genişlet</string>
     <string name="cd_collapse">Daralt</string>
     <string name="cd_change_language">Dili değiştir</string>
@@ -109,6 +123,18 @@
     <string name="notification_channel_name">Ses yakalama</string>
     <string name="notification_text">Ses görselleştiriliyor.</string>
     <string name="notification_stop">Durdur</string>
+    <string name="notification_text_ai_unavailable">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için titreşim uyarıları kapalı.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Görselleştirme kapandı</string>
+    <string name="stopped_channel_desc">Siz durdurmadığınız hâlde ses görselleştirme kapandığında sizi bilgilendirir.</string>
+    <string name="stopped_title">Ses görselleştirme kapandı</string>
+    <string name="stopped_text_projection">Ses yakalama sona erdi; grafikler ve titreşim uyarıları kapalı. Bu durum ekran kaydı, ekran paylaşımı ya da yayın başladığında veya sistem ses yakalamayı durdurduğunda olur. Başka bir uygulama kayıt, paylaşım ya da yayın yapıyorsa yeniden açtığınızda o işlem sona erer.</string>
+    <string name="stopped_text_capture_error">Bir hata nedeniyle ses yakalama durdu; grafikler ve titreşim uyarıları kapalı.</string>
+    <string name="stopped_text_start_failed">Ses yakalama başlatılamadı; grafikler ve titreşim uyarıları kapalı.</string>
+    <string name="stopped_text_overlay_failed">Grafikler diğer uygulamaların üzerinde gösterilemedi, bu yüzden görselleştirme kapandı. “Diğer uygulamaların üzerinde göster” izninin verili olduğundan emin olun.</string>
+    <string name="stopped_turn_on">Yeniden aç</string>
+    <string name="stopped_toast">Ses görselleştirme kapandı. Grafikler ve titreşim uyarıları kapalı.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Ses görselleştirme</string>
@@ -155,9 +181,13 @@
     <string name="help_note_direction">Uygulama sağı ve solu ayırt edebilir, ancak önü ve arkayı ayırt edemez. Ekranın üst ve alt kısmındaki grafikler, her iki tarafta eşit duyulan sesleri ve uzamsal etkiyi gösterir.</string>
     <string name="help_note_mono">Solda ve sağda tamamen aynı olan sesler (mono) yalnızca ön tarafa doğru gösterilir.</string>
     <string name="help_note_sources">Yalnızca medya ve oyun sesleri yakalanır. Telefon görüşmeleri, bildirim sesleri ve alarmlar yakalanmaz. Ses yakalamayı engelleyen uygulamalar (bazı video uygulamaları gibi) görselleştirilemez.</string>
+    <string name="help_note_stopped">Ekran kaydı, ekran paylaşımı veya yayın başlatmak görselleştirmeyi kapatır; çünkü görselleştirme de aynı ekran kaydı onayını kullanır ve Android bunu aynı anda yalnızca tek bir uygulamaya verir. Başka bir uygulama kayıt, paylaşım ya da yayın yapıyorsa yeniden açtığınızda o işlem sona erer. Siz durdurmadığınız hâlde kapandığında telefon çoğu durumda art arda üç uzun titreşim verir ve “Yeniden aç” düğmesi bulunan bir bildirim gösterir. Ses yakalamayı telefonunuzun ekran paylaşımı bildiriminden durdurduğunuzda da aynı uyarı görünür; zorla durdurma veya çökme durumunda ise hiçbir bilgi verilemez. Bildirimler kapalıysa yalnızca titreşim haber verir; uygulamayı açtığınızda “Ana sayfa” sekmesinde neyin kapandığını görürsünüz.</string>
+    <string name="help_note_screen_off">Ekran kapalıyken pilden tasarruf etmek için duraklar, ekranı açtığınızda kaldığı yerden devam eder. Bunu “Ayarlar” sekmesindeki “Pil” bölümünden değiştirebilirsiniz.</string>
     <string name="help_note_ai">Yapay zeka sınıflandırması hatalı olabilir. Güvenliğin söz konusu olduğu durumlarda yalnızca bu uygulamaya güvenmeyin.</string>
 
     <string name="help_faq_title">Sık sorulan sorular</string>
+    <string name="help_faq_stopped_q">Ben durdurmadığım hâlde kapandı.</string>
+    <string name="help_faq_stopped_a">Ekran kaydı, ekran paylaşımı ya da yayın başladığında veya bir hata nedeniyle ses yakalama durduğunda kapanır. Bildirimdeki “Yeniden aç” düğmesine dokunun ya da “Ana sayfa” sekmesinden veya Hızlı Ayarlar\'dan yeniden açın. Android, ekran kaydı onayını her seferinde ister; yeniden açtığınızda da o sırada süren kayıt, paylaşım veya yayın sona erer.</string>
     <string name="help_faq_no_graphic_q">Hiç grafik göremiyorum.</string>
     <string name="help_faq_no_graphic_a">Kullandığınız uygulamanın ses yakalamayı engelleyip engellemediğini kontrol edin. Ayrıca “Ayarlar” sekmesinde “Opaklık” değerinin çok düşük olmadığından ve o an çalan ses türünün gösterimini kapatmadığınızdan emin olun.</string>
     <string name="help_faq_no_vibration_q">Telefon titreşmiyor.</string>

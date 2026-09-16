@@ -8,6 +8,8 @@
     <string name="home_subtitle">Dessine sur votre écran les sons que vous ne pouvez pas voir.\nDes jeux vidéo aux films, découvrez une toute nouvelle expérience.</string>
     <string name="home_status_running">État : actif</string>
     <string name="home_status_idle">État : prêt</string>
+    <string name="home_ai_unavailable">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance et les alertes par vibration sont désactivées. Essayez de désactiver puis de réactiver la visualisation.</string>
+    <string name="home_stopped_dismiss">Masquer le message</string>
     <string name="home_start">Démarrer</string>
     <string name="home_stop">Arrêter</string>
     <string name="home_add_tile">Ajouter aux Réglages rapides</string>
@@ -15,6 +17,8 @@
     <string name="home_add_tile_manual">Déroulez le volet des notifications, appuyez sur Modifier (crayon) et ajoutez « Visualiseur audio » pour activer ou désactiver la visualisation directement par-dessus votre jeu ou votre vidéo.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">Autoriser « Superposition sur d\'autres applis »</string>
+    <string name="permission_overlay_message">Les sons sont dessinés par-dessus votre jeu ou votre vidéo : Android exige donc cette autorisation. Si les paramètres affichent une liste d\'applications, trouvez SoundVisualizer, activez son interrupteur, puis revenez. Le démarrage se poursuit ensuite tout seul.</string>
     <string name="permission_record_audio_required">L\'autorisation d\'accès au micro (enregistrement audio) est nécessaire pour capturer le son.</string>
     <string name="permission_mic_rationale_title">Pourquoi autoriser l\'accès au micro ?</string>
     <string name="permission_mic_rationale_message">Android exige l\'autorisation d\'accès au micro pour capturer le son diffusé sur votre téléphone. Les sons autour de vous ne sont pas enregistrés.</string>
@@ -42,6 +46,7 @@
     <string name="settings_mode_picker_desc">Choisissez la forme de base des graphismes dessinés à l\'écran.</string>
     <string name="settings_section_mode_detail">Réglages par mode</string>
     <string name="settings_section_ai">Types de sons (IA)</string>
+    <string name="settings_section_battery">Batterie</string>
 
     <!-- Language -->
     <string name="settings_language_title">Langue</string>
@@ -72,14 +77,20 @@
     <string name="setting_ripple">Ondulation spatiale</string>
     <string name="setting_ripple_desc">Ajoute un léger décalage pour que le son semble se propager de l\'avant vers l\'arrière.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pause quand l\'écran est éteint</string>
+    <string name="setting_pause_screen_off_desc">Quand l\'écran est éteint, la capture du son, la détection du type de son et les vibrations s\'arrêtent pour économiser la batterie, et tout reprend dès que vous rallumez l\'écran. Désactivez cette option pour continuer à recevoir les alertes par vibration lorsque l\'écran est éteint.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Afficher l\'ambiance</string>
     <string name="ai_show_speech">Afficher les voix</string>
     <string name="ai_show_danger">Afficher les dangers</string>
+    <string name="ai_unavailable">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance. Essayez de désactiver puis de réactiver la visualisation.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibration</string>
     <string name="haptic_requires_display">La vibration ne fonctionne que si ce type de son est affiché.</string>
+    <string name="haptic_ai_unavailable">Aucune vibration tant que la détection du type de son ne fonctionne pas.</string>
     <string name="haptic_unsupported">Cet appareil ne prend pas en charge la vibration.</string>
     <string name="haptic_no_amplitude">Cet appareil ne permet pas de régler l\'intensité des vibrations. Il vibre donc à l\'intensité par défaut.</string>
     <string name="haptic_strength">Intensité</string>
@@ -101,6 +112,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Ouvrir le sélecteur de couleur</string>
+    <string name="cd_color_ambient">Couleur de l\'ambiance</string>
+    <string name="cd_color_speech">Couleur des voix</string>
+    <string name="cd_color_danger">Couleur des sons de danger</string>
     <string name="cd_expand">Développer</string>
     <string name="cd_collapse">Réduire</string>
     <string name="cd_change_language">Changer de langue</string>
@@ -109,6 +123,18 @@
     <string name="notification_channel_name">Capture audio</string>
     <string name="notification_text">Visualisation du son en cours.</string>
     <string name="notification_stop">Arrêter</string>
+    <string name="notification_text_ai_unavailable">Visualisation du son en cours. La détection du type de son ne fonctionne pas, les alertes par vibration sont donc désactivées.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visualisation désactivée</string>
+    <string name="stopped_channel_desc">Vous prévient quand la visualisation du son se désactive sans que vous l\'ayez arrêtée.</string>
+    <string name="stopped_title">Visualiseur audio désactivé</string>
+    <string name="stopped_text_projection">La capture du son s\'est terminée : les graphismes et les alertes par vibration sont désactivés. Cela arrive quand un enregistrement d\'écran, un partage d\'écran ou une diffusion démarre, ou quand le système met fin à la capture du son. Si une autre application enregistre, partage ou diffuse, la réactiver y mettra fin.</string>
+    <string name="stopped_text_capture_error">La capture du son s\'est arrêtée à cause d\'une erreur : les graphismes et les alertes par vibration sont désactivés.</string>
+    <string name="stopped_text_start_failed">La capture du son n\'a pas pu démarrer : les graphismes et les alertes par vibration sont désactivés.</string>
+    <string name="stopped_text_overlay_failed">Les graphismes n\'ont pas pu être affichés par-dessus les autres applications, la visualisation s\'est donc désactivée. Vérifiez que « Superposition sur d\'autres applis » est autorisée.</string>
+    <string name="stopped_turn_on">Réactiver</string>
+    <string name="stopped_toast">Visualiseur audio désactivé. Les graphismes et les alertes par vibration sont coupés.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualiseur audio</string>
@@ -155,9 +181,13 @@
     <string name="help_note_direction">L\'application distingue la gauche de la droite, mais pas l\'avant de l\'arrière. Les graphismes en haut et en bas de l\'écran représentent les sons entendus de façon similaire des deux côtés, ainsi que la sensation d\'espace.</string>
     <string name="help_note_mono">Les sons identiques à gauche et à droite (mono) sont affichés uniquement vers l\'avant.</string>
     <string name="help_note_sources">Seuls les sons des médias et des jeux sont capturés. Les appels, les sons de notification et les alarmes ne le sont pas, et le son des applications qui bloquent la capture audio (comme certaines applications vidéo) ne peut pas être visualisé.</string>
+    <string name="help_note_stopped">Démarrer un enregistrement d\'écran, un partage d\'écran ou une diffusion désactive la visualisation : elle utilise le même accord d\'enregistrement d\'écran, et Android ne l\'accorde qu\'à une seule application à la fois. Si une autre application enregistre, partage ou diffuse, la réactiver y mettra fin. Le plus souvent, quand la visualisation se désactive sans que vous l\'ayez arrêtée, votre téléphone vibre trois fois longuement et affiche une notification avec un bouton « Réactiver ». Mettre fin à la capture du son depuis les commandes de partage d\'écran de votre téléphone déclenche le même avertissement ; en cas d\'arrêt forcé ou de plantage, aucun avertissement n\'est possible. Si les notifications sont désactivées, seule la vibration vous prévient, et l\'onglet Accueil indique ce qui s\'est désactivé lorsque vous ouvrez l\'application.</string>
+    <string name="help_note_screen_off">Quand l\'écran est éteint, l\'application se met en pause pour économiser la batterie et reprend dès que vous rallumez l\'écran. Vous pouvez modifier ce comportement sous « Batterie », dans l\'onglet Paramètres.</string>
     <string name="help_note_ai">L\'IA peut se tromper dans la classification des sons. Lorsque votre sécurité est en jeu, ne comptez pas uniquement sur cette application.</string>
 
     <string name="help_faq_title">Questions fréquentes</string>
+    <string name="help_faq_stopped_q">La visualisation s\'est désactivée sans que je l\'aie arrêtée.</string>
+    <string name="help_faq_stopped_a">Elle se désactive quand un enregistrement d\'écran, un partage d\'écran ou une diffusion démarre, ou quand la capture du son s\'arrête à cause d\'une erreur. Appuyez sur « Réactiver » dans la notification, ou réactivez-la depuis l\'onglet Accueil ou les Réglages rapides. Android redemande l\'accord d\'enregistrement d\'écran chaque fois, et la réactiver met fin à tout enregistrement, partage ou diffusion en cours.</string>
     <string name="help_faq_no_graphic_q">Aucun graphisme ne s\'affiche.</string>
     <string name="help_faq_no_graphic_a">Vérifiez si l\'application qui diffuse le son bloque la capture audio. Dans l\'onglet Paramètres, vérifiez aussi que le réglage « Opacité » n\'est pas trop faible et que l\'affichage du type de son entendu n\'est pas désactivé.</string>
     <string name="help_faq_no_vibration_q">Le téléphone ne vibre pas.</string>
