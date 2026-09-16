@@ -23,12 +23,16 @@ object AiClassification {
     @Volatile
     private var source: (() -> AiClassificationResult?)? = null
 
-    /** 캡처 서비스가 분류기를 띄운 뒤 호출한다. */
+    /** 캡처 서비스가 분류기를 시작한 뒤(마지막 결과를 비운 뒤) 호출한다. */
     fun attach(source: () -> AiClassificationResult?) {
         this.source = source
     }
 
-    /** 캡처가 멈추면 반드시 호출한다. 이후 읽기는 [AMBIENT] 로 떨어진다. */
+    /**
+     * 분류기가 멈추면 반드시 호출한다. 이후 읽기는 [AMBIENT] 로 떨어진다.
+     * 화면이 꺼져 쉬는 동안에도 뗀다. 파이프라인은 멈춰도 마지막 결과를 들고 있어서,
+     * 붙여 둔 채로 두면 다시 켠 첫 소리를 쉬기 직전 라벨(색·표시 여부)로 그린다.
+     */
     fun detach() {
         source = null
     }

@@ -20,8 +20,8 @@ graph TD
 | 단계 | 코드 | 언어 |
 |---|---|---|
 | 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
-| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일) | Kotlin |
-| 캡처 | `AudioCaptureService` | Kotlin |
+| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
+| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
 | 분류 결과 연결 | `AiClassification` | Kotlin |
@@ -51,13 +51,32 @@ graph TD
 - 투명 화면은 `taskAffinity=""`로 앱과 다른 작업에 뜹니다. 그래서 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고, 닫히면 보던 게임·영상으로 돌아갑니다.
 - 타일은 알림창이 열려 있는 동안 `SettingsManager.isServiceRunning`을 구독해 켜짐·꺼짐을 표시합니다. 추가·제거될 때는 `SettingsManager.tileAdded`에 기록해 홈 화면의 "빠른 설정에 추가" 버튼을 숨기거나 보입니다.
 
-**종료**: 아래 경우 모두 캡처·오버레이·AI·진동을 함께 내립니다.
+**종료**: 아래 경우 모두 캡처·오버레이·AI·진동을 함께 내립니다. 멈춘 이유(`StopReason`)에 따라 사용자에게 알릴지가 갈립니다.
 
-- 앱의 실행 종료 버튼, 켜진 상태에서 타일 누르기, 또는 알림의 **중지** 버튼(`ACTION_STOP`)
-- 사용자가 시스템 UI에서 화면 녹화를 끈 경우(`MediaProjection.Callback.onStop`)
-- 오디오 서버 재시작 등으로 캡처 읽기가 실패한 경우
+| 경우 | 이유 | 알림 |
+|---|---|---|
+| 앱의 실행 종료 버튼, 켜진 상태에서 타일 누르기 (`VisualizerController.stop` → `stopService`) | `UserRequested` | 없음 |
+| 실행 중 알림의 **중지** 버튼(`ACTION_STOP`) | `UserRequested` | 없음 |
+| 다른 앱이 화면 녹화·공유·전송을 시작했거나, 사용자가 시스템 UI에서 캡처를 끈 경우(`MediaProjection.Callback.onStop`) | `ProjectionStopped` | 있음 |
+| 오디오 서버 재시작 등으로 캡처 읽기가 실패했거나, 화면을 다시 켰는데 녹음을 다시 시작하지 못한 경우 | `CaptureError` | 있음 |
+| 동의까지 받았는데 캡처를 시작하지 못한 경우 | `StartFailed` | 있음 |
+| 캡처는 시작했는데 오버레이를 띄우지 못한 경우("다른 앱 위에 표시" 권한, `addView` 실패) | `OverlayFailed` | 있음 |
 
-`onDestroy`는 `AudioRecord`를 멈춘 뒤 캡처 스레드가 끝날 때까지 기다리고 나서 해제합니다. 스레드가 아직 읽는 중에 해제하면 네이티브에서 크래시가 나기 때문입니다.
+- 안드로이드는 화면 녹화(MediaProjection)를 한 번에 한 앱만 쓰게 하므로, 다른 앱이 시작하면 우리 것을 끝냅니다. 콜백으로는 이 경우와 사용자가 시스템 UI에서 끈 경우를 구분할 수 없어서 알림 문구는 누구 탓도 하지 않습니다.
+- 서비스는 `stopEverything(reason)`으로 멈추며 이유를 남기고, **처음 남긴 이유**로 한 번만 알립니다. 프로젝션이 끊기면 뒤따라 읽기 오류가 나는데, 먼저 난 쪽이 원인이기 때문입니다. 이 규칙(처음 이유만, 한 번만, 내려간 뒤에는 알리지 않음)은 안드로이드에 의존하지 않는 `StopLatch`에 모아 두어 JVM에서 검사합니다(`StopLatchTest`).
+- 오버레이가 실패하면 `AudioCaptureService.stopForFailure`가 떠 있는 캡처 서비스(`onCreate`에서 넣고 `onDestroy`에서 비우는 `instance`)의 `stopEverything`을 부릅니다. 이유를 실어 `startService`로 보내지 않는 것은, 캡처 서비스가 이미 내려가는 중이면 새 인스턴스가 동의 없이 뜨려다 죽기 때문입니다.
+- 앱 버튼이나 타일은 `stopEverything`을 거치지 않고 `stopService`로 바로 내리므로 알리지 않습니다.
+
+**꺼짐 알림** (`StopAlertPlan`, `StopAlert`): 오버레이는 소리가 없으면 아무것도 그리지 않아서, 청각장애 사용자는 조용한 장면과 꺼진 상태를 구분할 수 없습니다. 그래서 사용자가 끈 경우가 아니면 알립니다.
+
+알리는 때는 `stopEverything`에서 서비스를 **내리기 전**입니다. `onDestroy`까지 미루면 포그라운드 서비스와 오버레이가 이미 내려가, 안드로이드가 이 앱을 백그라운드로 보고 진동을 버릴 수 있습니다(Android 12 이상은 알람·알림·벨소리 같은 용도만 백그라운드 진동을 허용). 게임 화면 위에서 꺼지는, 알려야 할 바로 그 경우입니다.
+
+1. **고유한 진동**: 길게 세 번. 사용자가 소리 종류에 고를 수 있는 어떤 패턴과도 겹치지 않고, 소리 종류별 진동 설정과 상관없이 울립니다. 진동 모터가 없으면 뺍니다. **알람 용도**로 울립니다(소리 종류별 진동은 접근성 용도). 이 시점에는 캡처 서비스가 아직 포그라운드라 백그라운드 진동 규칙에 걸리지는 않지만, **Android 12(API 31) 이상에서는** 알람 용도가 접근성보다 우선순위가 높아 뒤늦게 결정된 진동 한 번에 끊기지 않고, 절전 모드에서 접근성 진동을 막는 버전(Android 14 이하)에서도 울립니다. 이 우선순위 규칙은 Android 12부터라, minSdk 29(Android 10·11)에서는 늦은 진동 한 번이 이 진동을 덮어쓸 수 있습니다. `HapticNotifier.stop()`이 진동 스레드를 기다리는 이유가 이것입니다. 대신 **방해 금지 모드에서 알람을 허용하지 않았거나(완전 무음 포함), Android 13 이상에서 알람 진동을 꺼 두면 이 진동은 울리지 않습니다**(접근성 용도는 그 설정들을 타지 않습니다). 그때는 알림과 홈 안내가 알립니다. 진동 알림(`HapticNotifier`)을 먼저 떼어 멈춘 **뒤에** 울립니다. 그쪽의 `cancel()`이 같은 앱의 진동을 끊기 때문입니다(`stop()`은 진동 스레드가 끝나기를 잠깐 기다려, 이미 정해진 진동 한 번이 뒤따라 나가지 않게 합니다). 이 기다림은 **메인 스레드를 최대 200ms 잡습니다**(`HapticNotifier.JOIN_TIMEOUT_MS`). 진동 틱이 나가는 중에 꺼지는 경우가 최악이므로, 꺼짐 진동이 얼마나 늦는지는 실기기(S22, Android 12 출시)에서 한 번 재 보는 것이 좋습니다. 이때 `aiPaused`를 세워 `onDestroy` 전에 모델 로딩이 끝나도 진동 알림을 새로 붙이지 않게 합니다.
+2. **알림**: 실행 중 알림과 다른 채널(`VisualizerStoppedAlertChannel`, 중요도 HIGH)에 올립니다. 소리를 못 듣는 사용자는 게임 화면 위로 헤드업이 떠야 알아채기 때문입니다. 헤드업은 중요도만 보므로 채널의 **소리와 진동을 모두 끕니다**. 진동만 끄고 소리를 남기면 진동 모드에서 시스템이 소리 대신 기본 알림 진동을 울려 1번 진동을 끊고 덮어씁니다. 채널의 소리·진동은 처음 만든 뒤로 앱이 바꿀 수 없으므로 바꾸려면 채널 ID도 바꿔야 합니다. **다시 켜기** 버튼은 타일과 같은 `StartVisualizerActivity`를 엽니다. 화면 녹화 동의는 켤 때마다 다시 받아야 해서 서비스를 바로 되살릴 수 없습니다. 다시 켜지면(`onCreate`) 이 알림을 치웁니다.
+3. **홈 안내**: 알림을 올렸는지와 상관없이 이유를 `SettingsManager.lastUnexpectedStop`에 저장하고, 홈 화면이 상태 아래에 무엇이 꺼졌는지와 **안내 닫기** 버튼을 보여줍니다. 앱 알림을 꺼 두면 알림도 토스트도 뜨지 못해 진동만 남기 때문입니다. 안내가 홈에만 있으므로, 설정·도움말 탭을 보던 중에 꺼졌으면 `MainActivity.onResume`이 홈 탭으로 옮겨 놓습니다. 옮기는 것은 **안내 하나에 한 번뿐**입니다(`routedStopNotice`, 화면 회전·언어 변경으로 다시 만들어져도 유지되게 `onSaveInstanceState`에 저장). 돌아올 때마다 옮기면 안내를 닫기 전까지는 보던 탭에 남을 수 없고, 설정 탭에서 언어를 바꿀 때마다 홈으로 끌려 나옵니다. 안내가 사라지면 되돌려 다음 안내에 다시 한 번 옮깁니다. 타일 길게 누르기로 설정을 열러 온 경우는 처음부터 옮긴 것으로 쳐서 설정 탭에 그대로 둡니다. 이유는 이름으로 저장하며, 저장·복원 규칙은 `StopNoticeSettingsTest`가 검사합니다. 다시 켜는 버튼은 따로 두지 않습니다(바로 아래 실행 버튼). 다시 켜지면(`onCreate`) 지웁니다.
+4. **토스트**: 알림을 올릴 수 없을 때만 띄웁니다(Android 13 이상에서 알림 권한 거부, 앱 알림 끄기, 채널 끄기). 다만 앱 알림이 꺼져 있으면 시스템은 앱이 맨 앞에 있을 때만 토스트를 보여주므로, 게임 위에서는 뜨지 않습니다. 앱을 보고 있을 때의 덤입니다.
+
+`onDestroy`는 `AudioRecord`를 멈춘 뒤 캡처 스레드가 끝날 때까지 기다리고 나서 해제합니다. 스레드가 아직 읽는 중에 해제하면 네이티브에서 크래시가 나기 때문입니다. 끝나지 않으면 해제하지 않고 남겨 둡니다.
 
 ---
 
@@ -80,6 +99,26 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 상태는 정적 `std::atomic` 뿐이라 락이 없습니다. 오버레이가 `readPeaks`로 값을 가져가며 초기화하므로, 진동 알림처럼 다른 곳에서 읽을 때는 `currentLevel`을 씁니다.
 
+### 화면이 꺼지면 쉬기 (`ScreenOffPause`)
+
+설정 탭 **배터리**의 **화면이 꺼지면 일시정지**(`SettingsManager.pauseWhenScreenOff`, 기본 켜짐)가 켜져 있으면, 화면이 꺼진 동안 캡처·AI·진동·오버레이 확인을 멈추고 화면이 켜지면 다시 켭니다. 꺼 두면 화면이 꺼져도 지금처럼 계속 돕니다(화면이 꺼진 채 음악을 들으며 진동 알림을 받고 싶은 경우).
+
+- **왜 쉬나**: 화면이 꺼지면 게임과 대부분의 영상은 멈추고 오버레이는 보이지도 않습니다. 그래도 `AudioRecord`가 녹음 중이면 오디오 서버가 앱 몫의 wake lock을 쥐어 CPU가 잠들지 못하고, AI는 250ms마다 추론하고, 진동 판단은 100ms마다 돌고, 주머니 속에서 음악의 사이렌 소리에 위협음 진동이 울릴 수도 있습니다.
+- **감지**: `AudioCaptureService`가 실행 중에만 `ACTION_SCREEN_OFF`·`ACTION_SCREEN_ON` 수신기를 등록합니다. 이 두 방송은 매니페스트로는 받을 수 없습니다. 시스템만 보내는 보호된 방송이지만 `ContextCompat.registerReceiver(..., RECEIVER_NOT_EXPORTED)`로 앱 밖에 열어 두지 않습니다(Android 13 이상은 플래그, 그 아래는 앱 서명 권한으로 같은 효과). 등록할 때 이미 화면이 꺼져 있으면(`PowerManager.isInteractive`) 바로 쉽니다.
+- **쉬기** (메인 스레드): 결과 읽기(`AiClassification.detach`) → 진동(`HapticNotifier.stop`) → AI(`RealtimeAiPipeline.stop`) → 캡처(`isRecording=false` → `AudioRecord.stop` → 캡처 스레드 종료 대기) → `AudioEngine.reset`.
+  - `stop()`은 마지막 결과를 지우지 않으므로 읽는 쪽(`AiClassification`)도 같이 뗍니다. 붙여 둔 채로 쉬면 화면을 켠 뒤 `start()`가 비울 때까지(AI는 300ms 늦게 켭니다) 오버레이가 쉬기 직전 라벨을 읽어, 첫 소리를 위협음 색으로 번쩍이거나(위협음 색은 즉시 칠해집니다) 숨긴 종류였다면 반대로 가려 버립니다.
+  - `MediaProjection`과 `AudioRecord`는 놓지 않습니다. 놓으면 화면을 켤 때마다 화면 녹화 동의를 다시 받아야 합니다. 녹음만 멈춰도 오디오 서버가 wake lock을 놓습니다.
+  - `isRecording`을 먼저 내려서, `stop()`으로 풀린 `read()`가 내는 오류를 캡처 오류로 보지 않습니다. 쉬기는 사용자가 끈 것도 실패도 아니므로 꺼짐 알림을 띄우지 않습니다.
+  - `AudioEngine.reset`을 하지 않으면 네이티브에 남은 마지막 소리 크기를 진동 판단과 오버레이가 "계속 나는 소리"로 봅니다.
+  - 캡처 스레드가 끝나지 않으면 같은 `AudioRecord`로 다시 켤 수 없으므로 `CaptureError`로 내리고 알립니다.
+- **다시 켜기**: `startRecording`과 새 캡처 스레드, 그래픽(`isCapturePaused=false`)은 **바로** → (300ms 뒤) `RealtimeAiPipeline.start`(링버퍼·후처리·마지막 결과를 비워 쉬기 직전 소리를 다시 분류하지 않음) → `AiClassification.attach` → 새 `HapticNotifier`(한 번만 시작·정지하는 객체). 녹음을 다시 시작하지 못하면 `CaptureError`로 내리고 알립니다.
+  - AI만 300ms 미루는 이유: 쉴 때 부르는 `stop()`은 이미 돌던 추론 한 번을 기다리지 않습니다. 화면을 껐다 바로 켜서 그 추론이 `start()`로 비운 뒤에 끝나면 쉬기 직전 결과가 되살아나, 첫 소리에 위협음 진동이 잘못 울릴 수 있습니다. 추론 한 번보다 길게 기다렸다 시작하고, 그때까지 `aiPaused`를 세워 둡니다. 미뤄 둔 재시작은 다시 쉬거나 내려갈 때 취소합니다(`scheduleAiResume`·`cancelAiResume`).
+  - 그래픽은 기다리지 않습니다. 소리를 보는 것이 이 앱의 본 일이라 화면을 켠 뒤 300ms를 비워 둘 수 없습니다. 기다리는 동안 라벨만 환경음으로 떨어집니다(읽는 쪽을 떼어 두었으므로). 붙이기는 `start()`가 비운 **뒤**에 하므로 그 사이에 옛 라벨이 화면에 나오지 않습니다.
+  - 대신 **환경음 표시를 꺼 둔 사용자**는 그동안 소리가 나도 아무것도 보이지 않습니다. 기다리는 300ms에 더해 링 버퍼가 다시 찰 때까지(약 1초) 이어집니다. 옛 라벨로 위협음 색이 잘못 번쩍이는 것보다는 낫다고 보고 이렇게 두었습니다. 기기에서 체감을 확인할 항목입니다.
+- 모델 로딩이 쉬는 중에 끝나면 파이프라인만 들고 있고, 추론·진동·결과 읽기는 화면이 켜질 때 시작합니다(`aiPaused`, `aiLock`으로 보호).
+- 쉬는 동안 `SettingsManager.isCapturePaused`가 `true`이고, 오버레이 렌더 루프가 이 값을 봅니다(4장).
+- 늦게 도착한 읽기 오류가 다시 켠 새 캡처를 내리지 않도록, 오류를 낸 스레드가 지금 캡처 스레드일 때만 멈춥니다.
+
 ---
 
 ## 3. AI 분류 (`ai/`)
@@ -89,6 +128,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 서비스가 시작되면 `SV-AiInit` 스레드(`THREAD_PRIORITY_BACKGROUND`)가 `RealtimeAiPipeline.create`로 모델을 불러옵니다. 서비스 시작을 막지 않기 위해서입니다.
 - YAMNet은 가중치가 별도 파일(`yamnet.data`, 약 15MB)이라, ONNX Runtime이 파일 경로로 찾을 수 있게 assets에서 앱 내부 저장소로 복사한 뒤 세션을 만듭니다.
 - 로딩이 끝나기 전이나 모델 로딩이 실패하면 분류 결과가 없고, 오버레이는 모든 소리를 **환경음**으로 그립니다.
+- 로딩이 실패하면 캡처와 시각화는 계속 돌지만, 진동 알림(`HapticNotifier`)은 파이프라인이 붙어야 시작하므로 아예 돌지 않습니다. 설정 화면만 보면 위협음 진동이 켜진 것처럼 보이므로, `SettingsManager.aiAvailable`을 `false`로 두고 홈의 상태 아래, 설정의 소리 분류 카드 맨 위, 켜 둔 진동 스위치 아래, 실행 중 알림 문구에 소리 종류를 구분하지 못한다고 알립니다. 알림을 다시 올리는 일은 메인 스레드로 넘기며, 그사이 멈추는 중이거나(`StopLatch`) 끄기를 누른 뒤면(`AudioCaptureService.stopRequested`) 올리지 않습니다. 포그라운드 알림이 치워진 뒤 같은 번호로 올리면 지워지지 않는 알림이 남기 때문입니다. 끄기 신호는 서비스가 직접 들고, `VisualizerController.stop`이 `stopService` 앞에 세웁니다. UI 상태(`isServiceRunning`)로는 거를 수 없습니다. 액티비티가 `onResume`에서 `AudioCaptureService.isRunning`으로 다시 세우는데, 그 값은 `onDestroy` 전까지 `true`이기 때문입니다. 이 값은 켤 때와 끌 때 `true`로 되돌립니다(로딩 중에도 `true`). `ai/` 코드는 바꾸지 않고, 실패는 `create`가 던지는 예외로 압니다.
 
 ### 분석 주기
 
@@ -105,7 +145,9 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 ### 결과 전달 (`AiClassification`)
 
-캡처 서비스와 오버레이 서비스는 서로를 모릅니다. 캡처 쪽이 파이프라인을 만든 뒤 결과를 읽는 함수를 `AiClassification.attach`로 걸어두고, 오버레이는 `AiClassification.coarse()`만 호출합니다. 분류기가 없으면 항상 `ambient`를 돌려줍니다.
+캡처 서비스와 오버레이 서비스는 서로를 모릅니다. 캡처 쪽이 파이프라인을 **시작하면서** 결과를 읽는 함수를 `AiClassification.attach`로 걸어두고, 오버레이는 `AiClassification.coarse()`만 호출합니다. 분류기가 없으면 항상 `ambient`를 돌려줍니다.
+
+붙어 있는 구간은 **파이프라인이 도는 동안뿐**입니다. 멈춘 파이프라인도 마지막 결과를 들고 있어서, 붙여 둔 채로 두면 옛 라벨이 계속 나옵니다. 그래서 `startAiLocked`(비운 뒤 붙이기)와 `pauseForScreenOff`·`onDestroy`(떼기)가 짝을 이루고, 화면이 꺼져 쉬는 동안과 다시 켠 뒤 300ms 동안은 붙어 있지 않습니다.
 
 라벨은 `AiClassification`의 문자열 상수 세 개(`AMBIENT`·`SPEECH`·`DANGER`)입니다. 화면 색·표시 여부와 진동 설정은 모르는 라벨을 환경음으로 처리하므로, `ai/` 코드가 내보내는 라벨 이름이 이 상수와 어긋나면 오류 없이 위협음이 환경음처럼 표시됩니다. 그래서 `ai/` 밖의 `AiLabelContractTest`가 매핑·투표·Booster·후처리의 결과 라벨이 세 상수 중 하나인지와 대표 소리(총소리·말소리·빗소리)가 맞는 상수로 나오는지 확인합니다.
 
@@ -141,6 +183,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 그리기는 Compose `Canvas`의 `nativeCanvas`(`android.graphics.Canvas`)에 `Path`·`Paint`·`Shader`로 합니다. OpenGL은 쓰지 않습니다.
 - 모든 버퍼·`Path`·`Paint`를 미리 만들어 두어 **프레임당 힙 할당이 없습니다.**
 - 120Hz 화면에서도 **최대 60fps**로 제한합니다.
+- 화면이 꺼져 캡처를 쉬는 동안(`SettingsManager.isCapturePaused`)에는 쉬기(idle) 상태의 33ms 확인도 멈추고 켜질 때까지 기다립니다. 화면이 꺼져도 이 루프는 저절로 멈추지 않기 때문입니다. 소리가 나던 중에 쉬기 시작해도 캡처 서비스가 소리 크기를 지우므로, 엔진이 1초 남짓 뒤 쉬기로 내려와 거기서 멈춥니다.
 
 ### 한 프레임의 계산 (`VisualizerEngine.tick`)
 
@@ -172,7 +215,8 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 | `HapticSettings` | 종류별 켜기·세기(약·중·강)·패턴(한 번·두 번·길게·반복) |
 | `HapticSettingRow` | 설정 화면의 종류별 진동 설정 줄 |
 
-- AI 모델이 준비된 뒤 캡처 서비스가 `HapticNotifier`를 시작합니다. 진동 모터가 없는 기기에서는 시작하지 않습니다.
+- AI 모델이 준비된 뒤 캡처 서비스가 `HapticNotifier`를 시작합니다. 진동 모터가 없는 기기에서는 시작하지 않습니다. 화면이 꺼져 쉬면 멈추고, 켜지면 새로 만들어 시작합니다.
+- 시각화가 뜻하지 않게 꺼졌을 때의 진동(`HapticPlayer.playStoppedAlert`)은 이 설정과 상관없이 울립니다(1장 꺼짐 알림).
 - `SV-Haptic` 스레드(`THREAD_PRIORITY_BACKGROUND`)가 **100ms마다** 최근 분류 라벨과 `AudioEngine.currentLevel()`을 읽습니다. AI 결과가 250ms마다 나오므로 놓치지 않습니다.
 - `ai/` 코드에 콜백을 넣지 않고 결과를 읽어 가는 방식이라 AI 파트를 건드리지 않습니다.
 
@@ -194,6 +238,9 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 모드별 슬라이더 값은 드래그 중에는 메모리에만 반영하고, **손을 뗄 때**와 화면을 벗어날 때(`onPause`) 저장합니다.
 - 모드 설정의 기본값은 `ModeSettings` 생성자 한 곳에만 둡니다. 저장값이 없는 항목은 `loadMode`가 그 기본값을 그대로 씁니다. 새 설치가 받는 기본값과 저장 키(`putMode`로 적고 `loadMode`로 읽기)는 `ModeSettingsTest`가 메모리 가짜 프리퍼런스로 기기 없이 확인합니다.
 - 표현 모드(`VisualMode`)는 **순서(ordinal)로 저장**하므로 enum 순서를 바꾸면 기존 사용자 설정이 어긋납니다. 진동 설정의 enum은 이름으로 저장합니다.
+- 실행 상태(`isServiceRunning`), AI 사용 가능 여부(`aiAvailable`), 화면 꺼짐으로 쉬는 중(`isCapturePaused`)은 캡처 서비스가 알려주는 값이라 저장하지 않습니다.
+- 마지막으로 뜻하지 않게 꺼진 이유(`lastUnexpectedStop`)는 캡처 서비스가 알려주지만, 프로세스가 끝난 뒤 앱을 열어도 홈에서 보이도록 이름으로 저장합니다. 모르는 이름(항목을 바꾼 뒤)이면 안내가 없는 것으로 봅니다. 읽기·쓰기(`loadLastUnexpectedStop`·`putLastUnexpectedStop`)는 `StopNoticeSettingsTest`가 확인합니다.
+- "화면이 꺼지면 일시정지"의 기본값은 `PAUSE_WHEN_SCREEN_OFF_DEFAULT` 한 곳에만 둡니다. 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 모르고 지나갑니다(`ScreenOffPauseTest`).
 
 ---
 
@@ -201,7 +248,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 | 스레드 | 우선순위 | 하는 일 |
 |---|---|---|
-| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기 |
+| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 꺼짐 알림 |
 | `SV-AudioCapture` | `URGENT_AUDIO` | `AudioRecord` 읽기, 피크 전달, AI 링버퍼 복사 |
 | `SV-AiInit` | `BACKGROUND` | 모델 복사·세션 생성 (시작 시 한 번) |
 | AI 코루틴 | `Dispatchers.Default` | 250ms 간격 분석 |
@@ -216,6 +263,9 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 | AI 입력 소리 | 캡처 | AI 코루틴 | `AiAudioBuffer` (`synchronized` 링버퍼) |
 | 분류 결과 | AI 코루틴 | 메인, `SV-Haptic` | `AtomicReference` |
 | 설정 | 메인 (설정 화면) | 메인 (오버레이), `SV-Haptic` | `StateFlow.value` |
+| AI 사용 가능 여부 | `SV-AiInit` | 메인 (홈·설정 화면) | `StateFlow` |
+| 캡처 쉬는 중 | 메인 (화면 꺼짐 수신) | 메인 (오버레이) | `StateFlow` |
+| AI 파이프라인·진동 알림 붙이기, 쉬는 중 여부 | `SV-AiInit`, 메인 | `SV-AiInit`, 메인 | `aiLock` |
 
 ---
 

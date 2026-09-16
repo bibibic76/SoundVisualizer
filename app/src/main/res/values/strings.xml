@@ -12,6 +12,8 @@
     <string name="home_subtitle">Draws the sounds you can\'t see right on your screen.\nFrom gaming to movies, try a whole new experience.</string>
     <string name="home_status_running">Status: Running</string>
     <string name="home_status_idle">Status: Ready</string>
+    <string name="home_ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color and vibration alerts are off. Try turning the visualizer off and on again.</string>
+    <string name="home_stopped_dismiss">Dismiss notice</string>
     <string name="home_start">Start</string>
     <string name="home_stop">Stop</string>
     <string name="home_add_tile">Add to Quick Settings</string>
@@ -46,6 +48,7 @@
     <string name="settings_mode_picker_desc">Choose the basic shape of the graphics drawn on screen.</string>
     <string name="settings_section_mode_detail">Settings by mode</string>
     <string name="settings_section_ai">Sound types (AI)</string>
+    <string name="settings_section_battery">Battery</string>
 
     <!-- Language -->
     <string name="settings_language_title">Language</string>
@@ -76,14 +79,20 @@
     <string name="setting_ripple">Spatial ripple</string>
     <string name="setting_ripple_desc">Adds a slight delay so sound seems to spread from front to back.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pause while the screen is off</string>
+    <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
     <string name="ai_show_speech">Show speech</string>
     <string name="ai_show_danger">Show danger sounds</string>
+    <string name="ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color. Try turning the visualizer off and on again.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>
     <string name="haptic_requires_display">Vibration works only when this sound type is shown.</string>
+    <string name="haptic_ai_unavailable">It won\'t vibrate while sound type detection isn\'t working.</string>
     <string name="haptic_unsupported">This device doesn\'t support vibration.</string>
     <string name="haptic_no_amplitude">This device can\'t adjust vibration strength, so it vibrates at the default strength.</string>
     <string name="haptic_strength">Strength</string>
@@ -114,6 +123,18 @@
     <string name="notification_title" translatable="false">SoundVisualizer</string>
     <string name="notification_text">Visualizing sound.</string>
     <string name="notification_stop">Stop</string>
+    <string name="notification_text_ai_unavailable">Visualizing sound. Sound type detection isn\'t working, so vibration alerts are off.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visualizer turned off</string>
+    <string name="stopped_channel_desc">Tells you when the sound visualizer turns off without you stopping it.</string>
+    <string name="stopped_title">Sound visualizer turned off</string>
+    <string name="stopped_text_projection">Sound capture ended, so graphics and vibration alerts are off. This happens when screen recording, screen sharing or casting starts, or when the system stops sound capture. If another app is recording, sharing or casting, turning it on again ends it.</string>
+    <string name="stopped_text_capture_error">Sound capture stopped because of an error, so graphics and vibration alerts are off.</string>
+    <string name="stopped_text_start_failed">Sound capture couldn\'t start, so graphics and vibration alerts are off.</string>
+    <string name="stopped_text_overlay_failed">Graphics couldn\'t be shown over other apps, so the visualizer turned off. Check that “Display over other apps” is allowed.</string>
+    <string name="stopped_turn_on">Turn on again</string>
+    <string name="stopped_toast">Sound visualizer turned off. Graphics and vibration alerts are off.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Sound visualizer</string>
@@ -141,7 +162,7 @@
     <string name="help_perm_capture">Screen recording</string>
     <string name="help_perm_capture_desc">Android only lets apps capture your phone\'s sound through this consent. Your screen is not captured.</string>
     <string name="help_perm_notification">Notifications (Android 13+)</string>
-    <string name="help_perm_notification_desc">Shows the running notification with a Stop button. The app still works if you deny it.</string>
+    <string name="help_perm_notification_desc">Shows the running notification with a Stop button, and tells you when the visualizer turns off without you stopping it. The app still works if you deny it. If it then turns off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
 
     <string name="help_modes_title">Visual modes</string>
     <string name="help_mode_wave_desc">The whole edge of the screen pushes inward with the loudness. The side the sound comes from pushes in deeper.</string>
@@ -160,17 +181,21 @@
     <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>
     <string name="help_note_mono">Sounds that are identical on the left and right (mono) are shown only toward the front.</string>
     <string name="help_note_sources">Only media and game sounds are captured. Phone calls, notification sounds and alarms are not, and apps that block audio capture (such as some video apps) can\'t be visualized.</string>
+    <string name="help_note_stopped">Starting screen recording, screen sharing or casting turns the visualizer off, because it uses the same screen recording consent and Android lets only one app use it at a time. If another app is recording, sharing or casting, turning it on again ends it. In most cases, when it turns off without you stopping it, your phone vibrates three long times and shows a notification with a “Turn on again” button. Stopping sound capture from your phone\'s screen-sharing controls shows the same alert, and a force stop or a crash can\'t tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
+    <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in the Settings tab.</string>
     <string name="help_note_ai">AI classification can be wrong. Don\'t rely on this app as your only safeguard when safety is at stake.</string>
 
     <string name="help_faq_title">FAQ</string>
+    <string name="help_faq_stopped_q">It turned off without me stopping it.</string>
+    <string name="help_faq_stopped_a">It turns off when screen recording, screen sharing or casting starts, or when sound capture stops because of an error. Tap “Turn on again” in the notification, or turn it on from Home or Quick Settings. Android asks for the screen recording consent every time, and turning it on again ends any recording, sharing or casting that is running.</string>
     <string name="help_faq_no_graphic_q">I don\'t see any graphics.</string>
     <string name="help_faq_no_graphic_a">Check whether the app you\'re playing blocks audio capture. Also make sure opacity isn\'t too low in Settings, and that showing the current sound type isn\'t turned off.</string>
     <string name="help_faq_no_vibration_q">It doesn\'t vibrate.</string>
-    <string name="help_faq_no_vibration_a">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. If vibration is turned off in your phone\'s settings, it may not vibrate.</string>
+    <string name="help_faq_no_vibration_a">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. While the screen is off it pauses by default, so turn off “Pause while the screen is off” under Battery in Settings to keep getting vibration alerts then. It also doesn\'t vibrate while sound type detection isn\'t working. If vibration is turned off in your phone\'s settings, it may not vibrate.</string>
     <string name="help_faq_install_q">A new version won\'t install.</string>
     <string name="help_faq_install_a">An APK built elsewhere has a different signature and can\'t be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.</string>
     <string name="help_faq_battery_q">Does it use a lot of battery?</string>
-    <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. Because it keeps capturing sound, though, we recommend turning it off when you\'re not using it.</string>
+    <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. While the screen is off it stops capturing sound by default. Because it keeps capturing while the screen is on, though, we recommend turning it off when you\'re not using it.</string>
     <string name="help_faq_language_q">How do I change the app language?</string>
     <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
 
