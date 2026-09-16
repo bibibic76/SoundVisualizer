@@ -43,5 +43,14 @@ object AiClassification {
      * 파이프라인이 히스테리시스와 위협음 프리뷰까지 반영한 값을 내보내므로
      * 여기서 추가로 흔들림을 잡을 필요는 없다.
      */
-    fun coarse(): String = source?.invoke()?.coarse ?: AMBIENT
+    fun coarse(): String = latest()?.coarse ?: AMBIENT
+
+    /**
+     * 가장 최근 결과 전체. 분류기가 없거나 첫 추론이 끝나지 않았으면 null.
+     *
+     * 오버레이와 진동은 [coarse] 하나로 충분하다. 이쪽은 개발자 모드에서 "분류가 맞는지" 를
+     * 사람이 채점하려고 나머지 필드(모델이 말한 이름, 확신도, 임계값 통과 여부, 부스터 개입,
+     * 단계별 소요시간)까지 읽는 용도다. 같은 AtomicReference 읽기라 락은 여기서도 필요 없다.
+     */
+    fun latest(): AiClassificationResult? = source?.invoke()
 }
