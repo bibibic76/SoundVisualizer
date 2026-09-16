@@ -107,6 +107,29 @@ class AiPostProcessorTest {
     }
 
     @Test
+    fun silenceAmbientFrame_clearsDangerAndSpeechCandidateStateBeforeNextSound() {
+        val pp = AiPostProcessor()
+
+        val danger = pp.process(AiPostProcessor.FrameInput("danger", "Gunshot", 0.9f))
+        assertEquals("danger", danger.confirmedCoarse)
+
+        val silenceAmbient = pp.process(AiPostProcessor.FrameInput("ambient", "Silence", 0.4f))
+        assertEquals("ambient", silenceAmbient.confirmedCoarse)
+        assertEquals("", silenceAmbient.candidateCoarse)
+        assertEquals(0, silenceAmbient.candidateStreak)
+
+        val firstSpeech = pp.process(AiPostProcessor.FrameInput("speech", "Speech", 0.4f))
+        assertEquals("ambient", firstSpeech.confirmedCoarse)
+        assertEquals(1, firstSpeech.candidateStreak)
+
+        pp.process(AiPostProcessor.FrameInput("ambient", "Silence", 0.4f))
+        val firstSpeechAfterLongSilence = pp.process(AiPostProcessor.FrameInput("speech", "Speech", 0.4f))
+        assertEquals("ambient", firstSpeechAfterLongSilence.confirmedCoarse)
+        assertEquals("speech", firstSpeechAfterLongSilence.candidateCoarse)
+        assertEquals(1, firstSpeechAfterLongSilence.candidateStreak)
+    }
+
+    @Test
     fun threshold_boundariesIsolated() {
         fun eff(
             coarse: String,
@@ -162,5 +185,22 @@ class AiPostProcessorTest {
             )
         )
         assertFalse(AiPostProcessor.isCriticalDangerEvent("Music", "Siren 12.0% > Alarm 10.0%"))
+    }
+
+    @Test
+    fun waterSoundsDoNotProduceDangerUiClassification() {
+        listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
+            val result = AiPostProcessor().process(
+                AiPostProcessor.FrameInput(
+                    coarse = YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName),
+                    display = displayName,
+                    confidence = 1f
+                )
+            )
+
+            assertEquals(displayName, "ambient", result.confirmedCoarse)
+            assertEquals(displayName, "ambient", result.uiCoarse)
+            assertFalse(displayName, result.useBoosterDangerPreview)
+        }
     }
 }

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 앱 배경과 같은 톤. 런처 아이콘 배경으로 쓴다. -->
-    <color name="ic_launcher_background">#1E2024</color>
+    <!--
+        앱 화면 배경. 창·스플래시 배경(themes.xml)으로 써서 Compose 가 그리기 전에도 같은 색이 보이게 한다.
+        Compose 의 BgColor(MainActivity.kt)와 같은 값이어야 한다. 어긋나면 AppWindowThemeTest 가 실패한다.
+    -->
+    <color name="app_background">#2A2C31</color>
+
 </resources>

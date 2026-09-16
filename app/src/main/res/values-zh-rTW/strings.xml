@@ -1,0 +1,219 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">首頁</string>
+    <string name="tab_settings">設定</string>
+    <string name="tab_help">說明</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">將看不見的聲音直接描繪在螢幕上。\n從遊戲到電影，開啟全新的體驗。</string>
+    <string name="home_status_running">狀態：執行中</string>
+    <string name="home_status_idle">狀態：準備就緒</string>
+    <string name="home_capture_blocked">目前接收不到聲音，因此無法繪製任何圖形。可能是正在播放的應用程式不允許分享聲音 (受保護的影片就是這樣)，也可能是該應用程式本身的聲音已靜音。</string>
+    <string name="home_ai_unavailable">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示，震動提醒也已關閉。請試著關閉聲音視覺化後再重新開啟。</string>
+    <string name="home_stopped_dismiss">關閉提示</string>
+    <string name="home_start">開始</string>
+    <string name="home_stop">停止</string>
+    <string name="home_add_tile">新增至快速設定</string>
+    <string name="home_add_tile_desc">下拉通知欄，就能在遊戲或影片畫面上直接開啟或關閉。</string>
+    <string name="home_add_tile_manual">下拉通知欄，輕觸「編輯」(鉛筆圖示) 並新增「聲音視覺化」，就能在遊戲或影片畫面上直接開啟或關閉。</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">請允許「在其他應用程式上層顯示」</string>
+    <string name="permission_overlay_message">聲音會繪製在遊戲或影片的上層，因此 Android 需要這項權限。如果設定畫面顯示應用程式清單，請找到 SoundVisualizer 並開啟它的開關，然後返回。回來後會自動接著繼續。</string>
+    <string name="permission_record_audio_required">需要麥克風 (錄音) 權限才能擷取音訊。</string>
+    <string name="permission_mic_rationale_title">為什麼需要麥克風權限？</string>
+    <string name="permission_mic_rationale_message">Android 規定必須取得麥克風權限，才能擷取手機內正在播放的聲音。這個應用程式不會錄下你周遭的聲音。</string>
+    <string name="permission_mic_settings_title">請在設定中允許使用麥克風</string>
+    <string name="permission_mic_settings_message">尚未取得麥克風權限。如果權限要求視窗沒有再次出現，請輕觸「開啟設定」，然後在「權限」中允許「麥克風」。這項權限只會用來擷取手機內播放的聲音，不會錄下你周遭的聲音。</string>
+    <string name="permission_continue">繼續</string>
+    <string name="permission_cancel">取消</string>
+    <string name="permission_open_settings">開啟設定</string>
+    <string name="permission_close">關閉</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">波浪</string>
+    <string name="mode_pad">光條</string>
+    <string name="mode_circle">圓形</string>
+    <string name="mode_outline">輪廓</string>
+
+    <string name="mode_card_wave">波浪模式</string>
+    <string name="mode_card_pad">光條模式</string>
+    <string name="mode_card_circle">圓形模式</string>
+    <string name="mode_card_outline">輪廓模式</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">模式設定</string>
+    <string name="settings_mode_picker_title">視覺模式</string>
+    <string name="settings_mode_picker_desc">選擇螢幕上所繪製圖形的基本形狀。</string>
+    <string name="settings_section_mode_detail">各模式詳細設定</string>
+    <string name="settings_section_ai">聲音類型 (AI)</string>
+    <string name="settings_section_battery">電池</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">語言</string>
+    <string name="settings_language_system">系統預設</string>
+    <string name="settings_language_cancel">取消</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">鎖定大小</string>
+    <string name="setting_size_lock_desc">讓圖形維持固定大小，改以不透明度呈現音量大小。</string>
+    <string name="setting_fixed_size">固定大小</string>
+    <string name="setting_fixed_size_desc">圖形維持的固定大小。</string>
+    <string name="setting_max_opacity">最大不透明度</string>
+    <string name="setting_max_opacity_desc">聲音最大時圖形達到的不透明度。</string>
+    <string name="setting_size">大小</string>
+    <string name="setting_size_desc">調整圖形的大小與整體份量感。</string>
+    <string name="setting_radius">半徑</string>
+    <string name="setting_radius_desc">調整圓形模式中央圓環的半徑。</string>
+    <string name="setting_opacity">不透明度</string>
+    <string name="setting_opacity_desc">數值越高越鮮明；數值越低越淡、越透明。</string>
+    <string name="setting_speed">速度</string>
+    <string name="setting_speed_desc">聲音方向改變時，圖形移動到新位置的速度。</string>
+    <string name="setting_sensitivity">靈敏度</string>
+    <string name="setting_sensitivity_desc">圖形隨音量變化做出反應 (跳動) 的快慢。</string>
+    <string name="setting_glow">光暈</string>
+    <string name="setting_glow_desc">在圖形周圍加上柔和的霓虹光暈效果。注意：會使用較多系統資源。</string>
+    <string name="setting_glow_intensity">光暈強度</string>
+    <string name="setting_glow_intensity_desc">光暈擴散的範圍。</string>
+    <string name="setting_ripple">空間漣漪效果</string>
+    <string name="setting_ripple_desc">加入些微延遲，讓聲音彷彿從前方往後方擴散。</string>
+
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">螢幕關閉時暫停</string>
+    <string name="setting_pause_screen_off_desc">螢幕關閉期間會停止擷取聲音、辨識聲音類型和震動以節省電力，並在你開啟螢幕後繼續。如果希望螢幕關閉時仍收到震動提醒，請關閉這個選項。</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">顯示環境音</string>
+    <string name="ai_show_speech">顯示人聲</string>
+    <string name="ai_show_danger">顯示危險音</string>
+    <string name="ai_unavailable">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示。請試著關閉聲音視覺化後再重新開啟。</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">震動</string>
+    <string name="haptic_requires_display">只有在顯示這個聲音類型時才會震動。</string>
+    <string name="haptic_ai_unavailable">無法辨識聲音類型時不會震動。</string>
+    <string name="haptic_unsupported">這部裝置不支援震動。</string>
+    <string name="haptic_no_amplitude">這部裝置無法調整震動強度，將以預設強度震動。</string>
+    <string name="haptic_strength">強度</string>
+    <string name="haptic_strength_weak">弱</string>
+    <string name="haptic_strength_medium">中</string>
+    <string name="haptic_strength_strong">強</string>
+    <string name="haptic_pattern">震動方式</string>
+    <string name="haptic_pattern_tap">一次</string>
+    <string name="haptic_pattern_double">兩次</string>
+    <string name="haptic_pattern_hold">長震動</string>
+    <string name="haptic_pattern_repeat">重複</string>
+    <string name="haptic_preview_hint">輕觸選項即可預覽震動效果。</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">選擇顏色</string>
+    <string name="color_picker_presets">常用顏色</string>
+    <string name="cd_preset_white">白色</string>
+    <string name="cd_preset_red">紅色</string>
+    <string name="cd_preset_orange">橘色</string>
+    <string name="cd_preset_yellow">黃色</string>
+    <string name="cd_preset_green">綠色</string>
+    <string name="cd_preset_cyan">青色</string>
+    <string name="cd_preset_blue">藍色</string>
+    <string name="cd_preset_magenta">洋紅色</string>
+    <string name="color_picker_confirm">確定</string>
+    <string name="color_picker_cancel">取消</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">開啟顏色選擇器</string>
+    <string name="cd_color_ambient">環境音顏色</string>
+    <string name="cd_color_speech">人聲顏色</string>
+    <string name="cd_color_danger">危險音顏色</string>
+    <string name="cd_expand">展開</string>
+    <string name="cd_collapse">收合</string>
+    <string name="cd_change_language">變更語言</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">音訊擷取</string>
+    <string name="notification_text">正在將聲音視覺化。</string>
+    <string name="notification_stop">停止</string>
+    <string name="notification_text_ai_unavailable">正在將聲音視覺化。由於無法辨識聲音類型，震動提醒已關閉。</string>
+    <string name="notification_text_capture_blocked">目前接收不到聲音。可能是正在播放的應用程式不允許分享聲音，也可能是該應用程式本身的聲音已靜音。</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">視覺化關閉通知</string>
+    <string name="stopped_channel_desc">在你沒有自行關閉的情況下，聲音視覺化關閉時會通知你。</string>
+    <string name="stopped_title">聲音視覺化已關閉</string>
+    <string name="stopped_text_projection">聲音擷取已結束，因此圖形和震動提醒都已關閉。開始螢幕錄影、螢幕分享或投放，或是系統停止聲音擷取時，就會發生這種情況。如果其他應用程式正在錄影、分享或投放，重新開啟時會結束對方的作業。</string>
+    <string name="stopped_text_capture_error">聲音擷取因發生錯誤而停止，因此圖形和震動提醒都已關閉。</string>
+    <string name="stopped_text_start_failed">無法開始擷取聲音，因此圖形和震動提醒都已關閉。</string>
+    <string name="stopped_text_overlay_failed">無法在其他應用程式上層顯示圖形，因此聲音視覺化已關閉。請確認已允許「在其他應用程式上層顯示」權限。</string>
+    <string name="stopped_turn_on">重新開啟</string>
+    <string name="stopped_toast">聲音視覺化已關閉。圖形和震動提醒都已停止。</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">聲音視覺化</string>
+    <string name="tile_state_on">開啟</string>
+    <string name="tile_state_off">關閉</string>
+    <string name="tile_overlay_permission_needed">需要「在其他應用程式上層顯示」權限。請在應用程式中輕觸「開始」來允許。</string>
+
+    <!-- Help -->
+    <string name="help_start_title">開始使用</string>
+    <string name="help_start_1">在「首頁」輕觸「開始」。</string>
+    <string name="help_start_2">允許所需權限。基於 Android 政策，每次開啟這項功能時都會詢問你是否同意螢幕錄影。</string>
+    <string name="help_start_3">開啟遊戲或影片後，聲音就會沿著螢幕邊緣描繪出來。</string>
+    <string name="help_start_4">如要關閉，請在「首頁」或通知中輕觸「停止」。</string>
+
+    <string name="help_tile_title">從通知欄開啟或關閉</string>
+    <string name="help_tile_body">在「首頁」輕觸「新增至快速設定」，通知欄就會出現「聲音視覺化」按鈕。之後不必切換應用程式，就能在遊戲或影片畫面上直接開啟或關閉。</string>
+    <string name="help_tile_use">輕觸即可開啟，開啟時再輕觸一次即可關閉。長按會開啟這個應用程式的設定畫面。</string>
+    <string name="help_tile_old">在 Android 12 以下版本中，請開啟通知欄，輕觸「編輯」(鉛筆圖示)，然後自行將「聲音視覺化」拖曳到快速設定中。</string>
+
+    <string name="help_permissions_title">為什麼需要這些權限</string>
+    <string name="help_perm_overlay">在其他應用程式上層顯示</string>
+    <string name="help_perm_overlay_desc">用來在遊戲和影片上層顯示圖形。</string>
+    <string name="help_perm_mic">麥克風 (錄音)</string>
+    <string name="help_perm_mic_desc">Android 規定必須取得這項權限，才能擷取手機內播放的聲音。這個應用程式不會錄下你周遭的聲音。</string>
+    <string name="help_perm_capture">螢幕錄影</string>
+    <string name="help_perm_capture_desc">Android 只允許應用程式在取得這項同意後，擷取手機內的聲音。這個應用程式不會擷取你的螢幕畫面。</string>
+    <string name="help_perm_notification">通知 (Android 13 以上版本)</string>
+    <string name="help_perm_notification_desc">顯示執行中的通知和「停止」按鈕。即使拒絕，應用程式仍可正常運作。</string>
+
+    <string name="help_modes_title">視覺模式</string>
+    <string name="help_mode_wave_desc">整個螢幕邊緣會隨著音量向內推進，聲音來源那一側會推進得更深。</string>
+    <string name="help_mode_pad_desc">螢幕邊緣的 8 個位置會亮起光條，最容易看出聲音的方向。</string>
+    <string name="help_mode_outline_desc">只以細線描繪波浪的輪廓，較不會遮住遊戲畫面。</string>
+    <string name="help_mode_circle_desc">螢幕中央的圓環會朝聲音來源的方向膨脹。</string>
+    <string name="help_modes_note">「大小」、「不透明度」等設定會依模式分別儲存，可以在「設定」分頁中變更。</string>
+
+    <string name="help_sound_title">聲音類型與震動</string>
+    <string name="help_sound_kinds">AI 會將聽到的聲音分為環境音、人聲和危險音。預設情況下，環境音為白色、人聲為黃色、危險音為紅色。你可以在「設定」分頁中變更各類型的顏色，以及是否顯示。</string>
+    <string name="help_sound_danger">偵測到危險音 (例如槍聲) 時，顏色會立即改變，而不是逐漸轉變。</string>
+    <string name="help_sound_haptic">即使沒有看著螢幕，也能透過震動得知聲音。預設只有危險音會震動；你可以為每種類型選擇強度 (弱、中、強) 和震動方式 (一次、兩次、長震動、重複)。</string>
+    <string name="help_sound_haptic_rule">只有在螢幕上顯示的類型才會震動。同一類型在 2 秒內不會再次震動；選擇「重複」時，聲音持續期間會每 1.5 秒震動一次。</string>
+
+    <string name="help_notes_title">注意事項</string>
+    <string name="help_note_direction">可以分辨左右，但無法分辨前後。螢幕上方和下方的圖形代表兩側聽起來差不多的聲音，以及空間感效果。</string>
+    <string name="help_note_mono">左右完全相同的聲音 (單聲道) 只會顯示在正前方。</string>
+    <string name="help_note_sources">只會擷取媒體和遊戲的聲音。通話、通知音效和鬧鐘不在擷取範圍內；禁止擷取音訊的應用程式 (例如部分影片應用程式) 也無法視覺化。如果有聲音在播放，卻持續約 15 秒都沒有繪製出任何圖形，「首頁」和執行中的通知會提醒你。不過，應用程式自己靜音時看起來完全一樣，因此無法告訴你究竟是哪一種情況。</string>
+    <string name="help_note_stopped">開始螢幕錄影、螢幕分享或投放時，聲音視覺化會關閉，因為它也使用同一項螢幕錄影同意，而 Android 一次只允許一個應用程式使用。如果其他應用程式正在錄影、分享或投放，重新開啟時會結束對方的作業。在你沒有自行關閉的情況下關閉時，手機通常會有三次長震動，並顯示帶有「重新開啟」按鈕的通知。從手機的螢幕分享控制項停止擷取聲音時，也會顯示同樣的提醒；應用程式被強制停止或異常結束時，則無法通知你。如果你關閉了通知，就只會以震動提醒，開啟應用程式後「首頁」會顯示關閉的原因。</string>
+    <string name="help_note_screen_off">螢幕關閉期間會暫停以節省電力，並在你開啟螢幕後繼續。你可以在「設定」分頁的「電池」中變更這項設定。</string>
+    <string name="help_note_ai">AI 分類可能會出錯。在攸關安全的情況下，請勿將這個應用程式當作唯一的依靠。</string>
+
+    <string name="help_faq_title">常見問題</string>
+    <string name="help_faq_stopped_q">我沒有關閉它，它卻自己關掉了。</string>
+    <string name="help_faq_stopped_a">開始螢幕錄影、螢幕分享或投放，或是聲音擷取因錯誤而中斷時，它就會關閉。請輕觸通知中的「重新開啟」，或從「首頁」或快速設定重新開啟。基於 Android 政策，每次都會詢問你是否同意螢幕錄影；重新開啟也會結束正在進行的錄影、分享或投放。</string>
+    <string name="help_faq_no_graphic_q">看不到任何圖形。</string>
+    <string name="help_faq_no_graphic_a">請確認正在播放的應用程式是否禁止擷取音訊，以及該應用程式內的聲音是否已關閉。如果持續接收不到聲音，「首頁」和執行中的通知會提醒你。另外，也請確認「設定」分頁中的「不透明度」沒有調得太低，以及目前這種聲音類型的顯示沒有關閉。</string>
+    <string name="help_faq_no_vibration_q">沒有震動。</string>
+    <string name="help_faq_no_vibration_a">請在「設定」分頁的「聲音類型 (AI)」中，確認該類型的「顯示」和「震動」都已開啟。如果手機設定中關閉了震動，也可能不會震動。</string>
+    <string name="help_faq_install_q">無法安裝新版本。</string>
+    <string name="help_faq_install_a">在其他地方建置的 APK 簽章不同，無法直接覆蓋安裝現有的應用程式。請先解除安裝現有的應用程式，再進行安裝。這樣做會重設你的設定。</string>
+    <string name="help_faq_battery_q">會很耗電嗎？</string>
+    <string name="help_faq_battery_a">只有在有聲音時才會繪製圖形，安靜時會進入待機狀態。不過，由於會持續擷取聲音，建議不使用時將它關閉。</string>
+    <string name="help_faq_language_q">如何變更應用程式語言？</string>
+    <string name="help_faq_language_a">輕觸「設定」分頁頂端的「語言」，然後選擇想使用的語言。選擇「系統預設」會跟隨手機的語言。在 Android 13 以上版本中，也可以在手機設定的「應用程式語言」中變更。</string>
+
+    <string name="help_about_title">關於</string>
+    <string name="help_about_version">版本 %1$s</string>
+    <string name="help_about_team">製作團隊：SOVIS</string>
+    <string name="help_about_license">本應用程式以 Apache License 2.0 授權發布。</string>
+    <string name="help_licenses_button">開放原始碼授權</string>
+    <string name="help_licenses_title">開放原始碼授權</string>
+    <string name="help_close">關閉</string>
+</resources>

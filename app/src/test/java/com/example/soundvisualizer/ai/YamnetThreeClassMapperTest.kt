@@ -138,11 +138,26 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
-    fun G_proxyPlop() {
+    fun G_proxyPlopRemainsDangerButWaterSoundsAreAmbient() {
         assertCase("proxy_plop")
         assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Plop"))
         assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Gargling"))
-        assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Rain"))
+        listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
+    fun waterSoundsDoNotProduceDangerCoarseClassification() {
+        listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
+            val probabilities = FloatArray(classNames.size)
+            probabilities[classNames.indexOf(displayName)] = 1f
+
+            val result = classifier.classify(probabilities)
+
+            assertEquals(displayName, "ambient", result.coarse)
+            assertEquals(displayName, displayName, result.displayName)
+        }
     }
 
     @Test

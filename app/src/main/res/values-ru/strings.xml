@@ -1,0 +1,219 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">Главная</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="tab_help">Справка</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Показывает на экране звуки, которые нельзя увидеть.\nОт игр до фильмов — откройте для себя новые впечатления.</string>
+    <string name="home_status_running">Статус: работает</string>
+    <string name="home_status_idle">Статус: ожидает запуска</string>
+    <string name="home_capture_blocked">Звук не доходит до визуализатора, поэтому рисовать нечего. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука (так устроены защищённые видео), или звук в нём выключен.</string>
+    <string name="home_ai_unavailable">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков, а вибрация отключена. Попробуйте выключить и снова включить визуализатор.</string>
+    <string name="home_stopped_dismiss">Скрыть</string>
+    <string name="home_start">Запустить</string>
+    <string name="home_stop">Остановить</string>
+    <string name="home_add_tile">Добавить в быстрые настройки</string>
+    <string name="home_add_tile_desc">Включайте и выключайте визуализацию из панели уведомлений прямо поверх игры или видео.</string>
+    <string name="home_add_tile_manual">Опустите панель уведомлений, нажмите «Изменить» (значок карандаша) и добавьте «Визуализатор звука», чтобы включать и выключать его прямо поверх игры или видео.</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">Разрешите «Поверх других приложений»</string>
+    <string name="permission_overlay_message">Звуки рисуются поверх игры или видео, поэтому Android требует это разрешение. Если в настройках откроется список приложений, найдите SoundVisualizer, включите его переключатель и вернитесь. Дальше запуск продолжится сам.</string>
+    <string name="permission_record_audio_required">Для захвата звука нужно разрешение «Микрофон» (запись аудио).</string>
+    <string name="permission_mic_rationale_title">Зачем нужен доступ к микрофону?</string>
+    <string name="permission_mic_rationale_message">Android требует разрешения на доступ к микрофону, чтобы приложение могло получать звук, который воспроизводится на телефоне. Звуки вокруг вас не записываются.</string>
+    <string name="permission_mic_settings_title">Включите доступ к микрофону в настройках</string>
+    <string name="permission_mic_settings_message">Доступ к микрофону не предоставлен. Если запрос разрешения больше не появляется, нажмите «Открыть настройки», перейдите в раздел «Разрешения», выберите «Микрофон» и разрешите доступ. Он нужен только для получения звука, который воспроизводится на телефоне. Звуки вокруг вас не записываются.</string>
+    <string name="permission_continue">Продолжить</string>
+    <string name="permission_cancel">Отмена</string>
+    <string name="permission_open_settings">Открыть настройки</string>
+    <string name="permission_close">Закрыть</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">Волна</string>
+    <string name="mode_pad">Панель</string>
+    <string name="mode_circle">Круг</string>
+    <string name="mode_outline">Контур</string>
+
+    <string name="mode_card_wave">Режим «Волна»</string>
+    <string name="mode_card_pad">Режим «Панель»</string>
+    <string name="mode_card_circle">Режим «Круг»</string>
+    <string name="mode_card_outline">Режим «Контур»</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Настройки режима</string>
+    <string name="settings_mode_picker_title">Режим отображения</string>
+    <string name="settings_mode_picker_desc">Выберите основную форму графики, которая рисуется на экране.</string>
+    <string name="settings_section_mode_detail">Параметры по режимам</string>
+    <string name="settings_section_ai">Типы звуков (ИИ)</string>
+    <string name="settings_section_battery">Батарея</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Язык</string>
+    <string name="settings_language_system">Язык системы</string>
+    <string name="settings_language_cancel">Отмена</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Фиксировать размер</string>
+    <string name="setting_size_lock_desc">Размер графики не меняется, а громкость передаётся её плотностью.</string>
+    <string name="setting_fixed_size">Фикс. размер</string>
+    <string name="setting_fixed_size_desc">Постоянный размер графики.</string>
+    <string name="setting_max_opacity">Макс. плотность</string>
+    <string name="setting_max_opacity_desc">Насколько плотной становится графика при самом громком звуке.</string>
+    <string name="setting_size">Размер</string>
+    <string name="setting_size_desc">Регулирует, насколько крупной и объёмной выглядит графика.</string>
+    <string name="setting_radius">Радиус</string>
+    <string name="setting_radius_desc">Задаёт радиус центрального кольца в режиме «Круг».</string>
+    <string name="setting_opacity">Плотность</string>
+    <string name="setting_opacity_desc">Чем выше значение, тем насыщеннее графика; чем ниже, тем она бледнее и прозрачнее.</string>
+    <string name="setting_speed">Скорость</string>
+    <string name="setting_speed_desc">Как быстро графика перемещается на новое место, когда меняется направление звука.</string>
+    <string name="setting_sensitivity">Отклик</string>
+    <string name="setting_sensitivity_desc">Как быстро графика реагирует (пульсирует) на изменение громкости.</string>
+    <string name="setting_glow">Сияние</string>
+    <string name="setting_glow_desc">Добавляет мягкое неоновое сияние вокруг графики. Внимание: требует дополнительных ресурсов.</string>
+    <string name="setting_glow_intensity">Сила сияния</string>
+    <string name="setting_glow_intensity_desc">Насколько далеко расходится сияние.</string>
+    <string name="setting_ripple">Пространственная рябь</string>
+    <string name="setting_ripple_desc">Добавляет небольшую задержку, чтобы звук словно расходился спереди назад.</string>
+
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Пауза при выключенном экране</string>
+    <string name="setting_pause_screen_off_desc">Пока экран выключен, захват звука, определение типов звуков и вибрация останавливаются, чтобы сберечь заряд, а при включении экрана работа продолжается. Отключите этот параметр, чтобы получать вибрацию и при выключенном экране.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Показывать фоновые звуки</string>
+    <string name="ai_show_speech">Показывать речь</string>
+    <string name="ai_show_danger">Показывать опасные звуки</string>
+    <string name="ai_unavailable">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков. Попробуйте выключить и снова включить визуализатор.</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Вибрация</string>
+    <string name="haptic_requires_display">Вибрация работает, только когда показ этого типа звука включён.</string>
+    <string name="haptic_ai_unavailable">Пока определение типа звука не работает, вибрации не будет.</string>
+    <string name="haptic_unsupported">Это устройство не поддерживает вибрацию.</string>
+    <string name="haptic_no_amplitude">На этом устройстве нельзя менять силу вибрации, поэтому она будет стандартной.</string>
+    <string name="haptic_strength">Сила</string>
+    <string name="haptic_strength_weak">Слабая</string>
+    <string name="haptic_strength_medium">Средняя</string>
+    <string name="haptic_strength_strong">Сильная</string>
+    <string name="haptic_pattern">Шаблон</string>
+    <string name="haptic_pattern_tap">Один раз</string>
+    <string name="haptic_pattern_double">Два раза</string>
+    <string name="haptic_pattern_hold">Долго</string>
+    <string name="haptic_pattern_repeat">Повтор</string>
+    <string name="haptic_preview_hint">Нажмите на вариант, чтобы почувствовать вибрацию.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">Выбор цвета</string>
+    <string name="color_picker_presets">Основные цвета</string>
+    <string name="cd_preset_white">Белый</string>
+    <string name="cd_preset_red">Красный</string>
+    <string name="cd_preset_orange">Оранжевый</string>
+    <string name="cd_preset_yellow">Жёлтый</string>
+    <string name="cd_preset_green">Зелёный</string>
+    <string name="cd_preset_cyan">Голубой</string>
+    <string name="cd_preset_blue">Синий</string>
+    <string name="cd_preset_magenta">Пурпурный</string>
+    <string name="color_picker_confirm">ОК</string>
+    <string name="color_picker_cancel">Отмена</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Открыть выбор цвета</string>
+    <string name="cd_color_ambient">Цвет фоновых звуков</string>
+    <string name="cd_color_speech">Цвет речи</string>
+    <string name="cd_color_danger">Цвет опасных звуков</string>
+    <string name="cd_expand">Развернуть</string>
+    <string name="cd_collapse">Свернуть</string>
+    <string name="cd_change_language">Изменить язык</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Захват звука</string>
+    <string name="notification_text">Идёт визуализация звука.</string>
+    <string name="notification_stop">Остановить</string>
+    <string name="notification_text_ai_unavailable">Идёт визуализация звука. Определение типа звука не работает, поэтому вибрация отключена.</string>
+    <string name="notification_text_capture_blocked">Звук не доходит до визуализатора. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука, или звук в нём выключен.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Визуализатор выключен</string>
+    <string name="stopped_channel_desc">Сообщает, когда визуализатор звука выключается не по вашей команде.</string>
+    <string name="stopped_title">Визуализатор звука выключен</string>
+    <string name="stopped_text_projection">Захват звука завершён, поэтому графика и вибрация отключены. Так бывает при запуске записи экрана, демонстрации экрана или трансляции, а также когда захват звука останавливает система. Если запись, демонстрация или трансляция идёт в другом приложении, при повторном включении она завершится.</string>
+    <string name="stopped_text_capture_error">Захват звука прервался из-за ошибки, поэтому графика и вибрация отключены.</string>
+    <string name="stopped_text_start_failed">Не удалось начать захват звука, поэтому графика и вибрация отключены.</string>
+    <string name="stopped_text_overlay_failed">Не удалось показать графику поверх других приложений, поэтому визуализатор выключился. Проверьте, разрешено ли «Поверх других приложений».</string>
+    <string name="stopped_turn_on">Включить снова</string>
+    <string name="stopped_toast">Визуализатор звука выключен. Графика и вибрация отключены.</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Визуализатор звука</string>
+    <string name="tile_state_on">Вкл.</string>
+    <string name="tile_state_off">Выкл.</string>
+    <string name="tile_overlay_permission_needed">Нужно разрешение «Поверх других приложений». Нажмите «Запустить» в приложении, чтобы предоставить его.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">Начало работы</string>
+    <string name="help_start_1">На вкладке «Главная» нажмите «Запустить».</string>
+    <string name="help_start_2">Предоставьте разрешения. Android запрашивает согласие на запись экрана при каждом запуске.</string>
+    <string name="help_start_3">Откройте игру или видео, и звуки появятся по краям экрана.</string>
+    <string name="help_start_4">Чтобы выключить, нажмите «Остановить» на вкладке «Главная» или в уведомлении.</string>
+
+    <string name="help_tile_title">Управление из панели уведомлений</string>
+    <string name="help_tile_body">Нажмите «Добавить в быстрые настройки» на вкладке «Главная», и в панели уведомлений появится кнопка «Визуализатор звука». С её помощью можно включать и выключать визуализацию прямо поверх игры или видео, не переходя в приложение.</string>
+    <string name="help_tile_use">Нажмите, чтобы включить, и ещё раз — чтобы выключить. Нажмите и удерживайте, чтобы открыть настройки этого приложения.</string>
+    <string name="help_tile_old">В Android 12 и более ранних версиях откройте панель уведомлений, нажмите «Изменить» (значок карандаша) и перетащите «Визуализатор звука» вручную.</string>
+
+    <string name="help_permissions_title">Зачем нужны разрешения</string>
+    <string name="help_perm_overlay">Поверх других приложений</string>
+    <string name="help_perm_overlay_desc">Нужно, чтобы показывать графику поверх игр и видео.</string>
+    <string name="help_perm_mic">Микрофон (запись аудио)</string>
+    <string name="help_perm_mic_desc">Android требует этого разрешения, чтобы приложение могло получать звук, который воспроизводится на телефоне. Звуки вокруг вас не записываются.</string>
+    <string name="help_perm_capture">Запись экрана</string>
+    <string name="help_perm_capture_desc">Android позволяет приложениям получать звук телефона только после такого согласия. Изображение экрана не записывается.</string>
+    <string name="help_perm_notification">Уведомления (Android 13 и выше)</string>
+    <string name="help_perm_notification_desc">Во время работы показывается уведомление с кнопкой «Остановить». Если запретить уведомления, приложение всё равно будет работать.</string>
+
+    <string name="help_modes_title">Режимы отображения</string>
+    <string name="help_mode_wave_desc">Края экрана по всему периметру надвигаются внутрь — тем сильнее, чем громче звук. Со стороны, откуда идёт звук, волна заходит глубже.</string>
+    <string name="help_mode_pad_desc">В 8 точках по краю экрана загораются полоски. В этом режиме направление видно лучше всего.</string>
+    <string name="help_mode_outline_desc">Рисуется только тонкий контур волны, поэтому графика меньше загораживает игру.</string>
+    <string name="help_mode_circle_desc">Кольцо в центре экрана вытягивается в сторону звука.</string>
+    <string name="help_modes_note">Такие настройки, как «Размер» и «Плотность», сохраняются отдельно для каждого режима. Изменить их можно на вкладке «Настройки».</string>
+
+    <string name="help_sound_title">Типы звуков и вибрация</string>
+    <string name="help_sound_kinds">ИИ делит всё, что слышно, на фоновые звуки, речь и опасные звуки. По умолчанию фоновые звуки отображаются белым, речь — жёлтым, а опасные звуки — красным. На вкладке «Настройки» можно изменить цвет каждого типа и выбрать, показывать ли его.</string>
+    <string name="help_sound_danger">Когда обнаружен опасный звук (например, выстрел), цвет меняется сразу, а не плавно.</string>
+    <string name="help_sound_haptic">Вибрация предупреждает, даже когда вы не смотрите на экран. По умолчанию она включена только для опасных звуков. Для каждого типа можно выбрать силу («Слабая», «Средняя», «Сильная») и шаблон («Один раз», «Два раза», «Долго», «Повтор»).</string>
+    <string name="help_sound_haptic_rule">Вибрация срабатывает только для типов, которые показываются на экране. Один и тот же тип не вызывает вибрацию повторно в течение 2 секунд, а в шаблоне «Повтор» вибрация повторяется каждые 1,5 секунды, пока звук не стихнет.</string>
+
+    <string name="help_notes_title">Полезно знать</string>
+    <string name="help_note_direction">Приложение различает звуки слева и справа, но не спереди и сзади. Графика вверху и внизу экрана обозначает звуки, одинаково слышные с обеих сторон, а также передаёт ощущение пространства.</string>
+    <string name="help_note_mono">Звуки, одинаковые слева и справа (моно), показываются только как звуки спереди.</string>
+    <string name="help_note_sources">Захватываются только звуки медиа и игр. Телефонные звонки, звуки уведомлений и сигналы будильника не захватываются. Звук из приложений, которые запрещают его захват (например, из некоторых видеоприложений), визуализировать нельзя. Если звук воспроизводится, но около 15 секунд ничего не рисуется, на вкладке «Главная» и в уведомлении во время работы появится сообщение об этом. То же самое бывает, когда приложение само выключило у себя звук, поэтому мы не можем подсказать, какой из двух случаев произошёл.</string>
+    <string name="help_note_stopped">Запуск записи экрана, демонстрации экрана или трансляции выключает визуализатор: он использует то же согласие на запись экрана, а Android разрешает пользоваться им только одному приложению за раз. Если запись, демонстрация или трансляция идёт в другом приложении, при повторном включении она завершится. Обычно, когда визуализатор выключается не по вашей команде, телефон три раза длинно вибрирует и показывает уведомление с кнопкой «Включить снова». Если остановить захват звука из системного уведомления о демонстрации экрана, появится такое же оповещение, а при принудительной остановке или сбое приложение сообщить уже не сможет. Если уведомления выключены, об этом предупредит только вибрация, а когда вы откроете приложение, на вкладке «Главная» будет видно, что именно выключилось.</string>
+    <string name="help_note_screen_off">Пока экран выключен, приложение приостанавливает работу, чтобы сберечь заряд, и продолжает, когда вы включаете экран. Это можно изменить в разделе «Батарея» на вкладке «Настройки».</string>
+    <string name="help_note_ai">ИИ может ошибаться при определении типа звука. В ситуациях, где важна безопасность, не полагайтесь только на это приложение.</string>
+
+    <string name="help_faq_title">Часто задаваемые вопросы</string>
+    <string name="help_faq_stopped_q">Визуализатор выключился сам, без моей команды.</string>
+    <string name="help_faq_stopped_a">Визуализатор выключается при запуске записи экрана, демонстрации экрана или трансляции, а также если захват звука прервался из-за ошибки. Нажмите «Включить снова» в уведомлении либо включите его на вкладке «Главная» или в быстрых настройках. Android каждый раз запрашивает согласие на запись экрана, а повторное включение завершает запись, демонстрацию или трансляцию, которая уже идёт.</string>
+    <string name="help_faq_no_graphic_q">Графика не отображается.</string>
+    <string name="help_faq_no_graphic_a">Проверьте, не запрещает ли захват звука приложение, в котором воспроизводится звук, и не выключен ли звук в этом приложении. Если звук долго не доходит до визуализатора, на вкладке «Главная» и в уведомлении во время работы появится сообщение об этом. Также убедитесь, что на вкладке «Настройки» значение «Плотность» не слишком низкое и что показ текущего типа звука не выключен.</string>
+    <string name="help_faq_no_vibration_q">Нет вибрации.</string>
+    <string name="help_faq_no_vibration_a">На вкладке «Настройки» в разделе «Типы звуков (ИИ)» убедитесь, что для нужного типа звука включены и «Показывать», и «Вибрация». Если вибрация выключена в настройках телефона, она может не работать.</string>
+    <string name="help_faq_install_q">Новая версия не устанавливается.</string>
+    <string name="help_faq_install_a">APK, собранный в другом месте, имеет другую подпись, поэтому его нельзя установить поверх текущей версии. Сначала удалите приложение, затем установите новую версию. При этом настройки будут сброшены.</string>
+    <string name="help_faq_battery_q">Приложение сильно расходует заряд батареи?</string>
+    <string name="help_faq_battery_a">Графика рисуется, только когда есть звук, а в тишине приложение переходит в режим ожидания. Но поскольку звук захватывается постоянно, рекомендуем выключать приложение, когда вы им не пользуетесь.</string>
+    <string name="help_faq_language_q">Как изменить язык приложения?</string>
+    <string name="help_faq_language_a">Нажмите «Язык» в верхней части вкладки «Настройки» и выберите нужный. При выборе варианта «Язык системы» используется язык телефона. В Android 13 и более поздних версиях язык также можно изменить в разделе «Языки приложений» в настройках телефона.</string>
+
+    <string name="help_about_title">О приложении</string>
+    <string name="help_about_version">Версия %1$s</string>
+    <string name="help_about_team">Создано командой SOVIS</string>
+    <string name="help_about_license">Это приложение распространяется на условиях Apache License 2.0.</string>
+    <string name="help_licenses_button">Лицензии открытого ПО</string>
+    <string name="help_licenses_title">Лицензии открытого ПО</string>
+    <string name="help_close">Закрыть</string>
+</resources>

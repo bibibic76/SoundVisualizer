@@ -32,6 +32,22 @@ object CaptureAudioMath {
     }
 
     /**
+     * Largest absolute sample value in the original interleaved capture PCM.
+     *
+     * This deliberately runs before downmixing: opposite-phase left/right samples
+     * must not cancel a short sound before the realtime silence gate sees it.
+     */
+    fun maxAbsoluteInterleavedPeak(interleaved: FloatArray, floatCount: Int): Float {
+        val limit = minOf(floatCount, interleaved.size)
+        var peak = 0f
+        for (i in 0 until limit) {
+            val sample = kotlin.math.abs(interleaved[i])
+            if (sample > peak) peak = sample
+        }
+        return peak
+    }
+
+    /**
      * Interleaved stereo/float PCM → mono frames.
      * channels==2 → (L+R)/2. Odd trailing sample dropped.
      */

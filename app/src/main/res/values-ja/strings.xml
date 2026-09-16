@@ -1,0 +1,219 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">ホーム</string>
+    <string name="tab_settings">設定</string>
+    <string name="tab_help">ヘルプ</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">目に見えない音を画面に描き出します。\nゲームも映画も、新しい体験をどうぞ。</string>
+    <string name="home_status_running">状態：実行中</string>
+    <string name="home_status_idle">状態：待機中</string>
+    <string name="home_capture_blocked">音を受け取れていないため、何も描けません。再生中のアプリが音の共有を許可していないか（保護された動画がそうです）、そのアプリの音がオフになっている可能性があります。</string>
+    <string name="home_ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示され、振動のお知らせもオフになっています。可視化を一度オフにして、もう一度オンにしてみてください。</string>
+    <string name="home_stopped_dismiss">お知らせを閉じる</string>
+    <string name="home_start">開始</string>
+    <string name="home_stop">停止</string>
+    <string name="home_add_tile">クイック設定に追加</string>
+    <string name="home_add_tile_desc">通知パネルから、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="home_add_tile_manual">通知パネルを開いて編集（鉛筆アイコン）をタップし、「音の可視化」を追加すると、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">「他のアプリの上に重ねて表示」を許可してください</string>
+    <string name="permission_overlay_message">ゲームや動画の上に音を描くため、Android の仕様上この権限が必要です。設定画面にアプリの一覧が表示されたら、SoundVisualizer を探してスイッチをオンにし、この画面に戻ってきてください。戻ると、続きは自動で進みます。</string>
+    <string name="permission_record_audio_required">音声をキャプチャするには、マイク（音声の録音）の権限が必要です。</string>
+    <string name="permission_mic_rationale_title">マイクの権限が必要な理由</string>
+    <string name="permission_mic_rationale_message">スマートフォンで再生中の音を取得するには、Android の仕様上、マイクの権限が必要です。周囲の音は録音しません。</string>
+    <string name="permission_mic_settings_title">設定でマイクを許可してください</string>
+    <string name="permission_mic_settings_message">マイクの権限が許可されていません。権限の確認画面が再び表示されない場合は、「設定を開く」をタップし、「権限」で「マイク」を許可してください。この権限は、スマートフォンで再生中の音の取得にのみ使用します。周囲の音は録音しません。</string>
+    <string name="permission_continue">続行</string>
+    <string name="permission_cancel">キャンセル</string>
+    <string name="permission_open_settings">設定を開く</string>
+    <string name="permission_close">閉じる</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">波</string>
+    <string name="mode_pad">パッド</string>
+    <string name="mode_circle">円形</string>
+    <string name="mode_outline">輪郭線</string>
+
+    <string name="mode_card_wave">波モード</string>
+    <string name="mode_card_pad">パッドモード</string>
+    <string name="mode_card_circle">円形モード</string>
+    <string name="mode_card_outline">輪郭線モード</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">モード設定</string>
+    <string name="settings_mode_picker_title">表示モード</string>
+    <string name="settings_mode_picker_desc">画面に描くグラフィックの基本的な形を選びます。</string>
+    <string name="settings_section_mode_detail">モード別の詳細設定</string>
+    <string name="settings_section_ai">音の種類（AI）</string>
+    <string name="settings_section_battery">バッテリー</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">言語</string>
+    <string name="settings_language_system">システムのデフォルト</string>
+    <string name="settings_language_cancel">キャンセル</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">サイズを固定</string>
+    <string name="setting_size_lock_desc">グラフィックのサイズを固定し、音の大きさを濃さで表します。</string>
+    <string name="setting_fixed_size">固定サイズ</string>
+    <string name="setting_fixed_size_desc">サイズを固定したときのグラフィックの大きさです。</string>
+    <string name="setting_max_opacity">最大の濃さ</string>
+    <string name="setting_max_opacity_desc">音が最も大きいときのグラフィックの濃さです。</string>
+    <string name="setting_size">サイズ</string>
+    <string name="setting_size_desc">グラフィックの大きさと、全体の厚みを調整します。</string>
+    <string name="setting_radius">半径</string>
+    <string name="setting_radius_desc">円形モードで、中央のリングの半径を調整します。</string>
+    <string name="setting_opacity">濃さ</string>
+    <string name="setting_opacity_desc">値が大きいほど濃く、小さいほど薄く透けて見えます。</string>
+    <string name="setting_speed">速度</string>
+    <string name="setting_speed_desc">音の方向が変わったときに、グラフィックが新しい位置へ移動する速さを調整します。</string>
+    <string name="setting_sensitivity">感度</string>
+    <string name="setting_sensitivity_desc">音の大きさの変化に、グラフィックがどれだけ素早く反応して揺れるかを調整します。</string>
+    <string name="setting_glow">発光</string>
+    <string name="setting_glow_desc">グラフィックの周りに、柔らかなネオン風の発光効果を加えます。注意：処理の負荷が増えます。</string>
+    <string name="setting_glow_intensity">発光の強さ</string>
+    <string name="setting_glow_intensity_desc">発光効果が広がる範囲を調整します。</string>
+    <string name="setting_ripple">空間リップル効果</string>
+    <string name="setting_ripple_desc">わずかな遅れを加えて、音が前から後ろへ広がっていくように見せます。</string>
+
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">画面オフ中は一時停止</string>
+    <string name="setting_pause_screen_off_desc">画面が消えている間は音の取得・音の種類の判別・振動を止めてバッテリーを節約し、画面をつけると再開します。画面が消えている間も振動でお知らせしてほしい場合は、オフにしてください。</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">環境音を表示</string>
+    <string name="ai_show_speech">話し声を表示</string>
+    <string name="ai_show_danger">危険音を表示</string>
+    <string name="ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示されます。可視化を一度オフにして、もう一度オンにしてみてください。</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">振動</string>
+    <string name="haptic_requires_display">この種類の表示がオンのときだけ振動します。</string>
+    <string name="haptic_ai_unavailable">音の種類を判別できない間は振動しません。</string>
+    <string name="haptic_unsupported">このデバイスは振動に対応していません。</string>
+    <string name="haptic_no_amplitude">このデバイスは振動の強さを調整できないため、標準の強さで振動します。</string>
+    <string name="haptic_strength">強さ</string>
+    <string name="haptic_strength_weak">弱</string>
+    <string name="haptic_strength_medium">中</string>
+    <string name="haptic_strength_strong">強</string>
+    <string name="haptic_pattern">パターン</string>
+    <string name="haptic_pattern_tap">1回</string>
+    <string name="haptic_pattern_double">2回</string>
+    <string name="haptic_pattern_hold">長く</string>
+    <string name="haptic_pattern_repeat">繰り返し</string>
+    <string name="haptic_preview_hint">選択肢をタップすると、振動を試せます。</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">色を選択</string>
+    <string name="color_picker_presets">よく使う色</string>
+    <string name="cd_preset_white">白</string>
+    <string name="cd_preset_red">赤</string>
+    <string name="cd_preset_orange">オレンジ</string>
+    <string name="cd_preset_yellow">黄色</string>
+    <string name="cd_preset_green">緑</string>
+    <string name="cd_preset_cyan">水色</string>
+    <string name="cd_preset_blue">青</string>
+    <string name="cd_preset_magenta">マゼンタ</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">キャンセル</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">色の選択画面を開く</string>
+    <string name="cd_color_ambient">環境音の色</string>
+    <string name="cd_color_speech">話し声の色</string>
+    <string name="cd_color_danger">危険音の色</string>
+    <string name="cd_expand">展開する</string>
+    <string name="cd_collapse">折りたたむ</string>
+    <string name="cd_change_language">言語を変更</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">音声キャプチャ</string>
+    <string name="notification_text">音を可視化しています。</string>
+    <string name="notification_stop">停止</string>
+    <string name="notification_text_ai_unavailable">音を可視化しています。音の種類を判別できないため、振動のお知らせはオフです。</string>
+    <string name="notification_text_capture_blocked">音を受け取れていません。再生中のアプリが音の共有を許可していないか、そのアプリの音がオフになっている可能性があります。</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">可視化オフのお知らせ</string>
+    <string name="stopped_channel_desc">自分でオフにしていないのに音の可視化がオフになったときにお知らせします。</string>
+    <string name="stopped_title">音の可視化がオフになりました</string>
+    <string name="stopped_text_projection">音の取得が終了したため、グラフィックと振動のお知らせがオフになりました。画面の録画・画面の共有・キャストを開始したときや、システムが音の取得を終了したときに起こります。他のアプリが録画・共有・キャスト中の場合、もう一度オンにするとそちらが終了します。</string>
+    <string name="stopped_text_capture_error">エラーで音の取得が止まったため、グラフィックと振動のお知らせがオフになりました。</string>
+    <string name="stopped_text_start_failed">音の取得を開始できなかったため、グラフィックと振動のお知らせがオフになりました。</string>
+    <string name="stopped_text_overlay_failed">他のアプリの上にグラフィックを表示できなかったため、可視化がオフになりました。「他のアプリの上に重ねて表示」が許可されているか確認してください。</string>
+    <string name="stopped_turn_on">オンに戻す</string>
+    <string name="stopped_toast">音の可視化がオフになりました。グラフィックと振動のお知らせはオフです。</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">音の可視化</string>
+    <string name="tile_state_on">オン</string>
+    <string name="tile_state_off">オフ</string>
+    <string name="tile_overlay_permission_needed">「他のアプリの上に重ねて表示」の権限が必要です。アプリで「開始」をタップして許可してください。</string>
+
+    <!-- Help -->
+    <string name="help_start_title">はじめに</string>
+    <string name="help_start_1">「ホーム」タブで「開始」をタップします。</string>
+    <string name="help_start_2">権限を許可します。Android の仕様により、オンにするたびに画面の録画への同意を求められます。</string>
+    <string name="help_start_3">ゲームや動画を開くと、画面の端に沿って音が描かれます。</string>
+    <string name="help_start_4">オフにするには、「ホーム」タブまたは通知で「停止」をタップします。</string>
+
+    <string name="help_tile_title">通知パネルからオン/オフする</string>
+    <string name="help_tile_body">「ホーム」タブで「クイック設定に追加」をタップすると、通知パネルに「音の可視化」ボタンが追加されます。アプリを切り替えずに、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="help_tile_use">タップするとオン、もう一度タップするとオフになります。長押しすると、このアプリの設定画面が開きます。</string>
+    <string name="help_tile_old">Android 12 以前では、通知パネルを開いて編集（鉛筆アイコン）をタップし、「音の可視化」を自分でドラッグして追加します。</string>
+
+    <string name="help_permissions_title">権限が必要な理由</string>
+    <string name="help_perm_overlay">他のアプリの上に重ねて表示</string>
+    <string name="help_perm_overlay_desc">ゲームや動画の上にグラフィックを表示するために必要です。</string>
+    <string name="help_perm_mic">マイク（音声の録音）</string>
+    <string name="help_perm_mic_desc">スマートフォンで再生中の音を取得するには、Android の仕様上、この権限が必要です。周囲の音は録音しません。</string>
+    <string name="help_perm_capture">画面の録画</string>
+    <string name="help_perm_capture_desc">Android では、この同意がないとアプリはスマートフォンで再生中の音を取得できません。画面の映像は取得しません。</string>
+    <string name="help_perm_notification">通知（Android 13 以降）</string>
+    <string name="help_perm_notification_desc">「停止」ボタン付きの実行中の通知を表示します。許可しなくてもアプリは動作します。</string>
+
+    <string name="help_modes_title">表示モード</string>
+    <string name="help_mode_wave_desc">画面の端全体が、音の大きさに合わせて内側へ押し寄せます。音のする側は、さらに深く押し寄せます。</string>
+    <string name="help_mode_pad_desc">画面の端の8か所にバーが浮かび上がります。方向が最もはっきり分かるモードです。</string>
+    <string name="help_mode_outline_desc">波の輪郭線だけを細く描くので、ゲーム画面が隠れにくくなります。</string>
+    <string name="help_mode_circle_desc">画面中央のリングが、音のする方向へふくらみます。</string>
+    <string name="help_modes_note">「サイズ」や「濃さ」などの設定はモードごとに保存され、「設定」タブで変更できます。</string>
+
+    <string name="help_sound_title">音の種類と振動</string>
+    <string name="help_sound_kinds">聞こえてくる音を、AI が環境音・話し声・危険音に分類します。初期設定の色は、環境音が白、話し声が黄色、危険音が赤です。種類ごとの色と表示の有無は「設定」タブで変更できます。</string>
+    <string name="help_sound_danger">危険音（銃声など）を検出すると、色が徐々にではなく、すぐに切り替わります。</string>
+    <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに強さ（弱・中・強）とパターン（1回・2回・長く・繰り返し）を選べます。</string>
+    <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。同じ種類は2秒以内に続けて振動しません。「繰り返し」は、音が続いている間1.5秒ごとに振動します。</string>
+
+    <string name="help_notes_title">知っておきたいこと</string>
+    <string name="help_note_direction">左右は区別できますが、前後は区別できません。画面の上下に表示されるグラフィックは、左右から同じくらい聞こえる音と、空間の広がりを表します。</string>
+    <string name="help_note_mono">左右がまったく同じ音（モノラル）は、正面側にのみ表示されます。</string>
+    <string name="help_note_sources">取得するのはメディアとゲームの音だけです。通話、通知音、アラームは対象外です。また、音声のキャプチャを禁止しているアプリ（一部の動画アプリなど）は可視化できません。音が鳴っているのに何も描かれない状態が15秒ほど続くと、「ホーム」タブと実行中の通知でお知らせします。ただし、アプリ自体が音をオフにしている場合もまったく同じように見えるため、どちらなのかまではお知らせできません。</string>
+    <string name="help_note_stopped">画面の録画・画面の共有・キャストを開始すると、可視化はオフになります。どれも同じ画面の録画への同意を使っていて、Android は一度に1つのアプリにしか許可しないためです。他のアプリが録画・共有・キャスト中の場合、もう一度オンにするとそちらが終了します。自分でオフにしていないのにオフになったときは、多くの場合スマートフォンが3回長く振動し、「オンに戻す」ボタン付きの通知を表示します。スマートフォンの画面共有の通知から音の取得を終了したときも同じお知らせが表示されますが、強制停止やアプリの異常終了ではお知らせできません。通知をオフにしている場合は振動だけでお知らせし、アプリを開くと「ホーム」タブに何がオフになったかを表示します。</string>
+    <string name="help_note_screen_off">画面が消えている間はバッテリーを節約するために一時停止し、画面をつけると再開します。「設定」タブの「バッテリー」で変更できます。</string>
+    <string name="help_note_ai">AI による分類は間違うことがあります。安全に関わる場面では、このアプリだけに頼らないでください。</string>
+
+    <string name="help_faq_title">よくある質問</string>
+    <string name="help_faq_stopped_q">自分でオフにしていないのにオフになりました。</string>
+    <string name="help_faq_stopped_a">画面の録画・画面の共有・キャストを開始したときや、エラーで音の取得が止まったときにオフになります。通知の「オンに戻す」をタップするか、「ホーム」タブやクイック設定からもう一度オンにしてください。画面の録画への同意はオンにするたびに求められ、もう一度オンにすると、実行中の録画・共有・キャストは終了します。</string>
+    <string name="help_faq_no_graphic_q">グラフィックが表示されません。</string>
+    <string name="help_faq_no_graphic_a">再生中のアプリが音声のキャプチャを禁止していないか、そのアプリの中で音がオフになっていないかを確認してください。音を受け取れない状態が続くと、「ホーム」タブと実行中の通知でお知らせします。また、「設定」タブで「濃さ」が低すぎないか、今鳴っている音の種類の表示がオフになっていないかも確認してください。</string>
+    <string name="help_faq_no_vibration_q">振動しません。</string>
+    <string name="help_faq_no_vibration_a">「設定」タブの「音の種類（AI）」で、その種類の「表示」と「振動」が両方オンになっているか確認してください。スマートフォンの設定で振動をオフにしている場合は、振動しないことがあります。</string>
+    <string name="help_faq_install_q">新しいバージョンをインストールできません。</string>
+    <string name="help_faq_install_a">別の環境でビルドされた APK は署名が異なるため、既存のアプリに上書きインストールできません。既存のアプリをアンインストールしてからインストールしてください。この場合、設定はリセットされます。</string>
+    <string name="help_faq_battery_q">バッテリーを多く消費しますか？</string>
+    <string name="help_faq_battery_a">音が鳴っているときだけ描画し、静かなときは待機状態になります。ただし、音を取得し続けるため、使わないときはオフにすることをおすすめします。</string>
+    <string name="help_faq_language_q">アプリの言語はどうやって変更しますか？</string>
+    <string name="help_faq_language_a">「設定」タブの一番上にある「言語」をタップし、使用する言語を選びます。「システムのデフォルト」を選ぶと、スマートフォンの言語に合わせて表示されます。Android 13 以降では、スマートフォンの設定の「アプリの言語」からも変更できます。</string>
+
+    <string name="help_about_title">このアプリについて</string>
+    <string name="help_about_version">バージョン %1$s</string>
+    <string name="help_about_team">制作チーム：SOVIS</string>
+    <string name="help_about_license">このアプリは Apache License 2.0 のもとで配布されています。</string>
+    <string name="help_licenses_button">オープンソース ライセンス</string>
+    <string name="help_licenses_title">オープンソース ライセンス</string>
+    <string name="help_close">閉じる</string>
+</resources>

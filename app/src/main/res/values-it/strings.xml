@@ -1,0 +1,219 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_settings">Impostazioni</string>
+    <string name="tab_help">Guida</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Disegna sullo schermo i suoni che non puoi vedere.\nDai giochi ai film, prova un\'esperienza tutta nuova.</string>
+    <string name="home_status_running">Stato: in esecuzione</string>
+    <string name="home_status_idle">Stato: pronto</string>
+    <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
+    <string name="home_ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e gli avvisi con vibrazione sono disattivati. Prova a disattivare e riattivare la visualizzazione.</string>
+    <string name="home_stopped_dismiss">Chiudi avviso</string>
+    <string name="home_start">Avvia</string>
+    <string name="home_stop">Interrompi</string>
+    <string name="home_add_tile">Aggiungi a Impostazioni rapide</string>
+    <string name="home_add_tile_desc">Attiva o disattiva la visualizzazione dall\'area notifiche, direttamente sopra il gioco o il video.</string>
+    <string name="home_add_tile_manual">Apri l\'area notifiche, tocca Modifica (matita) e aggiungi “Visualizza suoni” per attivare o disattivare la visualizzazione direttamente sopra il gioco o il video.</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">Consenti “Mostra sopra altre app”</string>
+    <string name="permission_overlay_message">I suoni vengono disegnati sopra il gioco o il video, quindi Android richiede questa autorizzazione. Se in Impostazioni compare un elenco di app, trova SoundVisualizer, attiva il suo interruttore e torna qui: l\'avvio riprende da solo.</string>
+    <string name="permission_record_audio_required">Per acquisire l\'audio serve l\'autorizzazione Microfono (registrazione audio).</string>
+    <string name="permission_mic_rationale_title">Perché serve l\'accesso al microfono?</string>
+    <string name="permission_mic_rationale_message">Android richiede l\'autorizzazione Microfono per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
+    <string name="permission_mic_settings_title">Consenti il microfono in Impostazioni</string>
+    <string name="permission_mic_settings_message">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. Viene usata solo per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
+    <string name="permission_continue">Continua</string>
+    <string name="permission_cancel">Annulla</string>
+    <string name="permission_open_settings">Apri impostazioni</string>
+    <string name="permission_close">Chiudi</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">Onda</string>
+    <string name="mode_pad">Pad</string>
+    <string name="mode_circle">Cerchio</string>
+    <string name="mode_outline">Contorno</string>
+
+    <string name="mode_card_wave">Modalità Onda</string>
+    <string name="mode_card_pad">Modalità Pad</string>
+    <string name="mode_card_circle">Modalità Cerchio</string>
+    <string name="mode_card_outline">Modalità Contorno</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Impostazioni modalità</string>
+    <string name="settings_mode_picker_title">Modalità visiva</string>
+    <string name="settings_mode_picker_desc">Scegli la forma di base della grafica disegnata sullo schermo.</string>
+    <string name="settings_section_mode_detail">Opzioni per modalità</string>
+    <string name="settings_section_ai">Tipi di suono (IA)</string>
+    <string name="settings_section_battery">Batteria</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Lingua</string>
+    <string name="settings_language_system">Predefinita di sistema</string>
+    <string name="settings_language_cancel">Annulla</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Blocca dimensione</string>
+    <string name="setting_size_lock_desc">Mantiene la grafica a una dimensione fissa e mostra il volume tramite l\'opacità.</string>
+    <string name="setting_fixed_size">Misura fissa</string>
+    <string name="setting_fixed_size_desc">La dimensione che la grafica mantiene sempre.</string>
+    <string name="setting_max_opacity">Opacità max</string>
+    <string name="setting_max_opacity_desc">Quanto diventa opaca la grafica quando il suono è al massimo.</string>
+    <string name="setting_size">Dimensione</string>
+    <string name="setting_size_desc">Regola quanto la grafica appare grande e piena.</string>
+    <string name="setting_radius">Raggio</string>
+    <string name="setting_radius_desc">Imposta il raggio dell\'anello centrale nella modalità Cerchio.</string>
+    <string name="setting_opacity">Opacità</string>
+    <string name="setting_opacity_desc">Con valori alti la grafica è più marcata; con valori bassi è più tenue e trasparente.</string>
+    <string name="setting_speed">Velocità</string>
+    <string name="setting_speed_desc">Quanto velocemente la grafica si sposta nella nuova posizione quando il suono cambia direzione.</string>
+    <string name="setting_sensitivity">Sensibilità</string>
+    <string name="setting_sensitivity_desc">Quanto rapidamente la grafica reagisce (pulsa) alle variazioni di volume.</string>
+    <string name="setting_glow">Bagliore</string>
+    <string name="setting_glow_desc">Aggiunge un morbido bagliore al neon attorno alla grafica. Nota: consuma più risorse.</string>
+    <string name="setting_glow_intensity">Intensità</string>
+    <string name="setting_glow_intensity_desc">Quanto si espande il bagliore.</string>
+    <string name="setting_ripple">Increspatura spaziale</string>
+    <string name="setting_ripple_desc">Aggiunge un leggero ritardo, così il suono sembra propagarsi da davanti verso dietro.</string>
+
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Pausa a schermo spento</string>
+    <string name="setting_pause_screen_off_desc">A schermo spento interrompe l\'acquisizione dell\'audio, il riconoscimento dei tipi di suono e la vibrazione per risparmiare batteria, e riprende quando riaccendi lo schermo. Disattiva questa opzione per continuare a ricevere gli avvisi con vibrazione a schermo spento.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Mostra suoni ambientali</string>
+    <string name="ai_show_speech">Mostra voci</string>
+    <string name="ai_show_danger">Mostra suoni di pericolo</string>
+    <string name="ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali. Prova a disattivare e riattivare la visualizzazione.</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Vibrazione</string>
+    <string name="haptic_requires_display">La vibrazione funziona solo se questo tipo di suono viene mostrato.</string>
+    <string name="haptic_ai_unavailable">Il telefono non vibra mentre il riconoscimento del tipo di suono non funziona.</string>
+    <string name="haptic_unsupported">Questo dispositivo non supporta la vibrazione.</string>
+    <string name="haptic_no_amplitude">Questo dispositivo non può regolare l\'intensità della vibrazione, quindi vibra con l\'intensità predefinita.</string>
+    <string name="haptic_strength">Intensità</string>
+    <string name="haptic_strength_weak">Leggera</string>
+    <string name="haptic_strength_medium">Media</string>
+    <string name="haptic_strength_strong">Forte</string>
+    <string name="haptic_pattern">Sequenza</string>
+    <string name="haptic_pattern_tap">Una volta</string>
+    <string name="haptic_pattern_double">Due volte</string>
+    <string name="haptic_pattern_hold">Lunga</string>
+    <string name="haptic_pattern_repeat">Ripetuta</string>
+    <string name="haptic_preview_hint">Tocca un\'opzione per provare la vibrazione.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">Scegli un colore</string>
+    <string name="color_picker_presets">Colori comuni</string>
+    <string name="cd_preset_white">Bianco</string>
+    <string name="cd_preset_red">Rosso</string>
+    <string name="cd_preset_orange">Arancione</string>
+    <string name="cd_preset_yellow">Giallo</string>
+    <string name="cd_preset_green">Verde</string>
+    <string name="cd_preset_cyan">Turchese</string>
+    <string name="cd_preset_blue">Blu</string>
+    <string name="cd_preset_magenta">Magenta</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">Annulla</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Apri il selettore colori</string>
+    <string name="cd_color_ambient">Colore suoni ambientali</string>
+    <string name="cd_color_speech">Colore voci</string>
+    <string name="cd_color_danger">Colore suoni di pericolo</string>
+    <string name="cd_expand">Espandi</string>
+    <string name="cd_collapse">Comprimi</string>
+    <string name="cd_change_language">Cambia lingua</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Acquisizione audio</string>
+    <string name="notification_text">Visualizzazione del suono in corso.</string>
+    <string name="notification_stop">Interrompi</string>
+    <string name="notification_text_ai_unavailable">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi gli avvisi con vibrazione sono disattivati.</string>
+    <string name="notification_text_capture_blocked">Questa app non riceve nessun suono. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio, oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visualizzazione disattivata</string>
+    <string name="stopped_channel_desc">Ti avvisa quando la visualizzazione dei suoni si disattiva senza che tu l\'abbia interrotta.</string>
+    <string name="stopped_title">Visualizzazione suoni disattivata</string>
+    <string name="stopped_text_projection">L\'acquisizione dell\'audio è terminata, quindi la grafica e gli avvisi con vibrazione sono disattivati. Succede quando inizia una registrazione dello schermo, una condivisione dello schermo o una trasmissione, oppure quando il sistema interrompe l\'acquisizione. Se un\'altra app sta registrando, condividendo o trasmettendo, riattivando la visualizzazione ne interrompi l\'attività.</string>
+    <string name="stopped_text_capture_error">L\'acquisizione dell\'audio si è interrotta per un errore, quindi la grafica e gli avvisi con vibrazione sono disattivati.</string>
+    <string name="stopped_text_start_failed">Non è stato possibile avviare l\'acquisizione dell\'audio, quindi la grafica e gli avvisi con vibrazione sono disattivati.</string>
+    <string name="stopped_text_overlay_failed">Non è stato possibile mostrare la grafica sopra le altre app, quindi la visualizzazione si è disattivata. Verifica che l\'autorizzazione “Mostra sopra altre app” sia concessa.</string>
+    <string name="stopped_turn_on">Riattiva</string>
+    <string name="stopped_toast">Visualizzazione dei suoni disattivata. La grafica e gli avvisi con vibrazione sono disattivati.</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Visualizza suoni</string>
+    <string name="tile_state_on">Attivo</string>
+    <string name="tile_state_off">Non attivo</string>
+    <string name="tile_overlay_permission_needed">È necessaria l\'autorizzazione “Mostra sopra altre app”. Tocca “Avvia” nell\'app per concederla.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">Per iniziare</string>
+    <string name="help_start_1">Nella scheda Home, tocca “Avvia”.</string>
+    <string name="help_start_2">Concedi le autorizzazioni. Android chiede il consenso alla registrazione dello schermo ogni volta che avvii la visualizzazione.</string>
+    <string name="help_start_3">Apri un gioco o un video: i suoni vengono disegnati lungo i bordi dello schermo.</string>
+    <string name="help_start_4">Per disattivare la visualizzazione, tocca “Interrompi” nella scheda Home o nella notifica.</string>
+
+    <string name="help_tile_title">Attiva e disattiva dall\'area notifiche</string>
+    <string name="help_tile_body">Tocca “Aggiungi a Impostazioni rapide” nella scheda Home per aggiungere il pulsante “Visualizza suoni” all\'area notifiche. Potrai attivare o disattivare la visualizzazione direttamente sopra il gioco o il video, senza cambiare app.</string>
+    <string name="help_tile_use">Tocca il pulsante per attivare la visualizzazione e toccalo di nuovo per disattivarla. Tieni premuto per aprire le impostazioni di questa app.</string>
+    <string name="help_tile_old">Su Android 12 e versioni precedenti, apri l\'area notifiche, tocca Modifica (matita) e trascina manualmente “Visualizza suoni” tra i riquadri.</string>
+
+    <string name="help_permissions_title">Perché servono le autorizzazioni</string>
+    <string name="help_perm_overlay">Mostra sopra altre app</string>
+    <string name="help_perm_overlay_desc">Serve per mostrare la grafica sopra giochi e video.</string>
+    <string name="help_perm_mic">Microfono (registrazione audio)</string>
+    <string name="help_perm_mic_desc">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
+    <string name="help_perm_capture">Registrazione dello schermo</string>
+    <string name="help_perm_capture_desc">Android consente alle app di acquisire l\'audio del telefono solo tramite questo consenso. Lo schermo non viene registrato.</string>
+    <string name="help_perm_notification">Notifiche (Android 13+)</string>
+    <string name="help_perm_notification_desc">Mostra una notifica mentre l\'app è in esecuzione, con il pulsante “Interrompi”. L\'app funziona anche se non concedi questa autorizzazione.</string>
+
+    <string name="help_modes_title">Modalità visive</string>
+    <string name="help_mode_wave_desc">L\'intero bordo dello schermo avanza verso l\'interno in base al volume. Il lato da cui proviene il suono avanza di più.</string>
+    <string name="help_mode_pad_desc">Lungo il bordo dello schermo si illuminano barre in 8 punti. È la modalità che mostra la direzione in modo più chiaro.</string>
+    <string name="help_mode_outline_desc">Disegna solo un sottile contorno dell\'onda, così copre meno il gioco.</string>
+    <string name="help_mode_circle_desc">Un anello al centro dello schermo si gonfia in direzione del suono.</string>
+    <string name="help_modes_note">Opzioni come Dimensione e Opacità vengono salvate separatamente per ogni modalità e si possono modificare nella scheda Impostazioni.</string>
+
+    <string name="help_sound_title">Tipi di suono e vibrazione</string>
+    <string name="help_sound_kinds">L\'IA classifica l\'audio in suoni ambientali, voci e suoni di pericolo. Per impostazione predefinita, i suoni ambientali sono bianchi, le voci gialle e i suoni di pericolo rossi. Nella scheda Impostazioni puoi cambiare il colore di ogni tipo e scegliere se mostrarlo.</string>
+    <string name="help_sound_danger">Quando viene rilevato un suono di pericolo (come uno sparo), il colore cambia all\'istante invece di sfumare gradualmente.</string>
+    <string name="help_sound_haptic">La vibrazione ti avvisa anche quando non guardi lo schermo. Inizialmente è attiva solo per i suoni di pericolo, e per ogni tipo puoi scegliere l\'intensità (Leggera, Media, Forte) e la sequenza (Una volta, Due volte, Lunga, Ripetuta).</string>
+    <string name="help_sound_haptic_rule">La vibrazione funziona solo per i tipi mostrati sullo schermo. Per lo stesso tipo non c\'è una nuova vibrazione entro 2 secondi, mentre con “Ripetuta” il telefono vibra ogni 1,5 secondi finché il suono dura.</string>
+
+    <string name="help_notes_title">Buono a sapersi</string>
+    <string name="help_note_direction">L\'app distingue la sinistra dalla destra, ma non il davanti dal dietro. La grafica in alto e in basso sullo schermo rappresenta i suoni che arrivano in modo simile da entrambi i lati e il senso di spazio.</string>
+    <string name="help_note_mono">I suoni identici a sinistra e a destra (mono) vengono mostrati solo in direzione frontale.</string>
+    <string name="help_note_sources">Viene acquisito solo l\'audio di contenuti multimediali e giochi. Telefonate, suoni di notifica e sveglie sono esclusi, e l\'audio delle app che bloccano l\'acquisizione (come alcune app video) non può essere visualizzato. Se c\'è un suono in riproduzione ma per circa 15 secondi non viene disegnato niente, te lo segnalano la scheda Home e la notifica in corso. Un\'app che ha disattivato il proprio audio si presenta esattamente allo stesso modo, quindi non possiamo dirti di quale dei due casi si tratti.</string>
+    <string name="help_note_stopped">Se avvii la registrazione dello schermo, la condivisione dello schermo o la trasmissione, la visualizzazione si disattiva: usa lo stesso consenso alla registrazione dello schermo e Android lo concede a una sola app per volta. Se un\'altra app sta registrando, condividendo o trasmettendo, riattivando la visualizzazione ne interrompi l\'attività. Nella maggior parte dei casi, quando si disattiva senza che tu l\'abbia interrotta, il telefono vibra tre volte a lungo e mostra una notifica con il pulsante “Riattiva”. Anche interrompendo l\'acquisizione dell\'audio dai controlli di condivisione dello schermo del telefono compare lo stesso avviso, mentre in caso di chiusura forzata o di arresto anomalo non è possibile avvisarti. Se le notifiche sono disattivate, ti avvisa solo la vibrazione e, quando apri l\'app, la scheda Home mostra che cosa si è disattivato.</string>
+    <string name="help_note_screen_off">A schermo spento la visualizzazione va in pausa per risparmiare batteria e riprende quando riaccendi lo schermo. Puoi cambiare questa impostazione in Batteria, nella scheda Impostazioni.</string>
+    <string name="help_note_ai">La classificazione dell\'IA può essere errata. Non affidarti a questa app come unica protezione quando è in gioco la sicurezza.</string>
+
+    <string name="help_faq_title">Domande frequenti</string>
+    <string name="help_faq_stopped_q">La visualizzazione si è disattivata senza che l\'abbia interrotta.</string>
+    <string name="help_faq_stopped_a">Si disattiva quando inizia una registrazione dello schermo, una condivisione dello schermo o una trasmissione, oppure quando l\'acquisizione dell\'audio si interrompe per un errore. Tocca “Riattiva” nella notifica, oppure riattivala dalla scheda Home o dalle Impostazioni rapide. Android chiede il consenso alla registrazione dello schermo ogni volta e, riattivando la visualizzazione, interrompi la registrazione, la condivisione o la trasmissione in corso.</string>
+    <string name="help_faq_no_graphic_q">Non vedo nessuna grafica.</string>
+    <string name="help_faq_no_graphic_a">Verifica se l\'app che sta riproducendo il suono blocca l\'acquisizione audio e se al suo interno l\'audio è disattivato. Se per un po\' non arriva nessun suono a questa app, te lo segnalano la scheda Home e la notifica in corso. Nella scheda Impostazioni controlla anche che l\'Opacità non sia troppo bassa e che la visualizzazione del tipo di suono in riproduzione non sia disattivata.</string>
+    <string name="help_faq_no_vibration_q">Il telefono non vibra.</string>
+    <string name="help_faq_no_vibration_a">Nella scheda Impostazioni, in Tipi di suono (IA), controlla che per quel tipo siano attivi sia “Mostra” sia “Vibrazione”. Se la vibrazione è disattivata nelle impostazioni del telefono, potrebbe non funzionare.</string>
+    <string name="help_faq_install_q">Non riesco a installare la nuova versione.</string>
+    <string name="help_faq_install_a">Un APK compilato altrove ha una firma diversa e non può essere installato sopra l\'app esistente. Disinstalla prima l\'app esistente, poi installa quella nuova. In questo modo le tue impostazioni vengono azzerate.</string>
+    <string name="help_faq_battery_q">Consuma molta batteria?</string>
+    <string name="help_faq_battery_a">L\'app disegna solo quando c\'è un suono e resta inattiva quando c\'è silenzio. Dato che continua ad acquisire l\'audio, però, ti consigliamo di disattivarla quando non la usi.</string>
+    <string name="help_faq_language_q">Come cambio la lingua dell\'app?</string>
+    <string name="help_faq_language_a">Tocca “Lingua” in cima alla scheda Impostazioni e scegline una. “Predefinita di sistema” segue la lingua del telefono. Su Android 13 e versioni successive puoi cambiarla anche in “Lingue delle app” nelle impostazioni del telefono.</string>
+
+    <string name="help_about_title">Informazioni</string>
+    <string name="help_about_version">Versione %1$s</string>
+    <string name="help_about_team">Creata dal team SOVIS</string>
+    <string name="help_about_license">Questa app è distribuita ai sensi della Apache License 2.0.</string>
+    <string name="help_licenses_button">Licenze open source</string>
+    <string name="help_licenses_title">Licenze open source</string>
+    <string name="help_close">Chiudi</string>
+</resources>

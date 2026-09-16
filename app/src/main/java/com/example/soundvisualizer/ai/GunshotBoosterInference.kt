@@ -31,29 +31,30 @@ class GunshotBoosterInference private constructor(
             require(bytes.isNotEmpty()) { "Empty $ASSET_PATH" }
 
             val env = OrtEnvironment.getEnvironment()
-            val opts = OrtSession.SessionOptions().apply {
-                setIntraOpNumThreads(1)
-                setInterOpNumThreads(1)
-                setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
+            val session = OrtSession.SessionOptions().use { opts ->
+                opts.setIntraOpNumThreads(1)
+                opts.setInterOpNumThreads(1)
+                opts.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
+                env.createSession(bytes, opts)
             }
-            val session = env.createSession(bytes, opts)
+            return session.closeOnFailure { ownedSession ->
+                val inName = ownedSession.inputNames.firstOrNull()
+                    ?: throw IllegalStateException("Booster session has no inputs")
+                val outName = ownedSession.outputNames.firstOrNull()
+                    ?: throw IllegalStateException("Booster session has no outputs")
+                require(inName == INPUT_NAME) { "Expected input '$INPUT_NAME', got '$inName'" }
+                require(outName == OUTPUT_NAME) { "Expected output '$OUTPUT_NAME', got '$outName'" }
 
-            val inName = session.inputNames.firstOrNull()
-                ?: throw IllegalStateException("Booster session has no inputs")
-            val outName = session.outputNames.firstOrNull()
-                ?: throw IllegalStateException("Booster session has no outputs")
-            require(inName == INPUT_NAME) { "Expected input '$INPUT_NAME', got '$inName'" }
-            require(outName == OUTPUT_NAME) { "Expected output '$OUTPUT_NAME', got '$outName'" }
+                val inInfo = ownedSession.inputInfo[inName]?.info as? TensorInfo
+                    ?: throw IllegalStateException("Missing TensorInfo for $inName")
+                // Dynamic batch dim OK; last dim must be 521
+                val shape = inInfo.shape
+                require(shape.isNotEmpty() && shape.last() == 521L) {
+                    "Expected last dim 521, got ${shape.contentToString()}"
+                }
 
-            val inInfo = session.inputInfo[inName]?.info as? TensorInfo
-                ?: throw IllegalStateException("Missing TensorInfo for $inName")
-            // Dynamic batch dim OK; last dim must be 521
-            val shape = inInfo.shape
-            require(shape.isNotEmpty() && shape.last() == 521L) {
-                "Expected last dim 521, got ${shape.contentToString()}"
+                GunshotBoosterInference(env, ownedSession, inName, outName)
             }
-
-            return GunshotBoosterInference(env, session, inName, outName)
         }
     }
 

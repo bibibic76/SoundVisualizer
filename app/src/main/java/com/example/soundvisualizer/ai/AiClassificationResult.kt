@@ -8,7 +8,9 @@ data class AiClassificationResult(
     val coarse: String,
     val display: String,
     val confidence: Float,
+    /** Valid only when [boosterAvailable] is true; otherwise [Float.NaN]. */
     val gunshotScore: Float,
+    val boosterAvailable: Boolean,
     val preBoosterCoarse: String,
     val boosterAccepted: Boolean,
     val meetsThreshold: Boolean,

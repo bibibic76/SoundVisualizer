@@ -99,10 +99,6 @@ def _matches_temporary_gunshot_proxy_danger(s: str) -> bool:
         return True
     if "gargling" in s:
         return True
-    if s == "rain" or "raindrop" in s or "rain on surface" in s:
-        return True
-    if "waterfall" in s:
-        return True
     return False
 
 

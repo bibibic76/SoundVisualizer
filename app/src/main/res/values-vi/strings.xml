@@ -1,0 +1,219 @@
+<resources>
+    <!-- Tabs -->
+    <string name="tab_home">Trang chủ</string>
+    <string name="tab_settings">Cài đặt</string>
+    <string name="tab_help">Trợ giúp</string>
+
+    <!-- Home -->
+    <string name="home_subtitle">Vẽ lên màn hình những âm thanh mà bạn không nhìn thấy.\nTừ trò chơi đến phim ảnh, hãy khám phá một trải nghiệm hoàn toàn mới.</string>
+    <string name="home_status_running">Trạng thái: Đang chạy</string>
+    <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
+    <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
+    <string name="home_ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường và thông báo rung đang tắt. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
+    <string name="home_stopped_dismiss">Đóng thông báo</string>
+    <string name="home_start">Bắt đầu</string>
+    <string name="home_stop">Dừng</string>
+    <string name="home_add_tile">Thêm vào Cài đặt nhanh</string>
+    <string name="home_add_tile_desc">Bật hoặc tắt ngay từ bảng thông báo khi đang chơi trò chơi hoặc xem video.</string>
+    <string name="home_add_tile_manual">Kéo bảng thông báo xuống, nhấn Chỉnh sửa (biểu tượng bút chì) rồi thêm “Âm thanh trực quan” để bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video.</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_title">Hãy cho phép “Hiển thị trên các ứng dụng khác”</string>
+    <string name="permission_overlay_message">Âm thanh được vẽ lên trên trò chơi hoặc video của bạn nên Android cần quyền này. Nếu phần Cài đặt hiện danh sách ứng dụng, hãy tìm SoundVisualizer, bật công tắc của ứng dụng rồi quay lại. Sau đó ứng dụng sẽ tự tiếp tục.</string>
+    <string name="permission_record_audio_required">Cần có quyền micrô (ghi âm) để thu âm thanh đang phát trên điện thoại.</string>
+    <string name="permission_mic_rationale_title">Tại sao cần quyền micrô?</string>
+    <string name="permission_mic_rationale_message">Android yêu cầu quyền micrô để thu âm thanh đang phát trên điện thoại của bạn. Âm thanh xung quanh bạn không bị ghi lại.</string>
+    <string name="permission_mic_settings_title">Hãy cấp quyền micrô trong Cài đặt</string>
+    <string name="permission_mic_settings_message">Quyền micrô chưa được cấp. Nếu yêu cầu cấp quyền không xuất hiện lại, hãy nhấn “Mở cài đặt”, vào “Quyền” rồi cho phép “Micrô”. Quyền này chỉ dùng để thu âm thanh đang phát trên điện thoại. Âm thanh xung quanh bạn không bị ghi lại.</string>
+    <string name="permission_continue">Tiếp tục</string>
+    <string name="permission_cancel">Hủy</string>
+    <string name="permission_open_settings">Mở cài đặt</string>
+    <string name="permission_close">Đóng</string>
+
+    <!-- Visual modes -->
+    <string name="mode_wave">Sóng</string>
+    <string name="mode_pad">Vạch</string>
+    <string name="mode_circle">Vòng</string>
+    <string name="mode_outline">Viền</string>
+
+    <string name="mode_card_wave">Chế độ Sóng</string>
+    <string name="mode_card_pad">Chế độ Vạch</string>
+    <string name="mode_card_circle">Chế độ Vòng</string>
+    <string name="mode_card_outline">Chế độ Viền</string>
+
+    <!-- Settings screen headers -->
+    <string name="settings_section_mode">Cài đặt chế độ</string>
+    <string name="settings_mode_picker_title">Chế độ hiển thị</string>
+    <string name="settings_mode_picker_desc">Chọn hình dạng cơ bản của đồ họa được vẽ trên màn hình.</string>
+    <string name="settings_section_mode_detail">Cài đặt theo chế độ</string>
+    <string name="settings_section_ai">Loại âm thanh (AI)</string>
+    <string name="settings_section_battery">Pin</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Ngôn ngữ</string>
+    <string name="settings_language_system">Mặc định của hệ thống</string>
+    <string name="settings_language_cancel">Hủy</string>
+
+    <!-- Per-mode settings -->
+    <string name="setting_size_lock">Khóa kích thước</string>
+    <string name="setting_size_lock_desc">Giữ đồ họa ở kích thước cố định và thể hiện độ lớn âm thanh bằng độ đậm.</string>
+    <string name="setting_fixed_size">Cỡ cố định</string>
+    <string name="setting_fixed_size_desc">Kích thước mà đồ họa luôn giữ nguyên.</string>
+    <string name="setting_max_opacity">Đậm tối đa</string>
+    <string name="setting_max_opacity_desc">Độ đậm của đồ họa khi âm thanh lớn nhất.</string>
+    <string name="setting_size">Kích thước</string>
+    <string name="setting_size_desc">Điều chỉnh độ lớn và độ đầy đặn của đồ họa.</string>
+    <string name="setting_radius">Bán kính</string>
+    <string name="setting_radius_desc">Chỉnh riêng bán kính của vòng tròn ở giữa màn hình trong chế độ Vòng.</string>
+    <string name="setting_opacity">Độ đậm</string>
+    <string name="setting_opacity_desc">Giá trị càng cao thì càng đậm; càng thấp thì càng nhạt và trong suốt.</string>
+    <string name="setting_speed">Tốc độ</string>
+    <string name="setting_speed_desc">Tốc độ đồ họa di chuyển đến vị trí mới khi hướng âm thanh thay đổi.</string>
+    <string name="setting_sensitivity">Độ nhạy</string>
+    <string name="setting_sensitivity_desc">Đồ họa phản ứng (co giãn) nhanh hay chậm khi độ lớn âm thanh thay đổi.</string>
+    <string name="setting_glow">Phát sáng</string>
+    <string name="setting_glow_desc">Thêm hiệu ứng ánh sáng neon dịu nhẹ quanh đồ họa. Lưu ý: tốn thêm tài nguyên.</string>
+    <string name="setting_glow_intensity">Độ phát sáng</string>
+    <string name="setting_glow_intensity_desc">Mức độ lan tỏa của ánh sáng.</string>
+    <string name="setting_ripple">Gợn sóng không gian</string>
+    <string name="setting_ripple_desc">Thêm độ trễ nhẹ để âm thanh trông như lan tỏa từ phía trước ra phía sau.</string>
+
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Tạm dừng khi màn hình tắt</string>
+    <string name="setting_pause_screen_off_desc">Khi màn hình tắt, ứng dụng ngừng thu âm thanh, ngừng nhận diện loại âm thanh và ngừng rung để tiết kiệm pin, rồi tiếp tục khi bạn bật màn hình. Hãy tắt tùy chọn này nếu bạn muốn vẫn nhận được thông báo rung lúc màn hình tắt.</string>
+
+    <!-- Sound types -->
+    <string name="ai_show_ambient">Hiện âm thanh môi trường</string>
+    <string name="ai_show_speech">Hiện giọng nói</string>
+    <string name="ai_show_danger">Hiện âm thanh nguy hiểm</string>
+    <string name="ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
+
+    <!-- Vibration -->
+    <string name="haptic_vibrate">Rung</string>
+    <string name="haptic_requires_display">Chỉ rung khi loại âm thanh này được hiện trên màn hình.</string>
+    <string name="haptic_ai_unavailable">Sẽ không rung khi ứng dụng không nhận diện được loại âm thanh.</string>
+    <string name="haptic_unsupported">Thiết bị này không hỗ trợ rung.</string>
+    <string name="haptic_no_amplitude">Thiết bị này không điều chỉnh được cường độ rung nên sẽ rung ở cường độ mặc định.</string>
+    <string name="haptic_strength">Cường độ</string>
+    <string name="haptic_strength_weak">Nhẹ</string>
+    <string name="haptic_strength_medium">Vừa</string>
+    <string name="haptic_strength_strong">Mạnh</string>
+    <string name="haptic_pattern">Kiểu rung</string>
+    <string name="haptic_pattern_tap">Một lần</string>
+    <string name="haptic_pattern_double">Hai lần</string>
+    <string name="haptic_pattern_hold">Dài</string>
+    <string name="haptic_pattern_repeat">Lặp lại</string>
+    <string name="haptic_preview_hint">Nhấn vào một tùy chọn để thử cảm giác rung.</string>
+
+    <!-- Color picker -->
+    <string name="color_picker_title">Chọn màu</string>
+    <string name="color_picker_presets">Màu thường dùng</string>
+    <string name="cd_preset_white">Trắng</string>
+    <string name="cd_preset_red">Đỏ</string>
+    <string name="cd_preset_orange">Cam</string>
+    <string name="cd_preset_yellow">Vàng</string>
+    <string name="cd_preset_green">Xanh lá cây</string>
+    <string name="cd_preset_cyan">Xanh lơ</string>
+    <string name="cd_preset_blue">Xanh dương</string>
+    <string name="cd_preset_magenta">Hồng cánh sen</string>
+    <string name="color_picker_confirm">OK</string>
+    <string name="color_picker_cancel">Hủy</string>
+
+    <!-- Accessibility -->
+    <string name="cd_pick_color">Mở bộ chọn màu</string>
+    <string name="cd_color_ambient">Màu âm thanh môi trường</string>
+    <string name="cd_color_speech">Màu giọng nói</string>
+    <string name="cd_color_danger">Màu âm thanh nguy hiểm</string>
+    <string name="cd_expand">Mở rộng</string>
+    <string name="cd_collapse">Thu gọn</string>
+    <string name="cd_change_language">Đổi ngôn ngữ</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Thu âm thanh</string>
+    <string name="notification_text">Đang trực quan hóa âm thanh.</string>
+    <string name="notification_stop">Dừng</string>
+    <string name="notification_text_ai_unavailable">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên thông báo rung đang tắt.</string>
+    <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Trực quan hóa đã tắt</string>
+    <string name="stopped_channel_desc">Cho bạn biết khi âm thanh trực quan tắt mà không phải do bạn tắt.</string>
+    <string name="stopped_title">Âm thanh trực quan đã tắt</string>
+    <string name="stopped_text_projection">Việc thu âm thanh đã kết thúc nên đồ họa và thông báo rung đều tắt. Điều này xảy ra khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, hoặc khi hệ thống ngừng thu âm thanh. Nếu một ứng dụng khác đang ghi, chia sẻ hoặc truyền màn hình, việc bật lại sẽ kết thúc hoạt động đó.</string>
+    <string name="stopped_text_capture_error">Việc thu âm thanh đã dừng do lỗi nên đồ họa và thông báo rung đều tắt.</string>
+    <string name="stopped_text_start_failed">Không thể bắt đầu thu âm thanh nên đồ họa và thông báo rung đều tắt.</string>
+    <string name="stopped_text_overlay_failed">Không thể hiển thị đồ họa lên trên các ứng dụng khác nên âm thanh trực quan đã tắt. Hãy kiểm tra xem quyền “Hiển thị trên các ứng dụng khác” đã được cấp chưa.</string>
+    <string name="stopped_turn_on">Bật lại</string>
+    <string name="stopped_toast">Âm thanh trực quan đã tắt. Đồ họa và thông báo rung đều tắt.</string>
+
+    <!-- Quick Settings tile -->
+    <string name="tile_label">Âm thanh trực quan</string>
+    <string name="tile_state_on">Bật</string>
+    <string name="tile_state_off">Tắt</string>
+    <string name="tile_overlay_permission_needed">Cần có quyền “Hiển thị trên các ứng dụng khác”. Hãy nhấn “Bắt đầu” trong ứng dụng để cho phép.</string>
+
+    <!-- Help -->
+    <string name="help_start_title">Bắt đầu sử dụng</string>
+    <string name="help_start_1">Ở thẻ Trang chủ, nhấn “Bắt đầu”.</string>
+    <string name="help_start_2">Cho phép các quyền. Mỗi lần bạn bật, Android sẽ hỏi bạn có đồng ý ghi màn hình hay không.</string>
+    <string name="help_start_3">Khi bạn mở trò chơi hoặc video, âm thanh sẽ được vẽ dọc theo các cạnh màn hình.</string>
+    <string name="help_start_4">Để tắt, hãy nhấn “Dừng” ở thẻ Trang chủ hoặc trong thông báo.</string>
+
+    <string name="help_tile_title">Bật và tắt từ bảng thông báo</string>
+    <string name="help_tile_body">Nhấn “Thêm vào Cài đặt nhanh” ở thẻ Trang chủ để thêm nút “Âm thanh trực quan” vào bảng thông báo. Sau đó, bạn có thể bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video mà không cần chuyển ứng dụng.</string>
+    <string name="help_tile_use">Nhấn để bật, nhấn lần nữa để tắt. Nhấn và giữ để mở phần cài đặt của ứng dụng này.</string>
+    <string name="help_tile_old">Trên Android 12 trở xuống, hãy mở bảng thông báo, nhấn Chỉnh sửa (biểu tượng bút chì) rồi tự kéo “Âm thanh trực quan” vào.</string>
+
+    <string name="help_permissions_title">Tại sao cần cấp quyền</string>
+    <string name="help_perm_overlay">Hiển thị trên các ứng dụng khác</string>
+    <string name="help_perm_overlay_desc">Cần thiết để hiển thị đồ họa phía trên trò chơi và video.</string>
+    <string name="help_perm_mic">Micrô (ghi âm)</string>
+    <string name="help_perm_mic_desc">Android yêu cầu quyền này để thu âm thanh đang phát trên điện thoại của bạn. Âm thanh xung quanh bạn không bị ghi lại.</string>
+    <string name="help_perm_capture">Ghi màn hình</string>
+    <string name="help_perm_capture_desc">Android chỉ cho phép ứng dụng thu âm thanh trên điện thoại khi bạn đồng ý với yêu cầu này. Màn hình của bạn không bị ghi lại.</string>
+    <string name="help_perm_notification">Thông báo (Android 13 trở lên)</string>
+    <string name="help_perm_notification_desc">Hiện thông báo cho biết ứng dụng đang chạy, kèm nút “Dừng”. Ứng dụng vẫn hoạt động nếu bạn từ chối quyền này.</string>
+
+    <string name="help_modes_title">Chế độ hiển thị</string>
+    <string name="help_mode_wave_desc">Toàn bộ cạnh màn hình dâng vào trong theo độ lớn âm thanh. Phía có âm thanh phát ra sẽ dâng vào sâu hơn.</string>
+    <string name="help_mode_pad_desc">Các vạch sáng lên ở 8 vị trí quanh cạnh màn hình. Thể hiện hướng âm thanh rõ ràng nhất.</string>
+    <string name="help_mode_outline_desc">Chỉ vẽ đường viền mảnh của sóng, nên ít che màn hình trò chơi hơn.</string>
+    <string name="help_mode_circle_desc">Một vòng tròn ở giữa màn hình phồng lên về phía có âm thanh.</string>
+    <string name="help_modes_note">Các cài đặt như Kích thước và Độ đậm được lưu riêng cho từng chế độ và có thể thay đổi trong thẻ Cài đặt.</string>
+
+    <string name="help_sound_title">Loại âm thanh và rung</string>
+    <string name="help_sound_kinds">AI phân loại âm thanh bạn nghe thấy thành âm thanh môi trường, giọng nói và âm thanh nguy hiểm. Theo mặc định, âm thanh môi trường có màu trắng, giọng nói màu vàng và âm thanh nguy hiểm màu đỏ. Bạn có thể đổi màu và chọn có hiện hay không cho từng loại trong thẻ Cài đặt.</string>
+    <string name="help_sound_danger">Khi phát hiện âm thanh nguy hiểm (như tiếng súng), màu sẽ đổi ngay lập tức thay vì chuyển dần.</string>
+    <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn cường độ (Nhẹ, Vừa, Mạnh) và kiểu rung (Một lần, Hai lần, Dài, Lặp lại) cho từng loại.</string>
+    <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Cùng một loại sẽ không rung lại trong vòng 2 giây, và “Lặp lại” sẽ rung mỗi 1,5 giây khi âm thanh còn tiếp diễn.</string>
+
+    <string name="help_notes_title">Lưu ý</string>
+    <string name="help_note_direction">Ứng dụng phân biệt được trái và phải, nhưng không phân biệt được phía trước và phía sau. Đồ họa ở cạnh trên và cạnh dưới màn hình biểu thị âm thanh nghe như nhau ở cả hai bên, cũng như cảm giác không gian.</string>
+    <string name="help_note_mono">Âm thanh giống hệt nhau ở bên trái và bên phải (mono) chỉ được hiện ở phía trước.</string>
+    <string name="help_note_sources">Ứng dụng chỉ thu âm thanh của nội dung nghe nhìn và trò chơi. Cuộc gọi điện thoại, âm thanh thông báo và báo thức sẽ không được thu, và âm thanh từ những ứng dụng chặn thu âm thanh (như một số ứng dụng video) thì không thể trực quan hóa được. Nếu có âm thanh đang phát mà vẫn không vẽ được gì trong khoảng 15 giây, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Tuy nhiên, trường hợp ứng dụng đang phát tự tắt tiếng cũng trông y hệt như vậy, nên ứng dụng này không thể cho bạn biết đó là nguyên nhân nào trong hai nguyên nhân trên.</string>
+    <string name="help_note_stopped">Khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, âm thanh trực quan sẽ tắt, vì tất cả đều dùng chung một sự đồng ý ghi màn hình mà Android chỉ cho phép một ứng dụng dùng tại một thời điểm. Nếu một ứng dụng khác đang ghi, chia sẻ hoặc truyền màn hình, việc bật lại sẽ kết thúc hoạt động đó. Trong hầu hết trường hợp, khi ứng dụng tắt mà không phải do bạn tắt, điện thoại sẽ rung dài ba lần và hiện thông báo kèm nút “Bật lại”. Nếu bạn ngừng thu âm thanh từ phần điều khiển chia sẻ màn hình của điện thoại thì cũng hiện thông báo tương tự; còn khi ứng dụng bị buộc dừng hoặc gặp sự cố thì không thể báo cho bạn. Nếu bạn đã tắt thông báo, chỉ có rung cho bạn biết, và khi bạn mở ứng dụng, thẻ Trang chủ sẽ cho biết điều gì đã tắt.</string>
+    <string name="help_note_screen_off">Khi màn hình tắt, ứng dụng tạm dừng để tiết kiệm pin và tiếp tục khi bạn bật màn hình. Bạn có thể thay đổi điều này ở mục Pin trong thẻ Cài đặt.</string>
+    <string name="help_note_ai">AI có thể phân loại sai. Khi liên quan đến an toàn, đừng coi ứng dụng này là biện pháp bảo vệ duy nhất.</string>
+
+    <string name="help_faq_title">Câu hỏi thường gặp</string>
+    <string name="help_faq_stopped_q">Ứng dụng tự tắt dù tôi không tắt.</string>
+    <string name="help_faq_stopped_a">Ứng dụng tắt khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, hoặc khi việc thu âm thanh dừng do lỗi. Hãy nhấn “Bật lại” trong thông báo, hoặc bật lại từ thẻ Trang chủ hay Cài đặt nhanh. Mỗi lần bật, Android đều hỏi bạn có đồng ý ghi màn hình hay không, và việc bật lại sẽ kết thúc mọi hoạt động ghi, chia sẻ hoặc truyền màn hình đang diễn ra.</string>
+    <string name="help_faq_no_graphic_q">Tôi không thấy đồ họa nào.</string>
+    <string name="help_faq_no_graphic_a">Hãy kiểm tra xem ứng dụng đang phát có chặn thu âm thanh hay không, và âm thanh trong chính ứng dụng đó có đang bị tắt không. Nếu tình trạng không nhận được âm thanh kéo dài, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Ngoài ra, hãy đảm bảo Độ đậm trong thẻ Cài đặt không quá thấp và tùy chọn “Hiện” của loại âm thanh đang phát vẫn đang bật.</string>
+    <string name="help_faq_no_vibration_q">Điện thoại không rung.</string>
+    <string name="help_faq_no_vibration_a">Trong thẻ Cài đặt, ở mục Loại âm thanh (AI), hãy đảm bảo cả “Hiện” và “Rung” đều đang bật cho loại âm thanh đó. Nếu bạn đã tắt rung trong cài đặt điện thoại, ứng dụng có thể không rung.</string>
+    <string name="help_faq_install_q">Không cài được phiên bản mới.</string>
+    <string name="help_faq_install_a">APK được tạo ở nơi khác có chữ ký khác nên không thể cài đè lên ứng dụng hiện có. Hãy gỡ cài đặt ứng dụng hiện có trước rồi mới cài. Việc này sẽ đặt lại các cài đặt của bạn.</string>
+    <string name="help_faq_battery_q">Ứng dụng có tốn nhiều pin không?</string>
+    <string name="help_faq_battery_a">Ứng dụng chỉ vẽ khi có âm thanh và chuyển sang trạng thái chờ khi yên tĩnh. Tuy nhiên, vì ứng dụng liên tục thu âm thanh, bạn nên tắt ứng dụng khi không sử dụng.</string>
+    <string name="help_faq_language_q">Làm cách nào để đổi ngôn ngữ ứng dụng?</string>
+    <string name="help_faq_language_a">Nhấn “Ngôn ngữ” ở đầu thẻ Cài đặt rồi chọn một ngôn ngữ. “Mặc định của hệ thống” sẽ dùng ngôn ngữ của điện thoại. Trên Android 13 trở lên, bạn cũng có thể đổi trong mục “Ngôn ngữ ứng dụng” ở phần cài đặt của điện thoại.</string>
+
+    <string name="help_about_title">Giới thiệu</string>
+    <string name="help_about_version">Phiên bản %1$s</string>
+    <string name="help_about_team">Phát triển bởi nhóm SOVIS</string>
+    <string name="help_about_license">Ứng dụng này được phân phối theo Apache License 2.0.</string>
+    <string name="help_licenses_button">Giấy phép nguồn mở</string>
+    <string name="help_licenses_title">Giấy phép nguồn mở</string>
+    <string name="help_close">Đóng</string>
+</resources>

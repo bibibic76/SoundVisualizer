@@ -1,10 +1,10 @@
 package com.example.soundvisualizer
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.hardware.input.InputManager
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
@@ -23,6 +23,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.example.soundvisualizer.language.AppLanguage
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
@@ -46,6 +47,11 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     override val lifecycle: Lifecycle
         get() = lifecycleRegistry
 
+    // 오버레이는 지금 글자를 그리지 않지만, 앞으로 그릴 글자도 앱 언어를 따르도록 다른 화면과 같게 입힌다(Android 12 이하).
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
+
     override fun onCreate() {
         super.onCreate()
         SettingsManager.init(applicationContext)
@@ -66,6 +72,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             PixelFormat.TRANSLUCENT
         )
         params.gravity = Gravity.TOP or Gravity.START
+        // Android 12 부터 다른 앱 위에 겹친 창은 불투명도가 시스템 기준값(기본 0.8)보다 높으면
+        // FLAG_NOT_TOUCHABLE 이어도 아래 앱으로 가는 터치가 막힌다(신뢰할 수 없는 터치 차단).
+        // 창 전체 불투명도를 그 기준값으로 맞춰야 오버레이를 켠 채로 게임을 조작할 수 있다.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            params.alpha = getSystemService(InputManager::class.java).maximumObscuringOpacityForTouch
+        }
         // 노치/상태바/내비게이션 영역까지 덮어서 파도가 화면 실제 테두리에서 시작하도록 한다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
@@ -105,11 +117,13 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
 
-    // 새로 만든 Intent 로 stopService 를 부르는 건 정상이다. Lint(ImplicitSamInstance) 오탐.
-    /** 오버레이를 띄울 수 없으면 오디오 캡처도 의미가 없으므로 같이 정리한다. */
-    @SuppressLint("ImplicitSamInstance")
+    /**
+     * 오버레이를 띄울 수 없으면 오디오 캡처도 의미가 없으므로 같이 정리한다.
+     * 동의까지 받았는데 켜지지 않은 것이라 사용자가 끈 게 아니다. 캡처 서비스가 멈추며 알리도록 이유를 넘긴다.
+     * 소리 받기는 대개 이미 시작된 뒤라, 소리가 아니라 오버레이가 문제라고 알린다.
+     */
     private fun stopEverything() {
-        stopService(Intent(this, AudioCaptureService::class.java))
+        AudioCaptureService.stopForFailure(this, StopReason.OverlayFailed)
         SettingsManager.setServiceRunning(false)
         stopSelf()
     }

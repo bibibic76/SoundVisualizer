@@ -1,0 +1,35 @@
+# R8 이 이름을 바꾸면 실행할 때 죽는 클래스들.
+#
+# 여기 적힌 클래스는 네이티브 코드가 FindClass 로 **이름을 찍어서** 찾는다. Java 쪽에서 아무도
+# 부르지 않으므로 R8 이 보기에는 안 쓰는 코드다. app/proguard-rules.pro 의 keep 규칙이 지키고
+# 있는데, 그 규칙이 지워지거나 ONNX Runtime 이 올라가 이름이 달라지면 **빌드는 그대로 통과하고
+# 실행할 때 죽는다.**
+#
+# 그래서 CI 가 릴리스 빌드의 mapping.txt 와 이 목록을 대조한다 (.github/workflows/android.yml).
+# 목록은 libonnxruntime4j_jni.so 안의 "ai/onnxruntime/..." 문자열에서 뽑았다 (#60).
+#
+# 규칙을 바꿀 때는 이 파일도 같이 고친다. 한쪽만 고치면 CI 가 알려 준다.
+
+# 네이티브가 결과 텐서와 그 메타데이터를 직접 만든다
+ai.onnxruntime.OnnxTensor
+ai.onnxruntime.TensorInfo
+ai.onnxruntime.NodeInfo
+ai.onnxruntime.ValueInfo
+
+# 세션 메타데이터를 읽는 경로에서 네이티브가 만든다
+ai.onnxruntime.MapInfo
+ai.onnxruntime.SequenceInfo
+ai.onnxruntime.OnnxModelMetadata
+
+# 지금 모델은 텐서만 내보내지만, 같은 네이티브 반환 경로에 이름이 박혀 있다
+ai.onnxruntime.OnnxValue
+ai.onnxruntime.OnnxMap
+ai.onnxruntime.OnnxSequence
+ai.onnxruntime.OnnxSparseTensor
+
+# 네이티브 오류가 이 예외로 올라온다. 없으면 원인 모를 크래시가 된다
+ai.onnxruntime.OrtException
+
+# libsoundvisualizer.so 가 Java_com_example_soundvisualizer_AudioEngine_* 로 내보낸다.
+# 패키지·클래스·메서드 이름이 모두 심볼의 일부라 하나라도 바뀌면 UnsatisfiedLinkError 다
+com.example.soundvisualizer.AudioEngine

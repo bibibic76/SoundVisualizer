@@ -2,6 +2,8 @@
 # 브랜치를 develop 에 합치기 전에 깨졌는지 알 수 있고, APK 는 Actions 실행 화면에서 받는다.
 #
 # 계측 테스트(connectedDebugAndroidTest)는 기기가 필요해서 여기서는 돌리지 않는다.
+# 대신 컴파일은 확인한다(assembleDebugAndroidTest). 그러지 않으면 계측 테스트가 쓰는 함수 이름이 바뀌어
+# 테스트가 깨져도 CI 는 계속 통과하고, 다음에 기기를 꽂을 때까지 아무도 모른다.
 #
 # job 이름(name)은 develop·main 보호 규칙의 필수 체크 이름이다. 바꾸면 저장소 규칙도 함께 바꿔야 하고,
 # 이전 이름으로 도는 진행 중인 브랜치의 PR 이 머지되지 않는다.
@@ -44,13 +46,15 @@ jobs:
       # 같은 서명으로 빌드해야 팀원 폰에 깔린 앱 위에 새 APK 를 덮어 설치할 수 있다.
       # 저장소 Secret DEBUG_KEYSTORE_BASE64 가 없으면 실행마다 새 임시 키로 서명되어,
       # 받은 APK 를 설치하려면 기존 앱을 지워야 한다. (설정 방법은 README 의 "자동 빌드" 참고)
+      # 키 경로는 SV_DEBUG_KEYSTORE 로 넘긴다. ~/.android 에 풀어 두는 것만으로는 빌드 도구가 쓰지 않았다.
       - name: 디버그 서명 키 복원
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
           if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
-            mkdir -p ~/.android
-            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+            keystore="$RUNNER_TEMP/debug.keystore"
+            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$keystore"
+            echo "SV_DEBUG_KEYSTORE=$keystore" >> "$GITHUB_ENV"
             echo "공유 디버그 키로 서명합니다."
           else
             echo "::warning title=임시 서명::DEBUG_KEYSTORE_BASE64 Secret 이 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
@@ -88,8 +92,72 @@ jobs:
               summary.write(f"### 유닛 테스트\n\n{line}\n")
           PY
 
+      - name: 계측 테스트 컴파일 확인
+        run: ./gradlew assembleDebugAndroidTest
+
       - name: 디버그 APK 빌드
         run: ./gradlew assembleDebug
+
+      # 배포되는 APK 는 R8 을 거친다. 여기서 빌드해 두지 않으면 R8 파손이 태그를 밀고 난
+      # 다음에야 드러나고, 배포하려던 순간에 배포가 막힌다.
+      # 릴리스 키 Secret 은 넣지 않는다. build.gradle.kts 가 디버그 키로 물러난다.
+      - name: 릴리스 APK 빌드 (R8)
+        run: ./gradlew assembleRelease
+
+      # 빌드 성공만으로는 부족하다. keep 규칙이 빠져도 R8 은 조용히 지우고 빌드는 통과한다.
+      # 죽는 것은 실행할 때다. mapping.txt 로 실제로 지켜졌는지 대조한다.
+      - name: R8 keep 규칙 확인
+        run: |
+          mapping=app/build/outputs/mapping/release/mapping.txt
+          if [ ! -f "$mapping" ]; then
+            echo "::error title=R8::$mapping 이 없습니다. 릴리스 빌드가 R8 을 거치지 않았습니다."
+            exit 1
+          fi
+
+          missing=""
+          checked=0
+          while read -r line; do
+            # 목록 파일이 CRLF 로 체크아웃될 수 있다. 줄 끝 CR 이 남으면 어떤 줄도 맞지 않는다.
+            cls=$(printf '%s' "$line" | tr -d '[:cntrl:]')
+            case "$cls" in ''|'#'*) continue;; esac
+            checked=$((checked + 1))
+            # "원래이름 -> 원래이름:" 이면 이름이 유지된 것이다.
+            if ! grep -qF "$cls -> $cls:" "$mapping"; then
+              missing="$missing $cls"
+            fi
+          done < app/r8-must-keep.txt
+
+          if [ -n "$missing" ]; then
+            echo "::error title=R8 keep 규칙::네이티브가 이름으로 찾는 클래스가 지켜지지 않았습니다:$missing"
+            echo "app/proguard-rules.pro 의 keep 규칙과 app/r8-must-keep.txt 를 확인하세요."
+            exit 1
+          fi
+
+          # 반대쪽도 본다. 전부 이름이 그대로라면 축소가 아예 돌지 않은 것일 수 있다.
+          # 안 쓰는 ORT 내부가 난독화됐는지로 확인한다.
+          if grep -qF "ai.onnxruntime.OrtUtil -> ai.onnxruntime.OrtUtil:" "$mapping"; then
+            echo "::warning title=R8::안 쓰는 ORT 내부까지 이름이 그대로입니다. 축소가 돌지 않았을 수 있습니다."
+          fi
+
+          apk=app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          echo "::notice title=R8::keep 규칙 ${checked}개 모두 지켜짐. 릴리스 APK $(du -h "$apk" | cut -f1)"
+
+      # 공유 키가 있는데 다른 키로 서명됐으면 실패시킨다. 덮어 설치가 안 되는 APK 를 올리지 않기 위해서다.
+      - name: APK 서명 확인
+        run: |
+          apk=app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          apk_sha=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
+          if [ -n "${SV_DEBUG_KEYSTORE:-}" ]; then
+            key_sha=$(keytool -exportcert -alias androiddebugkey -keystore "$SV_DEBUG_KEYSTORE" -storepass android | sha256sum | cut -d' ' -f1)
+            if [ "$apk_sha" != "$key_sha" ]; then
+              echo "::error title=APK 서명::공유 디버그 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
+              exit 1
+            fi
+            echo "::notice title=APK 서명::공유 디버그 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+          else
+            echo "::notice title=APK 서명::임시 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+          fi
 
       - name: 테스트 결과 올리기 (실패했을 때)
         if: failure()
