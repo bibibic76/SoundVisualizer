@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,6 +54,7 @@ import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
+import com.example.soundvisualizer.RowPressIndication
 import com.example.soundvisualizer.SecondaryTextColor
 import java.util.Locale
 import kotlin.math.sqrt
@@ -87,7 +89,11 @@ fun LanguageSettingCard() {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClickLabel = stringResource(R.string.cd_change_language)) { showDialog = true }
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = RowPressIndication,
+                    onClickLabel = stringResource(R.string.cd_change_language)
+                ) { showDialog = true }
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
             GlobeIcon(color = AccentColor, modifier = Modifier.size(24.dp))
