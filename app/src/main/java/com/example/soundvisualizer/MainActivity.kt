@@ -103,8 +103,14 @@ class MainActivity : ComponentActivity() {
     /** 보이는 탭. 빠른 설정 타일을 길게 눌러 들어오면 설정 탭을 연다. */
     private val selectedTab = mutableIntStateOf(TAB_HOME)
 
-    /** 이번에 열린 이유가 타일 길게 누르기(설정 열기)인지. 그때는 꺼짐 안내가 있어도 탭을 옮기지 않는다. */
-    private var openedForSettings = false
+    /**
+     * 지금 뜬 꺼짐 안내 때문에 홈 탭으로 이미 한 번 옮겼는지. 안내가 사라지면 다음 안내를 위해 되돌린다.
+     *
+     * 돌아올 때마다 옮기면 안내를 닫기 전까지는 화면을 돌리거나 언어를 바꿔 액티비티가 다시 만들어질 때도
+     * 보던 탭에서 끌려 나온다. 타일을 길게 눌러 설정을 열러 왔으면 처음부터 세워 둬서 옮기지 않는다.
+     * 다시 만들어져도 유지되도록 [KEY_ROUTED_STOP_NOTICE] 로 저장한다.
+     */
+    private var routedStopNotice = false
 
     // Android 12 이하에서는 고른 앱 언어를 여기서 입힌다. 13 이상은 시스템이 적용한다.
     override fun attachBaseContext(newBase: Context) {
@@ -123,6 +129,7 @@ class MainActivity : ComponentActivity() {
             openTabFor(intent)
         } else {
             selectedTab.intValue = savedInstanceState.getInt(KEY_SELECTED_TAB, TAB_HOME)
+            routedStopNotice = savedInstanceState.getBoolean(KEY_ROUTED_STOP_NOTICE, false)
         }
         addOnNewIntentListener { openTabFor(it) }
 
@@ -150,12 +157,15 @@ class MainActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_SELECTED_TAB, selectedTab.intValue)
+        outState.putBoolean(KEY_ROUTED_STOP_NOTICE, routedStopNotice)
     }
 
     private fun openTabFor(intent: Intent?) {
         if (intent?.action == TileService.ACTION_QS_TILE_PREFERENCES) {
             selectedTab.intValue = TAB_SETTINGS
-            openedForSettings = true
+            // 설정을 열러 온 것이므로 꺼짐 안내가 있어도 홈으로 옮기지 않는다. 옮긴 것으로 쳐 두면
+            // 화면을 돌리거나 언어를 바꿔 다시 만들어져도 설정 탭에 그대로 남는다.
+            routedStopNotice = true
         }
     }
 
@@ -186,10 +196,25 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // 알림의 "중지" 나 시스템 UI 로 캡처가 끝난 경우 홈 화면 상태를 실제 서비스 상태와 맞춘다.
         SettingsManager.setServiceRunning(AudioCaptureService.isRunning)
-        // 꺼짐 안내는 홈에만 있다. 설정·도움말 탭을 보다가 게임으로 나간 사이에 꺼졌으면, 최근 앱·런처·알림
-        // 어디로 돌아와도 안내를 보게 홈으로 옮긴다. 안내를 닫거나 다시 켜면 사라지므로 옮기지 않는다.
-        if (!openedForSettings && SettingsManager.lastUnexpectedStop.value != null) selectedTab.intValue = TAB_HOME
-        openedForSettings = false
+        showStopNoticeOnHome()
+    }
+
+    /**
+     * 꺼짐 안내는 홈에만 있다. 설정·도움말 탭을 보다가 게임으로 나간 사이에 꺼졌으면, 최근 앱·런처·알림
+     * 어디로 돌아와도 안내를 보게 홈으로 옮긴다.
+     *
+     * 안내 하나에 한 번만 옮긴다. 돌아올 때마다 옮기면 안내를 닫기 전까지는 보던 탭에 남지 못하고,
+     * 설정 탭에서 언어를 바꾸거나 화면을 돌려 다시 만들어질 때도 홈으로 끌려 나온다.
+     * 안내가 사라지면(닫기·다시 켜기) 되돌려, 다음에 또 꺼지면 그때 한 번 옮긴다.
+     */
+    private fun showStopNoticeOnHome() {
+        if (SettingsManager.lastUnexpectedStop.value == null) {
+            routedStopNotice = false
+            return
+        }
+        if (routedStopNotice) return
+        routedStopNotice = true
+        selectedTab.intValue = TAB_HOME
     }
 
     override fun onPause() {
@@ -225,6 +250,7 @@ class MainActivity : ComponentActivity() {
         const val TAB_HOME = 0
         const val TAB_SETTINGS = 1
         const val KEY_SELECTED_TAB = "selected_tab"
+        const val KEY_ROUTED_STOP_NOTICE = "routed_stop_notice"
     }
 }
 

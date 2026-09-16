@@ -80,6 +80,8 @@ class ScreenOffPauseTest {
     fun `새로 설치하면 배터리를 아끼는 쪽으로 켜져 있다`() {
         assertTrue("기본값을 끄려면 이 테스트부터 고쳐야 한다", SettingsManager.PAUSE_WHEN_SCREEN_OFF_DEFAULT)
         assertTrue("저장값이 없으면 기본값", SettingsManager.loadPauseWhenScreenOff(MemoryPrefs()))
+        // SettingsManager 는 싱글턴이라 이 값은 테스트끼리 공유한다. 여기서는 흐름의 초기값이 위 상수와
+        // 같은지만 본다. 어느 테스트에서든 setPauseWhenScreenOff 로 바꾸면 순서에 따라 여기서 깨진다.
         assertTrue("흐름의 초기값도 같은 상수를 쓴다", SettingsManager.pauseWhenScreenOff.value)
     }
 

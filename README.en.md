@@ -139,7 +139,7 @@ The first time you turn it on, the microphone and notification permissions are a
 - **It can tell left from right, but not front from back.** Phone audio has two channels, left and right, and direction comes from the difference between them. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space. They don't pick out sounds actually coming from behind you.
 - **Sounds that are identical on the left and right (mono) have no direction.** They're shown only toward the front.
 - **Not every sound is captured.** Only media and game sounds are captured. Phone calls, notification sounds and alarms are not. Some apps (such as copy-protected video apps) block audio capture and can't be visualized.
-- **Starting screen recording, screen sharing or casting turns it off.** The app captures sound through the screen recording consent, and Android lets only one app use it at a time. Turning it on again ends that recording, sharing or casting for the same reason. In most cases, when it turns off without you stopping it, your phone **vibrates three long times** and shows a notification with a **Turn on again** button. Stopping sound capture from your phone's screen-sharing controls shows the same alert, and a force stop or a crash can't tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.
+- **Starting screen recording, screen sharing or casting turns it off.** The app captures sound through the screen recording consent, and Android lets only one app use it at a time. For the same reason, if another app is recording, sharing or casting, turning it on again ends it. In most cases, when it turns off without you stopping it, your phone **vibrates three long times** and shows a notification with a **Turn on again** button. Stopping sound capture from your phone's screen-sharing controls shows the same alert, and a force stop or a crash can't tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.
 - **AI classification is for reference only.** It can get the sound type wrong. Don't rely on this app as your only safeguard when safety is at stake.
 
 ---
@@ -147,7 +147,7 @@ The first time you turn it on, the microphone and notification permissions are a
 ## ❓ FAQ
 
 **It turned off without me stopping it.**
-It turns off when screen recording, screen sharing or casting starts, or when sound capture stops because of an error. Tap **Turn on again** in the notification, or turn it on again from the app or Quick Settings. Android asks for the screen recording consent every time you turn it on, and turning it on again ends any recording, sharing or casting that is running.
+It turns off when screen recording, screen sharing or casting starts, or when sound capture stops because of an error. Tap **Turn on again** in the notification, or turn it on again from the app or Quick Settings. Android asks for the screen recording consent every time you turn it on, and if another app is recording, sharing or casting, turning it on again ends it.
 
 **I don't see any graphics.**
 Check whether the app you're playing blocks audio capture. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off.

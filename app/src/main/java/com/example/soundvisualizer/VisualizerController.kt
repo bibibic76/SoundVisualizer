@@ -61,6 +61,9 @@ object VisualizerController {
     /** 캡처와 오버레이를 멈춘다. 이미 꺼져 있어도 안전하다. */
     @SuppressLint("ImplicitSamInstance")
     fun stop(context: Context) {
+        // stopService 는 onDestroy 까지 시간이 걸린다. 그사이 서비스가 실행 중 알림을 다시 올리지 않도록
+        // 내리기 전에 알린다. (AudioCaptureService.stopRequested)
+        AudioCaptureService.markStopRequested()
         context.stopService(Intent(context, AudioCaptureService::class.java))
         context.stopService(Intent(context, OverlayService::class.java))
         SettingsManager.setServiceRunning(false)

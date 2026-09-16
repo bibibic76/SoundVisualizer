@@ -16,7 +16,9 @@ class StopNoticeSettingsTest {
 
     @Test
     fun `이유를 이름으로 저장하고 그대로 읽는다`() {
-        for (reason in StopReason.values()) {
+        // 사용자가 직접 끈 경우는 알리지 않으므로 저장되지 않는다 (StopAlertPlan.decide 가 거른다).
+        // 저장·복원을 확인해야 하는 것은 안내가 뜨는 이유들뿐이다.
+        for (reason in StopReason.values().filter { it != StopReason.UserRequested }) {
             val prefs = MemoryPrefs()
             SettingsManager.putLastUnexpectedStop(prefs.edit(), reason)
 
