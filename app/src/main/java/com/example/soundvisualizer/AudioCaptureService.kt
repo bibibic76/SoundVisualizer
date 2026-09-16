@@ -156,7 +156,7 @@ class AudioCaptureService : Service() {
 
         /**
          * 모드 칩의 뷰 번호. [VisualMode] 의 차례와 짝을 이룬다. 모드를 더하면 여기와
-         * [R.layout.notification_modes] 에도 칩을 더해야 한다. 어긋나면 NotificationModeChipTest 가 알려 준다.
+         * [R.layout.notification_modes] 에도 칩을 더해야 한다. 어긋나면 VisualModeOrdinalTest 가 알려 준다.
          */
         val MODE_CHIP_IDS = intArrayOf(
             R.id.notification_mode_0,
