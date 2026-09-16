@@ -32,6 +32,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
+import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.HapticNotifier
 import com.example.soundvisualizer.language.AppLanguage
@@ -129,8 +130,6 @@ class AudioCaptureService : Service() {
         const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
         private const val CHANNEL_ID = "AudioCaptureChannel"
         private const val NOTIFICATION_ID = 1
-        /** 기기 출력 레이트를 못 읽었을 때의 순서. 요즘 기기는 대부분 48kHz 가 네이티브다. */
-        private val SAMPLE_RATE_CANDIDATES = intArrayOf(48000, 44100)
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
 
@@ -273,6 +272,11 @@ class AudioCaptureService : Service() {
      */
     private fun startAiPipelineAsync() {
         val rate = sampleRate
+        if (!AiCaptureSampleRatePolicy.isSupportedForAi(rate)) {
+            Log.w(TAG, "AI disabled for unsupported capture sample rate: $rate")
+            synchronized(aiLock) { onAiPipelineLoadedLocked(null) }
+            return
+        }
         val appContext = applicationContext
         Thread({
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
@@ -329,26 +333,24 @@ class AudioCaptureService : Service() {
     }
 
     /**
-     * 기기 출력 레이트를 우선 쓴다. 다른 값을 요청하면 캡처 경로에 리샘플러가 끼어
-     * 지연이 늘고 일부 기기에서 초기화가 실패한다.
+     * AI 가 검증된 48/44.1kHz를 우선한다. 기기 native rate가 그중 하나면 그대로 써서
+     * 시스템 리샘플링을 피한다. 고 native rate에서는 검증된 rate를 먼저 요청하고,
+     * 둘 다 불가능할 때만 native rate를 시각화 전용 fallback으로 유지한다.
      */
     private fun pickSampleRate(): Int {
         val reported = audioManager
             ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
             ?.toIntOrNull()
-        val candidates = if (reported != null) {
-            intArrayOf(reported) + SAMPLE_RATE_CANDIDATES.filter { it != reported }
-        } else {
-            SAMPLE_RATE_CANDIDATES
-        }
-        for (rate in candidates) {
-            if (AudioRecord.getMinBufferSize(rate, CHANNEL_CONFIG, AUDIO_FORMAT) > 0) {
-                Log.i(TAG, "capture sample rate: $rate (device reported $reported)")
-                return rate
+        var accepted = false
+        val selected = AiCaptureSampleRatePolicy.selectCaptureRate(reported) { rate ->
+            (AudioRecord.getMinBufferSize(rate, CHANNEL_CONFIG, AUDIO_FORMAT) > 0).also {
+                if (it) accepted = true
             }
         }
-        Log.w(TAG, "no candidate sample rate accepted; falling back to 48000")
-        return 48000
+        val message = "capture sample rate: $selected (device reported $reported, " +
+            "AI supported=${AiCaptureSampleRatePolicy.isSupportedForAi(selected)})"
+        if (accepted) Log.i(TAG, message) else Log.w(TAG, "no candidate accepted; $message")
+        return selected
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

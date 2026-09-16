@@ -18,6 +18,12 @@ class AiAudioBuffer(
         private const val RING_MASK = MAX_RING_SIZE - 1
     }
 
+    init {
+        require(AiCaptureSampleRatePolicy.isSupportedForAi(captureSampleRate)) {
+            "Unsupported AI capture sample rate: $captureSampleRate"
+        }
+    }
+
     private val lock = Any()
     private val ring = FloatArray(MAX_RING_SIZE)
     private var head = 0
