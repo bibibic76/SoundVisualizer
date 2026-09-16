@@ -86,9 +86,10 @@ To use a different language from your phone, tap **Language** at the top of the 
 ### 🔋 Lightweight
 
 - Built to run smoothly over games. Even on 120Hz screens it's capped at 60 frames per second to save battery and reduce heat.
+- **To save even more**, turn on **Draw the graphic less often** under **Battery** in the Settings tab. It redraws only 30 times a second, which saves battery when you leave it running for a long time. Movement is less smooth, but sound is still picked up just as often.
 - When there's no sound, it stops drawing and goes idle.
 - **It pauses while the screen is off.** It stops capturing sound, running the AI and vibrating while the screen is off, and picks up again when you turn the screen on. To keep getting vibration alerts with the screen off, turn off **Pause while the screen is off** under **Battery** in the Settings tab.
-- A notification is shown while it's running, and its **Stop** button turns it off right away.
+- A notification is shown while it's running, and its **Stop** button turns it off right away. Expand the notification to switch the **visual mode** too.
 
 ---
 
@@ -122,7 +123,8 @@ You can also find how to use it, why permissions are needed and the FAQ in the a
    The app explains why it needs the microphone before asking. If you've denied it several times and Android stops asking, tap **Open settings** when the app prompts you, and allow the microphone under Permissions in the app info.
 
 3. Go to your home screen and open a game or video. Sounds are drawn along the edges of the screen.
-4. To turn it off, tap **Stop** in the app or **Stop** in the notification.
+4. To switch modes without leaving what you're watching, pull down the notification shade, expand the running notification and tap a mode. The collapsed notification shows the current mode name too.
+5. To turn it off, tap **Stop** in the app or **Stop** in the notification.
 
 ### Turn it on and off from the notification shade
 
