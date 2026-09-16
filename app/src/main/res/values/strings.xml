@@ -225,7 +225,7 @@
 
     <!-- Help: report -->
     <string name="help_report_title">Report a problem</string>
-    <string name="help_report_desc">Tell us about a bug, or a sound that was shown as the wrong type. It opens GitHub in your browser with your app and device details filled in. No audio is ever sent.</string>
+    <string name="help_report_desc">Tell us about a bug, or a sound that was shown as the wrong type. It opens GitHub in your browser with your app and device details filled in, so you need a GitHub account. Without one, copy the details below and send them another way. No audio is ever sent.</string>
     <string name="help_report_button">Report on GitHub</string>
     <string name="help_report_copy">Copy device details</string>
     <string name="help_report_copied">Device details copied.</string>

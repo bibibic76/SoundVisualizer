@@ -167,7 +167,7 @@ It only draws while there's sound and goes idle when it's quiet. While the scree
 Tap **Language** at the top of the **Settings** tab and pick one. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
 
 **A sound is shown as the wrong type. / I found a bug.**
-Tell us from **Report a problem** in the **Help** tab. **Report on GitHub** opens a new issue in your browser with the app version, Android version, device model and app language already filled in. If you can't open a browser, use **Copy device details** and send the same text another way. Audio is never sent.
+Tell us from **Report a problem** in the **Help** tab. **Report on GitHub** opens a new issue in your browser with the app version, Android version, device model and app language already filled in, so you need a GitHub account. Without one, or if you can't open a browser, use **Copy device details** and send the same text another way. Audio is never sent.
 
 ---
 
