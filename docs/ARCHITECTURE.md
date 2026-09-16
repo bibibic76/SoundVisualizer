@@ -21,7 +21,7 @@ graph TD
 |---|---|---|
 | 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
-| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지) | Kotlin |
+| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
 | 분류 결과 연결 | `AiClassification` | Kotlin |
@@ -120,6 +120,17 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 모델 로딩이 쉬는 중에 끝나면 파이프라인만 들고 있고, 추론·진동·결과 읽기는 화면이 켜질 때 시작합니다(`aiPaused`, `aiLock`으로 보호).
 - 쉬는 동안 `SettingsManager.isCapturePaused`가 `true`이고, 오버레이 렌더 루프가 이 값을 봅니다(4장).
 - 늦게 도착한 읽기 오류가 다시 켠 새 캡처를 내리지 않도록, 오류를 낸 스레드가 지금 캡처 스레드일 때만 멈춥니다.
+
+### 받을 수 없는 소리 알리기 (`BlockedCaptureNotice`)
+
+안드로이드는 앱이 자기 소리를 다른 앱에 넘기지 않도록 막을 수 있습니다(`android:allowAudioPlaybackCapture="false"`, DRM이 걸린 영상 등). 그런 앱의 소리는 **무음**으로 들어오므로 오버레이가 아무것도 그리지 않습니다. 청각장애 사용자는 "조용한 장면"과 "받을 수 없는 소리"를 스스로 구분할 수 없어, 알리지 않으면 앱이 고장 났다고 여깁니다.
+
+- **재료**: 폰이 미디어를 재생 중인지(`AudioManager.isMusicActive`)와 우리가 실제로 받은 최대 진폭(`AudioEngine.currentLevel`). 둘이 어긋난 상태가 이어지면 막힌 것으로 봅니다. 새 권한은 필요 없습니다.
+- **기준값**: 무음 `0.002`(약 -54dBFS), 버티는 시간 **6초**, 내리는 시간 **2초**. 무음 기준은 그리기·진동 기준(`HapticPolicy.LEVEL_THRESHOLD` 0.01)보다 다섯 배 낮게 두어, 눈에 보이지도 않을 만큼 작은 소리라도 들어왔으면 받을 수 있는 것으로 칩니다. 6초는 로딩 화면·장면 전환·광고 사이처럼 잠깐 조용한 구간을 지나 보내면서, 사용자가 "고장 났나" 하고 앱을 끄기 전에 뜨는 길이입니다.
+- **확인 틱**: `AudioCaptureService`가 캡처가 도는 동안에만 메인 스레드 핸들러로 **500ms**마다 봅니다. 새 스레드를 만들지 않고, 캡처 스레드의 hot path도 건드리지 않습니다(버퍼마다 무언가를 더 하면 `URGENT_AUDIO` 스레드에서 할당이 생깁니다). 네이티브가 이미 들고 있는 최근 피크를 읽어 가는 편이 쌉니다. 받은 소리가 있으면 그것만으로 판단이 끝나므로 그때는 시스템에 묻지도 않습니다.
+- **잘못 뜨지 않게 거르는 것들**(`canJudgeBlocked`): 화면 꺼짐 일시정지 중, 미디어 볼륨 0, 통화·음성 채팅 중(`AudioManager.mode != MODE_NORMAL`), 헤드셋·블루투스·HDMI 연결. 캡처가 멈추면(종료, 화면 꺼짐) 틱과 안내를 함께 내립니다. 무음의 이유를 우리가 알 수 없으면 아무 말도 하지 않습니다. **틀린 안내는 침묵보다 나쁩니다.** 멀쩡한 앱을 탓하게 만들기 때문입니다.
+- **보여주는 곳**: `SettingsManager.isCaptureBlocked` → 홈 탭의 상태 아래 안내와 실행 중 알림 문구. 소리가 다시 들어오면 그 즉시 내립니다. AI 사용 불가 안내와 겹치면 받지 못한다는 쪽만 보여줍니다. 받는 소리가 없으면 분류할 소리도 없어 AI 안내는 그 순간 의미가 없고, 막힌 앱을 벗어나면 다시 나옵니다.
+- 판단 규칙만 `BlockedCaptureNotice`로 떼어 내 JVM에서 검사합니다(`BlockedCaptureNoticeTest`).
 
 ---
 
@@ -240,7 +251,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 모드별 슬라이더 값은 드래그 중에는 메모리에만 반영하고, **손을 뗄 때**와 화면을 벗어날 때(`onPause`) 저장합니다.
 - 모드 설정의 기본값은 `ModeSettings` 생성자 한 곳에만 둡니다. 저장값이 없는 항목은 `loadMode`가 그 기본값을 그대로 씁니다. 새 설치가 받는 기본값과 저장 키(`putMode`로 적고 `loadMode`로 읽기)는 `ModeSettingsTest`가 메모리 가짜 프리퍼런스로 기기 없이 확인합니다.
 - 표현 모드(`VisualMode`)는 **순서(ordinal)로 저장**하므로 enum 순서를 바꾸면 기존 사용자 설정이 어긋납니다. 진동 설정의 enum은 이름으로 저장합니다.
-- 실행 상태(`isServiceRunning`), AI 사용 가능 여부(`aiAvailable`), 화면 꺼짐으로 쉬는 중(`isCapturePaused`)은 캡처 서비스가 알려주는 값이라 저장하지 않습니다.
+- 실행 상태(`isServiceRunning`), AI 사용 가능 여부(`aiAvailable`), 화면 꺼짐으로 쉬는 중(`isCapturePaused`), 소리를 받을 수 없는 중(`isCaptureBlocked`)은 캡처 서비스가 알려주는 값이라 저장하지 않습니다.
 - 마지막으로 뜻하지 않게 꺼진 이유(`lastUnexpectedStop`)는 캡처 서비스가 알려주지만, 프로세스가 끝난 뒤 앱을 열어도 홈에서 보이도록 이름으로 저장합니다. 모르는 이름(항목을 바꾼 뒤)이면 안내가 없는 것으로 봅니다. 읽기·쓰기(`loadLastUnexpectedStop`·`putLastUnexpectedStop`)는 `StopNoticeSettingsTest`가 확인합니다.
 - "화면이 꺼지면 일시정지"의 기본값은 `PAUSE_WHEN_SCREEN_OFF_DEFAULT` 한 곳에만 둡니다. 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 모르고 지나갑니다(`ScreenOffPauseTest`).
 
@@ -250,7 +261,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 | 스레드 | 우선순위 | 하는 일 |
 |---|---|---|
-| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 꺼짐 알림 |
+| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 500ms 간격 보호된 소리 확인, 꺼짐 알림 |
 | `SV-AudioCapture` | `URGENT_AUDIO` | `AudioRecord` 읽기, 피크 전달, AI 링버퍼 복사 |
 | `SV-AiInit` | `BACKGROUND` | 모델 복사·세션 생성 (시작 시 한 번) |
 | AI 코루틴 | `Dispatchers.Default` | 250ms 간격 분석 |
@@ -267,6 +278,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 | 설정 | 메인 (설정 화면) | 메인 (오버레이), `SV-Haptic` | `StateFlow.value` |
 | AI 사용 가능 여부 | `SV-AiInit` | 메인 (홈·설정 화면) | `StateFlow` |
 | 캡처 쉬는 중 | 메인 (화면 꺼짐 수신) | 메인 (오버레이) | `StateFlow` |
+| 소리를 받을 수 없는 중 | 메인 (확인 틱) | 메인 (홈 화면, 실행 중 알림) | `StateFlow` |
 | AI 파이프라인·진동 알림 붙이기, 쉬는 중 여부 | `SV-AiInit`, 메인 | `SV-AiInit`, 메인 | `aiLock` |
 
 ---
