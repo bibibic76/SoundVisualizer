@@ -8,6 +8,7 @@
     <string name="home_subtitle">Vẽ lên màn hình những âm thanh mà bạn không nhìn thấy.\nTừ trò chơi đến phim ảnh, hãy khám phá một trải nghiệm hoàn toàn mới.</string>
     <string name="home_status_running">Trạng thái: Đang chạy</string>
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
+    <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
     <string name="home_ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường và thông báo rung đang tắt. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
     <string name="home_stopped_dismiss">Đóng thông báo</string>
     <string name="home_start">Bắt đầu</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">Đang trực quan hóa âm thanh.</string>
     <string name="notification_stop">Dừng</string>
     <string name="notification_text_ai_unavailable">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên thông báo rung đang tắt.</string>
+    <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">Trực quan hóa đã tắt</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">Lưu ý</string>
     <string name="help_note_direction">Ứng dụng phân biệt được trái và phải, nhưng không phân biệt được phía trước và phía sau. Đồ họa ở cạnh trên và cạnh dưới màn hình biểu thị âm thanh nghe như nhau ở cả hai bên, cũng như cảm giác không gian.</string>
     <string name="help_note_mono">Âm thanh giống hệt nhau ở bên trái và bên phải (mono) chỉ được hiện ở phía trước.</string>
-    <string name="help_note_sources">Ứng dụng chỉ thu âm thanh của nội dung nghe nhìn và trò chơi. Cuộc gọi điện thoại, âm thanh thông báo và báo thức sẽ không được thu. Ứng dụng cũng không thể trực quan hóa âm thanh từ các ứng dụng chặn thu âm thanh (như một số ứng dụng video).</string>
+    <string name="help_note_sources">Ứng dụng chỉ thu âm thanh của nội dung nghe nhìn và trò chơi. Cuộc gọi điện thoại, âm thanh thông báo và báo thức sẽ không được thu, và âm thanh từ những ứng dụng chặn thu âm thanh (như một số ứng dụng video) thì không thể trực quan hóa được. Nếu có âm thanh đang phát mà vẫn không vẽ được gì trong khoảng 15 giây, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Tuy nhiên, trường hợp ứng dụng đang phát tự tắt tiếng cũng trông y hệt như vậy, nên ứng dụng này không thể cho bạn biết đó là nguyên nhân nào trong hai nguyên nhân trên.</string>
     <string name="help_note_stopped">Khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, âm thanh trực quan sẽ tắt, vì tất cả đều dùng chung một sự đồng ý ghi màn hình mà Android chỉ cho phép một ứng dụng dùng tại một thời điểm. Nếu một ứng dụng khác đang ghi, chia sẻ hoặc truyền màn hình, việc bật lại sẽ kết thúc hoạt động đó. Trong hầu hết trường hợp, khi ứng dụng tắt mà không phải do bạn tắt, điện thoại sẽ rung dài ba lần và hiện thông báo kèm nút “Bật lại”. Nếu bạn ngừng thu âm thanh từ phần điều khiển chia sẻ màn hình của điện thoại thì cũng hiện thông báo tương tự; còn khi ứng dụng bị buộc dừng hoặc gặp sự cố thì không thể báo cho bạn. Nếu bạn đã tắt thông báo, chỉ có rung cho bạn biết, và khi bạn mở ứng dụng, thẻ Trang chủ sẽ cho biết điều gì đã tắt.</string>
     <string name="help_note_screen_off">Khi màn hình tắt, ứng dụng tạm dừng để tiết kiệm pin và tiếp tục khi bạn bật màn hình. Bạn có thể thay đổi điều này ở mục Pin trong thẻ Cài đặt.</string>
     <string name="help_note_ai">AI có thể phân loại sai. Khi liên quan đến an toàn, đừng coi ứng dụng này là biện pháp bảo vệ duy nhất.</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">Ứng dụng tự tắt dù tôi không tắt.</string>
     <string name="help_faq_stopped_a">Ứng dụng tắt khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, hoặc khi việc thu âm thanh dừng do lỗi. Hãy nhấn “Bật lại” trong thông báo, hoặc bật lại từ thẻ Trang chủ hay Cài đặt nhanh. Mỗi lần bật, Android đều hỏi bạn có đồng ý ghi màn hình hay không, và việc bật lại sẽ kết thúc mọi hoạt động ghi, chia sẻ hoặc truyền màn hình đang diễn ra.</string>
     <string name="help_faq_no_graphic_q">Tôi không thấy đồ họa nào.</string>
-    <string name="help_faq_no_graphic_a">Hãy kiểm tra xem ứng dụng bạn đang dùng có chặn thu âm thanh hay không. Ngoài ra, hãy đảm bảo Độ đậm trong thẻ Cài đặt không quá thấp và tùy chọn “Hiện” của loại âm thanh đang phát vẫn đang bật.</string>
+    <string name="help_faq_no_graphic_a">Hãy kiểm tra xem ứng dụng đang phát có chặn thu âm thanh hay không, và âm thanh trong chính ứng dụng đó có đang bị tắt không. Nếu tình trạng không nhận được âm thanh kéo dài, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Ngoài ra, hãy đảm bảo Độ đậm trong thẻ Cài đặt không quá thấp và tùy chọn “Hiện” của loại âm thanh đang phát vẫn đang bật.</string>
     <string name="help_faq_no_vibration_q">Điện thoại không rung.</string>
     <string name="help_faq_no_vibration_a">Trong thẻ Cài đặt, ở mục Loại âm thanh (AI), hãy đảm bảo cả “Hiện” và “Rung” đều đang bật cho loại âm thanh đó. Nếu bạn đã tắt rung trong cài đặt điện thoại, ứng dụng có thể không rung.</string>
     <string name="help_faq_install_q">Không cài được phiên bản mới.</string>

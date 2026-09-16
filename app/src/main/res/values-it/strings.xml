@@ -8,6 +8,7 @@
     <string name="home_subtitle">Disegna sullo schermo i suoni che non puoi vedere.\nDai giochi ai film, prova un\'esperienza tutta nuova.</string>
     <string name="home_status_running">Stato: in esecuzione</string>
     <string name="home_status_idle">Stato: pronto</string>
+    <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
     <string name="home_ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e gli avvisi con vibrazione sono disattivati. Prova a disattivare e riattivare la visualizzazione.</string>
     <string name="home_stopped_dismiss">Chiudi avviso</string>
     <string name="home_start">Avvia</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">Visualizzazione del suono in corso.</string>
     <string name="notification_stop">Interrompi</string>
     <string name="notification_text_ai_unavailable">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi gli avvisi con vibrazione sono disattivati.</string>
+    <string name="notification_text_capture_blocked">Questa app non riceve nessun suono. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio, oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">Visualizzazione disattivata</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">Buono a sapersi</string>
     <string name="help_note_direction">L\'app distingue la sinistra dalla destra, ma non il davanti dal dietro. La grafica in alto e in basso sullo schermo rappresenta i suoni che arrivano in modo simile da entrambi i lati e il senso di spazio.</string>
     <string name="help_note_mono">I suoni identici a sinistra e a destra (mono) vengono mostrati solo in direzione frontale.</string>
-    <string name="help_note_sources">Viene acquisito solo l\'audio di contenuti multimediali e giochi. Telefonate, suoni di notifica e sveglie sono esclusi, e l\'audio delle app che bloccano l\'acquisizione (come alcune app video) non può essere visualizzato.</string>
+    <string name="help_note_sources">Viene acquisito solo l\'audio di contenuti multimediali e giochi. Telefonate, suoni di notifica e sveglie sono esclusi, e l\'audio delle app che bloccano l\'acquisizione (come alcune app video) non può essere visualizzato. Se c\'è un suono in riproduzione ma per circa 15 secondi non viene disegnato niente, te lo segnalano la scheda Home e la notifica in corso. Un\'app che ha disattivato il proprio audio si presenta esattamente allo stesso modo, quindi non possiamo dirti di quale dei due casi si tratti.</string>
     <string name="help_note_stopped">Se avvii la registrazione dello schermo, la condivisione dello schermo o la trasmissione, la visualizzazione si disattiva: usa lo stesso consenso alla registrazione dello schermo e Android lo concede a una sola app per volta. Se un\'altra app sta registrando, condividendo o trasmettendo, riattivando la visualizzazione ne interrompi l\'attività. Nella maggior parte dei casi, quando si disattiva senza che tu l\'abbia interrotta, il telefono vibra tre volte a lungo e mostra una notifica con il pulsante “Riattiva”. Anche interrompendo l\'acquisizione dell\'audio dai controlli di condivisione dello schermo del telefono compare lo stesso avviso, mentre in caso di chiusura forzata o di arresto anomalo non è possibile avvisarti. Se le notifiche sono disattivate, ti avvisa solo la vibrazione e, quando apri l\'app, la scheda Home mostra che cosa si è disattivato.</string>
     <string name="help_note_screen_off">A schermo spento la visualizzazione va in pausa per risparmiare batteria e riprende quando riaccendi lo schermo. Puoi cambiare questa impostazione in Batteria, nella scheda Impostazioni.</string>
     <string name="help_note_ai">La classificazione dell\'IA può essere errata. Non affidarti a questa app come unica protezione quando è in gioco la sicurezza.</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">La visualizzazione si è disattivata senza che l\'abbia interrotta.</string>
     <string name="help_faq_stopped_a">Si disattiva quando inizia una registrazione dello schermo, una condivisione dello schermo o una trasmissione, oppure quando l\'acquisizione dell\'audio si interrompe per un errore. Tocca “Riattiva” nella notifica, oppure riattivala dalla scheda Home o dalle Impostazioni rapide. Android chiede il consenso alla registrazione dello schermo ogni volta e, riattivando la visualizzazione, interrompi la registrazione, la condivisione o la trasmissione in corso.</string>
     <string name="help_faq_no_graphic_q">Non vedo nessuna grafica.</string>
-    <string name="help_faq_no_graphic_a">Verifica se l\'app che stai usando blocca l\'acquisizione audio. Nella scheda Impostazioni controlla anche che l\'Opacità non sia troppo bassa e che la visualizzazione del tipo di suono in riproduzione non sia disattivata.</string>
+    <string name="help_faq_no_graphic_a">Verifica se l\'app che sta riproducendo il suono blocca l\'acquisizione audio e se al suo interno l\'audio è disattivato. Se per un po\' non arriva nessun suono a questa app, te lo segnalano la scheda Home e la notifica in corso. Nella scheda Impostazioni controlla anche che l\'Opacità non sia troppo bassa e che la visualizzazione del tipo di suono in riproduzione non sia disattivata.</string>
     <string name="help_faq_no_vibration_q">Il telefono non vibra.</string>
     <string name="help_faq_no_vibration_a">Nella scheda Impostazioni, in Tipi di suono (IA), controlla che per quel tipo siano attivi sia “Mostra” sia “Vibrazione”. Se la vibrazione è disattivata nelle impostazioni del telefono, potrebbe non funzionare.</string>
     <string name="help_faq_install_q">Non riesco a installare la nuova versione.</string>
