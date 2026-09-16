@@ -20,6 +20,7 @@ import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -443,9 +444,11 @@ class AudioCaptureService : Service() {
         }
         if (intent?.action == ACTION_SET_MODE) {
             // 캡처도 AI 도 건드리지 않는다. 오버레이는 프레임마다 모드를 읽으므로 바로 바뀐다.
-            // 알림의 칩 표시는 [observeVisualMode] 가 맞춘다. 모르는 번호가 오면 아무것도 하지 않는다.
-            VisualMode.fromOrdinal(intent.getIntExtra(EXTRA_MODE_ORDINAL, -1))
-                ?.let { SettingsManager.setVisualMode(it) }
+            // 모르는 번호가 오면 아무것도 하지 않는다.
+            if (isChipTurnedOn(intent)) {
+                VisualMode.fromOrdinal(intent.getIntExtra(EXTRA_MODE_ORDINAL, -1))
+                    ?.let { SettingsManager.setVisualMode(it) }
+            }
             return START_NOT_STICKY
         }
         if (intent != null && audioRecord == null) {
@@ -966,10 +969,28 @@ class AudioCaptureService : Service() {
     }
 
     /**
+     * 알림의 모드 칩이 켜졌다고 알려 온 것인지.
+     *
+     * Android 12 이상에서는 칩이 라디오 버튼이라, 한 칩을 누르면 켜진 칩과 함께 **꺼진 칩도** 알려 온다.
+     * 꺼진 쪽까지 받아 주면 방금 끈 모드가 뒤늦게 덮어써서, 무엇을 눌러도 원래 모드로 돌아간다.
+     * 어느 쪽인지는 알림을 그리는 쪽이 [RemoteViews.EXTRA_CHECKED] 로 알려 준다.
+     *
+     * 그 아래 버전은 누른 칩 하나만 알려 오므로 값이 없고, 그때는 켜진 것으로 본다.
+     */
+    private fun isChipTurnedOn(intent: Intent): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+        return intent.getBooleanExtra(RemoteViews.EXTRA_CHECKED, true)
+    }
+
+    /**
      * 펼친 알림의 본문. 상태 한 줄과 모드를 고르는 칩 네 개를 담는다([R.layout.notification_modes]).
      *
      * 지금 켜져 있는 모드는 색을 채워 표시하고, 화면을 읽어 주는 기능에는 "선택됨"을 덧붙인다.
      * 색만으로 알리면 색을 구별하기 어려운 사람에게는 어느 것이 켜져 있는지 전해지지 않는다.
+     *
+     * Android 12 이상에서는 칩이 라디오 버튼이라([R.layout.notification_modes] 의 v31 판)
+     * 고른 칩이 바뀌는 것을 알림을 그리는 쪽이 직접 처리한다. 그래서 누른 즉시 표시가 옮겨간다.
+     * 그 아래 버전은 우리가 배경과 글자색을 넣어 주고, 알림을 다시 올릴 때 표시가 옮겨간다.
      */
     private fun buildModeChooser(statusText: String): RemoteViews {
         val views = RemoteViews(packageName, R.layout.notification_modes)
@@ -981,26 +1002,31 @@ class AudioCaptureService : Service() {
             val label = getString(mode.labelRes)
             val selected = mode == current
             views.setTextViewText(chip, label)
-            views.setInt(
-                chip,
-                "setBackgroundResource",
-                if (selected) R.drawable.notification_mode_chip_on else R.drawable.notification_mode_chip_off
-            )
-            // 고른 칩만 색을 지정하면, 알림을 고쳐 달 때 전에 골랐던 칩에 색이 남을 수 있다. 넷 다 정해 준다.
-            views.setTextColor(
-                chip,
-                ContextCompat.getColor(
-                    this,
-                    if (selected) R.color.notification_chip_text_on else R.color.notification_chip_text_off
-                )
-            )
             views.setContentDescription(
                 chip,
                 if (selected) getString(R.string.notification_mode_selected, label) else label
             )
-            views.setOnClickPendingIntent(
-                chip,
-                PendingIntent.getService(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // 색은 state_checked 로 정해져 있으므로 켜짐만 알려 주면 된다.
+                views.setCompoundButtonChecked(chip, selected)
+                // 한 칩이 켜지면 켜져 있던 칩이 꺼지는 것도 함께 알려 온다. 어느 쪽인지는 알림을 그리는 쪽이
+                // EXTRA_CHECKED 로 채워 주므로, 그 값을 받으려면 인텐트를 고칠 수 있게 둬야 한다.
+                // 갈 곳을 지정한 인텐트라 바뀔 수 있는 것은 이 값뿐이다.
+                views.setOnCheckedChangeResponse(
+                    chip,
+                    RemoteViews.RemoteResponse.fromPendingIntent(
+                        PendingIntent.getService(
+                            this,
+                            REQUEST_MODE_BASE + mode.ordinal,
+                            Intent(this, AudioCaptureService::class.java)
+                                .setAction(ACTION_SET_MODE)
+                                .putExtra(EXTRA_MODE_ORDINAL, mode.ordinal),
+                            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                    )
+                )
+            } else {
+                val intent = PendingIntent.getService(
                     this,
                     REQUEST_MODE_BASE + mode.ordinal,
                     Intent(this, AudioCaptureService::class.java)
@@ -1008,7 +1034,21 @@ class AudioCaptureService : Service() {
                         .putExtra(EXTRA_MODE_ORDINAL, mode.ordinal),
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
-            )
+                views.setInt(
+                    chip,
+                    "setBackgroundResource",
+                    if (selected) R.drawable.notification_mode_chip_on else R.drawable.notification_mode_chip_off
+                )
+                // 고른 칩만 색을 지정하면, 알림을 고쳐 달 때 전에 골랐던 칩에 색이 남을 수 있다. 넷 다 정해 준다.
+                views.setTextColor(
+                    chip,
+                    ContextCompat.getColor(
+                        this,
+                        if (selected) R.color.notification_chip_text_on else R.color.notification_chip_text_off
+                    )
+                )
+                views.setOnClickPendingIntent(chip, intent)
+            }
         }
         return views
     }

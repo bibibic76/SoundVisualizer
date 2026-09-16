@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12 이상에서 쓰는 실행 중 알림 본문. 칩을 [RadioGroup] 으로 둔 것 말고는 values/ 쪽과 같다.
+
+    라디오 버튼은 Android 12 부터 알림 안에서 쓸 수 있고, 고른 칩이 바뀌는 것을 알림을 그리는 쪽이 직접
+    처리한다. 그래서 누른 즉시 표시가 옮겨간다. 우리가 알림을 다시 올려 바꾸면 그 사이 0.5초 동안
+    화면에 아무 변화가 없다(기기에서 잰 값). 그 아래 버전은 res/layout/notification_modes.xml 을 쓴다.
+
+    라디오 동그라미는 지우고(`android:button="@null"`) 배경과 글자색을 `state_checked` 로 바꾼다.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/notification_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Compat.Notification" />
+
+    <RadioGroup
+        android:id="@+id/notification_modes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/notification_mode_0"
+            style="@style/NotificationModeChipButton" />
+
+        <RadioButton
+            android:id="@+id/notification_mode_1"
+            style="@style/NotificationModeChipButton" />
+
+        <RadioButton
+            android:id="@+id/notification_mode_2"
+            style="@style/NotificationModeChipButton" />
+
+        <RadioButton
+            android:id="@+id/notification_mode_3"
+            style="@style/NotificationModeChipButton" />
+
+    </RadioGroup>
+
+</LinearLayout>
