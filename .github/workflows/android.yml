@@ -98,6 +98,50 @@ jobs:
       - name: 디버그 APK 빌드
         run: ./gradlew assembleDebug
 
+      # 배포되는 APK 는 R8 을 거친다. 여기서 빌드해 두지 않으면 R8 파손이 태그를 밀고 난
+      # 다음에야 드러나고, 배포하려던 순간에 배포가 막힌다.
+      # 릴리스 키 Secret 은 넣지 않는다. build.gradle.kts 가 디버그 키로 물러난다.
+      - name: 릴리스 APK 빌드 (R8)
+        run: ./gradlew assembleRelease
+
+      # 빌드 성공만으로는 부족하다. keep 규칙이 빠져도 R8 은 조용히 지우고 빌드는 통과한다.
+      # 죽는 것은 실행할 때다. mapping.txt 로 실제로 지켜졌는지 대조한다.
+      - name: R8 keep 규칙 확인
+        run: |
+          mapping=app/build/outputs/mapping/release/mapping.txt
+          if [ ! -f "$mapping" ]; then
+            echo "::error title=R8::$mapping 이 없습니다. 릴리스 빌드가 R8 을 거치지 않았습니다."
+            exit 1
+          fi
+
+          missing=""
+          checked=0
+          while read -r line; do
+            # 목록 파일이 CRLF 로 체크아웃될 수 있다. 줄 끝 CR 이 남으면 어떤 줄도 맞지 않는다.
+            cls=$(printf '%s' "$line" | tr -d '[:cntrl:]')
+            case "$cls" in ''|'#'*) continue;; esac
+            checked=$((checked + 1))
+            # "원래이름 -> 원래이름:" 이면 이름이 유지된 것이다.
+            if ! grep -qF "$cls -> $cls:" "$mapping"; then
+              missing="$missing $cls"
+            fi
+          done < app/r8-must-keep.txt
+
+          if [ -n "$missing" ]; then
+            echo "::error title=R8 keep 규칙::네이티브가 이름으로 찾는 클래스가 지켜지지 않았습니다:$missing"
+            echo "app/proguard-rules.pro 의 keep 규칙과 app/r8-must-keep.txt 를 확인하세요."
+            exit 1
+          fi
+
+          # 반대쪽도 본다. 전부 이름이 그대로라면 축소가 아예 돌지 않은 것일 수 있다.
+          # 안 쓰는 ORT 내부가 난독화됐는지로 확인한다.
+          if grep -qF "ai.onnxruntime.OrtUtil -> ai.onnxruntime.OrtUtil:" "$mapping"; then
+            echo "::warning title=R8::안 쓰는 ORT 내부까지 이름이 그대로입니다. 축소가 돌지 않았을 수 있습니다."
+          fi
+
+          apk=app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          echo "::notice title=R8::keep 규칙 ${checked}개 모두 지켜짐. 릴리스 APK $(du -h "$apk" | cut -f1)"
+
       # 공유 키가 있는데 다른 키로 서명됐으면 실패시킨다. 덮어 설치가 안 되는 APK 를 올리지 않기 위해서다.
       - name: APK 서명 확인
         run: |
