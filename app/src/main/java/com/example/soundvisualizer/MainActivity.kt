@@ -653,6 +653,15 @@ fun SettingsTab() {
                     ) {
                         SettingsManager.setPauseWhenScreenOff(it)
                     }
+                    // 오버레이가 프레임마다 읽으므로 켜고 끄면 실행 중에도 바로 적용된다.
+                    val reducedFrameRate by SettingsManager.reducedFrameRate.collectAsState()
+                    ModernSwitch(
+                        stringResource(R.string.setting_reduced_frame_rate),
+                        stringResource(R.string.setting_reduced_frame_rate_desc),
+                        reducedFrameRate
+                    ) {
+                        SettingsManager.setReducedFrameRate(it)
+                    }
                 }
             }
 

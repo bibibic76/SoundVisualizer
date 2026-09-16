@@ -90,6 +90,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause while the screen is off</string>
     <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off.</string>
+    <string name="setting_reduced_frame_rate">Draw the graphic less often</string>
+    <string name="setting_reduced_frame_rate_desc">Redraws the graphic 30 times a second instead of 60. It saves battery while you leave the app running for a long time, but the movement is less smooth. The sound is still picked up just as often.</string>
     <!-- settings_section_developer 와 같은 이유로 영어·한국어만 둔다. -->
     <string name="setting_developer_mode" tools:ignore="MissingTranslation">Developer mode</string>
     <string name="setting_developer_mode_desc" tools:ignore="MissingTranslation">Shows what the AI heard — the sound name it reported, how sure it was, and how long it took — in the top-left corner of the overlay, so the team can check how accurate it is. The readout is in English and is not meant for everyday use.</string>
