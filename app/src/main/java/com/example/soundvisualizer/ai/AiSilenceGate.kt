@@ -15,7 +15,9 @@ class AiSilenceGate(
         /** Matches HapticPolicy.LEVEL_THRESHOLD and VisualizerEngine.WAKE_THRESHOLD. */
         const val ACTIVE_THRESHOLD = 0.01f
 
-        /** Duration after which the last active input has left a full YAMNet window. */
+        /**
+         * Wall-clock drain duration for capture PCM that is continuously ingested in real time.
+         */
         const val YAMNET_WINDOW_MS =
             AudioPreprocessor.REQUIRED_MONO_16K_SAMPLES * 1000L / AudioPreprocessor.SAMPLE_RATE
 
@@ -23,43 +25,69 @@ class AiSilenceGate(
         const val REQUIRED_SILENT_INFERENCE_COMPLETIONS =
             AiPostProcessor.COARSE_HYSTERESIS_THRESHOLD
 
-        private const val NO_ACTIVE_INPUT = Long.MIN_VALUE
+        /**
+         * Stops retrying a continuously failing inference after four full windows.
+         * Successful inference clears this fallback and still requires the normal
+         * completion count, so a transient failure cannot shorten state cleanup.
+         */
+        const val FAILURE_FALLBACK_MS = YAMNET_WINDOW_MS * 4
+
+        private const val NO_TIMESTAMP = Long.MIN_VALUE
     }
 
     private val stateLock = Any()
-    private var lastActiveInputMs = NO_ACTIVE_INPUT
+    private var lastActiveInputMs = NO_TIMESTAMP
     private var silentInferenceCompletions = 0
+    private var firstConsecutiveFailureMs = NO_TIMESTAMP
 
     fun onInterleavedPcm(interleaved: FloatArray, floatCount: Int, nowMs: Long) {
         if (CaptureAudioMath.maxAbsoluteInterleavedPeak(interleaved, floatCount) > activeThreshold) {
             synchronized(stateLock) {
                 lastActiveInputMs = nowMs
                 silentInferenceCompletions = 0
+                firstConsecutiveFailureMs = NO_TIMESTAMP
             }
         }
     }
 
     fun isOpen(nowMs: Long): Boolean = synchronized(stateLock) {
-        if (lastActiveInputMs == NO_ACTIVE_INPUT) return@synchronized false
+        if (lastActiveInputMs == NO_TIMESTAMP) return@synchronized false
         if (nowMs - lastActiveInputMs < YAMNET_WINDOW_MS) return@synchronized true
-        silentInferenceCompletions < REQUIRED_SILENT_INFERENCE_COMPLETIONS
+        if (silentInferenceCompletions >= REQUIRED_SILENT_INFERENCE_COMPLETIONS) {
+            return@synchronized false
+        }
+        firstConsecutiveFailureMs == NO_TIMESTAMP ||
+            nowMs - firstConsecutiveFailureMs < FAILURE_FALLBACK_MS
     }
 
     /** Records a successfully completed inference for the window captured at [snapshotTimeMs]. */
     fun onInferenceCompleted(snapshotTimeMs: Long) {
         synchronized(stateLock) {
-            if (lastActiveInputMs == NO_ACTIVE_INPUT) return
+            if (lastActiveInputMs == NO_TIMESTAMP) return
             if (snapshotTimeMs - lastActiveInputMs < YAMNET_WINDOW_MS) return
+            firstConsecutiveFailureMs = NO_TIMESTAMP
             if (silentInferenceCompletions < REQUIRED_SILENT_INFERENCE_COMPLETIONS) {
                 silentInferenceCompletions++
             }
         }
     }
 
+    /** Starts a bounded fallback only for consecutive failures on fully drained windows. */
+    fun onInferenceFailed(snapshotTimeMs: Long) {
+        synchronized(stateLock) {
+            if (lastActiveInputMs == NO_TIMESTAMP) return
+            if (snapshotTimeMs - lastActiveInputMs < YAMNET_WINDOW_MS) return
+            if (firstConsecutiveFailureMs == NO_TIMESTAMP) {
+                firstConsecutiveFailureMs = snapshotTimeMs
+            }
+        }
+    }
+
     fun reset() {
         synchronized(stateLock) {
-            lastActiveInputMs = NO_ACTIVE_INPUT
+            lastActiveInputMs = NO_TIMESTAMP
             silentInferenceCompletions = 0
+            firstConsecutiveFailureMs = NO_TIMESTAMP
         }
     }
 }

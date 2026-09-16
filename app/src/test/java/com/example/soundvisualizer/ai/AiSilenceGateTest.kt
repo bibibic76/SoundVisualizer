@@ -7,6 +7,10 @@ import org.junit.Test
 
 class AiSilenceGateTest {
 
+    companion object {
+        private const val SLOW_TICK_MS = RealtimeAiPipeline.AI_PREDICT_INTERVAL_MS + 100L
+    }
+
     @Test
     fun `long silence and threshold-level noise keep gate closed`() {
         val gate = AiSilenceGate()
@@ -28,10 +32,10 @@ class AiSilenceGateTest {
         assertTrue(gate.isOpen(firstSilentSnapshot + 10_000))
 
         gate.onInferenceCompleted(firstSilentSnapshot)
-        assertTrue(gate.isOpen(firstSilentSnapshot + 350))
+        assertTrue(gate.isOpen(firstSilentSnapshot + SLOW_TICK_MS))
 
-        gate.onInferenceCompleted(firstSilentSnapshot + 350)
-        assertFalse(gate.isOpen(firstSilentSnapshot + 350))
+        gate.onInferenceCompleted(firstSilentSnapshot + SLOW_TICK_MS)
+        assertFalse(gate.isOpen(firstSilentSnapshot + SLOW_TICK_MS))
     }
 
     @Test
@@ -61,14 +65,77 @@ class AiSilenceGateTest {
 
         gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
         repeat(AiSilenceGate.REQUIRED_SILENT_INFERENCE_COMPLETIONS) { index ->
-            gate.onInferenceCompleted(AiSilenceGate.YAMNET_WINDOW_MS + index * 350L)
+            gate.onInferenceCompleted(AiSilenceGate.YAMNET_WINDOW_MS + index * SLOW_TICK_MS)
         }
-        assertFalse(gate.isOpen(AiSilenceGate.YAMNET_WINDOW_MS + 350))
+        assertFalse(gate.isOpen(AiSilenceGate.YAMNET_WINDOW_MS + SLOW_TICK_MS))
 
-        val newActiveMs = AiSilenceGate.YAMNET_WINDOW_MS + 351
+        val newActiveMs = AiSilenceGate.YAMNET_WINDOW_MS + SLOW_TICK_MS + 1
         gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = newActiveMs)
 
         assertTrue(gate.isOpen(newActiveMs))
+        assertTrue(gate.isOpen(newActiveMs + AiSilenceGate.YAMNET_WINDOW_MS + 10_000))
+
+        repeat(AiSilenceGate.REQUIRED_SILENT_INFERENCE_COMPLETIONS) { index ->
+            gate.onInferenceCompleted(
+                newActiveMs + AiSilenceGate.YAMNET_WINDOW_MS + index * SLOW_TICK_MS
+            )
+        }
+        assertFalse(
+            gate.isOpen(newActiveMs + AiSilenceGate.YAMNET_WINDOW_MS + SLOW_TICK_MS)
+        )
+    }
+
+    @Test
+    fun `continuous inference failure eventually closes gate`() {
+        val gate = AiSilenceGate()
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
+        val firstFailedSnapshot = AiSilenceGate.YAMNET_WINDOW_MS
+
+        gate.onInferenceFailed(firstFailedSnapshot)
+
+        assertTrue(
+            gate.isOpen(firstFailedSnapshot + AiSilenceGate.FAILURE_FALLBACK_MS - 1)
+        )
+        gate.onInferenceFailed(firstFailedSnapshot + AiSilenceGate.FAILURE_FALLBACK_MS - 1)
+        assertFalse(
+            gate.isOpen(firstFailedSnapshot + AiSilenceGate.FAILURE_FALLBACK_MS)
+        )
+
+        val newActiveMs = firstFailedSnapshot + AiSilenceGate.FAILURE_FALLBACK_MS + 1
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = newActiveMs)
+        assertTrue(gate.isOpen(newActiveMs + AiSilenceGate.YAMNET_WINDOW_MS + 10_000))
+    }
+
+    @Test
+    fun `successful inference clears failure fallback without shortening cleanup`() {
+        val gate = AiSilenceGate()
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
+        val firstSilentSnapshot = AiSilenceGate.YAMNET_WINDOW_MS
+
+        gate.onInferenceFailed(firstSilentSnapshot)
+        gate.onInferenceCompleted(firstSilentSnapshot + SLOW_TICK_MS)
+
+        assertTrue(
+            gate.isOpen(firstSilentSnapshot + AiSilenceGate.FAILURE_FALLBACK_MS + 10_000)
+        )
+        val secondSuccessfulSnapshot =
+            firstSilentSnapshot + AiSilenceGate.FAILURE_FALLBACK_MS + 10_001
+        gate.onInferenceCompleted(secondSuccessfulSnapshot)
+        assertFalse(gate.isOpen(secondSuccessfulSnapshot))
+    }
+
+    @Test
+    fun `reset clears active completion and failure state`() {
+        val gate = AiSilenceGate()
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = 0)
+        gate.onInferenceFailed(AiSilenceGate.YAMNET_WINDOW_MS)
+
+        gate.reset()
+
+        assertFalse(gate.isOpen(AiSilenceGate.YAMNET_WINDOW_MS + 10_000))
+        val newActiveMs = AiSilenceGate.YAMNET_WINDOW_MS + 10_001
+        gate.onInterleavedPcm(floatArrayOf(0.02f, 0f), 2, nowMs = newActiveMs)
+        assertTrue(gate.isOpen(newActiveMs + AiSilenceGate.YAMNET_WINDOW_MS + 10_000))
     }
 
     @Test
