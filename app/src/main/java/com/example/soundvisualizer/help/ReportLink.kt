@@ -41,5 +41,16 @@ object ReportLink {
     fun body(bodyPrompt: String, environment: String): String =
         if (bodyPrompt.isEmpty()) environment else "$bodyPrompt\n\n$environment"
 
+    /**
+     * 제목과 본문을 채운 mailto 주소.
+     *
+     * Gmail 은 인텐트로 따로 넘긴 제목·본문을 무시하고 이 주소만 읽는다(기기에서 확인).
+     * mailto 쿼리에서는 `+` 가 공백이 아니라 글자 그대로라서 공백을 %20 으로 바꾼다.
+     */
+    fun mailtoUri(address: String, subject: String, bodyPrompt: String, environment: String): String =
+        "mailto:$address?subject=${encodeForMailto(subject)}&body=${encodeForMailto(body(bodyPrompt, environment))}"
+
+    private fun encodeForMailto(value: String): String = encode(value).replace("+", "%20")
+
     private fun encode(value: String): String = URLEncoder.encode(value, Charsets.UTF_8.name())
 }

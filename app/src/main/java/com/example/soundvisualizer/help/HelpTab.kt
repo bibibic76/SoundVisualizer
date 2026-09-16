@@ -205,8 +205,10 @@ private fun ReportSection() {
         }
         OutlinedButton(
             onClick = {
-                // ACTION_SENDTO + mailto: 는 메일 앱만 고른다. 제목·본문은 추가 정보로 넘겨 주소 길이에 걸리지 않게 한다.
-                val intent = Intent(Intent.ACTION_SENDTO, "mailto:$reportEmail".toUri()).apply {
+                // ACTION_SENDTO + mailto: 는 메일 앱만 고른다. 제목·본문은 주소에 넣는다.
+                // Gmail 은 따로 넘긴 추가 정보를 무시하므로, 읽지 않는 앱을 위해 양쪽에 담는다.
+                val uri = ReportLink.mailtoUri(reportEmail, issueTitle, issueBody, environment)
+                val intent = Intent(Intent.ACTION_SENDTO, uri.toUri()).apply {
                     putExtra(Intent.EXTRA_EMAIL, arrayOf(reportEmail))
                     putExtra(Intent.EXTRA_SUBJECT, issueTitle)
                     putExtra(Intent.EXTRA_TEXT, ReportLink.body(issueBody, environment))

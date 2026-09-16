@@ -70,6 +70,23 @@ class ReportLinkTest {
     }
 
     @Test
+    fun `메일 주소에 제목과 본문이 들어간다`() {
+        val uri = ReportLink.mailtoUri("team@example.com", "앱에서 보낸 제보", "무슨 일이 있었나요?", env)
+
+        assertTrue(uri.startsWith("mailto:team@example.com?subject="))
+        assertTrue(uri.contains("&body="))
+        // mailto 쿼리에서 + 는 공백이 아니라 글자 그대로다. 공백은 %20 으로 들어가야 한다.
+        assertFalse(uri.contains("+"))
+        assertFalse(uri.contains(" "))
+        assertFalse(uri.contains("\n"))
+
+        val subject = URLDecoder.decode(uri.substringAfter("?subject=").substringBefore("&body="), "UTF-8")
+        val body = URLDecoder.decode(uri.substringAfter("&body="), "UTF-8")
+        assertEquals("앱에서 보낸 제보", subject)
+        assertEquals("무슨 일이 있었나요?\n\n$env", body)
+    }
+
+    @Test
     fun `빈 값이 와도 줄 수와 순서는 그대로다`() {
         val empty = ReportLink.environment("", "", 0, "", "", "")
 
