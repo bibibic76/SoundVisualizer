@@ -144,3 +144,66 @@
 3. `./gradlew testDebugUnitTest`로 확인합니다. 폴더와 목록이 어긋나면 테스트가 실패합니다.
 
 Android 13 이상의 폰 설정 **앱 언어**에 뜨는 목록은 빌드할 때 `values-xx` 폴더에서 자동으로 만들어지므로 따로 고칠 곳이 없습니다. (기본 폴더의 언어는 `res/resources.properties`에 적혀 있습니다.)
+
+## 7. 릴리스 서명 키
+
+팀에 나눠주는 APK 는 **릴리스 빌드**입니다. R8 로 쓰지 않는 코드와 리소스를 지워 APK 가 크게 작아지고, 팀 공용 **릴리스 키**로 서명됩니다.
+
+키와 비밀번호는 저장소에 넣지 않습니다. 빌드는 환경 변수로만 키를 받고, CI 는 저장소 Secret 으로 넘깁니다.
+
+| 환경 변수 | 저장소 Secret | 내용 |
+|---|---|---|
+| `SV_RELEASE_KEYSTORE` | `RELEASE_KEYSTORE_BASE64` | 키 저장소 파일 (CI 는 base64 로 넣고, 빌드 때 파일로 풀어 그 경로를 넘깁니다) |
+| `SV_RELEASE_KEYSTORE_PASSWORD` | `RELEASE_KEYSTORE_PASSWORD` | 키 저장소 비밀번호 |
+| `SV_RELEASE_KEY_ALIAS` | `RELEASE_KEY_ALIAS` | 키 별칭 |
+| `SV_RELEASE_KEY_PASSWORD` | `RELEASE_KEY_PASSWORD` | 키 비밀번호 |
+
+> ⚠️ **키 파일과 비밀번호는 절대 커밋하지 않습니다.** 이름만 문서에 적고, 값은 Secret 과 각자의 환경 변수에만 둡니다. 키 파일은 저장소 폴더 밖에 두세요.
+
+### 키 만들기 (저장소 관리자가 한 번만)
+
+1. 키를 만듭니다. 비밀번호는 팀 비밀번호 관리 도구에 보관합니다. **이 키를 잃어버리면 기존에 설치된 앱 위에 새 버전을 덮어 설치할 수 없습니다.** 키 저장소 파일과 비밀번호를 함께 백업해 두세요.
+
+   ```bash
+   keytool -genkeypair -v \
+     -keystore soundvisualizer-release.jks -storetype PKCS12 \
+     -alias soundvisualizer -keyalg RSA -keysize 2048 -validity 10000
+   ```
+
+2. 키 저장소 파일을 base64 로 바꿉니다. (줄바꿈 없이 한 줄로)
+
+   Windows (PowerShell):
+
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\path\to\soundvisualizer-release.jks")) | Set-Clipboard
+   ```
+
+   macOS · Linux:
+
+   ```bash
+   base64 < soundvisualizer-release.jks | tr -d '\n'
+   ```
+
+3. 저장소 **Settings → Secrets and variables → Actions → New repository secret** 에서 위 표의 Secret 4개를 모두 등록합니다.
+
+4개가 다 있어야 릴리스 APK 로 빌드합니다. 하나라도 없으면 **릴리스 APK** 워크플로는 지금까지처럼 공용 디버그 키로 서명한 디버그 APK 를 붙입니다. 어느 쪽으로 갔는지는 워크플로 실행 화면의 `서명` 알림에 남습니다.
+
+> ⚠️ **첫 릴리스 때 한 번은 팀 전원이 앱을 지우고 설치해야 합니다.**
+> 지금까지의 태그 APK 는 공용 **디버그 키**로 서명됐습니다. 릴리스 키는 서명이 다르므로, 릴리스 키로 만든 첫 APK 는 **기존에 설치된 앱 위에 덮이지 않습니다**(`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, 폰에는 "앱이 설치되지 않았습니다" 로 뜹니다).
+> 지우고 설치하면 **저장된 설정이 모두 초기화됩니다**(표현 모드, 소리 종류별 색상·표시, 진동 세기와 패턴, 민감도, 언어). 한 번만 겪는 일이고, 그 다음 릴리스부터는 그대로 덮어 설치됩니다.
+> **Secret 을 등록하기 전에 팀에 먼저 알려 주세요.**
+
+### 로컬 빌드에서 달라지는 것
+
+- **키가 없어도 빌드는 그대로 됩니다.** `./gradlew assembleRelease` 는 릴리스 키가 없으면 **디버그 키로 서명**합니다. 서명을 아예 빼면 APK 가 설치되지 않아서, R8 을 켠 빌드를 폰에서 확인할 수 없기 때문입니다. 이렇게 만든 APK 는 확인용이며, 배포에 쓰지 않습니다. (`release.yml` 은 Secret 이 있을 때만 릴리스 APK 를 붙입니다.)
+- `SV_RELEASE_KEYSTORE` 를 설정했는데 파일이 없거나 나머지 셋 중 하나가 비어 있으면 **빌드가 바로 실패합니다.** 다른 키로 서명된 APK 를 폰에서야 발견하는 것보다 낫기 때문입니다.
+- 릴리스 빌드는 이름이 바뀌므로(난독화) 크래시 로그를 그대로 읽을 수 없습니다. 되돌릴 때 쓰는 매핑 파일은 `app/build/outputs/mapping/release/mapping.txt` 에 생기고, 다시 빌드하면 덮어써집니다. **태그로 배포한 APK 의 매핑은 릴리스 워크플로가 `mapping-vX.Y.Z.txt` 로 릴리스에 함께 붙여 둡니다.** 로컬에서 누구에게 건넨 APK 가 있다면 그 매핑은 직접 챙겨 두세요.
+- R8 이 지우면 안 되는 것(우리 JNI 진입점, ONNX 런타임이 네이티브에서 이름으로 찾는 클래스)은 `app/proguard-rules.pro` 에 이유와 함께 적혀 있습니다. 그 파일이나 AI 코드, ONNX 런타임 버전을 건드렸으면 **릴리스 APK 를 실제로 설치해 AI 분류가 도는지 확인한 뒤** 머지합니다.
+
+  > `./gradlew connectedAndroidTest` 로는 확인되지 않습니다. 계측 테스트는 `debug` 변형에서 돌고, 그쪽은 R8 을 거치지 않습니다. keep 규칙이 빠져도 통과합니다.
+
+  릴리스 APK 에서 확인하는 방법은 두 가지입니다.
+
+  1. **눈으로**: 릴리스 APK 를 설치해 실행하고, 홈 화면에 "소리 종류를 구분하지 못함" 이 뜨지 않는지 봅니다(모델 로딩 성공). 그 다음 소리를 틀어 **위협음 색(기본 빨강)** 이 나오는지 봅니다. AI 를 못 불러왔다면 모든 소리가 환경음 색으로만 그려지므로, 위협음 색이 나왔다는 것은 추론까지 돌았다는 뜻입니다.
+  2. **로그로**: AI 결과 로그는 `debuggable` 일 때만 남습니다. `app/build.gradle.kts` 의 `release` 블록에 `isDebuggable = true` 를 **임시로** 넣고(`isMinifyEnabled` 는 그대로 두세요) 빌드하면 `adb logcat` 에 `AI_RESULT` 가 찍힙니다. 확인 뒤 반드시 되돌립니다. 이때는 난독화가 꺼지므로 1번과 함께 보세요.
+- 버전(`versionCode`, `versionName`)은 여기서 올리지 않습니다. 배포 시점에 팀장이 정합니다.

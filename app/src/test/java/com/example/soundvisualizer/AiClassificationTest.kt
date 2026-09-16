@@ -22,6 +22,7 @@ class AiClassificationTest {
         display = coarse,
         confidence = 1f,
         gunshotScore = 0f,
+        boosterAvailable = true,
         preBoosterCoarse = coarse,
         boosterAccepted = false,
         meetsThreshold = true,

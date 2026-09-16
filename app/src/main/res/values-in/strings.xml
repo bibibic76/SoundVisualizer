@@ -8,6 +8,9 @@
     <string name="home_subtitle">Suara yang tak terlihat kini tergambar langsung di layar Anda.\nDari bermain game hingga menonton film, rasakan pengalaman yang benar-benar baru.</string>
     <string name="home_status_running">Status: Berjalan</string>
     <string name="home_status_idle">Status: Siap</string>
+    <string name="home_capture_blocked">Aplikasi ini tidak menerima suara apa pun, sehingga tidak ada yang dapat digambar. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan (video yang dilindungi memang begitu), atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
+    <string name="home_ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan peringatan getar dimatikan. Coba matikan lalu nyalakan lagi visualisasinya.</string>
+    <string name="home_stopped_dismiss">Tutup info</string>
     <string name="home_start">Mulai</string>
     <string name="home_stop">Hentikan</string>
     <string name="home_add_tile">Tambahkan ke Setelan Cepat</string>
@@ -15,6 +18,8 @@
     <string name="home_add_tile_manual">Buka panel notifikasi, ketuk Edit (ikon pensil), lalu tambahkan “Visualisasi suara” untuk menyalakan atau mematikannya langsung di atas game atau video.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">Izinkan “Tampilkan di atas aplikasi lain”</string>
+    <string name="permission_overlay_message">Suara digambar di atas game atau video Anda, jadi Android memerlukan izin ini. Jika Setelan menampilkan daftar aplikasi, cari SoundVisualizer, aktifkan tombolnya, lalu kembali ke sini. Setelah Anda kembali, aplikasi melanjutkan sendiri proses yang tadi Anda mulai.</string>
     <string name="permission_record_audio_required">Izin mikrofon (rekam audio) diperlukan untuk menangkap audio.</string>
     <string name="permission_mic_rationale_title">Mengapa perlu izin mikrofon?</string>
     <string name="permission_mic_rationale_message">Android mewajibkan izin mikrofon untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
@@ -42,6 +47,7 @@
     <string name="settings_mode_picker_desc">Pilih bentuk dasar grafik yang digambar di layar.</string>
     <string name="settings_section_mode_detail">Setelan per mode</string>
     <string name="settings_section_ai">Jenis suara (AI)</string>
+    <string name="settings_section_battery">Baterai</string>
 
     <!-- Language -->
     <string name="settings_language_title">Bahasa</string>
@@ -72,14 +78,20 @@
     <string name="setting_ripple">Efek riak spasial</string>
     <string name="setting_ripple_desc">Menambahkan sedikit jeda agar suara terasa menyebar dari depan ke belakang.</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">Jeda saat layar mati</string>
+    <string name="setting_pause_screen_off_desc">Saat layar mati, aplikasi berhenti menangkap suara, mendeteksi jenis suara, dan bergetar untuk menghemat baterai, lalu lanjut lagi begitu layar dinyalakan. Matikan opsi ini jika Anda tetap ingin menerima peringatan getar saat layar mati.</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">Tampilkan suara latar</string>
     <string name="ai_show_speech">Tampilkan percakapan</string>
     <string name="ai_show_danger">Tampilkan suara bahaya</string>
+    <string name="ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar. Coba matikan lalu nyalakan lagi visualisasinya.</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Getar</string>
     <string name="haptic_requires_display">Getaran hanya aktif jika jenis suara ini ditampilkan.</string>
+    <string name="haptic_ai_unavailable">Ponsel tidak akan bergetar selama deteksi jenis suara tidak berfungsi.</string>
     <string name="haptic_unsupported">Perangkat ini tidak mendukung getaran.</string>
     <string name="haptic_no_amplitude">Perangkat ini tidak dapat mengatur kekuatan getaran, sehingga bergetar dengan kekuatan default.</string>
     <string name="haptic_strength">Kekuatan</string>
@@ -96,11 +108,22 @@
     <!-- Color picker -->
     <string name="color_picker_title">Pilih warna</string>
     <string name="color_picker_presets">Warna umum</string>
+    <string name="cd_preset_white">Putih</string>
+    <string name="cd_preset_red">Merah</string>
+    <string name="cd_preset_orange">Oranye</string>
+    <string name="cd_preset_yellow">Kuning</string>
+    <string name="cd_preset_green">Hijau</string>
+    <string name="cd_preset_cyan">Sian</string>
+    <string name="cd_preset_blue">Biru</string>
+    <string name="cd_preset_magenta">Magenta</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">Batal</string>
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Buka pemilih warna</string>
+    <string name="cd_color_ambient">Warna suara latar</string>
+    <string name="cd_color_speech">Warna percakapan</string>
+    <string name="cd_color_danger">Warna suara bahaya</string>
     <string name="cd_expand">Luaskan</string>
     <string name="cd_collapse">Ciutkan</string>
     <string name="cd_change_language">Ubah bahasa</string>
@@ -109,6 +132,19 @@
     <string name="notification_channel_name">Penangkapan audio</string>
     <string name="notification_text">Memvisualisasikan suara.</string>
     <string name="notification_stop">Hentikan</string>
+    <string name="notification_text_ai_unavailable">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga peringatan getar dimatikan.</string>
+    <string name="notification_text_capture_blocked">Aplikasi ini tidak menerima suara apa pun. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan, atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">Visualisasi dimatikan</string>
+    <string name="stopped_channel_desc">Memberi tahu Anda saat visualisasi suara mati tanpa Anda matikan sendiri.</string>
+    <string name="stopped_title">Visualisasi suara dimatikan</string>
+    <string name="stopped_text_projection">Penangkapan suara berakhir, sehingga grafik dan peringatan getar dimatikan. Ini terjadi saat perekaman layar, berbagi layar, atau cast dimulai, atau saat sistem menghentikan penangkapan suara. Jika aplikasi lain sedang merekam, berbagi, atau melakukan cast, menyalakannya lagi akan menghentikan aplikasi tersebut.</string>
+    <string name="stopped_text_capture_error">Penangkapan suara berhenti karena terjadi kesalahan, sehingga grafik dan peringatan getar dimatikan.</string>
+    <string name="stopped_text_start_failed">Penangkapan suara tidak dapat dimulai, sehingga grafik dan peringatan getar dimatikan.</string>
+    <string name="stopped_text_overlay_failed">Grafik tidak dapat ditampilkan di atas aplikasi lain, sehingga visualisasi dimatikan. Pastikan izin “Tampilkan di atas aplikasi lain” sudah diberikan.</string>
+    <string name="stopped_turn_on">Nyalakan lagi</string>
+    <string name="stopped_toast">Visualisasi suara dimatikan. Grafik dan peringatan getar kini tidak aktif.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualisasi suara</string>
@@ -154,12 +190,16 @@
     <string name="help_notes_title">Perlu diketahui</string>
     <string name="help_note_direction">Aplikasi dapat membedakan kiri dan kanan, tetapi tidak dapat membedakan depan dan belakang. Grafik di bagian atas dan bawah layar menunjukkan suara yang terdengar sama kuat di kedua sisi, serta memberi kesan ruang.</string>
     <string name="help_note_mono">Suara yang sama persis di kiri dan kanan (mono) hanya ditampilkan ke arah depan.</string>
-    <string name="help_note_sources">Hanya suara media dan game yang ditangkap. Panggilan telepon, suara notifikasi, dan alarm tidak ditangkap. Aplikasi yang memblokir penangkapan audio (seperti beberapa aplikasi video) tidak dapat divisualisasikan.</string>
+    <string name="help_note_sources">Hanya suara media dan game yang ditangkap. Panggilan telepon, suara notifikasi, dan alarm tidak ditangkap. Aplikasi yang memblokir penangkapan audio (seperti beberapa aplikasi video) tidak dapat divisualisasikan. Jika ada suara yang diputar tetapi tidak ada yang digambar selama sekitar 15 detik, Beranda dan notifikasi saat aplikasi berjalan akan memberi tahu Anda. Aplikasi yang mematikan suaranya sendiri pun terlihat persis sama, sehingga tidak dapat diketahui mana di antara keduanya yang menjadi penyebabnya.</string>
+    <string name="help_note_stopped">Memulai perekaman layar, berbagi layar, atau cast akan mematikan visualisasi, karena semuanya memakai persetujuan perekaman layar yang sama dan Android hanya mengizinkan satu aplikasi memakainya dalam satu waktu. Jika aplikasi lain sedang merekam, berbagi, atau melakukan cast, menyalakannya lagi akan menghentikan aplikasi tersebut. Umumnya, saat visualisasi mati tanpa Anda matikan sendiri, ponsel bergetar panjang tiga kali dan menampilkan notifikasi dengan tombol “Nyalakan lagi”. Menghentikan penangkapan suara dari kontrol berbagi layar di ponsel Anda memunculkan pemberitahuan yang sama, sedangkan penghentian paksa atau aplikasi yang berhenti mendadak tidak dapat memberi tahu Anda sama sekali. Jika notifikasi dimatikan, hanya getaran yang memberi tahu Anda, dan Beranda menunjukkan apa yang mati saat Anda membuka aplikasi.</string>
+    <string name="help_note_screen_off">Saat layar mati, aplikasi menjeda dirinya untuk menghemat baterai dan lanjut lagi begitu layar dinyalakan. Anda dapat mengubahnya di bagian Baterai pada tab Setelan.</string>
     <string name="help_note_ai">Klasifikasi AI bisa salah. Jangan mengandalkan aplikasi ini sebagai satu-satunya pengaman dalam situasi yang menyangkut keselamatan.</string>
 
     <string name="help_faq_title">Pertanyaan umum</string>
+    <string name="help_faq_stopped_q">Visualisasi mati padahal saya tidak menghentikannya.</string>
+    <string name="help_faq_stopped_a">Visualisasi mati saat perekaman layar, berbagi layar, atau cast dimulai, atau saat penangkapan suara berhenti karena kesalahan. Ketuk “Nyalakan lagi” di notifikasi, atau nyalakan dari Beranda atau Setelan Cepat. Android meminta persetujuan perekaman layar setiap kali, dan menyalakannya lagi akan menghentikan perekaman, berbagi, atau cast yang sedang berjalan.</string>
     <string name="help_faq_no_graphic_q">Grafik tidak muncul.</string>
-    <string name="help_faq_no_graphic_a">Periksa apakah aplikasi yang sedang memutar suara memblokir penangkapan audio. Pastikan juga Opasitas di tab Setelan tidak terlalu rendah, dan opsi Tampilkan untuk jenis suara yang sedang terdengar tidak dimatikan.</string>
+    <string name="help_faq_no_graphic_a">Periksa apakah aplikasi yang sedang memutar suara memblokir penangkapan audio, dan apakah suara di aplikasi itu sendiri dimatikan. Jika aplikasi ini tidak menerima suara dalam waktu cukup lama, Beranda dan notifikasi saat aplikasi berjalan akan memberi tahu Anda. Pastikan juga Opasitas di tab Setelan tidak terlalu rendah, dan opsi Tampilkan untuk jenis suara yang sedang terdengar tidak dimatikan.</string>
     <string name="help_faq_no_vibration_q">Tidak ada getaran.</string>
     <string name="help_faq_no_vibration_a">Di tab Setelan, pada bagian Jenis suara (AI), pastikan Tampilkan dan Getar sama-sama aktif untuk jenis tersebut. Jika getaran dimatikan di setelan ponsel Anda, ponsel mungkin tidak bergetar.</string>
     <string name="help_faq_install_q">Versi baru tidak dapat diinstal.</string>

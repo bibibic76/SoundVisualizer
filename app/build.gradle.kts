@@ -13,8 +13,8 @@ android {
         // AudioPlaybackCapture(내부 오디오 캡처)는 Android 10(API 29) 이상에서만 동작한다.
         minSdk = 29
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -29,6 +29,25 @@ android {
         }
     }
 
+    // 팀 배포용 릴리스 키는 저장소에 두지 않는다. 경로와 비밀번호를 환경 변수(CI 는 Secret)로만 받는다.
+    // SV_RELEASE_KEYSTORE 가 비어 있으면 "키가 없는 환경"으로 보고 아래 buildTypes 에서 디버그 키로 물러난다.
+    val releaseKeystore = providers.environmentVariable("SV_RELEASE_KEYSTORE").orNull
+        ?.takeIf { it.isNotBlank() }
+        ?.let { file(it) }
+    // 경로만 있고 파일이나 비밀번호가 빠진 상태는 실수다. 조용히 다른 키로 서명하면
+    // 그 APK 가 기존 앱 위에 덮어 설치되지 않는데, 그걸 폰에서야 알게 되면 늦다. 그래서 여기서 멈춘다.
+    // (키를 아예 설정하지 않은 사람은 이 검사에 걸리지 않는다.)
+    if (releaseKeystore != null) {
+        require(releaseKeystore.isFile) {
+            "SV_RELEASE_KEYSTORE 가 가리키는 파일이 없습니다: $releaseKeystore"
+        }
+        for (name in listOf("SV_RELEASE_KEYSTORE_PASSWORD", "SV_RELEASE_KEY_ALIAS", "SV_RELEASE_KEY_PASSWORD")) {
+            require(!providers.environmentVariable(name).orNull.isNullOrBlank()) {
+                "SV_RELEASE_KEYSTORE 를 설정했으면 $name 도 함께 설정해야 합니다."
+            }
+        }
+    }
+
     signingConfigs {
         getByName("debug") {
             // CI 는 팀 공용 디버그 키를 풀어 두고 그 경로를 SV_DEBUG_KEYSTORE 로 알려준다. 그래야 CI·릴리스 APK 가
@@ -37,11 +56,28 @@ android {
             // 환경 변수가 없는 로컬 빌드는 지금처럼 각자의 기본 디버그 키로 서명된다.
             providers.environmentVariable("SV_DEBUG_KEYSTORE").orNull?.let { storeFile = file(it) }
         }
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = providers.environmentVariable("SV_RELEASE_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("SV_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("SV_RELEASE_KEY_PASSWORD").get()
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // 릴리스 키가 없으면 디버그 키로 서명한다. 서명을 아예 빼면 APK 가 설치되지 않아서,
+            // 키가 없는 사람은 R8 을 켠 빌드가 폰에서 실제로 도는지 확인할 방법이 사라진다.
+            // 그렇게 만든 APK 가 배포로 새지는 않는다. release.yml 은 릴리스 Secret 이 있을 때만
+            // 릴리스 APK 를 붙이고, 없으면 지금까지처럼 디버그 APK 를 붙인다.
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // dex 가 24MB 까지 커진 가장 큰 이유가 축소를 끈 것이었다. R8 로 쓰지 않는 코드와 리소스를 지운다.
+            // 지워지면 안 되는 것(우리 JNI 진입점, ONNX 런타임이 네이티브에서 이름으로 찾는 클래스)은
+            // proguard-rules.pro 에 이유와 함께 적어 뒀다. 그 파일을 고치면 릴리스 APK 로 AI 분류를 다시 확인한다.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

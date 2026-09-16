@@ -8,6 +8,9 @@
     <string name="home_subtitle">เปลี่ยนเสียงที่มองไม่เห็นให้เป็นภาพบนหน้าจอ\nตั้งแต่เล่นเกมไปจนถึงดูภาพยนตร์ มาสัมผัสประสบการณ์ใหม่กันเลย</string>
     <string name="home_status_running">สถานะ: กำลังทำงาน</string>
     <string name="home_status_idle">สถานะ: พร้อมใช้งาน</string>
+    <string name="home_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ จึงวาดอะไรไม่ได้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง (วิดีโอที่มีการป้องกันเนื้อหาจะเป็นแบบนี้) หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
+    <string name="home_ai_unavailable">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม และปิดการแจ้งเตือนด้วยการสั่น ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
+    <string name="home_stopped_dismiss">ปิดข้อความแจ้ง</string>
     <string name="home_start">เริ่ม</string>
     <string name="home_stop">หยุด</string>
     <string name="home_add_tile">เพิ่มลงในการตั้งค่าด่วน</string>
@@ -15,6 +18,8 @@
     <string name="home_add_tile_manual">ดึงแผงการแจ้งเตือนลงมา แตะแก้ไข (รูปดินสอ) แล้วเพิ่ม “แสดงภาพเสียง” เพื่อเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอ</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">โปรดอนุญาต “แสดงทับแอปอื่น”</string>
+    <string name="permission_overlay_message">แอปจะวาดเสียงทับเกมหรือวิดีโอของคุณ Android จึงต้องการสิทธิ์นี้ หากการตั้งค่าแสดงรายการแอป ให้ค้นหา SoundVisualizer แล้วเปิดสวิตช์ของแอปนั้น จากนั้นกลับมา เมื่อกลับมาแล้ว แอปจะดำเนินการที่คุณสั่งไว้ต่อให้เอง</string>
     <string name="permission_record_audio_required">ต้องมีสิทธิ์ไมโครโฟน (บันทึกเสียง) เพื่อจับเสียง</string>
     <string name="permission_mic_rationale_title">เหตุผลที่ต้องใช้สิทธิ์ไมโครโฟน</string>
     <string name="permission_mic_rationale_message">Android กำหนดให้ต้องมีสิทธิ์ไมโครโฟนเพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์ของคุณ แอปจะไม่บันทึกเสียงรอบตัวคุณ</string>
@@ -42,6 +47,7 @@
     <string name="settings_mode_picker_desc">เลือกรูปแบบพื้นฐานของกราฟิกที่จะวาดบนหน้าจอ</string>
     <string name="settings_section_mode_detail">การตั้งค่าแต่ละโหมด</string>
     <string name="settings_section_ai">ประเภทเสียง (AI)</string>
+    <string name="settings_section_battery">แบตเตอรี่</string>
 
     <!-- Language -->
     <string name="settings_language_title">ภาษา</string>
@@ -72,14 +78,20 @@
     <string name="setting_ripple">ระลอกเชิงพื้นที่</string>
     <string name="setting_ripple_desc">เพิ่มการหน่วงเวลาเล็กน้อย เพื่อให้เสียงดูเหมือนแผ่จากด้านหน้าไปด้านหลัง</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">หยุดชั่วคราวเมื่อหน้าจอดับ</string>
+    <string name="setting_pause_screen_off_desc">ขณะหน้าจอดับ แอปจะหยุดจับเสียง แยกประเภทเสียง และสั่น เพื่อประหยัดแบตเตอรี่ แล้วทำงานต่อเมื่อคุณเปิดหน้าจอ ปิดตัวเลือกนี้หากต้องการรับการแจ้งเตือนด้วยการสั่นขณะหน้าจอดับ</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">แสดงเสียงแวดล้อม</string>
     <string name="ai_show_speech">แสดงเสียงพูด</string>
     <string name="ai_show_danger">แสดงเสียงอันตราย</string>
+    <string name="ai_unavailable">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">สั่น</string>
     <string name="haptic_requires_display">สั่นได้เฉพาะเมื่อเปิดการแสดงเสียงประเภทนี้</string>
+    <string name="haptic_ai_unavailable">จะไม่สั่นขณะที่ระบบแยกประเภทเสียงไม่ทำงาน</string>
     <string name="haptic_unsupported">อุปกรณ์นี้ไม่รองรับการสั่น</string>
     <string name="haptic_no_amplitude">อุปกรณ์นี้ปรับความแรงของการสั่นไม่ได้ จึงสั่นด้วยความแรงเริ่มต้น</string>
     <string name="haptic_strength">ความแรง</string>
@@ -96,11 +108,22 @@
     <!-- Color picker -->
     <string name="color_picker_title">เลือกสี</string>
     <string name="color_picker_presets">สีที่ใช้บ่อย</string>
+    <string name="cd_preset_white">สีขาว</string>
+    <string name="cd_preset_red">สีแดง</string>
+    <string name="cd_preset_orange">สีส้ม</string>
+    <string name="cd_preset_yellow">สีเหลือง</string>
+    <string name="cd_preset_green">สีเขียว</string>
+    <string name="cd_preset_cyan">สีฟ้า</string>
+    <string name="cd_preset_blue">สีน้ำเงิน</string>
+    <string name="cd_preset_magenta">สีบานเย็น</string>
     <string name="color_picker_confirm">ตกลง</string>
     <string name="color_picker_cancel">ยกเลิก</string>
 
     <!-- Accessibility -->
     <string name="cd_pick_color">เปิดตัวเลือกสี</string>
+    <string name="cd_color_ambient">สีของเสียงแวดล้อม</string>
+    <string name="cd_color_speech">สีของเสียงพูด</string>
+    <string name="cd_color_danger">สีของเสียงอันตราย</string>
     <string name="cd_expand">ขยาย</string>
     <string name="cd_collapse">ยุบ</string>
     <string name="cd_change_language">เปลี่ยนภาษา</string>
@@ -109,6 +132,19 @@
     <string name="notification_channel_name">การจับเสียง</string>
     <string name="notification_text">กำลังแสดงภาพเสียง</string>
     <string name="notification_stop">หยุด</string>
+    <string name="notification_text_ai_unavailable">กำลังแสดงภาพเสียง ระบบแยกประเภทเสียงไม่ทำงาน จึงปิดการแจ้งเตือนด้วยการสั่น</string>
+    <string name="notification_text_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">การแสดงภาพเสียงถูกปิด</string>
+    <string name="stopped_channel_desc">แจ้งให้คุณทราบเมื่อการแสดงภาพเสียงถูกปิดโดยที่คุณไม่ได้สั่งหยุดเอง</string>
+    <string name="stopped_title">การแสดงภาพเสียงถูกปิดแล้ว</string>
+    <string name="stopped_text_projection">การจับเสียงสิ้นสุดลง จึงปิดกราฟิกและการแจ้งเตือนด้วยการสั่น กรณีนี้เกิดขึ้นเมื่อเริ่มบันทึกหน้าจอ แชร์หน้าจอ หรือแคสต์ หรือเมื่อระบบหยุดการจับเสียง หากมีแอปอื่นกำลังบันทึก แชร์ หรือแคสต์อยู่ การเปิดอีกครั้งจะทำให้แอปนั้นหยุดลง</string>
+    <string name="stopped_text_capture_error">การจับเสียงหยุดลงเพราะเกิดข้อผิดพลาด จึงปิดกราฟิกและการแจ้งเตือนด้วยการสั่น</string>
+    <string name="stopped_text_start_failed">เริ่มการจับเสียงไม่สำเร็จ จึงปิดกราฟิกและการแจ้งเตือนด้วยการสั่น</string>
+    <string name="stopped_text_overlay_failed">แสดงกราฟิกทับแอปอื่นไม่ได้ การแสดงภาพเสียงจึงถูกปิด โปรดตรวจสอบว่าได้อนุญาต “แสดงทับแอปอื่น” แล้ว</string>
+    <string name="stopped_turn_on">เปิดอีกครั้ง</string>
+    <string name="stopped_toast">การแสดงภาพเสียงถูกปิด กราฟิกและการแจ้งเตือนด้วยการสั่นถูกปิดอยู่</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">แสดงภาพเสียง</string>
@@ -154,12 +190,16 @@
     <string name="help_notes_title">ข้อควรทราบ</string>
     <string name="help_note_direction">แอปแยกเสียงซ้ายกับขวาได้ แต่แยกด้านหน้ากับด้านหลังไม่ได้ กราฟิกที่ด้านบนและด้านล่างของหน้าจอแสดงถึงเสียงที่ได้ยินเท่าๆ กันทั้งสองข้าง รวมถึงมิติเชิงพื้นที่</string>
     <string name="help_note_mono">เสียงที่เหมือนกันทั้งซ้ายและขวา (โมโน) จะแสดงทางด้านหน้าเท่านั้น</string>
-    <string name="help_note_sources">จับเฉพาะเสียงจากสื่อและเกมเท่านั้น ไม่รวมเสียงการโทร เสียงแจ้งเตือน และเสียงนาฬิกาปลุก ส่วนแอปที่บล็อกการจับเสียง (เช่น แอปวิดีโอบางแอป) จะแสดงเป็นภาพไม่ได้</string>
+    <string name="help_note_sources">จับเฉพาะเสียงจากสื่อและเกมเท่านั้น ไม่รวมเสียงการโทร เสียงแจ้งเตือน และเสียงนาฬิกาปลุก ส่วนแอปที่บล็อกการจับเสียง (เช่น แอปวิดีโอบางแอป) จะแสดงเป็นภาพไม่ได้ หากมีเสียงดังอยู่แต่ไม่มีกราฟิกปรากฏขึ้นเลยนานประมาณ 15 วินาที แท็บหน้าแรกและการแจ้งเตือนขณะทำงานจะแจ้งให้คุณทราบ ทั้งนี้ กรณีที่แอปปิดเสียงของตัวเองไว้ก็จะเห็นเป็นแบบเดียวกันทุกประการ เราจึงบอกไม่ได้ว่าเป็นกรณีใดในสองกรณีนี้</string>
+    <string name="help_note_stopped">การเริ่มบันทึกหน้าจอ แชร์หน้าจอ หรือแคสต์ จะทำให้การแสดงภาพเสียงถูกปิด เพราะทั้งหมดใช้ความยินยอมในการบันทึกหน้าจอเดียวกัน และ Android ให้ใช้ได้ทีละแอปเท่านั้น หากมีแอปอื่นกำลังบันทึก แชร์ หรือแคสต์อยู่ การเปิดอีกครั้งจะทำให้แอปนั้นหยุดลง โดยส่วนใหญ่ เมื่อถูกปิดโดยที่คุณไม่ได้สั่งหยุด โทรศัพท์จะสั่นยาวสามครั้งและแสดงการแจ้งเตือนที่มีปุ่ม “เปิดอีกครั้ง” หากคุณหยุดการจับเสียงจากตัวควบคุมการแชร์หน้าจอของโทรศัพท์ ก็จะแสดงข้อความแจ้งแบบเดียวกัน ส่วนการบังคับปิดแอปหรือแอปหยุดทำงานเอง จะแจ้งให้ทราบไม่ได้เลย หากปิดการแจ้งเตือนไว้ จะมีเพียงการสั่นที่บอกคุณ และเมื่อเปิดแอป แท็บหน้าแรกจะแสดงว่าสิ่งใดถูกปิดไป</string>
+    <string name="help_note_screen_off">ขณะหน้าจอดับ แอปจะหยุดชั่วคราวเพื่อประหยัดแบตเตอรี่ และทำงานต่อเมื่อคุณเปิดหน้าจอ เปลี่ยนได้ที่ส่วนแบตเตอรี่ในแท็บการตั้งค่า</string>
     <string name="help_note_ai">AI อาจจำแนกเสียงผิดพลาดได้ โปรดอย่าพึ่งพาแอปนี้เพียงอย่างเดียวในสถานการณ์ที่เกี่ยวข้องกับความปลอดภัย</string>
 
     <string name="help_faq_title">คำถามที่พบบ่อย</string>
+    <string name="help_faq_stopped_q">การแสดงภาพเสียงถูกปิดเองโดยที่ฉันไม่ได้สั่งหยุด</string>
+    <string name="help_faq_stopped_a">การแสดงภาพเสียงจะถูกปิดเมื่อเริ่มบันทึกหน้าจอ แชร์หน้าจอ หรือแคสต์ หรือเมื่อการจับเสียงหยุดลงเพราะเกิดข้อผิดพลาด ให้แตะ “เปิดอีกครั้ง” ในการแจ้งเตือน หรือเปิดจากแท็บหน้าแรกหรือการตั้งค่าด่วน Android จะขอความยินยอมในการบันทึกหน้าจอทุกครั้ง และการเปิดอีกครั้งจะทำให้การบันทึก การแชร์ หรือการแคสต์ที่กำลังทำงานอยู่หยุดลง</string>
     <string name="help_faq_no_graphic_q">ไม่เห็นกราฟิกเลย</string>
-    <string name="help_faq_no_graphic_a">โปรดตรวจสอบว่าแอปที่คุณกำลังใช้อยู่บล็อกการจับเสียงหรือไม่ และตรวจสอบในแท็บการตั้งค่าว่าไม่ได้ตั้งความเข้มไว้ต่ำเกินไป รวมถึงไม่ได้ปิดการแสดงเสียงประเภทที่กำลังดังอยู่</string>
+    <string name="help_faq_no_graphic_a">โปรดตรวจสอบว่าแอปที่กำลังเล่นเสียงอยู่บล็อกการจับเสียงหรือไม่ และเสียงในแอปนั้นถูกปิดอยู่หรือไม่ หากไม่มีเสียงเข้ามาที่แอปนี้ต่อเนื่องสักพัก แท็บหน้าแรกและการแจ้งเตือนขณะทำงานจะแจ้งให้คุณทราบ นอกจากนี้ โปรดตรวจสอบในแท็บการตั้งค่าด้วยว่าไม่ได้ตั้งความเข้มไว้ต่ำเกินไป รวมถึงไม่ได้ปิดการแสดงเสียงประเภทที่กำลังดังอยู่</string>
     <string name="help_faq_no_vibration_q">เครื่องไม่สั่น</string>
     <string name="help_faq_no_vibration_a">ในแท็บการตั้งค่า ส่วน “ประเภทเสียง (AI)” ให้ตรวจสอบว่าได้เปิดทั้ง “แสดง” และ “สั่น” สำหรับเสียงประเภทนั้นแล้ว หากปิดการสั่นไว้ในการตั้งค่าของโทรศัพท์ เครื่องอาจไม่สั่น</string>
     <string name="help_faq_install_q">ติดตั้งเวอร์ชันใหม่ไม่ได้</string>

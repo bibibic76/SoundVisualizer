@@ -1,7 +1,6 @@
 package com.example.soundvisualizer.feedback
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,6 +37,7 @@ import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
+import com.example.soundvisualizer.WarningColor
 import com.example.soundvisualizer.wrappingLabelStyle
 
 /**
@@ -51,11 +55,16 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val context = LocalContext.current
     val player = remember { HapticPlayer(context) }
     val settings by SettingsManager.hapticSettings(label).collectAsState()
+    val aiAvailable by SettingsManager.aiAvailable.collectAsState()
 
     val switchEnabled = shown && player.hasVibrator
+    // 소리 종류 구분(AI)을 못 불러오면 진동 알림 자체가 돌지 않는다. 스위치는 켜진 그대로라
+    // 위협음 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 설정값은 다음 실행을 위해 바꾸지 않는다.
+    val aiNote = !aiAvailable && switchEnabled && settings.enabled
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
         !shown -> R.string.haptic_requires_display
+        aiNote -> R.string.haptic_ai_unavailable
         else -> null
     }
 
@@ -64,7 +73,16 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             .fillMaxWidth()
             .padding(start = 16.dp, bottom = 20.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // 줄 전체를 눌러 켜고 끈다. 스위치만 누를 수 있으면 화면 읽어주기가 이름 없이 "스위치, 켜짐" 으로 읽는다.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.toggleable(
+                value = settings.enabled,
+                enabled = switchEnabled,
+                role = Role.Switch,
+                onValueChange = { SettingsManager.updateHaptic(label, settings.copy(enabled = it)) }
+            )
+        ) {
             Text(
                 stringResource(R.string.haptic_vibrate),
                 fontSize = 15.sp,
@@ -74,7 +92,8 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             )
             Switch(
                 checked = settings.enabled,
-                onCheckedChange = { SettingsManager.updateHaptic(label, settings.copy(enabled = it)) },
+                // 누르는 것은 줄 전체가 받는다.
+                onCheckedChange = null,
                 enabled = switchEnabled,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
@@ -89,7 +108,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             Text(
                 stringResource(noteRes),
                 fontSize = 13.sp,
-                color = SecondaryTextColor,
+                color = if (aiNote) WarningColor else SecondaryTextColor,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
@@ -155,7 +174,11 @@ private fun <T> HapticChoiceRow(
             modifier = Modifier.padding(bottom = 6.dp)
         )
         // 번역된 선택지가 칸보다 길면 가운데 정렬로 줄을 바꾸고, 칸 높이를 함께 맞춘다.
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.height(IntrinsicSize.Min)) {
+        // 고른 칸은 색으로만 보이므로, 화면 읽어주기에는 selectableGroup 과 selectable 로 알린다.
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.height(IntrinsicSize.Min).selectableGroup()
+        ) {
             options.forEach { option ->
                 val isSelected = option == selected
                 Box(
@@ -170,7 +193,11 @@ private fun <T> HapticChoiceRow(
                                 else -> Color(0xFF333A44)
                             }
                         )
-                        .clickable(enabled = enabled) { onSelect(option) }
+                        .selectable(
+                            selected = isSelected,
+                            enabled = enabled,
+                            role = Role.RadioButton
+                        ) { onSelect(option) }
                         .padding(horizontal = 4.dp, vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {

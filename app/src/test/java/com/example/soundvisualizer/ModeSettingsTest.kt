@@ -137,8 +137,10 @@ class ModeSettingsTest {
 /**
  * 메모리에만 두는 SharedPreferences. 에디터는 값을 바로 적는다
  * (실제 구현의 apply·commit 시점은 여기서 검사할 대상이 아니다).
+ *
+ * 같은 패키지의 다른 설정 테스트(ScreenOffPauseTest, StopNoticeSettingsTest)도 이 가짜를 쓴다.
  */
-private class MemoryPrefs : SharedPreferences {
+internal class MemoryPrefs : SharedPreferences {
     private val values = HashMap<String, Any?>()
 
     override fun getAll(): Map<String, *> = HashMap(values)

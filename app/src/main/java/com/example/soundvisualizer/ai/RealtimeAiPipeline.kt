@@ -29,7 +29,7 @@ class RealtimeAiPipeline private constructor(
     private val audioBuffer: AiAudioBuffer,
     private val preprocessor: AudioPreprocessor,
     private val yamnet: YamnetInference,
-    private val booster: GunshotBoosterInference,
+    private val booster: GunshotBoosterInference?,
     private val coarseClassifier: YamnetCoarseClassifier,
     private val classNames: List<String>,
     private val postProcessor: AiPostProcessor,
@@ -44,6 +44,7 @@ class RealtimeAiPipeline private constructor(
         val preBoosterCoarse: String,
         val postBoosterCoarse: String,
         val gunshotScore: Float,
+        val boosterAvailable: Boolean,
         val boosterAccepted: Boolean
     )
 
@@ -69,15 +70,30 @@ class RealtimeAiPipeline private constructor(
             val names = context.assets.open("ai/yamnet_class_map.csv").use {
                 YamnetCoarseClassifier.loadClassNames(it)
             }
-            return RealtimeAiPipeline(
-                context = context.applicationContext,
-                audioBuffer = AiAudioBuffer(captureSampleRate, channels),
-                preprocessor = AudioPreprocessor(),
-                yamnet = YamnetInference.create(context),
-                booster = GunshotBoosterInference.create(context),
-                coarseClassifier = YamnetCoarseClassifier(names),
-                classNames = names,
-                postProcessor = AiPostProcessor()
+            val appContext = context.applicationContext
+            val audioBuffer = AiAudioBuffer(captureSampleRate, channels)
+            val preprocessor = AudioPreprocessor()
+            val coarseClassifier = YamnetCoarseClassifier(names)
+            val postProcessor = AiPostProcessor()
+
+            return AiPipelineInitializer.create(
+                createYamnet = { YamnetInference.create(context) },
+                createBooster = { GunshotBoosterInference.create(context) },
+                onBoosterUnavailable = { failure ->
+                    Log.w(TAG, "Gunshot Booster unavailable; continuing with YAMNet only", failure)
+                },
+                createOwner = { yamnet, booster ->
+                    RealtimeAiPipeline(
+                        context = appContext,
+                        audioBuffer = audioBuffer,
+                        preprocessor = preprocessor,
+                        yamnet = yamnet,
+                        booster = booster,
+                        coarseClassifier = coarseClassifier,
+                        classNames = names,
+                        postProcessor = postProcessor
+                    )
+                }
             )
         }
     }
@@ -230,17 +246,28 @@ class RealtimeAiPipeline private constructor(
 
         val pre = coarseClassifier.classify(yamnetResult.probabilities)
 
-        var gunshotScore: Float
-        val boosterNs = measureNanoTime {
+        var gunshotScore: Float? = null
+        val boosterNs = if (booster != null) measureNanoTime {
             gunshotScore = booster.score(yamnetResult.probabilities)
+        } else {
+            0L
         }
 
-        val decision = GunshotBoosterDecision.decide(
-            probabilities = yamnetResult.probabilities,
-            classNames = classNames,
-            pre = pre,
-            gunshotScore = gunshotScore
-        )
+        val availableGunshotScore = gunshotScore
+        val decision = if (availableGunshotScore != null) {
+            GunshotBoosterDecision.decide(
+                probabilities = yamnetResult.probabilities,
+                classNames = classNames,
+                pre = pre,
+                gunshotScore = availableGunshotScore
+            )
+        } else {
+            GunshotBoosterDecision.unavailable(
+                probabilities = yamnetResult.probabilities,
+                classNames = classNames,
+                pre = pre
+            )
+        }
 
         val topKSummary = pre.top5.joinToString(separator = " | ") { it.name }
         val hasCritical = AiPostProcessor.isCriticalDangerEvent(
@@ -265,7 +292,8 @@ class RealtimeAiPipeline private constructor(
             coarse = post.uiCoarse,
             display = post.uiDisplay,
             confidence = post.uiConfidence,
-            gunshotScore = gunshotScore,
+            gunshotScore = decision.gunshotScore,
+            boosterAvailable = decision.boosterAvailable,
             preBoosterCoarse = decision.preBoosterCoarse,
             boosterAccepted = decision.accepted,
             meetsThreshold = post.meetsThreshold,
@@ -290,7 +318,8 @@ class RealtimeAiPipeline private constructor(
             probabilities = yamnetResult.probabilities.copyOf(),
             preBoosterCoarse = decision.preBoosterCoarse,
             postBoosterCoarse = decision.postBoosterCoarse,
-            gunshotScore = gunshotScore,
+            gunshotScore = decision.gunshotScore,
+            boosterAvailable = decision.boosterAvailable,
             boosterAccepted = decision.accepted
         )
     }
@@ -303,6 +332,7 @@ class RealtimeAiPipeline private constructor(
             TAG,
             "AI_RESULT coarse=${result.coarse} display=${result.display} " +
                 "confidence=${"%.4f".format(result.confidence)} " +
+                "boosterAvailable=${result.boosterAvailable} " +
                 "gunshotScore=${"%.4f".format(result.gunshotScore)} " +
                 "pre=${result.preBoosterCoarse} boost=${result.boosterAccepted} " +
                 "ms[pre=${"%.1f".format(result.preprocessMs)} " +
@@ -332,7 +362,7 @@ class RealtimeAiPipeline private constructor(
                 } catch (_: Throwable) {
                 }
                 try {
-                    booster.close()
+                    booster?.close()
                 } catch (_: Throwable) {
                 }
             } finally {

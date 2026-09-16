@@ -8,6 +8,9 @@
     <string name="home_subtitle">जो आवाज़ें दिखती नहीं, उन्हें स्क्रीन पर दिखाता है।\nगेमिंग से लेकर फ़िल्मों तक, एक बिल्कुल नया अनुभव पाएं।</string>
     <string name="home_status_running">स्थिति: चालू है</string>
     <string name="home_status_idle">स्थिति: तैयार</string>
+    <string name="home_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है, इसलिए स्क्रीन पर कुछ भी नहीं बनाया जा सकता। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो (सुरक्षित वीडियो के साथ ऐसा ही होता है), या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
+    <string name="home_ai_unavailable">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं और वाइब्रेशन भी नहीं हो रहा। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
+    <string name="home_stopped_dismiss">जानकारी हटाएं</string>
     <string name="home_start">शुरू करें</string>
     <string name="home_stop">बंद करें</string>
     <string name="home_add_tile">फटाफट सेटिंग में जोड़ें</string>
@@ -15,6 +18,8 @@
     <string name="home_add_tile_manual">सूचना पैनल नीचे खींचें, बदलाव करें (पेंसिल) पर टैप करें और “आवाज़ विज़ुअलाइज़र” जोड़ें। इसके बाद, गेम खेलते या वीडियो देखते हुए ही इसे चालू या बंद किया जा सकता है।</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">“दूसरे ऐप्लिकेशन के ऊपर दिखाएं” की अनुमति दें</string>
+    <string name="permission_overlay_message">आवाज़ें आपके गेम या वीडियो के ऊपर बनाई जाती हैं, इसलिए Android को यह अनुमति चाहिए। सेटिंग में ऐप्लिकेशन की सूची दिखे, तो उसमें SoundVisualizer ढूंढें, उसका स्विच चालू करें और वापस आ जाएं। इसके बाद आगे का काम अपने आप होता रहेगा।</string>
     <string name="permission_record_audio_required">ऑडियो कैप्चर करने के लिए माइक्रोफ़ोन (ऑडियो रिकॉर्डिंग) की अनुमति ज़रूरी है।</string>
     <string name="permission_mic_rationale_title">माइक्रोफ़ोन की अनुमति क्यों चाहिए?</string>
     <string name="permission_mic_rationale_message">Android पर, फ़ोन में चल रही आवाज़ कैप्चर करने के लिए माइक्रोफ़ोन की अनुमति ज़रूरी होती है। आपके आस-पास की आवाज़ें रिकॉर्ड नहीं की जातीं।</string>
@@ -42,6 +47,7 @@
     <string name="settings_mode_picker_desc">स्क्रीन पर बनने वाले ग्राफ़िक्स का बुनियादी आकार चुनें।</string>
     <string name="settings_section_mode_detail">हर मोड की सेटिंग</string>
     <string name="settings_section_ai">आवाज़ के प्रकार (AI)</string>
+    <string name="settings_section_battery">बैटरी</string>
 
     <!-- Language -->
     <string name="settings_language_title">भाषा</string>
@@ -72,14 +78,20 @@
     <string name="setting_ripple">स्थानिक तरंग प्रभाव</string>
     <string name="setting_ripple_desc">हल्की देरी जोड़ता है, ताकि आवाज़ आगे से पीछे की ओर फैलती हुई लगे।</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">स्क्रीन बंद होने पर रोकें</string>
+    <string name="setting_pause_screen_off_desc">स्क्रीन बंद रहने पर बैटरी बचाने के लिए आवाज़ कैप्चर करना, आवाज़ का प्रकार पहचानना और वाइब्रेशन रोक देता है, और स्क्रीन चालू करने पर सब फिर से शुरू हो जाता है। स्क्रीन बंद रहने पर भी वाइब्रेशन चाहिए, तो इसे बंद कर दें।</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">माहौल की आवाज़ें दिखाएं</string>
     <string name="ai_show_speech">बातचीत दिखाएं</string>
     <string name="ai_show_danger">खतरे की आवाज़ें दिखाएं</string>
+    <string name="ai_unavailable">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">वाइब्रेट करें</string>
     <string name="haptic_requires_display">वाइब्रेशन तभी होगा, जब यह प्रकार स्क्रीन पर दिखाया जा रहा हो।</string>
+    <string name="haptic_ai_unavailable">जब तक आवाज़ का प्रकार नहीं पहचाना जा रहा, तब तक वाइब्रेशन नहीं होगा।</string>
     <string name="haptic_unsupported">इस डिवाइस पर वाइब्रेशन की सुविधा नहीं है।</string>
     <string name="haptic_no_amplitude">इस डिवाइस पर वाइब्रेशन की तीव्रता नहीं बदली जा सकती, इसलिए डिफ़ॉल्ट तीव्रता पर वाइब्रेशन होगा।</string>
     <string name="haptic_strength">तीव्रता</string>
@@ -96,11 +108,22 @@
     <!-- Color picker -->
     <string name="color_picker_title">रंग चुनें</string>
     <string name="color_picker_presets">अक्सर इस्तेमाल होने वाले रंग</string>
+    <string name="cd_preset_white">सफ़ेद</string>
+    <string name="cd_preset_red">लाल</string>
+    <string name="cd_preset_orange">नारंगी</string>
+    <string name="cd_preset_yellow">पीला</string>
+    <string name="cd_preset_green">हरा</string>
+    <string name="cd_preset_cyan">आसमानी</string>
+    <string name="cd_preset_blue">नीला</string>
+    <string name="cd_preset_magenta">मैजेंटा</string>
     <string name="color_picker_confirm">ठीक है</string>
     <string name="color_picker_cancel">रद्द करें</string>
 
     <!-- Accessibility -->
     <string name="cd_pick_color">रंग चुनने का विकल्प खोलें</string>
+    <string name="cd_color_ambient">माहौल की आवाज़ों का रंग</string>
+    <string name="cd_color_speech">बातचीत का रंग</string>
+    <string name="cd_color_danger">खतरे की आवाज़ों का रंग</string>
     <string name="cd_expand">बड़ा करें</string>
     <string name="cd_collapse">छोटा करें</string>
     <string name="cd_change_language">भाषा बदलें</string>
@@ -109,6 +132,19 @@
     <string name="notification_channel_name">ऑडियो कैप्चर</string>
     <string name="notification_text">आवाज़ें स्क्रीन पर दिखाई जा रही हैं।</string>
     <string name="notification_stop">रोकें</string>
+    <string name="notification_text_ai_unavailable">आवाज़ें स्क्रीन पर दिखाई जा रही हैं। आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए वाइब्रेशन बंद है।</string>
+    <string name="notification_text_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो, या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">विज़ुअलाइज़र बंद होने की सूचना</string>
+    <string name="stopped_channel_desc">आपके बंद किए बिना आवाज़ विज़ुअलाइज़र बंद हो जाए, तो आपको बताता है।</string>
+    <string name="stopped_title">आवाज़ विज़ुअलाइज़र बंद हो गया</string>
+    <string name="stopped_text_projection">आवाज़ कैप्चर होना बंद हो गया, इसलिए ग्राफ़िक्स और वाइब्रेशन भी बंद हो गए। ऐसा स्क्रीन रिकॉर्डिंग, स्क्रीन शेयरिंग या कास्टिंग शुरू होने पर, या सिस्टम के आवाज़ कैप्चर रोक देने पर होता है। कोई दूसरा ऐप रिकॉर्डिंग, शेयरिंग या कास्टिंग कर रहा हो, तो दोबारा चालू करने पर वह बंद हो जाएगा।</string>
+    <string name="stopped_text_capture_error">गड़बड़ी की वजह से आवाज़ कैप्चर होना रुक गया, इसलिए ग्राफ़िक्स और वाइब्रेशन भी बंद हो गए।</string>
+    <string name="stopped_text_start_failed">आवाज़ कैप्चर होना शुरू ही नहीं हो सका, इसलिए ग्राफ़िक्स और वाइब्रेशन भी बंद हो गए।</string>
+    <string name="stopped_text_overlay_failed">ग्राफ़िक्स दूसरे ऐप्लिकेशन के ऊपर नहीं दिखाए जा सके, इसलिए विज़ुअलाइज़र बंद हो गया। देखें कि “दूसरे ऐप्लिकेशन के ऊपर दिखाएं” की अनुमति मिली हुई है या नहीं।</string>
+    <string name="stopped_turn_on">दोबारा चालू करें</string>
+    <string name="stopped_toast">आवाज़ विज़ुअलाइज़र बंद हो गया। ग्राफ़िक्स और वाइब्रेशन भी बंद हैं।</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">आवाज़ विज़ुअलाइज़र</string>
@@ -154,12 +190,16 @@
     <string name="help_notes_title">काम की बातें</string>
     <string name="help_note_direction">यह ऐप बाएं और दाएं का फ़र्क पहचान सकता है, लेकिन आगे और पीछे का नहीं। स्क्रीन के ऊपर और नीचे दिखने वाले ग्राफ़िक्स, दोनों तरफ़ बराबर आने वाली आवाज़ों और स्थानिक प्रभाव को दिखाते हैं।</string>
     <string name="help_note_mono">जो आवाज़ें बाएं और दाएं बिल्कुल एक जैसी होती हैं (मोनो), वे सिर्फ़ सामने की ओर दिखाई जाती हैं।</string>
-    <string name="help_note_sources">सिर्फ़ मीडिया और गेम की आवाज़ें कैप्चर होती हैं। फ़ोन कॉल, सूचना की आवाज़ें और अलार्म कैप्चर नहीं होते। जो ऐप ऑडियो कैप्चर करने की अनुमति नहीं देते (जैसे कुछ वीडियो ऐप), उनकी आवाज़ें नहीं दिखाई जा सकतीं।</string>
+    <string name="help_note_sources">सिर्फ़ मीडिया और गेम की आवाज़ें कैप्चर होती हैं। फ़ोन कॉल, सूचना की आवाज़ें और अलार्म कैप्चर नहीं होते। जो ऐप ऑडियो कैप्चर करने की अनुमति नहीं देते (जैसे कुछ वीडियो ऐप), उनकी आवाज़ें नहीं दिखाई जा सकतीं। आवाज़ चलने के बावजूद करीब 15 सेकंड तक कुछ भी न बने, तो “होम” टैब और चालू रहने के दौरान दिखने वाली सूचना में यह बता दिया जाता है। हालांकि, ऐप ने खुद अपनी आवाज़ बंद कर रखी हो, तब भी बिल्कुल ऐसा ही दिखता है, इसलिए दोनों में से कौन-सी वजह है, यह नहीं बताया जा सकता।</string>
+    <string name="help_note_stopped">स्क्रीन रिकॉर्डिंग, स्क्रीन शेयरिंग या कास्टिंग शुरू करने पर विज़ुअलाइज़र बंद हो जाता है, क्योंकि वह भी स्क्रीन रिकॉर्डिंग की उसी सहमति का इस्तेमाल करता है और Android एक समय पर सिर्फ़ एक ऐप को उसकी अनुमति देता है। कोई दूसरा ऐप रिकॉर्डिंग, शेयरिंग या कास्टिंग कर रहा हो, तो दोबारा चालू करने पर वह बंद हो जाएगा। आपके बंद किए बिना बंद होने पर, आम तौर पर फ़ोन तीन बार लंबा वाइब्रेट करता है और “दोबारा चालू करें” बटन वाली सूचना दिखाता है। फ़ोन के स्क्रीन शेयरिंग कंट्रोल से आवाज़ कैप्चर रोकने पर भी यही सूचना मिलती है, लेकिन ऐप को ज़बरदस्ती बंद करने या उसके क्रैश होने पर कुछ भी बताया नहीं जा सकता। सूचनाएं बंद हों, तो सिर्फ़ वाइब्रेशन से पता चलता है और ऐप खोलने पर “होम” टैब में दिखता है कि क्या बंद हुआ था।</string>
+    <string name="help_note_screen_off">स्क्रीन बंद रहने पर यह बैटरी बचाने के लिए रुक जाता है और स्क्रीन चालू करने पर फिर से शुरू हो जाता है। इसे “सेटिंग” टैब के “बैटरी” में बदला जा सकता है।</string>
     <string name="help_note_ai">AI का वर्गीकरण गलत हो सकता है। जहां सुरक्षा का सवाल हो, वहां सिर्फ़ इसी ऐप पर भरोसा न करें।</string>
 
     <string name="help_faq_title">अक्सर पूछे जाने वाले सवाल</string>
+    <string name="help_faq_stopped_q">मेरे बंद किए बिना ही यह बंद हो गया।</string>
+    <string name="help_faq_stopped_a">स्क्रीन रिकॉर्डिंग, स्क्रीन शेयरिंग या कास्टिंग शुरू होने पर, या गड़बड़ी की वजह से आवाज़ कैप्चर रुक जाने पर यह बंद हो जाता है। सूचना में “दोबारा चालू करें” पर टैप करें, या इसे “होम” टैब या फटाफट सेटिंग से चालू करें। Android हर बार स्क्रीन रिकॉर्डिंग की सहमति मांगता है, और दोबारा चालू करने पर चल रही कोई भी रिकॉर्डिंग, शेयरिंग या कास्टिंग बंद हो जाएगी।</string>
     <string name="help_faq_no_graphic_q">ग्राफ़िक्स नहीं दिख रहे हैं।</string>
-    <string name="help_faq_no_graphic_a">देखें कि जिस ऐप में आवाज़ चल रही है, वह ऑडियो कैप्चर करने से तो नहीं रोकता। यह भी देखें कि “सेटिंग” टैब में “गहरापन” बहुत कम न हो और अभी चल रही आवाज़ के प्रकार को दिखाने की सेटिंग बंद न हो।</string>
+    <string name="help_faq_no_graphic_a">देखें कि जिस ऐप में आवाज़ चल रही है, वह ऑडियो कैप्चर करने से तो नहीं रोकता, और कहीं उसी ऐप में आवाज़ बंद तो नहीं है। विज़ुअलाइज़र तक कुछ देर कोई आवाज़ न पहुंचे, तो “होम” टैब और चालू रहने के दौरान दिखने वाली सूचना में यह बता दिया जाता है। यह भी देखें कि “सेटिंग” टैब में “गहरापन” बहुत कम न हो और अभी चल रही आवाज़ के प्रकार को दिखाने की सेटिंग बंद न हो।</string>
     <string name="help_faq_no_vibration_q">वाइब्रेशन नहीं हो रहा है।</string>
     <string name="help_faq_no_vibration_a">“सेटिंग” टैब के “आवाज़ के प्रकार (AI)” में देखें कि उस प्रकार के लिए “दिखाएं” और “वाइब्रेट करें”, दोनों चालू हों। अगर फ़ोन की सेटिंग में वाइब्रेशन बंद है, तो हो सकता है कि वाइब्रेशन न हो।</string>
     <string name="help_faq_install_q">नया वर्शन इंस्टॉल नहीं हो रहा है।</string>

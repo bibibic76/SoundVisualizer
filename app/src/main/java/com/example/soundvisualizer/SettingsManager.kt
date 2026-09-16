@@ -37,6 +37,16 @@ object SettingsManager {
     private const val PREFS_NAME = "SoundVisualizerPrefs"
     private lateinit var prefs: SharedPreferences
 
+    /**
+     * "화면이 꺼지면 일시정지"의 기본값. 켜 두는 쪽이 배터리를 아낀다.
+     *
+     * 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 테스트가 통과하므로 한 곳에만 둔다.
+     */
+    internal const val PAUSE_WHEN_SCREEN_OFF_DEFAULT = true
+
+    private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
+    private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
+
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
 
@@ -85,6 +95,54 @@ object SettingsManager {
     private val _tileAdded = MutableStateFlow(false)
     val tileAdded: StateFlow<Boolean> = _tileAdded
 
+    // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
+    private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+    val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
+
+    /**
+     * 이번 실행에서 소리 종류 구분(AI)을 쓸 수 있는지. 캡처 서비스가 알려주며 저장하지 않는다.
+     *
+     * 모델 로딩이 실패해도 캡처와 시각화는 돈다. 그러면 모든 소리가 환경음 색으로 그려지고 진동 알림은 아예 돌지 않는데,
+     * 설정 화면은 위협음 진동이 켜진 것처럼 보인다. 홈과 설정 화면이 이 값으로 그 사실을 알린다.
+     * 로딩 중에는 true 로 둔다(보통 1초 안팎). 꺼져 있을 때도 true 다.
+     */
+    private val _aiAvailable = MutableStateFlow(true)
+    val aiAvailable: StateFlow<Boolean> = _aiAvailable
+
+    /** 화면이 꺼져 캡처를 쉬는 중인지. 오버레이가 이 동안 폴링을 멈춘다. 저장하지 않는다. */
+    private val _isCapturePaused = MutableStateFlow(false)
+    val isCapturePaused: StateFlow<Boolean> = _isCapturePaused
+
+    /**
+     * 폰은 미디어를 재생 중인데 우리에게는 아무것도 들어오지 않는지. 캡처 서비스가 알려주며 저장하지 않는다.
+     *
+     * 소리 공유를 막은 앱(보호된 영상 등)의 소리는 우리 쪽 믹스에 섞이지 않아, 오버레이가 아무것도 그리지
+     * 않는다. 청각장애 사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다. 홈 화면과 실행 중
+     * 알림이 이 값으로 그 사실을 알린다. 앱이 스스로 음소거한 경우도 똑같이 보여 원인까지는 단정하지
+     * 못하므로, 문구는 두 가지 가능성을 함께 말한다.
+     * 판단은 [BlockedCaptureNotice] 가 하고, 소리가 다시 들어오면 곧바로 false 로 돌아간다.
+     */
+    private val _isCaptureBlocked = MutableStateFlow(false)
+    val isCaptureBlocked: StateFlow<Boolean> = _isCaptureBlocked
+
+    /**
+     * 사용자가 끄지 않았는데 마지막으로 꺼진 이유. 없으면 null. 홈 화면이 앱을 열었을 때 보여준다. (StopAlert)
+     *
+     * 앱 알림을 꺼 두면 꺼짐 알림도 올라가지 않고, 게임 위에서는 토스트도 시스템이 막아 진동만 남는다.
+     * 무엇이 꺼졌는지 나중에라도 알 수 있게, 프로세스가 끝나도 남도록 저장한다. 다시 켜거나 홈에서 닫으면 지운다.
+     */
+    private val _lastUnexpectedStop = MutableStateFlow<StopReason?>(null)
+    val lastUnexpectedStop: StateFlow<StopReason?> = _lastUnexpectedStop
+
+    /**
+     * 안내를 새로 저장할 때마다 1 씩 오르는 번호. 같은 이유로 또 꺼져도 다른 안내로 구분된다.
+     *
+     * 홈 탭으로 한 번만 옮기는 판단([StopNoticeRouting])에 쓴다. 저장하지 않으므로 프로세스가 다시 뜨면 0 부터
+     * 시작하는데, 그때는 화면 상태도 함께 사라져 남아 있던 안내를 한 번 더 보여줄 뿐이다.
+     */
+    private val _lastUnexpectedStopSeq = MutableStateFlow(0)
+    val lastUnexpectedStopSeq: StateFlow<Int> = _lastUnexpectedStopSeq
+
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
@@ -108,6 +166,8 @@ object SettingsManager {
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
 
         _tileAdded.value = prefs.getBoolean("tile_added", false)
+        _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
+        _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -122,6 +182,23 @@ object SettingsManager {
 
     private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
         enumValues<T>().firstOrNull { it.name == name } ?: default
+
+    /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+
+    /**
+     * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
+     * 알릴 것이 없는 것으로 본다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (StopNoticeSettingsTest).
+     */
+    internal fun loadLastUnexpectedStop(source: SharedPreferences): StopReason? =
+        source.getString(KEY_LAST_UNEXPECTED_STOP, null)
+            ?.let { name -> StopReason.values().firstOrNull { it.name == name } }
+
+    /** [loadLastUnexpectedStop] 와 같은 키로 적는다. [reason] 이 null 이면 키를 지운다. */
+    internal fun putLastUnexpectedStop(editor: SharedPreferences.Editor, reason: StopReason?) {
+        if (reason == null) editor.remove(KEY_LAST_UNEXPECTED_STOP) else editor.putString(KEY_LAST_UNEXPECTED_STOP, reason.name)
+    }
 
     fun setVisualMode(mode: VisualMode) {
         _visualMode.value = mode
@@ -261,5 +338,30 @@ object SettingsManager {
     fun setTileAdded(added: Boolean) {
         _tileAdded.value = added
         prefs.edit { putBoolean("tile_added", added) }
+    }
+
+    fun setPauseWhenScreenOff(enabled: Boolean) {
+        _pauseWhenScreenOff.value = enabled
+        prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
+    }
+
+    /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
+    fun setAiAvailable(available: Boolean) {
+        _aiAvailable.value = available
+    }
+
+    fun setCapturePaused(paused: Boolean) {
+        _isCapturePaused.value = paused
+    }
+
+    fun setCaptureBlocked(blocked: Boolean) {
+        _isCaptureBlocked.value = blocked
+    }
+
+    /** [reason] 이 null 이면 지운다. */
+    fun setLastUnexpectedStop(reason: StopReason?) {
+        if (reason != null) _lastUnexpectedStopSeq.value++
+        _lastUnexpectedStop.value = reason
+        prefs.edit { putLastUnexpectedStop(this, reason) }
     }
 }

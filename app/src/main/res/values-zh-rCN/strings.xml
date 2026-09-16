@@ -8,6 +8,9 @@
     <string name="home_subtitle">将看不见的声音呈现在屏幕上。\n从游戏到观影，开启全新体验。</string>
     <string name="home_status_running">状态：运行中</string>
     <string name="home_status_idle">状态：待启动</string>
+    <string name="home_capture_blocked">本应用当前接收不到声音，因此无法绘制任何图形。可能是正在播放声音的应用不允许共享自己的声音（受保护的视频就属于这种情况），也可能是该应用自身已静音。</string>
+    <string name="home_ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示，振动提醒也已关闭。请尝试将可视化关闭后重新开启。</string>
+    <string name="home_stopped_dismiss">关闭提示</string>
     <string name="home_start">启动</string>
     <string name="home_stop">停止</string>
     <string name="home_add_tile">添加到快捷设置</string>
@@ -15,6 +18,8 @@
     <string name="home_add_tile_manual">下拉通知栏，点按“修改”（铅笔图标）并添加“声音可视化”，即可在游戏或视频画面上直接开启或关闭。</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">请允许“显示在其他应用的上层”</string>
+    <string name="permission_overlay_message">声音会绘制在游戏或视频画面的上方，因此 Android 需要此权限。如果设置中出现应用列表，请找到 SoundVisualizer 并打开它的开关，然后返回。返回后会自动继续。</string>
     <string name="permission_record_audio_required">需要麦克风（录音）权限才能捕获音频。</string>
     <string name="permission_mic_rationale_title">为什么需要麦克风权限？</string>
     <string name="permission_mic_rationale_message">根据 Android 的要求，需要麦克风权限才能捕获手机上播放的声音。本应用不会录制您周围的声音。</string>
@@ -42,6 +47,7 @@
     <string name="settings_mode_picker_desc">选择屏幕上所绘图形的基本形状。</string>
     <string name="settings_section_mode_detail">各模式详细设置</string>
     <string name="settings_section_ai">声音类型（AI）</string>
+    <string name="settings_section_battery">电池</string>
 
     <!-- Language -->
     <string name="settings_language_title">语言</string>
@@ -72,14 +78,20 @@
     <string name="setting_ripple">空间涟漪</string>
     <string name="setting_ripple_desc">加入轻微延迟，让声音仿佛由前向后扩散。</string>
 
+    <!-- Battery -->
+    <string name="setting_pause_screen_off">屏幕关闭时暂停</string>
+    <string name="setting_pause_screen_off_desc">屏幕关闭期间停止捕获声音、识别声音类型和振动，以节省电量，屏幕点亮后自动继续。如果希望屏幕关闭时仍收到振动提醒，请关闭此项。</string>
+
     <!-- Sound types -->
     <string name="ai_show_ambient">显示环境音</string>
     <string name="ai_show_speech">显示人声</string>
     <string name="ai_show_danger">显示危险音</string>
+    <string name="ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示。请尝试将可视化关闭后重新开启。</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">振动</string>
     <string name="haptic_requires_display">需开启此声音类型的显示才会振动。</string>
+    <string name="haptic_ai_unavailable">无法识别声音类型时不会振动。</string>
     <string name="haptic_unsupported">此设备不支持振动。</string>
     <string name="haptic_no_amplitude">此设备无法调节振动强度，将以默认强度振动。</string>
     <string name="haptic_strength">强度</string>
@@ -96,11 +108,22 @@
     <!-- Color picker -->
     <string name="color_picker_title">选择颜色</string>
     <string name="color_picker_presets">常用颜色</string>
+    <string name="cd_preset_white">白色</string>
+    <string name="cd_preset_red">红色</string>
+    <string name="cd_preset_orange">橙色</string>
+    <string name="cd_preset_yellow">黄色</string>
+    <string name="cd_preset_green">绿色</string>
+    <string name="cd_preset_cyan">青色</string>
+    <string name="cd_preset_blue">蓝色</string>
+    <string name="cd_preset_magenta">洋红色</string>
     <string name="color_picker_confirm">确定</string>
     <string name="color_picker_cancel">取消</string>
 
     <!-- Accessibility -->
     <string name="cd_pick_color">打开颜色选择器</string>
+    <string name="cd_color_ambient">环境音颜色</string>
+    <string name="cd_color_speech">人声颜色</string>
+    <string name="cd_color_danger">危险音颜色</string>
     <string name="cd_expand">展开</string>
     <string name="cd_collapse">收起</string>
     <string name="cd_change_language">更改语言</string>
@@ -109,6 +132,19 @@
     <string name="notification_channel_name">音频捕获</string>
     <string name="notification_text">正在进行声音可视化。</string>
     <string name="notification_stop">停止</string>
+    <string name="notification_text_ai_unavailable">正在进行声音可视化。由于无法识别声音类型，振动提醒已关闭。</string>
+    <string name="notification_text_capture_blocked">本应用当前接收不到声音。可能是正在播放声音的应用不允许共享自己的声音，也可能是该应用自身已静音。</string>
+
+    <!-- Alert when the visualizer turns off without the user stopping it -->
+    <string name="stopped_channel_name">可视化关闭提醒</string>
+    <string name="stopped_channel_desc">在您并未手动停止的情况下，声音可视化关闭时会通知您。</string>
+    <string name="stopped_title">声音可视化已关闭</string>
+    <string name="stopped_text_projection">声音捕获已结束，图形和振动提醒均已关闭。开始屏幕录制、屏幕共享或投屏时，或系统结束声音捕获时，都会出现这种情况。如果其他应用正在录制、共享或投屏，重新开启会使其结束。</string>
+    <string name="stopped_text_capture_error">声音捕获因出错而停止，图形和振动提醒均已关闭。</string>
+    <string name="stopped_text_start_failed">无法开始捕获声音，图形和振动提醒均已关闭。</string>
+    <string name="stopped_text_overlay_failed">无法在其他应用上方显示图形，可视化已关闭。请确认是否已允许“显示在其他应用的上层”。</string>
+    <string name="stopped_turn_on">重新开启</string>
+    <string name="stopped_toast">声音可视化已关闭。图形和振动提醒均已关闭。</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">声音可视化</string>
@@ -154,12 +190,16 @@
     <string name="help_notes_title">注意事项</string>
     <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>
     <string name="help_note_mono">左右声道完全相同的声音（单声道）只会显示为来自正前方。</string>
-    <string name="help_note_sources">仅捕获媒体和游戏声音。电话通话、通知提示音和闹钟不在捕获范围内；禁止音频捕获的应用（如部分视频应用）的声音无法可视化。</string>
+    <string name="help_note_sources">仅捕获媒体和游戏声音。电话通话、通知提示音和闹钟不在捕获范围内；禁止音频捕获的应用（如部分视频应用）的声音无法可视化。如果声音正在播放，却持续约 15 秒都没有绘制出任何图形，“首页”和运行中的通知会提示您。不过，应用自行静音时的表现完全相同，因此无法告知您究竟属于哪一种情况。</string>
+    <string name="help_note_stopped">开始屏幕录制、屏幕共享或投屏会让可视化关闭，因为它们使用同一项屏幕录制授权，而 Android 一次只允许一个应用使用。如果其他应用正在录制、共享或投屏，重新开启会使其结束。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。从手机的屏幕共享通知中结束声音捕获时，也会显示同样的提醒；如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
+    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。</string>
     <string name="help_note_ai">AI 分类可能出错。在涉及安全的情况下，请勿将本应用作为唯一的保障手段。</string>
 
     <string name="help_faq_title">常见问题</string>
+    <string name="help_faq_stopped_q">我没有手动停止，它却自己关闭了。</string>
+    <string name="help_faq_stopped_a">开始屏幕录制、屏幕共享或投屏时，或声音捕获因出错而中断时，可视化会关闭。请点按通知中的“重新开启”，或从“首页”或“快捷设置”中重新开启。每次开启时 Android 都会再次询问是否同意屏幕录制；重新开启会结束正在进行的录制、共享或投屏。</string>
     <string name="help_faq_no_graphic_q">看不到任何图形。</string>
-    <string name="help_faq_no_graphic_a">请检查正在播放的应用是否禁止音频捕获。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
+    <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
     <string name="help_faq_no_vibration_q">没有振动。</string>
     <string name="help_faq_no_vibration_a">请在“设置”标签页的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。如果在手机设置中关闭了振动，则可能不会振动。</string>
     <string name="help_faq_install_q">无法安装新版本。</string>
