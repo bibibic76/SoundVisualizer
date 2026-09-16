@@ -13,4 +13,25 @@
     </style>
 
     <style name="Theme.SoundVisualizer" parent="Base.Theme.SoundVisualizer" />
+
+    <!--
+        실행 중 알림에서 모드를 고르는 칩 하나(notification_modes.xml).
+        네 개가 가로 폭을 똑같이 나눠 가지므로 너비는 0dp + weight 1 이다.
+        누르는 자리는 48dp 아래로 내려가지 않게 한다. 게임 위에서 급하게 누르는 버튼이다.
+        글자와 배경색을 왜 고정하는지는 colors.xml 의 notification_chip_* 주석에 적어 두었다.
+    -->
+    <style name="NotificationModeChip">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginEnd">6dp</item>
+        <item name="android:background">@drawable/notification_mode_chip_off</item>
+        <item name="android:textColor">@color/notification_chip_text_off</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+    </style>
 </resources>

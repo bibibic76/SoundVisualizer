@@ -27,6 +27,7 @@ import android.os.PowerManager
 import android.os.Process
 import android.os.SystemClock
 import android.util.Log
+import android.widget.RemoteViews
 import androidx.annotation.MainThread
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
@@ -139,8 +140,29 @@ class AudioCaptureService : Service() {
         /** 실행 중 알림의 중지 버튼. 사용자가 끈 것으로 본다. */
         const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
 
-        /** 실행 중 알림의 모드 바꾸기 버튼. 다음 표현 모드로 넘긴다. 캡처와 AI 는 건드리지 않는다. */
-        const val ACTION_NEXT_MODE = "com.example.soundvisualizer.action.NEXT_MODE"
+        /** 실행 중 알림의 모드 칩. 누른 모드로 바꾼다. 캡처와 AI 는 건드리지 않는다. */
+        const val ACTION_SET_MODE = "com.example.soundvisualizer.action.SET_MODE"
+
+        /** [ACTION_SET_MODE] 가 고른 모드의 [Enum.ordinal]. */
+        const val EXTRA_MODE_ORDINAL = "com.example.soundvisualizer.extra.MODE_ORDINAL"
+
+        /**
+         * 모드 칩의 PendingIntent 요청 번호가 시작하는 자리. 모드마다 [EXTRA_MODE_ORDINAL] 만 다른 인텐트를 쓰는데,
+         * PendingIntent 는 요청 번호가 같으면 같은 것으로 보고 하나만 남긴다. 그러면 칩 넷이 모두 같은 모드를 켠다.
+         * 아래 0·1 번(중지·앱 열기)과 겹치지 않게 띄워 둔다.
+         */
+        private const val REQUEST_MODE_BASE = 10
+
+        /**
+         * 모드 칩의 뷰 번호. [VisualMode] 의 차례와 짝을 이룬다. 모드를 더하면 여기와
+         * [R.layout.notification_modes] 에도 칩을 더해야 한다. 어긋나면 NotificationModeChipTest 가 알려 준다.
+         */
+        val MODE_CHIP_IDS = intArrayOf(
+            R.id.notification_mode_0,
+            R.id.notification_mode_1,
+            R.id.notification_mode_2,
+            R.id.notification_mode_3
+        )
         private const val CHANNEL_ID = "AudioCaptureChannel"
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
@@ -419,10 +441,11 @@ class AudioCaptureService : Service() {
             stopEverything(StopReason.UserRequested)
             return START_NOT_STICKY
         }
-        if (intent?.action == ACTION_NEXT_MODE) {
+        if (intent?.action == ACTION_SET_MODE) {
             // 캡처도 AI 도 건드리지 않는다. 오버레이는 프레임마다 모드를 읽으므로 바로 바뀐다.
-            // 알림의 모드 표시는 [observeVisualMode] 가 맞춘다.
-            SettingsManager.setVisualMode(SettingsManager.visualMode.value.next())
+            // 알림의 칩 표시는 [observeVisualMode] 가 맞춘다. 모르는 번호가 오면 아무것도 하지 않는다.
+            VisualMode.fromOrdinal(intent.getIntExtra(EXTRA_MODE_ORDINAL, -1))
+                ?.let { SettingsManager.setVisualMode(it) }
             return START_NOT_STICKY
         }
         if (intent != null && audioRecord == null) {
@@ -909,12 +932,6 @@ class AudioCaptureService : Service() {
             Intent(this, AudioCaptureService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val nextModeIntent = PendingIntent.getService(
-            this,
-            2,
-            Intent(this, AudioCaptureService::class.java).setAction(ACTION_NEXT_MODE),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
         val openIntent = PendingIntent.getActivity(
             this,
             1,
@@ -934,15 +951,65 @@ class AudioCaptureService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notification_title))
             .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-            // 알림만 보고도 지금 어떤 모드로 그려지는지 알 수 있게 제목 옆에 모드 이름을 둔다.
+            // 접은 알림은 시스템이 그리므로 위 setContentText 가 그대로 보인다.
+            // 펼치면 아래 본문이 그 자리를 대신하면서 모드 칩이 함께 나온다.
+            .setCustomBigContentView(buildModeChooser(text))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            // 접힌 상태에서는 칩이 보이지 않으므로, 펼치지 않고도 지금 모드를 알 수 있게 제목 옆에 이름을 둔다.
             .setSubText(getString(SettingsManager.visualMode.value.labelRes))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
-            .addAction(0, getString(R.string.notification_next_mode), nextModeIntent)
             .addAction(0, getString(R.string.notification_stop), stopIntent)
             .setOngoing(true)
             .setSilent(true)
             .build()
+    }
+
+    /**
+     * 펼친 알림의 본문. 상태 한 줄과 모드를 고르는 칩 네 개를 담는다([R.layout.notification_modes]).
+     *
+     * 지금 켜져 있는 모드는 색을 채워 표시하고, 화면을 읽어 주는 기능에는 "선택됨"을 덧붙인다.
+     * 색만으로 알리면 색을 구별하기 어려운 사람에게는 어느 것이 켜져 있는지 전해지지 않는다.
+     */
+    private fun buildModeChooser(statusText: String): RemoteViews {
+        val views = RemoteViews(packageName, R.layout.notification_modes)
+        views.setTextViewText(R.id.notification_status, statusText)
+
+        val current = SettingsManager.visualMode.value
+        for ((index, mode) in VisualMode.values().withIndex()) {
+            val chip = MODE_CHIP_IDS[index]
+            val label = getString(mode.labelRes)
+            val selected = mode == current
+            views.setTextViewText(chip, label)
+            views.setInt(
+                chip,
+                "setBackgroundResource",
+                if (selected) R.drawable.notification_mode_chip_on else R.drawable.notification_mode_chip_off
+            )
+            // 고른 칩만 색을 지정하면, 알림을 고쳐 달 때 전에 골랐던 칩에 색이 남을 수 있다. 넷 다 정해 준다.
+            views.setTextColor(
+                chip,
+                ContextCompat.getColor(
+                    this,
+                    if (selected) R.color.notification_chip_text_on else R.color.notification_chip_text_off
+                )
+            )
+            views.setContentDescription(
+                chip,
+                if (selected) getString(R.string.notification_mode_selected, label) else label
+            )
+            views.setOnClickPendingIntent(
+                chip,
+                PendingIntent.getService(
+                    this,
+                    REQUEST_MODE_BASE + mode.ordinal,
+                    Intent(this, AudioCaptureService::class.java)
+                        .setAction(ACTION_SET_MODE)
+                        .putExtra(EXTRA_MODE_ORDINAL, mode.ordinal),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
+        }
+        return views
     }
 }

@@ -146,7 +146,8 @@
     <string name="notification_title" translatable="false">SoundVisualizer</string>
     <string name="notification_text">Visualizing sound.</string>
     <string name="notification_stop">Stop</string>
-    <string name="notification_next_mode">Change mode</string>
+    <!-- %1$s is the mode name. Read out for the mode that is currently on, so it is not shown by colour alone. -->
+    <string name="notification_mode_selected">%1$s, selected</string>
     <string name="notification_text_ai_unavailable">Visualizing sound. Sound type detection isn\'t working, so vibration alerts are off.</string>
     <string name="notification_text_capture_blocked">No sound is reaching the visualizer. The app you\'re using may not allow its sound to be shared, or its own sound may be muted.</string>
 

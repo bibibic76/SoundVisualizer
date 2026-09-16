@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    실행 중 알림에서 지금 고른 모드 칩. 알림 배경은 기기와 밝기 설정에 따라 밝을 수도 어두울 수도 있어서,
+    칩 자체를 진한 색으로 채우고 글자를 밝게 둔다. 그러면 어느 배경에서도 읽힌다.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/notification_chip_on" />
+    <corners android:radius="18dp" />
+</shape>

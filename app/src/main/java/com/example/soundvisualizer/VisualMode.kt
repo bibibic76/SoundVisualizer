@@ -11,10 +11,13 @@ enum class VisualMode(@StringRes val labelRes: Int) {
     CircleRipple(R.string.mode_circle),
     Outline(R.string.mode_outline);
 
-    /**
-     * 설정 화면에 보이는 차례대로 다음 모드. 마지막 다음은 처음으로 돌아온다.
-     *
-     * 실행 중 알림의 [모드 바꾸기] 가 쓴다. 알림에는 버튼을 많이 둘 수 없어 하나씩 넘긴다.
-     */
-    fun next(): VisualMode = values()[(ordinal + 1) % values().size]
+    companion object {
+        /**
+         * [ordinal] 에 해당하는 모드. 없는 번호면 null.
+         *
+         * 실행 중 알림의 모드 칩이 누른 모드를 번호로 넘겨서 쓴다. 알림은 앱이 죽은 뒤에도 알림창에 남아 있을 수
+         * 있어서, 모드가 줄어든 새 버전이 받는 번호가 옛 버전 것일 수 있다. 그때 튕기지 않고 무시하려고 null 을 낸다.
+         */
+        fun fromOrdinal(ordinal: Int): VisualMode? = values().getOrNull(ordinal)
+    }
 }
