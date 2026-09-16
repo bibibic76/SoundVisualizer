@@ -223,6 +223,16 @@
     <string name="help_faq_language_q">How do I change the app language?</string>
     <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
 
+    <!-- Help: report -->
+    <string name="help_report_title">Report a problem</string>
+    <string name="help_report_desc">Tell us about a bug, or a sound that was shown as the wrong type. It opens GitHub in your browser with your app and device details filled in. No audio is ever sent.</string>
+    <string name="help_report_button">Report on GitHub</string>
+    <string name="help_report_copy">Copy device details</string>
+    <string name="help_report_copied">Device details copied.</string>
+    <string name="help_report_no_browser">No browser to open the link. Copy the device details and send them to us instead.</string>
+    <string name="help_report_issue_title">Report from the app</string>
+    <string name="help_report_issue_body">What happened?\n\nWhat were you listening to (app, kind of sound)?\n\nWhat did you expect instead?</string>
+
     <string name="help_about_title">About</string>
     <string name="help_about_version">Version %1$s</string>
     <string name="help_about_team">Made by team SOVIS</string>
