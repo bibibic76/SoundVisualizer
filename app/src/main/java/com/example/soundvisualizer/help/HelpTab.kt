@@ -1,8 +1,13 @@
 package com.example.soundvisualizer.help
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
@@ -120,6 +126,11 @@ fun HelpTab() {
             }
         }
         item {
+            SettingsExpander(stringResource(R.string.help_report_title)) {
+                ReportSection()
+            }
+        }
+        item {
             SettingsExpander(stringResource(R.string.help_about_title)) {
                 val context = LocalContext.current
                 val version = remember(context) { versionName(context) }
@@ -147,6 +158,107 @@ fun HelpTab() {
         LicenseDialog(onDismiss = { showLicenses = false })
     }
 }
+
+/**
+ * 제보 카드. 앱·기기 정보를 채운 새 이슈를 브라우저에서 열고, 열 수 없는 기기를 위해 같은 정보를 복사한다.
+ *
+ * 인터넷 권한 없이 동작한다. 링크를 여는 것은 브라우저이고, 앱은 주소만 넘긴다.
+ */
+@Composable
+private fun ReportSection() {
+    val context = LocalContext.current
+    val environment = remember(context) { deviceEnvironment(context) }
+    val issueTitle = stringResource(R.string.help_report_issue_title)
+    val issueBody = stringResource(R.string.help_report_issue_body)
+    val copied = stringResource(R.string.help_report_copied)
+    val noBrowser = stringResource(R.string.help_report_no_browser)
+    val noMail = stringResource(R.string.help_report_no_mail)
+    val reportEmail = stringResource(R.string.help_report_email)
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            stringResource(R.string.help_report_desc),
+            fontSize = BodySize, lineHeight = BodyLineHeight, color = PrimaryTextColor
+        )
+        Text(
+            environment,
+            fontSize = 13.sp, lineHeight = 19.sp, fontFamily = FontFamily.Monospace, color = SecondaryTextColor
+        )
+        OutlinedButton(
+            onClick = {
+                val url = ReportLink.issueUrl(issueTitle, issueBody, environment)
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(context, noBrowser, Toast.LENGTH_LONG).show()
+                }
+            },
+            border = BorderStroke(1.dp, AccentColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_button),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                // ACTION_SENDTO + mailto: 는 메일 앱만 고른다. 제목·본문은 주소에 넣는다.
+                // Gmail 은 따로 넘긴 추가 정보를 무시하므로, 읽지 않는 앱을 위해 양쪽에 담는다.
+                val uri = ReportLink.mailtoUri(reportEmail, issueTitle, issueBody, environment)
+                val intent = Intent(Intent.ACTION_SENDTO, uri.toUri()).apply {
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf(reportEmail))
+                    putExtra(Intent.EXTRA_SUBJECT, issueTitle)
+                    putExtra(Intent.EXTRA_TEXT, ReportLink.body(issueBody, environment))
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(context, noMail, Toast.LENGTH_LONG).show()
+                }
+            },
+            border = BorderStroke(1.dp, AccentColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_mail),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                val clipboard = context.getSystemService(ClipboardManager::class.java)
+                clipboard?.setPrimaryClip(ClipData.newPlainText(issueTitle, environment))
+                // Android 13 부터는 시스템이 복사됐다는 화면을 직접 띄운다. 겹쳐 보이지 않게 그 아래에서만 알린다.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    Toast.makeText(context, copied, Toast.LENGTH_SHORT).show()
+                }
+            },
+            border = BorderStroke(1.dp, SecondaryTextColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_copy),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = SecondaryTextColor
+            )
+        }
+    }
+}
+
+/** 제보에 붙일 앱·기기 정보. 여기서 넘기는 값이 전부라 다른 정보가 섞이지 않는다. */
+private fun deviceEnvironment(context: Context): String = ReportLink.environment(
+    appVersion = versionName(context),
+    androidRelease = Build.VERSION.RELEASE.orEmpty(),
+    sdkInt = Build.VERSION.SDK_INT,
+    manufacturer = Build.MANUFACTURER.orEmpty(),
+    model = Build.MODEL.orEmpty(),
+    language = context.resources.configuration.locales[0].toLanguageTag()
+)
 
 @Composable
 private fun Paragraphs(@StringRes vararg texts: Int) {

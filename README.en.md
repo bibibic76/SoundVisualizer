@@ -166,6 +166,15 @@ It only draws while there's sound and goes idle when it's quiet. While the scree
 **How do I change the app language?**
 Tap **Language** at the top of the **Settings** tab and pick one. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
 
+**A sound is shown as the wrong type. / I found a bug.**
+Tell us from **Report a problem** in the **Help** tab. The app version, Android version, device model and app language are filled in for you.
+
+- **Report on GitHub**: opens a new issue in your browser. Needs a GitHub account.
+- **Report by email**: opens an email with the same text. No account needed.
+- **Copy device details**: copies the same text so you can send it any way you like.
+
+Audio is never sent.
+
 ---
 
 ## 🛠️ For developers
