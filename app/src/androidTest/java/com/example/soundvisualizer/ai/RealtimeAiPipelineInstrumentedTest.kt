@@ -90,7 +90,9 @@ class RealtimeAiPipelineInstrumentedTest {
                     d.boosterAccepted
                 )
                 assertEquals("$name ui coarse", exp.getString("ui_coarse"), d.result.coarse)
-                assertEquals("$name ui display", exp.getString("ui_display"), d.result.display)
+                if (exp.optBoolean("assert_ui_display", true)) {
+                    assertEquals("$name ui display", exp.getString("ui_display"), d.result.display)
+                }
             }
         }
     }

@@ -232,20 +232,18 @@ class RealtimeAiPipeline private constructor(
         inferenceExecutions.incrementAndGet()
         val t0 = System.nanoTime()
 
-        audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
-
-        CaptureAudioMath.resampleMonoFloatTo16kCustom(
-            source = captureScratch,
-            sourceLength = captureNeed,
-            sourceSampleRate = audioBuffer.sampleRate,
-            destination = mono16kScratch
-        )
-        val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
-
         var logMel: FloatArray
         val preprocessNs = measureNanoTime {
+            audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
+            CaptureAudioMath.resampleMonoFloatTo16kCustom(
+                source = captureScratch,
+                sourceLength = captureNeed,
+                sourceSampleRate = audioBuffer.sampleRate,
+                destination = mono16kScratch
+            )
             logMel = preprocessor.computeLogMelSpectrogram(mono16kScratch)
         }
+        val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
 
         var yamnetResult: YamnetInference.Result
         val yamnetNs = measureNanoTime {

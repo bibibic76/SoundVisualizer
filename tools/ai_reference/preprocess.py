@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from functools import lru_cache
 from typing import Tuple
 
 import numpy as np
@@ -19,6 +20,11 @@ LOG_EPS = 0.001
 
 REQUIRED_MONO_16K_SAMPLES = WINDOW_LENGTH + HOP_LENGTH * (TIME_FRAMES - 1)  # 15600
 DEFAULT_CAPTURE_SAMPLE_RATE = 48000
+
+FIR_TAPS = 96
+FIR_CUTOFF_HZ = 7800.0
+FIR_KAISER_BETA = 8.6
+_MAX_CACHED_PHASES = 1024
 
 
 def create_hann_window(length: int) -> np.ndarray:
@@ -135,7 +141,12 @@ def resample_mono_float_to_16k_custom(
     source_sample_rate: int,
     dest_length: int = REQUIRED_MONO_16K_SAMPLES,
 ) -> np.ndarray:
-    """ResampleMonoFloatTo16kCustom — linear interpolation, destination fixed length."""
+    """Fixed-length 16kHz resample with a cached 96-tap Kaiser FIR anti-alias filter.
+
+    This independently computes the same FIR design as Android: 7.8kHz cutoff,
+    beta 8.6, source-rate-specific fractional phases, and zero extension beyond
+    the source window. 16kHz input remains a direct copy.
+    """
     source = np.asarray(source, dtype=np.float32).reshape(-1)
     source_length = int(source.shape[0])
     destination = np.zeros(dest_length, dtype=np.float32)
@@ -146,19 +157,87 @@ def resample_mono_float_to_16k_custom(
             destination[:copy_len] = source[:copy_len]
         return destination
 
-    factor = float(source_sample_rate) / float(SAMPLE_RATE)
-    for i in range(dest_length):
-        src_pos = i * factor
-        index1 = int(src_pos)
-        index2 = index1 + 1
-        alpha = float(src_pos - index1)
-        if index1 >= source_length:
-            destination[i] = 0.0
-        else:
-            val1 = float(source[index1])
-            val2 = float(source[index2]) if index2 < source_length else val1
-            destination[i] = (1.0 - alpha) * val1 + alpha * val2
+    if source_sample_rate < SAMPLE_RATE:
+        factor = float(source_sample_rate) / float(SAMPLE_RATE)
+        for i in range(dest_length):
+            source_position = i * factor
+            index1 = int(source_position)
+            index2 = index1 + 1
+            if index1 >= source_length:
+                continue
+            alpha = float(source_position - index1)
+            value1 = float(source[index1])
+            value2 = float(source[index2]) if index2 < source_length else value1
+            destination[i] = (1.0 - alpha) * value1 + alpha * value2
+        return destination
+
+    coefficients, phase_count = _fir_table_for_sample_rate(int(source_sample_rate))
+    output_indices = np.arange(dest_length, dtype=np.int64)
+    position_numerators = output_indices * int(source_sample_rate)
+    centers = position_numerators // SAMPLE_RATE
+    if phase_count == 1:
+        phases = np.zeros(dest_length, dtype=np.int64)
+    else:
+        phases = (
+            (position_numerators % SAMPLE_RATE) * phase_count + SAMPLE_RATE // 2
+        ) // SAMPLE_RATE % phase_count
+    tap_offsets = np.arange(FIR_TAPS, dtype=np.int64) - (FIR_TAPS // 2) + 1
+    source_indices = centers[:, None] + tap_offsets[None, :]
+    valid = (source_indices >= 0) & (source_indices < source_length)
+    clipped_indices = np.clip(source_indices, 0, source_length - 1)
+    samples = np.where(valid, source[clipped_indices], 0.0).astype(np.float64)
+    weights = coefficients[phases].astype(np.float64)
+    destination[:] = np.einsum("ij,ij->i", weights, samples).astype(np.float32)
     return destination
+
+
+@lru_cache(maxsize=None)
+def _fir_table_for_sample_rate(source_sample_rate: int) -> tuple[np.ndarray, int]:
+    """Build source-rate phase tables once; this is intentionally independent of Kotlin."""
+    if source_sample_rate <= 0:
+        raise ValueError("source_sample_rate must be positive")
+    exact_phase_count = SAMPLE_RATE // math.gcd(source_sample_rate, SAMPLE_RATE)
+    phase_count = min(exact_phase_count, _MAX_CACHED_PHASES)
+    table = np.empty((phase_count, FIR_TAPS), dtype=np.float32)
+    for phase in range(phase_count):
+        fraction = float(phase) / float(phase_count)
+        values = []
+        for tap in range(FIR_TAPS):
+            sample_offset = tap - (FIR_TAPS // 2) + 1
+            time = float(sample_offset) - fraction
+            radius = min(1.0, abs(time) / float(FIR_TAPS // 2))
+            window = _bessel_i0(FIR_KAISER_BETA * math.sqrt(1.0 - radius * radius))
+            window /= _bessel_i0(FIR_KAISER_BETA)
+            normalized_cutoff = 2.0 * FIR_CUTOFF_HZ / float(source_sample_rate)
+            values.append(normalized_cutoff * _sinc(normalized_cutoff * time) * window)
+        scale = sum(values)
+        for tap, value in enumerate(values):
+            table[phase, tap] = value / scale
+    return table, phase_count
+
+
+def _phase_index(remainder: int, phase_count: int) -> int:
+    if phase_count == 1:
+        return 0
+    return ((remainder * phase_count + SAMPLE_RATE // 2) // SAMPLE_RATE) % phase_count
+
+
+def _sinc(value: float) -> float:
+    if abs(value) < 1e-12:
+        return 1.0
+    return math.sin(math.pi * value) / (math.pi * value)
+
+
+def _bessel_i0(value: float) -> float:
+    term = 1.0
+    total = 1.0
+    k = 1
+    while True:
+        term *= (value * value / 4.0) / float(k * k)
+        total += term
+        if term < total * 1e-15:
+            return total
+        k += 1
 
 
 def capture_samples_for_one_yamnet_window(capture_sample_rate: int) -> int:
