@@ -52,6 +52,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -109,7 +110,12 @@ class MainActivity : ComponentActivity() {
         onOverlaySettings = { pendingStart.awaitPermission() }
     )
 
-    /** 오버레이 권한을 켜고 돌아왔을 때 눌렀던 실행을 이어가려고 기억해 둔다. [KEY_PENDING_START] 로 저장한다. */
+    /**
+     * 오버레이 권한을 켜고 돌아왔을 때 눌렀던 실행을 이어가려고 기억해 둔다.
+     *
+     * 화면 회전으로 다시 만들어질 때만 유지한다([onRetainCustomNonConfigurationInstance]). 저장 번들에 넣으면
+     * 프로세스가 죽은 뒤 한참 있다 앱을 열었을 때도 남아, 부탁하지도 않은 화면 녹화 동의 창이 뜬다.
+     */
     private var pendingStart = PendingStart()
 
     /** 보이는 탭. 빠른 설정 타일을 길게 눌러 들어오면 설정 탭을 연다. */
@@ -138,9 +144,10 @@ class MainActivity : ComponentActivity() {
             stopNoticeRouting = StopNoticeRouting(
                 savedInstanceState.getInt(KEY_ROUTED_STOP_NOTICE, StopNoticeRouting.NONE)
             )
-            // 권한 화면에 보내 놓고 화면이 돌아가면 여기서 다시 만들어진다. 기다리던 실행을 잃지 않는다.
-            pendingStart = PendingStart(savedInstanceState.getBoolean(KEY_PENDING_START, false))
         }
+        // 권한 화면에 보내 놓고 화면이 돌아가면 여기서 다시 만들어진다. 기다리던 실행을 잃지 않는다.
+        @Suppress("DEPRECATION")
+        (lastCustomNonConfigurationInstance as? PendingStart)?.let { pendingStart = it }
         addOnNewIntentListener { openTabFor(it) }
 
         setContent {
@@ -172,8 +179,11 @@ class MainActivity : ComponentActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_SELECTED_TAB, selectedTab.intValue)
         outState.putInt(KEY_ROUTED_STOP_NOTICE, stopNoticeRouting.routedSeq)
-        outState.putBoolean(KEY_PENDING_START, pendingStart.isPending)
     }
+
+    /** 화면 회전으로 다시 만들어지는 동안만 [pendingStart] 를 넘긴다. 프로세스가 죽으면 함께 사라져야 한다. */
+    @Suppress("DEPRECATION")
+    override fun onRetainCustomNonConfigurationInstance(): Any = pendingStart
 
     private fun openTabFor(intent: Intent?) {
         if (intent?.action == TileService.ACTION_QS_TILE_PREFERENCES) {
@@ -260,7 +270,6 @@ class MainActivity : ComponentActivity() {
         const val TAB_SETTINGS = 1
         const val KEY_SELECTED_TAB = "selected_tab"
         const val KEY_ROUTED_STOP_NOTICE = "routed_stop_notice"
-        const val KEY_PENDING_START = "pending_start"
     }
 }
 
@@ -345,7 +354,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             // 줄 간격을 지정하지 않으면 큰 글꼴 설정에서 제목이 두 줄로 접힐 때 위아래 줄이 서로 붙는다.
-            Text(stringResource(R.string.home_title), fontSize = 36.sp, lineHeight = 42.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
+            Text(stringResource(R.string.home_title), fontSize = 36.sp, lineHeight = 48.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
             Text(
                 stringResource(R.string.home_subtitle),
                 fontSize = 16.sp, color = SecondaryTextColor, lineHeight = 26.sp, modifier = Modifier.padding(bottom = 24.dp)
@@ -936,7 +945,9 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
 fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Composable () -> Unit) {
     // 펼침 상태는 목록 밖으로 스크롤되면 사라지지 않게 저장한다. remember 로 두면 펼쳐 둔 카드가
     // 화면 밖에 나갔다 돌아왔을 때 접혀 있고, 접어 둔 카드는 다시 펼쳐져 있다.
-    var expanded by rememberSaveable { mutableStateOf(isExpanded) }
+    // [isExpanded] 를 키로 두어 고른 모드가 바뀔 때만 다시 맞춘다. 키가 없으면 새로 고른 모드의 카드는
+    // 접힌 채로 맨 위에 오고, 방금 쓰던 모드의 카드는 펼쳐진 채로 남는다.
+    var expanded by rememberSaveable(isExpanded) { mutableStateOf(isExpanded) }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -985,7 +996,12 @@ fun ModernSlider(
     ) {
         // 이름·값과 슬라이더를 한 줄에 두면 끌 수 있는 막대가 80~116dp 밖에 남지 않고, 긴 번역어는
         // 좁은 이름 칸에서 여러 줄로 접힌다. 이름과 값을 위 줄에, 슬라이더를 아래 한 줄에 둔다.
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // 이름과 값은 아래 슬라이더가 이미 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다.
+        // 그러지 않으면 슬라이더 하나가 "이름", "값", "이름, 슬라이더, 값" 으로 세 번 멈춘다.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clearAndSetSemantics { }
+        ) {
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, style = wrappingLabelStyle(), modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.width(8.dp))
             Text(String.format(Locale.US, "%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
