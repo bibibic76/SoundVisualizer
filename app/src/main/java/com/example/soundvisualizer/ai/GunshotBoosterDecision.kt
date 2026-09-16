@@ -9,6 +9,7 @@ import kotlin.math.max
 object GunshotBoosterDecision {
 
     data class Result(
+        val boosterAvailable: Boolean,
         val gunshotScore: Float,
         val gunshotEvidence: Float,
         val accepted: Boolean,
@@ -95,6 +96,7 @@ object GunshotBoosterDecision {
         }
 
         return Result(
+            boosterAvailable = true,
             gunshotScore = gunshotScore,
             gunshotEvidence = evidence,
             accepted = adopt,
@@ -109,6 +111,45 @@ object GunshotBoosterDecision {
             postBoosterConfidence = postConf,
             hasGunshotCue = hasGunshotCue,
             hasStrongDangerCue = hasStrongDangerCue
+        )
+    }
+
+    /**
+     * Preserve the YAMNet result when the optional booster could not be loaded.
+     * NaN is an explicit unavailable marker, not a score fed through booster thresholds.
+     */
+    fun unavailable(
+        probabilities: FloatArray,
+        classNames: List<String>,
+        pre: YamnetCoarseClassifier.Result
+    ): Result {
+        require(probabilities.size == 521)
+        require(classNames.size == 521)
+
+        val topIdx = IntArray(5) { -1 }
+        val topProbs = FloatArray(5) { -1f }
+        for (i in pre.top5.indices) {
+            if (i >= 5) break
+            topIdx[i] = pre.top5[i].index
+            topProbs[i] = pre.top5[i].probability
+        }
+
+        return Result(
+            boosterAvailable = false,
+            gunshotScore = Float.NaN,
+            gunshotEvidence = sumGunshotProbabilityFromTop5(topIdx, topProbs, classNames, 5),
+            accepted = false,
+            reason = "booster_unavailable",
+            preBoosterCoarse = pre.coarse,
+            postBoosterCoarse = pre.coarse,
+            preBoosterDisplay = pre.displayName,
+            postBoosterDisplay = pre.displayName,
+            preBoosterClassIndex = pre.yamnetClassIndex,
+            postBoosterClassIndex = pre.yamnetClassIndex,
+            preBoosterConfidence = pre.confidence,
+            postBoosterConfidence = pre.confidence,
+            hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5),
+            hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5)
         )
     }
 
