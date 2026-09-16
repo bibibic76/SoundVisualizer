@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Brand name. Never translated. -->
     <string name="app_name" translatable="false">SoundVisualizer</string>
 
@@ -52,6 +52,11 @@
     <string name="settings_section_mode_detail">Settings by mode</string>
     <string name="settings_section_ai">Sound types (AI)</string>
     <string name="settings_section_battery">Battery</string>
+    <!--
+        개발자 모드는 팀이 AI 분류를 채점하는 도구라 영어와 한국어만 둔다. 표시되는 내용 자체가
+        영어(모델이 말한 raw 라벨)이므로 다른 언어로 옮길 것이 없다. 나머지 언어는 영어로 폴백된다.
+    -->
+    <string name="settings_section_developer" tools:ignore="MissingTranslation">For the team</string>
 
     <!-- Language -->
     <string name="settings_language_title">Language</string>
@@ -85,6 +90,9 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause while the screen is off</string>
     <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off.</string>
+    <!-- settings_section_developer 와 같은 이유로 영어·한국어만 둔다. -->
+    <string name="setting_developer_mode" tools:ignore="MissingTranslation">Developer mode</string>
+    <string name="setting_developer_mode_desc" tools:ignore="MissingTranslation">Shows what the AI heard — the sound name it reported, how sure it was, and how long it took — in the top-left corner of the overlay, so the team can check how accurate it is. The readout is in English and is not meant for everyday use.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>

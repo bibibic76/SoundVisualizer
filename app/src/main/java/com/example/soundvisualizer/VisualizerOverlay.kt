@@ -1,6 +1,7 @@
 package com.example.soundvisualizer
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +39,12 @@ fun VisualizerOverlay() {
         }
     }
 
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        engine.draw(drawContext.canvas.nativeCanvas, size.width, size.height, frame.longValue)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            engine.draw(drawContext.canvas.nativeCanvas, size.width, size.height, frame.longValue)
+        }
+        // 개발자 모드 표시. 상태 읽기를 저 안에 가둬 두었으므로 이 함수는 여전히 리컴포지션되지 않는다.
+        // 여기서 설정이나 분류 결과를 읽으면 그 성질이 깨진다.
+        AiDebugOverlay()
     }
 }

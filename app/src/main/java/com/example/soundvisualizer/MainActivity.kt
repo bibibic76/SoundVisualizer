@@ -655,6 +655,33 @@ fun SettingsTab() {
                     }
                 }
             }
+
+            // 팀이 AI 분류를 채점하는 도구다. 사용자 기능이 아니므로 맨 아래에 작은 제목으로 둔다.
+            // 숨기지는 않는다. 화면 읽어주기로도 찾을 수 있어야 하고, 켠 사람이 어디서 껐는지 알아야 한다.
+            Text(
+                stringResource(R.string.settings_section_developer),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = SecondaryTextColor,
+                modifier = Modifier.padding(bottom = 16.dp, top = 24.dp)
+            )
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardColor),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    // 오버레이가 이 값을 구독하므로 켜면 실행 중에도 바로 나타난다.
+                    val developerMode by SettingsManager.developerMode.collectAsState()
+                    ModernSwitch(
+                        stringResource(R.string.setting_developer_mode),
+                        stringResource(R.string.setting_developer_mode_desc),
+                        developerMode
+                    ) {
+                        SettingsManager.setDeveloperMode(it)
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(100.dp))
         }
     }

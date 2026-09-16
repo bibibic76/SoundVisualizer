@@ -44,7 +44,15 @@ object SettingsManager {
      */
     internal const val PAUSE_WHEN_SCREEN_OFF_DEFAULT = true
 
+    /**
+     * 개발자 모드의 기본값. 팀이 AI 분류를 채점하는 도구라 사용자에게는 꺼져 있어야 한다.
+     *
+     * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
+     */
+    internal const val DEVELOPER_MODE_DEFAULT = false
+
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
+    private const val KEY_DEVELOPER_MODE = "developer_mode"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
@@ -98,6 +106,10 @@ object SettingsManager {
     // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
     private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
     val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
+
+    // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
+    private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
+    val developerMode: StateFlow<Boolean> = _developerMode
 
     /**
      * 이번 실행에서 소리 종류 구분(AI)을 쓸 수 있는지. 캡처 서비스가 알려주며 저장하지 않는다.
@@ -177,6 +189,7 @@ object SettingsManager {
 
         _tileAdded.value = prefs.getBoolean("tile_added", false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
+        _developerMode.value = loadDeveloperMode(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
@@ -196,6 +209,10 @@ object SettingsManager {
     /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+
+    /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_DEVELOPER_MODE, DEVELOPER_MODE_DEFAULT)
 
     /**
      * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
@@ -353,6 +370,12 @@ object SettingsManager {
     fun setPauseWhenScreenOff(enabled: Boolean) {
         _pauseWhenScreenOff.value = enabled
         prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
+    }
+
+    /** 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라진다. */
+    fun setDeveloperMode(enabled: Boolean) {
+        _developerMode.value = enabled
+        prefs.edit { putBoolean(KEY_DEVELOPER_MODE, enabled) }
     }
 
     /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
