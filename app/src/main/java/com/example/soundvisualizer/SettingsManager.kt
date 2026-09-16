@@ -114,6 +114,18 @@ object SettingsManager {
     val isCapturePaused: StateFlow<Boolean> = _isCapturePaused
 
     /**
+     * 폰은 미디어를 재생 중인데 우리에게는 아무것도 들어오지 않는지. 캡처 서비스가 알려주며 저장하지 않는다.
+     *
+     * 소리 공유를 막은 앱(보호된 영상 등)의 소리는 우리 쪽 믹스에 섞이지 않아, 오버레이가 아무것도 그리지
+     * 않는다. 청각장애 사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다. 홈 화면과 실행 중
+     * 알림이 이 값으로 그 사실을 알린다. 앱이 스스로 음소거한 경우도 똑같이 보여 원인까지는 단정하지
+     * 못하므로, 문구는 두 가지 가능성을 함께 말한다.
+     * 판단은 [BlockedCaptureNotice] 가 하고, 소리가 다시 들어오면 곧바로 false 로 돌아간다.
+     */
+    private val _isCaptureBlocked = MutableStateFlow(false)
+    val isCaptureBlocked: StateFlow<Boolean> = _isCaptureBlocked
+
+    /**
      * 사용자가 끄지 않았는데 마지막으로 꺼진 이유. 없으면 null. 홈 화면이 앱을 열었을 때 보여준다. (StopAlert)
      *
      * 앱 알림을 꺼 두면 꺼짐 알림도 올라가지 않고, 게임 위에서는 토스트도 시스템이 막아 진동만 남는다.
@@ -340,6 +352,10 @@ object SettingsManager {
 
     fun setCapturePaused(paused: Boolean) {
         _isCapturePaused.value = paused
+    }
+
+    fun setCaptureBlocked(blocked: Boolean) {
+        _isCaptureBlocked.value = blocked
     }
 
     /** [reason] 이 null 이면 지운다. */

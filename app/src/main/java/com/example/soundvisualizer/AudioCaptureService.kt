@@ -25,6 +25,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
 import android.os.Process
+import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.MainThread
 import androidx.core.app.NotificationCompat
@@ -44,6 +45,7 @@ import java.nio.ByteOrder
  * AudioRecord → direct ByteBuffer → JNI 로 복사 없이 넘긴다.
  *
  * 사용자가 끈 게 아닌데 멈추면 [StopAlert] 로 알린다. 화면이 꺼지면 [ScreenOffPause] 에 따라 쉰다.
+ * 재생 중인 소리를 아무것도 받지 못하면 [BlockedCaptureNotice] 에 따라 알린다.
  */
 class AudioCaptureService : Service() {
 
@@ -75,6 +77,9 @@ class AudioCaptureService : Service() {
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
     private var sampleRate = 48000
 
+    /** 재생 여부·볼륨·통화 모드·출력 기기를 묻는다. onCreate 에서 한 번 받아 둔다. */
+    private var audioManager: AudioManager? = null
+
     private val mainHandler = Handler(Looper.getMainLooper())
 
     /**
@@ -85,6 +90,12 @@ class AudioCaptureService : Service() {
 
     /** 화면이 꺼져 쉬는 중인지. 메인 스레드 전용. */
     private val screenPause = ScreenOffPause()
+
+    /** 재생 중인 앱의 소리를 아무것도 받지 못하는지. 메인 스레드 전용. ([blockedCheck]) */
+    private val blockedNotice = BlockedCaptureNotice()
+
+    /** [AudioEngine.takePeakSinceLastCheck] 가 채우는 `[피크, 버퍼 수]`. 틱마다 새로 만들지 않는다. 메인 스레드 전용. */
+    private val checkSample = FloatArray(2)
 
     /** 화면이 켜진 뒤 미뤄 둔 AI 재시작. 취소할 수 있게 들고 있는다. 메인 스레드 전용. ([scheduleAiResume]) */
     private var aiResumeRunnable: Runnable? = null
@@ -132,6 +143,28 @@ class AudioCaptureService : Service() {
 
         /** 화면이 켜진 뒤 AI 를 다시 시작하기까지 미루는 시간. 추론 한 번(수십 ms)보다 넉넉히 길게 잡는다. ([scheduleAiResume]) */
         private const val AI_RESUME_DELAY_MS = 300L
+
+        /**
+         * 받지 못하고 있는지 다시 살펴보는 간격. ([blockedCheck])
+         *
+         * 진동 판단(100ms)만큼 자주 볼 이유가 없다. 판단이 뒤집히는 데 15초가 걸리고, 이 틱은 진동과 달리
+         * 시스템에 재생 중인 소리를 묻는다. 0.5초면 소리가 다시 들어왔을 때 안내를 내리는 것도 사람이
+         * 눈치채지 못할 만큼 빠르다. 그사이 놓치는 소리는 없다. 네이티브가 구간 전체의 피크를 모아 둔다
+         * ([AudioEngine.takePeakSinceLastCheck]).
+         */
+        private const val BLOCKED_CHECK_MS = 500L
+
+        /**
+         * 우리가 받기로 한 소리의 용도. 캡처 설정과 재생 중 판단([isCapturedMediaPlaying])이 같은 목록을 본다.
+         *
+         * 둘이 어긋나면 우리가 애초에 받지도 않는 소리(어시스턴트 응답, 내비게이션 안내)를 "재생 중" 으로
+         * 세고, 화면에 보이는 멀쩡한 앱을 탓하게 된다. 그래서 목록을 한 곳에만 둔다.
+         */
+        private val CAPTURED_USAGES: Set<Int> = setOf(
+            AudioAttributes.USAGE_MEDIA,
+            AudioAttributes.USAGE_GAME,
+            AudioAttributes.USAGE_UNKNOWN
+        )
 
         /** 프로세스 내에서 서비스가 살아있는지 (액티비티 UI 상태 복원용). */
         @Volatile
@@ -201,6 +234,7 @@ class AudioCaptureService : Service() {
         // 이번 실행의 모델 로딩 결과는 아직 모른다. 로딩 중에는 실패로 보이지 않게 둔다.
         SettingsManager.setAiAvailable(true)
         SettingsManager.setCapturePaused(false)
+        SettingsManager.setCaptureBlocked(false)
         createNotificationChannel()
         StopAlert.createChannel(this)
         // Android 14+: getMediaProjection() 이전에 mediaProjection 타입 FGS 가 먼저 떠 있어야 한다.
@@ -217,6 +251,7 @@ class AudioCaptureService : Service() {
         // 실행 상태는 서비스가 직접 알린다. 액티비티가 startForegroundService() 직후에
         // 표시하면 아직 onCreate 가 안 돌아 false 로 덮어써진다.
         SettingsManager.setServiceRunning(true)
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
         sampleRate = pickSampleRate()
 
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
@@ -298,7 +333,7 @@ class AudioCaptureService : Service() {
      * 지연이 늘고 일부 기기에서 초기화가 실패한다.
      */
     private fun pickSampleRate(): Int {
-        val reported = (getSystemService(Context.AUDIO_SERVICE) as? AudioManager)
+        val reported = audioManager
             ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
             ?.toIntOrNull()
         val candidates = if (reported != null) {
@@ -357,11 +392,10 @@ class AudioCaptureService : Service() {
         projection.registerCallback(projectionCallback, Handler(Looper.getMainLooper()))
         mediaProjection = projection
 
-        val config = AudioPlaybackCaptureConfiguration.Builder(projection)
-            .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
-            .addMatchingUsage(AudioAttributes.USAGE_GAME)
-            .addMatchingUsage(AudioAttributes.USAGE_UNKNOWN)
-            .build()
+        // 받을 소리의 용도는 [CAPTURED_USAGES] 한 곳에만 둔다. 확인 틱이 같은 목록으로 "재생 중" 을 센다.
+        val configBuilder = AudioPlaybackCaptureConfiguration.Builder(projection)
+        CAPTURED_USAGES.forEach { configBuilder.addMatchingUsage(it) }
+        val config = configBuilder.build()
 
         val audioFormat = AudioFormat.Builder()
             .setEncoding(AUDIO_FORMAT)
@@ -416,6 +450,7 @@ class AudioCaptureService : Service() {
             isDaemon = true
             start()
         }
+        startBlockedCheck()
         return true
     }
 
@@ -429,6 +464,8 @@ class AudioCaptureService : Service() {
      *         같은 AudioRecord 로 새 스레드를 띄우면 두 스레드가 한 버퍼를 읽는다.
      */
     private fun stopCaptureLoop(): Boolean {
+        // 받지 못하는 게 당연한 상태가 되므로 안내할 것도 없다.
+        stopBlockedCheck()
         isRecording = false
         audioRecord?.let { record ->
             try { record.stop() } catch (e: IllegalStateException) { /* already stopped */ }
@@ -478,6 +515,105 @@ class AudioCaptureService : Service() {
                 break
             }
         }
+    }
+
+    // ---------------- 보호된 소리 안내 ----------------
+
+    /**
+     * 캡처가 도는 동안 [BLOCKED_CHECK_MS] 마다 "폰은 소리를 내는데 우리에게는 아무것도 들어오지 않는"
+     * 상태인지 본다.
+     *
+     * 캡처 스레드는 버퍼마다 원자 연산 두 번만 더 한다([AudioEngine.takePeakSinceLastCheck]). URGENT_AUDIO
+     * 스레드에서 할당이나 잠금이 생기지 않게, 모아 둔 값을 메인 스레드가 읽어 가는 쪽으로 만들었다.
+     * 새 스레드도 필요 없다.
+     */
+    private val blockedCheck = object : Runnable {
+        override fun run() {
+            // 내려가는 중이거나 이미 멈춘 캡처라면 더 볼 것이 없다. 다시 예약하지도 않는다.
+            if (!isRecording || stopLatch.isStopping) return
+            updateBlockedNotice()
+            mainHandler.postDelayed(this, BLOCKED_CHECK_MS)
+        }
+    }
+
+    /** 캡처가 돌기 시작했다. 두 번 불러도 틱은 하나만 돈다. */
+    private fun startBlockedCheck() {
+        blockedNotice.reset()
+        // 지난번 캡처가 남긴 피크·버퍼 수를 버린다. 남겨 두면 첫 틱이 방금 받은 소리로 착각한다.
+        AudioEngine.takePeakSinceLastCheck(checkSample)
+        mainHandler.removeCallbacks(blockedCheck)
+        mainHandler.postDelayed(blockedCheck, BLOCKED_CHECK_MS)
+    }
+
+    /** 확인을 멈추고 안내를 내린다. 여러 번 불러도 된다. */
+    private fun stopBlockedCheck() {
+        mainHandler.removeCallbacks(blockedCheck)
+        if (blockedNotice.reset()) {
+            SettingsManager.setCaptureBlocked(false)
+            refreshOngoingNotification()
+        }
+    }
+
+    /**
+     * 한 틱. 판단이 바뀐 때만 홈 화면과 실행 중 알림을 건드린다.
+     *
+     * 싼 질문부터 한다. 이 틱은 오버레이가 프레임을 그리는 바로 그 메인 스레드에서 돌기 때문이다.
+     * 네이티브에서 읽는 것은 공짜에 가깝고, 소리가 들어왔거나 버퍼가 끊겼으면 그것만으로 판단이 끝나
+     * 시스템에는 아예 묻지 않는다. 아무것도 재생하지 않는 흔한 상태에서는 한 번만 묻는다.
+     */
+    private fun updateBlockedNotice() {
+        AudioEngine.takePeakSinceLastCheck(checkSample)
+        val peak = checkSample[0]
+        val buffers = checkSample[1].toInt()
+        val manager = audioManager
+        var canJudge = false
+        var mediaPlaying = false
+        // 소리가 들어왔거나 버퍼가 한 개도 오지 않았으면 그것만으로 판단이 끝난다(안내를 내리는 쪽).
+        // 화면이 꺼져 쉬는 중이면 우리가 받지 않기로 한 것이다([ScreenOffPause]). 어느 쪽도 아닐 때만 묻는다.
+        if (manager != null && buffers > 0 && !blockedNotice.hasSound(peak) && !screenPause.isPaused) {
+            mediaPlaying = isCapturedMediaPlaying(manager)
+            // 재생 중이 아니면 "낼 소리가 없다" 는 뜻이라 그대로 판단에 쓴다(떠 있던 안내를 내리는 쪽).
+            // 볼륨·통화 같은 나머지 조건은 재생 중일 때만 물어보면 된다.
+            canJudge = !mediaPlaying || canJudgeBlocked(manager)
+        }
+        val changed = blockedNotice.onTick(SystemClock.elapsedRealtime(), canJudge, mediaPlaying, peak, buffers)
+        if (!changed) return
+        Log.i(TAG, "blocked capture notice: ${blockedNotice.isBlocked}")
+        SettingsManager.setCaptureBlocked(blockedNotice.isBlocked)
+        refreshOngoingNotification()
+    }
+
+    /**
+     * 우리가 받기로 한 소리(미디어·게임)를 지금 누가 내고 있는지. ([CAPTURED_USAGES])
+     *
+     * `isMusicActive` 는 STREAM_MUSIC 으로 나가는 모든 소리에 true 라서, 우리가 애초에 받지 않는
+     * 어시스턴트 응답이나 내비게이션 안내가 길게 이어지기만 해도 "재생 중인데 못 받는다" 가 된다.
+     * 그러면 그때 화면에 떠 있던 멀쩡한 앱이 누명을 쓴다. 재생 중인 소리를 용도별로 보면 그 일이 없다.
+     * 재생이 끝난 뒤에도 잠시 true 로 남는 `isMusicActive` 의 여유분도 함께 사라진다.
+     *
+     * 시스템은 우리 같은 일반 앱에 재생 정보를 가려서 준다. 용도까지 가려지는 기기가 있다면 그 소리는
+     * 용도 없음(`USAGE_UNKNOWN`)으로 보이는데, 그것도 우리가 받는 용도라 지금까지와 같게 동작한다.
+     */
+    private fun isCapturedMediaPlaying(manager: AudioManager): Boolean =
+        manager.activePlaybackConfigurations.any { it.audioAttributes.usage in CAPTURED_USAGES }
+
+    /**
+     * 지금 "소리는 나는데 받지 못한다" 고 말해도 되는 상태인지. 하나라도 걸리면 판단하지 않는다.
+     *
+     * 무음에는 앱이 막은 것 말고도 이유가 많고, 틀린 안내는 멀쩡한 앱을 탓하게 만든다.
+     * 여기서 거르는 것들은 모두 "무음이 당연하거나, 무음의 원인을 우리가 알 수 없는" 경우다.
+     *
+     * 출력 기기는 보지 않는다. 캡처는 소리가 기기로 나가기 전의 믹스를 받으므로 이어폰을 꽂든 워치가
+     * 붙어 있든 우리가 받는 소리는 같다. 연결만 되어 있어도 거르면, 보청기나 워치를 늘 차고 있는
+     * 사용자에게는 안내가 영영 뜨지 않는다. 정작 이 안내가 가장 필요한 사람들이다.
+     */
+    private fun canJudgeBlocked(manager: AudioManager): Boolean {
+        // 미디어 볼륨 0. 이때는 막힌 앱이든 아니든 믹스가 통째로 0 이라 아무것도 가려낼 수 없다.
+        // 사용자가 스스로 소리를 껐으니 왜 조용한지도 알고 있다.
+        if (manager.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) return false
+        // 통화·음성 채팅 중. 미디어가 눌리거나 통화 쪽으로 빠지고, 통화 소리는 애초에 캡처 대상이 아니다.
+        if (manager.mode != AudioManager.MODE_NORMAL) return false
+        return true
     }
 
     // ---------------- 화면 꺼짐 일시정지 ----------------
@@ -679,7 +815,9 @@ class AudioCaptureService : Service() {
         pipeline?.close()
 
         AudioEngine.reset()
+        audioManager = null
         SettingsManager.setCapturePaused(false)
+        SettingsManager.setCaptureBlocked(false)
         // 다음 실행의 로딩 결과와 섞이지 않게 되돌린다. 꺼져 있을 때는 알릴 것이 없다.
         SettingsManager.setAiAvailable(true)
         super.onDestroy()
@@ -722,9 +860,15 @@ class AudioCaptureService : Service() {
             Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        // AI 를 못 불러왔으면 알림창에서도 소리 종류 구분과 진동 알림이 꺼졌다는 걸 알 수 있게 한다.
+        // 알림창만 보고도 왜 화면에 아무것도 없는지 알 수 있게 한다.
+        // 받는 소리가 아예 없으면 분류할 소리도 없으므로, 둘 다 해당할 때는 받지 못한다는 쪽만 말한다.
+        // AI 안내는 그때 숨겨도 소리가 다시 들어오면 나온다.
         val text = getString(
-            if (SettingsManager.aiAvailable.value) R.string.notification_text else R.string.notification_text_ai_unavailable
+            when {
+                SettingsManager.isCaptureBlocked.value -> R.string.notification_text_capture_blocked
+                !SettingsManager.aiAvailable.value -> R.string.notification_text_ai_unavailable
+                else -> R.string.notification_text
+            }
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notification_title))

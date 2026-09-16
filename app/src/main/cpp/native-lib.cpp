@@ -30,6 +30,19 @@ static std::atomic<int> pushCount{0};
 // 이 값을 읽는다. 버퍼마다 덮어쓰기만 하므로 읽는 순서를 따질 필요가 없다.
 static std::atomic<float> lastLevel{0.0f};
 
+// 보호된 소리 안내(BlockedCaptureNotice)가 쓰는 세 번째 누적값. 피크와 버퍼 수를 함께 센다.
+//
+// 오버레이의 peakLeft/peakRight 를 나눠 쓸 수 없다. 먼저 읽는 쪽이 0 으로 되돌리므로 다른 쪽은 그 구간을
+// 통째로 놓친다. lastLevel 로도 안 된다. 가장 최근 버퍼(11.6ms) 하나만 담고 있어서 0.5초마다 보는 쪽이
+// 실제로 들여다보는 구간은 전체의 2% 남짓이고, 드문드문 나는 효과음은 확인과 확인 사이에 들어왔다 사라진다.
+// "소리가 났는데도 못 봤다" 는 곧 멀쩡한 앱을 탓하는 안내가 되므로, 구간 전체의 최대값을 따로 모은다.
+//
+// checkCount 는 "우리 캡처가 멈춘 것" 과 "앱이 조용한 것" 을 가른다. 버퍼가 한 개도 오지 않았다면 무음의
+// 원인은 우리 쪽이고, 그때 앱을 탓하면 사용자는 엉뚱한 곳을 고치러 간다.
+// 값은 한 소비자(메인 스레드의 확인 틱)만 읽는다. 버퍼당 늘어나는 비용은 원자 연산 두 번뿐이다.
+static std::atomic<float> checkPeak{0.0f};
+static std::atomic<int> checkCount{0};
+
 static inline void atomicMax(std::atomic<float> &target, float value) {
   float cur = target.load(std::memory_order_relaxed);
   while (value > cur &&
@@ -67,10 +80,14 @@ Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
     if (b > r)
       r = b;
   }
+  const float peak = l > r ? l : r;
   atomicMax(peakLeft, l);
   atomicMax(peakRight, r);
+  atomicMax(checkPeak, peak);
+  // 두 카운터 모두 피크 뒤에 release 로 올린다 (읽는 쪽의 acquire 와 짝을 이룬다).
   pushCount.fetch_add(1, std::memory_order_release);
-  lastLevel.store(l > r ? l : r, std::memory_order_relaxed);
+  checkCount.fetch_add(1, std::memory_order_release);
+  lastLevel.store(peak, std::memory_order_relaxed);
 }
 
 // out[0] = 좌 피크, out[1] = 우 피크, out[2] = 마지막 호출 이후 푸시된 버퍼 수. 읽은 뒤 0 으로 리셋.
@@ -95,6 +112,23 @@ Java_com_example_soundvisualizer_AudioEngine_currentLevel(JNIEnv *env, jobject t
   return lastLevel.load(std::memory_order_relaxed);
 }
 
+// out[0] = 마지막 호출 이후의 최대 피크, out[1] = 그사이 도착한 버퍼 수. 읽은 뒤 0 으로 리셋.
+// 보호된 소리 안내 전용이라 오버레이의 readPeaks() 와 서로 값을 빼앗지 않는다.
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_soundvisualizer_AudioEngine_takePeakSinceLastCheck(JNIEnv *env,
+                                                                    jobject thiz,
+                                                                    jfloatArray out) {
+  if (out == nullptr || env->GetArrayLength(out) < 2)
+    return;
+  jfloat values[2];
+  // readPeaks() 와 같은 이유로 개수를 먼저 읽는다. 생산자가 피크 -> 개수(release) 순으로 쓰므로,
+  // 개수가 0 이 아니면 그 이전의 피크 쓰기가 반드시 보인다.
+  // 순서를 뒤집으면 "버퍼는 왔는데 피크는 0" 이 되어, 소리가 났는데도 못 받은 것으로 센다.
+  values[1] = static_cast<jfloat>(checkCount.exchange(0, std::memory_order_acquire));
+  values[0] = checkPeak.exchange(0.0f, std::memory_order_acq_rel);
+  env->SetFloatArrayRegion(out, 0, 2, values);
+}
+
 // 누적값을 0 으로 돌린다. 캡처 시작 시점과 종료 시점에 각각 호출한다.
 // (시작 때 호출하면 네이티브 라이브러리 적재 실패도 캡처 스레드가 아니라 여기서 드러난다.)
 extern "C" JNIEXPORT void JNICALL
@@ -103,5 +137,7 @@ Java_com_example_soundvisualizer_AudioEngine_reset(JNIEnv *env, jobject thiz) {
   peakRight.store(0.0f, std::memory_order_relaxed);
   pushCount.store(0, std::memory_order_relaxed);
   lastLevel.store(0.0f, std::memory_order_relaxed);
+  checkPeak.store(0.0f, std::memory_order_relaxed);
+  checkCount.store(0, std::memory_order_relaxed);
   LOGD("Audio engine reset.");
 }

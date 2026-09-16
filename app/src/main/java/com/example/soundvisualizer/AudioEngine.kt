@@ -32,6 +32,16 @@ object AudioEngine {
      */
     external fun currentLevel(): Float
 
+    /**
+     * [out] (크기 2 이상) 에 `[마지막 호출 이후의 최대 피크, 그사이 도착한 버퍼 수]` 를 채우고 0 으로 되돌린다.
+     *
+     * [currentLevel] 은 가장 최근 버퍼(11.6ms) 하나뿐이라 드문드문 나는 소리를 놓친다. 이쪽은 구간 전체를
+     * 훑으므로 "그동안 아무 소리도 받지 못했다" 를 말할 수 있다. 버퍼 수는 우리 캡처가 멈춘 것과 앱이
+     * 조용한 것을 가르는 데 쓴다. [readPeaks] 와 다른 누적값이라 오버레이와 서로 값을 빼앗지 않는다.
+     * 호출당 할당이 없다. ([BlockedCaptureNotice])
+     */
+    external fun takePeakSinceLastCheck(out: FloatArray)
+
     /** 누적값을 0 으로 돌린다. 캡처 시작·종료 시점에 각각 호출한다. */
     external fun reset()
 }

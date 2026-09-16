@@ -8,6 +8,7 @@
     <string name="home_subtitle">보이지 않던 소리를 화면에 그려냅니다.\n게이밍부터 영화 감상까지 새로운 경험을 시작하세요.</string>
     <string name="home_status_running">상태: 실행 중</string>
     <string name="home_status_idle">상태: 실행 대기 중</string>
+    <string name="home_capture_blocked">소리를 받지 못해 아무것도 그릴 수 없습니다. 지금 재생 중인 앱이 소리 공유를 허용하지 않거나(보호된 영상이 그렇습니다), 그 앱의 소리가 꺼져 있을 수 있습니다.</string>
     <string name="home_ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시되고 진동 알림이 꺼져 있습니다. 껐다가 다시 켜 보세요.</string>
     <string name="home_stopped_dismiss">안내 닫기</string>
     <string name="home_start">실행</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">소리를 시각화하는 중입니다.</string>
     <string name="notification_stop">중지</string>
     <string name="notification_text_ai_unavailable">소리를 시각화하는 중입니다. 소리 종류를 구분하지 못해 진동 알림은 꺼져 있습니다.</string>
+    <string name="notification_text_capture_blocked">소리를 받지 못하고 있습니다. 지금 재생 중인 앱이 소리 공유를 허용하지 않거나, 그 앱의 소리가 꺼져 있을 수 있습니다.</string>
 
     <!-- 직접 끄지 않았는데 시각화가 꺼졌을 때의 알림 -->
     <string name="stopped_channel_name">시각화 꺼짐 알림</string>
