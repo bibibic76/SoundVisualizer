@@ -34,6 +34,7 @@ class AiAudioBuffer(
     private val monoScratch = FloatArray(MAX_RING_SIZE / 2)
 
     val sampleRate: Int get() = captureSampleRate
+    val channelCount: Int get() = channels
     val availableSamples: Int get() = synchronized(lock) { count }
 
     fun reset() {

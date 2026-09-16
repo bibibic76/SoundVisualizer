@@ -388,7 +388,9 @@ class AudioCaptureService : Service() {
             val fallback = if (rate == candidates.first()) "" else ", fell back from ${candidates.first()}"
             Log.i(
                 TAG,
-                "capture sample rate: $rate (device reported $reported, " +
+                "capture format requested[sr=$rate chMask=$CHANNEL_CONFIG encoding=$AUDIO_FORMAT] " +
+                    "actual[sr=${record.sampleRate} ch=${record.channelCount} encoding=${record.audioFormat}] " +
+                    "(device reported $reported, " +
                     "AI supported=${AiCaptureSampleRatePolicy.isSupportedForAi(rate)}$fallback)"
             )
             return record

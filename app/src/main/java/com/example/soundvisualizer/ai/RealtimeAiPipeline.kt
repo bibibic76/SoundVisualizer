@@ -41,11 +41,37 @@ class RealtimeAiPipeline private constructor(
         val mono16k: FloatArray,
         val logMel: FloatArray,
         val probabilities: FloatArray,
+        val inputSampleRate: Int,
+        val inputChannels: Int,
+        val mono16kRms: Float,
+        val mono16kPeak: Float,
+        val mono16kMean: Float,
+        val logMelMin: Float,
+        val logMelMax: Float,
+        val logMelMean: Float,
+        val logMelStd: Float,
+        val top5: List<YamnetCoarseClassifier.TopClassHit>,
         val preBoosterCoarse: String,
+        val preBoosterDisplay: String,
+        val preBoosterConfidence: Float,
+        val ambientScore: Float,
+        val speechScore: Float,
+        val dangerScore: Float,
         val postBoosterCoarse: String,
+        val postBoosterDisplay: String,
+        val postBoosterConfidence: Float,
         val gunshotScore: Float,
+        val gunshotEvidence: Float,
+        val boosterReason: String,
         val boosterAvailable: Boolean,
-        val boosterAccepted: Boolean
+        val boosterAccepted: Boolean,
+        val effectiveThreshold: Float,
+        val confirmedCoarse: String,
+        val confirmedDisplay: String,
+        val confirmedConfidence: Float,
+        val uiCoarse: String,
+        val uiDisplay: String,
+        val uiConfidence: Float
     )
 
     /** Lightweight counters for verifying inference suppression in device tests. */
@@ -315,7 +341,14 @@ class RealtimeAiPipeline private constructor(
         lastResult.set(result)
 
         if (log && debuggable) {
-            maybeLog(result)
+            maybeLog(
+                result = result,
+                mono16k = mono16kScratch,
+                logMel = logMel,
+                pre = pre,
+                decision = decision,
+                post = post
+            )
         }
 
         if (!diagnostics || mono16kCopy == null) return null
@@ -324,30 +357,130 @@ class RealtimeAiPipeline private constructor(
             mono16k = mono16kCopy,
             logMel = logMel.copyOf(),
             probabilities = yamnetResult.probabilities.copyOf(),
+            inputSampleRate = audioBuffer.sampleRate,
+            inputChannels = audioBuffer.channelCount,
+            mono16kRms = rms(mono16kCopy),
+            mono16kPeak = peak(mono16kCopy),
+            mono16kMean = mean(mono16kCopy),
+            logMelMin = minValue(logMel),
+            logMelMax = maxValue(logMel),
+            logMelMean = mean(logMel),
+            logMelStd = stddev(logMel),
+            top5 = pre.top5,
             preBoosterCoarse = decision.preBoosterCoarse,
+            preBoosterDisplay = decision.preBoosterDisplay,
+            preBoosterConfidence = decision.preBoosterConfidence,
+            ambientScore = pre.ambientScore,
+            speechScore = pre.speechScore,
+            dangerScore = pre.dangerScore,
             postBoosterCoarse = decision.postBoosterCoarse,
+            postBoosterDisplay = decision.postBoosterDisplay,
+            postBoosterConfidence = decision.postBoosterConfidence,
             gunshotScore = decision.gunshotScore,
+            gunshotEvidence = decision.gunshotEvidence,
+            boosterReason = decision.reason,
             boosterAvailable = decision.boosterAvailable,
-            boosterAccepted = decision.accepted
+            boosterAccepted = decision.accepted,
+            effectiveThreshold = post.effectiveThreshold,
+            confirmedCoarse = post.confirmedCoarse,
+            confirmedDisplay = post.confirmedDisplay,
+            confirmedConfidence = post.confirmedConfidence,
+            uiCoarse = post.uiCoarse,
+            uiDisplay = post.uiDisplay,
+            uiConfidence = post.uiConfidence
         )
     }
 
-    private fun maybeLog(result: AiClassificationResult) {
+    private fun maybeLog(
+        result: AiClassificationResult,
+        mono16k: FloatArray,
+        logMel: FloatArray,
+        pre: YamnetCoarseClassifier.Result,
+        decision: GunshotBoosterDecision.Result,
+        post: AiPostProcessor.FrameResult
+    ) {
         val now = System.currentTimeMillis()
         if (now - lastLogMs < LOG_THROTTLE_MS) return
         lastLogMs = now
+        val top5 = pre.top5.joinToString(" | ") {
+            "${it.name}:${"%.5f".format(java.util.Locale.US, it.probability)}"
+        }
         Log.d(
             TAG,
-            "AI_RESULT coarse=${result.coarse} display=${result.display} " +
-                "confidence=${"%.4f".format(result.confidence)} " +
-                "boosterAvailable=${result.boosterAvailable} " +
-                "gunshotScore=${"%.4f".format(result.gunshotScore)} " +
-                "pre=${result.preBoosterCoarse} boost=${result.boosterAccepted} " +
+            "AI_RESULT input[sr=${audioBuffer.sampleRate} ch=${audioBuffer.channelCount}] " +
+                "mono16k[rms=${"%.5f".format(java.util.Locale.US, rms(mono16k))} " +
+                "peak=${"%.5f".format(java.util.Locale.US, peak(mono16k))} " +
+                "mean=${"%.5f".format(java.util.Locale.US, mean(mono16k))}] " +
+                "mel[min=${"%.4f".format(java.util.Locale.US, minValue(logMel))} " +
+                "max=${"%.4f".format(java.util.Locale.US, maxValue(logMel))} " +
+                "mean=${"%.4f".format(java.util.Locale.US, mean(logMel))} " +
+                "std=${"%.4f".format(java.util.Locale.US, stddev(logMel))}] " +
+                "top5=[$top5] " +
+                "scores[a=${"%.5f".format(java.util.Locale.US, pre.ambientScore)} " +
+                "s=${"%.5f".format(java.util.Locale.US, pre.speechScore)} " +
+                "d=${"%.5f".format(java.util.Locale.US, pre.dangerScore)}] " +
+                "pre=${decision.preBoosterCoarse}/${decision.preBoosterDisplay} " +
+                "preConf=${"%.5f".format(java.util.Locale.US, decision.preBoosterConfidence)} " +
+                "booster[score=${"%.5f".format(java.util.Locale.US, decision.gunshotScore)} " +
+                "evidence=${"%.5f".format(java.util.Locale.US, decision.gunshotEvidence)} " +
+                "accepted=${decision.accepted} reason=${decision.reason}] " +
+                "post=${decision.postBoosterCoarse}/${decision.postBoosterDisplay} " +
+                "postConf=${"%.5f".format(java.util.Locale.US, decision.postBoosterConfidence)} " +
+                "threshold=${"%.5f".format(java.util.Locale.US, post.effectiveThreshold)} " +
+                "confirmed=${post.confirmedCoarse}/${post.confirmedDisplay} " +
+                "streak=${post.candidateCoarse}:${post.candidateStreak} " +
+                "ui=${post.uiCoarse}/${post.uiDisplay} " +
+                "uiConf=${"%.5f".format(java.util.Locale.US, post.uiConfidence)} " +
                 "ms[pre=${"%.1f".format(result.preprocessMs)} " +
                 "yam=${"%.1f".format(result.yamnetMs)} " +
                 "bst=${"%.1f".format(result.boosterMs)} " +
                 "tot=${"%.1f".format(result.totalMs)}]"
         )
+    }
+
+    private fun mean(values: FloatArray): Float {
+        if (values.isEmpty()) return 0f
+        var sum = 0.0
+        for (value in values) sum += value.toDouble()
+        return (sum / values.size).toFloat()
+    }
+
+    private fun rms(values: FloatArray): Float {
+        if (values.isEmpty()) return 0f
+        var sum = 0.0
+        for (value in values) sum += value.toDouble() * value.toDouble()
+        return kotlin.math.sqrt(sum / values.size).toFloat()
+    }
+
+    private fun peak(values: FloatArray): Float {
+        var max = 0f
+        for (value in values) max = kotlin.math.max(max, kotlin.math.abs(value))
+        return max
+    }
+
+    private fun minValue(values: FloatArray): Float {
+        if (values.isEmpty()) return 0f
+        var result = values[0]
+        for (i in 1 until values.size) result = kotlin.math.min(result, values[i])
+        return result
+    }
+
+    private fun maxValue(values: FloatArray): Float {
+        if (values.isEmpty()) return 0f
+        var result = values[0]
+        for (i in 1 until values.size) result = kotlin.math.max(result, values[i])
+        return result
+    }
+
+    private fun stddev(values: FloatArray): Float {
+        if (values.isEmpty()) return 0f
+        val average = mean(values).toDouble()
+        var sum = 0.0
+        for (value in values) {
+            val delta = value.toDouble() - average
+            sum += delta * delta
+        }
+        return kotlin.math.sqrt(sum / values.size).toFloat()
     }
 
     override fun close() {
