@@ -887,28 +887,42 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                 Text(stringResource(R.string.color_picker_presets), color = SecondaryTextColor, fontSize = 13.sp)
                 Spacer(Modifier.height(8.dp))
 
+                // 색을 보지 못해도 무엇을 고르는지 알 수 있게 이름을 함께 둔다.
                 val presets = listOf(
-                    0xFFFFFF, 0xFF0000, 0xFF7F00, 0xFFFF00,
-                    0x00FF00, 0x00FFFF, 0x0080FF, 0xFF00FF
+                    0xFFFFFF to R.string.cd_preset_white,
+                    0xFF0000 to R.string.cd_preset_red,
+                    0xFF7F00 to R.string.cd_preset_orange,
+                    0xFFFF00 to R.string.cd_preset_yellow,
+                    0x00FF00 to R.string.cd_preset_green,
+                    0x00FFFF to R.string.cd_preset_cyan,
+                    0x0080FF to R.string.cd_preset_blue,
+                    0xFF00FF to R.string.cd_preset_magenta
                 )
                 // 동그라미는 30dp 그대로 두고 누를 수 있는 칸만 권장 크기(48dp)로 키운다.
                 // 여덟 개를 한 줄에 두면 창 너비에 48dp 씩 들어가지 않으므로 네 개씩 두 줄로 나눈다.
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.selectableGroup()) {
                     presets.chunked(4).forEach { row ->
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            row.forEach { rgb ->
+                            row.forEach { (rgb, nameRes) ->
                                 val argb = 0xFF000000.toInt() or rgb
+                                val presetName = stringResource(nameRes)
                                 Box(
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clip(CircleShape)
-                                        .clickable {
-                                            val out = FloatArray(3)
-                                            android.graphics.Color.colorToHSV(argb, out)
-                                            hue = out[0]
-                                            sat = out[1]
-                                            bright = out[2]
-                                        },
+                                        // 고른 색이 무엇인지도 읽히도록 선택 상태와 이름을 함께 넘긴다.
+                                        .selectable(
+                                            selected = argb == picked,
+                                            role = Role.RadioButton,
+                                            onClick = {
+                                                val out = FloatArray(3)
+                                                android.graphics.Color.colorToHSV(argb, out)
+                                                hue = out[0]
+                                                sat = out[1]
+                                                bright = out[2]
+                                            }
+                                        )
+                                        .semantics { contentDescription = presetName },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Box(
