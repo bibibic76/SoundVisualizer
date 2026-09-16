@@ -21,6 +21,8 @@
     <string name="home_add_tile_manual">Pull down the notification shade, tap Edit (pencil) and add “Sound visualizer” to turn it on or off right over your game or video.</string>
 
     <!-- Permissions -->
+    <string name="permission_overlay_title">Allow “Display over other apps”</string>
+    <string name="permission_overlay_message">Sounds are drawn on top of your game or video, so Android needs this permission. If Settings shows a list of apps, find SoundVisualizer and turn its switch on, then come back. It keeps going from there on its own.</string>
     <string name="permission_record_audio_required">Microphone (audio recording) permission is required to capture audio.</string>
     <string name="permission_mic_rationale_title">Why the microphone permission?</string>
     <string name="permission_mic_rationale_message">Android requires the microphone permission to capture sound playing on your phone. Sounds around you are not recorded.</string>
@@ -114,6 +116,9 @@
 
     <!-- Accessibility -->
     <string name="cd_pick_color">Open color picker</string>
+    <string name="cd_color_ambient">Ambient color</string>
+    <string name="cd_color_speech">Speech color</string>
+    <string name="cd_color_danger">Danger sound color</string>
     <string name="cd_expand">Expand</string>
     <string name="cd_collapse">Collapse</string>
     <string name="cd_change_language">Change language</string>

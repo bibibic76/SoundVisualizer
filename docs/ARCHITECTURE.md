@@ -20,7 +20,7 @@ graph TD
 | 단계 | 코드 | 언어 |
 |---|---|---|
 | 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
-| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
+| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
 | 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
@@ -36,7 +36,8 @@ graph TD
 
 **앱에서 시작** (`MainActivity`)
 
-1. 다른 앱 위에 표시 권한(`SYSTEM_ALERT_WINDOW`)을 확인하고, 없으면 설정 화면으로 보냅니다.
+1. 다른 앱 위에 표시 권한(`SYSTEM_ALERT_WINDOW`)을 확인하고, 없으면 **먼저 안내 창을 띄운 뒤** 설정 화면으로 보냅니다. 그 화면은 기기에 따라 앱 목록만 뜨고 어느 앱을 켜야 하는지 알려주지 않아서, 설명 없이 보내면 처음 쓰는 사용자가 그냥 나가기 쉽습니다.
+   - 이 화면은 결과를 돌려주지 않으므로, 허용하고 돌아온 것은 `onResume`에서 `Settings.canDrawOverlays`로 확인해 눌렀던 실행을 이어갑니다. `onResume`은 앱을 열 때마다·화면을 돌릴 때마다·다른 앱에서 돌아올 때마다 불리므로, **사용자가 실행을 눌러 설정 화면으로 보내진 경우에만 한 번** 이어갑니다(`PendingStart`, 화면을 돌려 다시 만들어져도 유지되게 `onSaveInstanceState`에 저장). 허용하지 않고 돌아왔거나 실행 종료를 누르면 버립니다. 이 규칙은 안드로이드에 의존하지 않아 JVM에서 검사합니다(`PendingStartTest`).
 2. 녹음(`RECORD_AUDIO`)과 알림(`POST_NOTIFICATIONS`, Android 13 이상) 권한을 요청합니다. 알림 권한은 거부해도 이어서 켭니다.
    - 녹음 권한이 필요하면 시스템 창보다 먼저 이유를 설명하는 창을 띄웁니다. 시스템 창에는 "마이크"라고만 떠서 녹음 앱으로 오해하고 거부하기 쉽기 때문입니다. 알림 권한만 필요하면 바로 묻습니다.
    - 녹음 권한이 거부됐는데 `shouldShowRequestPermissionRationale`이 `false`면 시스템이 더는 창을 띄우지 않는 상태로 보고, 앱 정보 화면(`ACTION_APPLICATION_DETAILS_SETTINGS`)을 여는 안내 창을 띄웁니다. 그 밖의 거부는 토스트로 알리고 멈춥니다.
@@ -50,6 +51,7 @@ graph TD
 - 투명 화면은 위 2~4단계를 그대로 밟고 닫힙니다. 권한 안내 창도 이 화면 위에 그리고, 취소하거나 설정 화면으로 보내면 바로 닫힙니다. 오버레이 권한만은 설정 화면이 필요해 앱을 열어 안내합니다.
 - 투명 화면은 `taskAffinity=""`로 앱과 다른 작업에 뜹니다. 그래서 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고, 닫히면 보던 게임·영상으로 돌아갑니다.
 - 타일은 알림창이 열려 있는 동안 `SettingsManager.isServiceRunning`을 구독해 켜짐·꺼짐을 표시합니다. 추가·제거될 때는 `SettingsManager.tileAdded`에 기록해 홈 화면의 "빠른 설정에 추가" 버튼을 숨기거나 보입니다.
+- 홈의 "빠른 설정에 추가"는 시스템의 추가 창(`StatusBarManager.requestAddTileService`)을 띄웁니다. 이미 있으면(`TILE_ALREADY_ADDED`) 추가된 것으로 기록하고, 추가되지 않은 결과(`TILE_NOT_ADDED`, 요청 실패)는 직접 추가하는 방법을 토스트로 알립니다. 사용자가 이 창에서 세 번 거절하면 시스템이 그다음부터는 창 없이 바로 거절을 돌려주는데, 그대로 두면 버튼을 눌러도 아무 일도 일어나지 않기 때문입니다.
 
 **종료**: 아래 경우 모두 캡처·오버레이·AI·진동을 함께 내립니다. 멈춘 이유(`StopReason`)에 따라 사용자에게 알릴지가 갈립니다.
 
@@ -307,7 +309,7 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 
 - 탭 줄은 넘치면 옆으로 밀립니다.
 - 홈의 실행·실행 종료 버튼, 모드 선택 칸, 진동 세기·패턴 선택지는 가운데 정렬로 줄을 바꾸고, 같은 줄의 칸 높이를 함께 맞춥니다.
-- 슬라이더 이름 칸은 너비가 고정이라 줄을 바꾸고, 긴 단어는 하이픈을 넣어 끊습니다(`wrappingLabelStyle`, 하이픈 규칙이 있는 언어만).
+- 슬라이더는 이름·값 한 줄과 전체 폭 슬라이더 한 줄로 나눠, 긴 이름이 들어갈 자리를 넓게 둡니다. 그래도 넘치면 줄을 바꾸고, 긴 단어는 하이픈을 넣어 끊습니다(`wrappingLabelStyle`, 하이픈 규칙이 있는 언어만).
 
 ---
 
@@ -319,3 +321,16 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 - Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`). 아이콘은 런처 아이콘을 그대로 씁니다.
 - `app_background`는 Compose의 `BgColor`(`MainActivity.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
 - 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 이 테마를 쓰지 않고 매니페스트에서 투명 테마(`Theme.Translucent.NoTitleBar`)를 따로 지정합니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
+
+---
+
+## 10. 화면 읽어주기와 글꼴 크기
+
+이 앱은 소리를 못 듣는 사용자를 위한 앱이라 저시력·시각장애를 함께 가진 사용자도 씁니다. 그래서 설정 화면의 조작은 눈으로 보이는 것(색, 밑줄, 스위치 모양)만으로 뜻이 전해지지 않게 두었습니다.
+
+- **선택지 줄**(탭, 모드 선택, 진동 세기·패턴): 줄에 `selectableGroup`, 각 칸에 `Modifier.selectable(selected = …, role = …)`을 답니다. 이것이 없으면 고른 칸이 색으로만 구분돼 "선택됨"이 읽히지 않습니다. 탭은 `Role.Tab`, 나머지는 `Role.RadioButton`입니다.
+- **스위치 줄**: 스위치가 아니라 **줄 전체**에 `Modifier.toggleable(role = Role.Switch)`를 달고 스위치의 `onCheckedChange`는 `null`로 둡니다. 그래야 이름·설명·상태가 한 덩어리로 읽히고("환경음 표시, 스위치, 켜짐"), 손가락으로도 작은 스위치를 노리지 않아도 됩니다. 색상 버튼은 이 덩어리 **밖**에 둡니다. 안에 넣으면 묶여 버려 따로 고를 수 없습니다.
+- **이름 붙이기**: 슬라이더와 색상 버튼은 그 자체로는 이름이 없어 "슬라이더, 50%", "버튼"으로만 읽힙니다. 슬라이더는 `semantics { contentDescription = 이름 }`, 소리 종류의 색상 버튼은 종류별 이름(`cd_color_*`)을 답니다.
+- **터치 크기**: 색상 동그라미(32dp)와 색상 선택 창의 프리셋(30dp)은 보이는 크기를 그대로 두고 누를 수 있는 칸만 48dp로 키웁니다. 프리셋 여덟 개는 창 너비에 48dp씩 들어가지 않아 네 개씩 두 줄로 나눕니다.
+- **펼침 상태**: 펼치기 카드(`SettingsExpander`)의 상태는 `rememberSaveable`로 들고 있습니다. `remember`로 두면 목록 밖으로 스크롤된 카드의 상태가 사라져, 돌아왔을 때 펼쳐 둔 카드가 접혀 있습니다.
+- **큰 글꼴·가로 화면**: 홈 탭은 세로 스크롤을 열고 최소 높이를 화면 높이로 잡아, 짧을 때는 가운데 정렬로 두고 길어지면 밀어 볼 수 있게 합니다. 홈 제목처럼 큰 글자는 줄 간격(`lineHeight`)을 지정해 두 줄이 될 때 서로 붙지 않게 합니다.

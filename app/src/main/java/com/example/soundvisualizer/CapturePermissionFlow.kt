@@ -25,6 +25,9 @@ import androidx.core.net.toUri
 enum class CapturePermissionDialog {
     None,
 
+    /** 앱 목록만 뜨는 오버레이 권한 설정 화면으로 보내기 전에, 무엇을 켜야 하는지 설명한다. */
+    Overlay,
+
     /** 시스템 권한 창을 띄우기 전에 마이크 권한이 필요한 이유를 설명한다. */
     MicRationale,
 
@@ -33,9 +36,12 @@ enum class CapturePermissionDialog {
 }
 
 /**
- * 시각화를 켜기 전에 런타임 권한을 받는 흐름. 앱의 실행 버튼([MainActivity])과
+ * 시각화를 켜기 전에 권한을 받는 흐름. 앱의 실행 버튼([MainActivity])과
  * 빠른 설정 타일의 투명 화면(`tile/StartVisualizerActivity`)이 같은 흐름과 안내 창을 쓴다.
  *
+ * - 오버레이 권한(다른 앱 위에 표시)이 없으면 설정 화면으로 보내기 전에 무엇을 해야 하는지 설명한다.
+ *   그 화면은 앱 목록만 뜨고 어느 앱을 켜야 하는지 알려주지 않아서, 처음 보면 그냥 나가기 쉽다.
+ *   (타일의 투명 화면은 여기까지 오지 않는다. 설정 화면이 필요해 앱을 열어 안내한다.)
  * - 마이크 권한이 필요하면 시스템 창보다 이유를 먼저 설명한다. 시스템 창에는 "마이크"라고만 떠서
  *   녹음 앱으로 오해하고 거부하기 쉽다.
  * - 거부됐는데 시스템이 더는 창을 띄우지 않는 상태면 설정 화면에서 허용하도록 안내한다.
@@ -45,11 +51,13 @@ enum class CapturePermissionDialog {
  *
  * @param onGranted 캡처에 필요한 권한이 모두 있을 때. 이어서 화면 녹화 동의를 받는다.
  * @param onStopped 켜지 않고 끝났을 때 (취소, 거부, 설정 화면으로 보냄). 투명 화면은 여기서 닫는다.
+ * @param onOverlaySettings 오버레이 권한 설정 화면으로 보냈을 때. 허용하고 돌아오면 실행을 이어가려고 기억해 둔다([PendingStart]).
  */
 class CapturePermissionFlow(
     private val activity: ComponentActivity,
     private val onGranted: () -> Unit,
-    private val onStopped: () -> Unit = {}
+    private val onStopped: () -> Unit = {},
+    private val onOverlaySettings: () -> Unit = {}
 ) {
     /** 액티비티의 Compose 화면이 [CapturePermissionDialogs] 로 그린다. */
     var dialog by mutableStateOf(CapturePermissionDialog.None)
@@ -78,12 +86,32 @@ class CapturePermissionFlow(
     /** 권한이 모두 있으면 바로 [onGranted], 아니면 안내 창이나 시스템 권한 창부터 띄운다. */
     fun start() {
         if (dialog != CapturePermissionDialog.None) return
+        // 오버레이 권한부터 본다. 이것이 없으면 캡처까지 다 받아도 화면에 아무것도 그리지 못한다.
+        if (!Settings.canDrawOverlays(activity)) {
+            dialog = CapturePermissionDialog.Overlay
+            return
+        }
         val needed = neededPermissions()
         when {
             needed.isEmpty() -> onGranted()
             VisualizerController.needsMicRationale(needed) -> dialog = CapturePermissionDialog.MicRationale
             else -> launcher.launch(needed)
         }
+    }
+
+    /**
+     * 오버레이 권한 안내 창의 ‘설정 열기’. 앱 목록에서 이 앱을 찾아 스위치를 켜는 화면으로 보낸다.
+     *
+     * 허용하고 돌아왔을 때 이어서 켜는 것은 부른 쪽의 몫이다([onOverlaySettings], `MainActivity.onResume`).
+     * 이 화면은 권한 요청 결과를 돌려주지 않아서 여기서는 돌아온 때를 알 수 없다.
+     */
+    fun openOverlaySettings() {
+        if (dialog != CapturePermissionDialog.Overlay) return
+        dialog = CapturePermissionDialog.None
+        activity.startActivity(
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${activity.packageName}".toUri())
+        )
+        onOverlaySettings()
     }
 
     /** 이유 안내 창의 ‘계속’. */
@@ -150,6 +178,14 @@ class CapturePermissionFlow(
 fun CapturePermissionDialogs(flow: CapturePermissionFlow) {
     when (flow.dialog) {
         CapturePermissionDialog.None -> Unit
+        CapturePermissionDialog.Overlay -> PermissionAlert(
+            title = stringResource(R.string.permission_overlay_title),
+            message = stringResource(R.string.permission_overlay_message),
+            confirmLabel = stringResource(R.string.permission_open_settings),
+            dismissLabel = stringResource(R.string.permission_cancel),
+            onConfirm = flow::openOverlaySettings,
+            onDismiss = flow::dismiss
+        )
         CapturePermissionDialog.MicRationale -> PermissionAlert(
             title = stringResource(R.string.permission_mic_rationale_title),
             message = stringResource(R.string.permission_mic_rationale_message),
