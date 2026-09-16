@@ -82,6 +82,8 @@
     <!-- 배터리 -->
     <string name="setting_pause_screen_off">화면이 꺼지면 일시정지</string>
     <string name="setting_pause_screen_off_desc">화면이 꺼져 있는 동안 소리 받기, 소리 종류 구분, 진동을 멈춰 배터리를 아끼고, 화면을 켜면 다시 이어서 합니다. 화면이 꺼져 있어도 진동 알림을 받으려면 끄세요.</string>
+    <string name="setting_reduced_frame_rate">그래픽 덜 자주 그리기</string>
+    <string name="setting_reduced_frame_rate_desc">그래픽을 1초에 60번 대신 30번 그립니다. 오래 켜 둘 때 배터리를 아끼는 대신 움직임이 덜 부드럽습니다. 소리를 받는 간격은 그대로입니다.</string>
     <string name="setting_developer_mode">개발자 모드</string>
     <string name="setting_developer_mode_desc">AI가 무슨 소리로 들었는지, 얼마나 확신했는지, 얼마나 걸렸는지를 오버레이 왼쪽 위에 띄웁니다. 만든 사람들이 분류가 맞는지 확인하려고 쓰는 기능입니다. 내용은 영어로 나오고, 평소에 쓰라고 만든 것이 아닙니다.</string>
 

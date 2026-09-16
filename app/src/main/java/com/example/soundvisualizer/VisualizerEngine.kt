@@ -66,7 +66,15 @@ class VisualizerEngine(
         private const val MAX_FRAME_STEP = 4f
 
         /** 오버레이 최대 프레임. 120Hz 화면에서 GPU/배터리를 아낀다. 0 이면 vsync 그대로. */
-        const val MAX_FPS = 60
+        const val FULL_FPS = 60
+
+        /**
+         * 배터리 설정을 켰을 때의 프레임 수 ([SettingsManager.reducedFrameRate]).
+         *
+         * 같은 기기에서 재니 한 코어 기준 22.9% -> 17.2% 로 줄었다. 절반이 안 되는 이유는
+         * AI·캡처처럼 프레임 수와 무관한 비용이 섞여 있기 때문이다. 대신 그만큼 덜 부드럽다.
+         */
+        const val REDUCED_FPS = 30
         /** 이 시간 동안 아무것도 안 보이면 저빈도 폴링(idle)으로 전환 */
         private const val IDLE_AFTER_NS = 1_000_000_000L
         const val IDLE_POLL_MS = 33L
@@ -212,9 +220,10 @@ class VisualizerEngine(
      * @return 이번 프레임에 다시 그려야 하면 true
      */
     fun tick(frameTimeNanos: Long): Boolean {
-        // 프레임 캡: vsync 간격을 누적해서 1/MAX_FPS 마다 한 번만 처리 (90Hz → 2/3, 120Hz → 1/2)
-        if (MAX_FPS > 0) {
-            val interval = 1_000_000_000L / MAX_FPS - 200_000L
+        // 프레임 캡: vsync 간격을 누적해서 1/maxFps 마다 한 번만 처리 (90Hz → 2/3, 120Hz → 1/2)
+        val maxFps = inputs.framesPerSecond()
+        if (maxFps > 0) {
+            val interval = 1_000_000_000L / maxFps - 200_000L
             if (lastVsyncNanos != 0L) {
                 frameAccNanos += frameTimeNanos - lastVsyncNanos
                 lastVsyncNanos = frameTimeNanos
