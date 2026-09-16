@@ -13,7 +13,6 @@ import android.service.quicksettings.TileService
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +29,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -38,6 +40,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +51,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -97,8 +102,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** 마이크·알림 권한을 받는다. 마이크는 이유를 먼저 설명하고, 다시 묻지 못하게 되면 설정 화면으로 안내한다. */
-    private val capturePermission = CapturePermissionFlow(this, onGranted = ::launchProjectionRequest)
+    /** 실행에 필요한 권한을 받는다. 설정 화면으로 보내기 전에는 무엇을 해야 하는지 먼저 설명한다. */
+    private val capturePermission = CapturePermissionFlow(
+        this,
+        onGranted = ::launchProjectionRequest,
+        onOverlaySettings = { pendingStart.awaitPermission() }
+    )
+
+    /** 오버레이 권한을 켜고 돌아왔을 때 눌렀던 실행을 이어가려고 기억해 둔다. [KEY_PENDING_START] 로 저장한다. */
+    private var pendingStart = PendingStart()
 
     /** 보이는 탭. 빠른 설정 타일을 길게 눌러 들어오면 설정 탭을 연다. */
     private val selectedTab = mutableIntStateOf(TAB_HOME)
@@ -115,7 +127,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         SettingsManager.init(this)
         AppLanguage.migrateLegacyChoice(this)
-        // 오버레이 권한은 [실행]을 눌렀을 때 요청한다 (startMediaProjectionRequest).
+        // 권한은 [실행]을 눌렀을 때 받는다 (CapturePermissionFlow.start).
         // 여기서 요청하면 앱을 열 때마다, 화면을 돌릴 때마다 설명 없이 설정 화면으로 튕긴다.
 
         // 언어를 바꾸거나 화면을 돌려 다시 만들어져도 보던 탭에 남는다. 언어는 설정 탭에서 바꾸기 때문이다.
@@ -126,6 +138,8 @@ class MainActivity : ComponentActivity() {
             stopNoticeRouting = StopNoticeRouting(
                 savedInstanceState.getInt(KEY_ROUTED_STOP_NOTICE, StopNoticeRouting.NONE)
             )
+            // 권한 화면에 보내 놓고 화면이 돌아가면 여기서 다시 만들어진다. 기다리던 실행을 잃지 않는다.
+            pendingStart = PendingStart(savedInstanceState.getBoolean(KEY_PENDING_START, false))
         }
         addOnNewIntentListener { openTabFor(it) }
 
@@ -138,8 +152,12 @@ class MainActivity : ComponentActivity() {
                     LauncherApp(
                         selectedTab = selectedTab.intValue,
                         onSelectTab = { selectedTab.intValue = it },
-                        onStart = { startMediaProjectionRequest() },
-                        onStop = { VisualizerController.stop(this) },
+                        onStart = { capturePermission.start() },
+                        onStop = {
+                            // 직접 껐으면 기다리던 실행도 버린다. 권한을 켜고 돌아와도 다시 켜지지 않는다.
+                            pendingStart.cancel()
+                            VisualizerController.stop(this)
+                        },
                         onAddTile = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
                         }
@@ -154,6 +172,7 @@ class MainActivity : ComponentActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_SELECTED_TAB, selectedTab.intValue)
         outState.putInt(KEY_ROUTED_STOP_NOTICE, stopNoticeRouting.routedSeq)
+        outState.putBoolean(KEY_PENDING_START, pendingStart.isPending)
     }
 
     private fun openTabFor(intent: Intent?) {
@@ -165,7 +184,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** 시스템의 "빠른 설정에 추가" 창을 띄운다. 거절하면 아무것도 하지 않고, 실패하면 직접 추가하는 방법을 안내한다. */
+    /** 시스템의 "빠른 설정에 추가" 창을 띄운다. 창이 뜨지 않거나 추가되지 않으면 직접 추가하는 방법을 안내한다. */
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun requestAddTile() {
         val statusBar = getSystemService(StatusBarManager::class.java)
@@ -180,9 +199,13 @@ class MainActivity : ComponentActivity() {
             ContextCompat.getMainExecutor(this)
         ) { result ->
             when (result) {
+                // 이미 있는 경우도 추가된 것으로 기록해 홈의 권유 버튼을 숨긴다.
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED,
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> SettingsManager.setTileAdded(true)
-                StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_NOT_ADDED -> Unit
+                // 추가되지 않았다: "추가 안 함"(TILE_NOT_ADDED), 창을 그냥 닫음, 요청 실패(TILE_ADD_REQUEST_ERROR_*).
+                // 세 번 거절하면 시스템이 그다음부터는 창을 띄우지 않고 바로 거절만 돌려주는데, 그대로 두면
+                // 버튼을 눌러도 아무 일도 일어나지 않는다. 어느 경우인지 결과로는 알 수 없으므로
+                // 모두 직접 추가하는 방법을 알린다.
                 else -> Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
             }
         }
@@ -193,6 +216,19 @@ class MainActivity : ComponentActivity() {
         // 알림의 "중지" 나 시스템 UI 로 캡처가 끝난 경우 홈 화면 상태를 실제 서비스 상태와 맞춘다.
         SettingsManager.setServiceRunning(AudioCaptureService.isRunning)
         showStopNoticeOnHome()
+        continuePendingStart()
+    }
+
+    /**
+     * 오버레이 권한을 켜러 갔던 사용자가 돌아왔으면 눌렀던 실행을 이어간다. 허용하고 돌아와도 "실행 대기 중"
+     * 이면 처음 쓰는 사용자는 무엇이 잘못됐는지 알 수 없다.
+     *
+     * 사용자가 실행을 눌러 보낸 경우에만, 한 번만 이어간다([PendingStart]). 그사이 타일 등으로 이미 켜졌으면
+     * 화면 녹화 동의를 다시 물을 일이 없으므로 기다리던 실행만 버린다.
+     */
+    private fun continuePendingStart() {
+        if (!pendingStart.consumeOnResume(Settings.canDrawOverlays(this))) return
+        if (!VisualizerController.isRunning) capturePermission.start()
     }
 
     /**
@@ -214,24 +250,6 @@ class MainActivity : ComponentActivity() {
         SettingsManager.flushModeSettings()
     }
 
-    private fun requestOverlayPermission() {
-        if (!Settings.canDrawOverlays(this)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                "package:$packageName".toUri()
-            )
-            startActivity(intent)
-        }
-    }
-
-    private fun startMediaProjectionRequest() {
-        if (!Settings.canDrawOverlays(this)) {
-            requestOverlayPermission()
-            return
-        }
-        capturePermission.start()
-    }
-
     private fun launchProjectionRequest() {
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
@@ -242,6 +260,7 @@ class MainActivity : ComponentActivity() {
         const val TAB_SETTINGS = 1
         const val KEY_SELECTED_TAB = "selected_tab"
         const val KEY_ROUTED_STOP_NOTICE = "routed_stop_notice"
+        const val KEY_PENDING_START = "pending_start"
     }
 }
 
@@ -255,7 +274,8 @@ fun LauncherApp(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
-        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(24.dp)) {
+        // selectableGroup 은 화면 읽어주기에 "셋 중 몇 번째"를 알려준다.
+        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(24.dp)) {
             TabButton(stringResource(R.string.tab_home), selectedTab == 0) { onSelectTab(0) }
             Spacer(modifier = Modifier.width(24.dp))
             TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { onSelectTab(1) }
@@ -274,10 +294,14 @@ fun LauncherApp(
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
     Column(
-        modifier = Modifier.clickable(
+        // 선택 여부가 색과 밑줄로만 보이면 화면 읽어주기 사용자는 어느 탭을 보고 있는지 알 수 없다.
+        // selectable(Role.Tab) 이 "선택됨"과 탭이라는 것을 함께 읽어준다.
+        modifier = Modifier.selectable(
+            selected = isSelected,
             // 기본 리플이 어두운 배경에서 검은 사각형처럼 번쩍인다. 탭에는 밑줄로 충분하다.
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
+            role = Role.Tab,
             onClick = onClick
         ),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -320,7 +344,8 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            Text(stringResource(R.string.home_title), fontSize = 36.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
+            // 줄 간격을 지정하지 않으면 큰 글꼴 설정에서 제목이 두 줄로 접힐 때 위아래 줄이 서로 붙는다.
+            Text(stringResource(R.string.home_title), fontSize = 36.sp, lineHeight = 42.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
             Text(
                 stringResource(R.string.home_subtitle),
                 fontSize = 16.sp, color = SecondaryTextColor, lineHeight = 26.sp, modifier = Modifier.padding(bottom = 24.dp)
@@ -446,7 +471,11 @@ fun SettingsTab() {
                     Text(stringResource(R.string.settings_mode_picker_desc), fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
 
                     // 번역된 이름이 칸보다 길면 가운데 정렬로 줄을 바꾸고, 네 칸 높이를 함께 맞춘다.
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.height(IntrinsicSize.Min)) {
+                    // 고른 칸은 색으로만 보이므로, 화면 읽어주기에는 selectableGroup 과 selectable 로 알린다.
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.height(IntrinsicSize.Min).selectableGroup()
+                    ) {
                         VisualMode.values().forEach { mode ->
                             val selected = currentMode == mode
                             Box(
@@ -455,7 +484,9 @@ fun SettingsTab() {
                                     .fillMaxHeight()
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(if (selected) AccentColor else Color(0xFF333A44))
-                                    .clickable { SettingsManager.setVisualMode(mode) }
+                                    .selectable(selected = selected, role = Role.RadioButton) {
+                                        SettingsManager.setVisualMode(mode)
+                                    }
                                     .padding(horizontal = 4.dp, vertical = 12.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -531,21 +562,21 @@ fun SettingsTab() {
 
                     val showAmbient by SettingsManager.showAmbient.collectAsState()
                     val colorAmbient by SettingsManager.colorAmbient.collectAsState()
-                    ColorSettingRow(stringResource(R.string.ai_show_ambient), showAmbient, colorAmbient,
+                    ColorSettingRow(stringResource(R.string.ai_show_ambient), stringResource(R.string.cd_color_ambient), showAmbient, colorAmbient,
                         onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorAmbient = it) })
                     HapticSettingRow(AiClassification.AMBIENT, showAmbient)
 
                     val showSpeech by SettingsManager.showSpeech.collectAsState()
                     val colorSpeech by SettingsManager.colorSpeech.collectAsState()
-                    ColorSettingRow(stringResource(R.string.ai_show_speech), showSpeech, colorSpeech,
+                    ColorSettingRow(stringResource(R.string.ai_show_speech), stringResource(R.string.cd_color_speech), showSpeech, colorSpeech,
                         onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorSpeech = it) })
                     HapticSettingRow(AiClassification.SPEECH, showSpeech)
 
                     val showDanger by SettingsManager.showDanger.collectAsState()
                     val colorDanger by SettingsManager.colorDanger.collectAsState()
-                    ColorSettingRow(stringResource(R.string.ai_show_danger), showDanger, colorDanger,
+                    ColorSettingRow(stringResource(R.string.ai_show_danger), stringResource(R.string.cd_color_danger), showDanger, colorDanger,
                         onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
                         onColorChange = { SettingsManager.updateAISettings(colorDanger = it) })
                     HapticSettingRow(AiClassification.DANGER, showDanger)
@@ -671,8 +702,21 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
     }
 }
 
+/**
+ * 한 소리 종류의 표시 스위치와 색상 버튼.
+ *
+ * @param label 스위치 이름 ("환경음 표시" 등)
+ * @param colorLabel 색상 버튼 이름. 화면 읽어주기가 "색상 선택" 으로만 읽으면 어느 종류의 색인지 알 수 없다.
+ */
 @Composable
-fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange: (Boolean) -> Unit, onColorChange: (Int) -> Unit) {
+fun ColorSettingRow(
+    label: String,
+    colorLabel: String,
+    checked: Boolean,
+    color: Int,
+    onCheckedChange: (Boolean) -> Unit,
+    onColorChange: (Int) -> Unit
+) {
     var showColorDialog by remember { mutableStateOf(false) }
 
     if (showColorDialog) {
@@ -687,29 +731,48 @@ fun ColorSettingRow(label: String, checked: Boolean, color: Int, onCheckedChange
     }
 
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-        Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = AccentColor,
-                uncheckedThumbColor = SecondaryTextColor,
-                uncheckedTrackColor = Color(0xFF333A44)
-            ),
-            modifier = Modifier.padding(end = 16.dp)
-        )
+        // 이름과 스위치를 한 덩어리로 묶어야 화면 읽어주기가 "환경음 표시, 스위치, 켜짐" 으로 읽는다.
+        // 색상 버튼은 이 덩어리 밖에 둔다. 안에 넣으면 묶여 버려 따로 고를 수 없다.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f)
+                .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+        ) {
+            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
+            Switch(
+                checked = checked,
+                // 누르는 것은 줄 전체가 받는다.
+                onCheckedChange = null,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = AccentColor,
+                    uncheckedThumbColor = SecondaryTextColor,
+                    uncheckedTrackColor = Color(0xFF333A44)
+                )
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        // 동그라미는 32dp 그대로 두고 누를 수 있는 칸만 권장 크기(48dp)로 키운다.
         Box(
             modifier = Modifier
-                .size(32.dp)
+                .size(48.dp)
                 .clip(CircleShape)
-                .background(Color(color))
-                .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), CircleShape)
                 .clickable(
                     onClickLabel = stringResource(R.string.cd_pick_color),
                     onClick = { showColorDialog = true }
                 )
-        )
+                .semantics { contentDescription = colorLabel },
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color(color))
+                    .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), CircleShape)
+            )
+        }
     }
 }
 
@@ -819,23 +882,36 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                     0xFFFFFF, 0xFF0000, 0xFF7F00, 0xFFFF00,
                     0x00FF00, 0x00FFFF, 0x0080FF, 0xFF00FF
                 )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    presets.forEach { rgb ->
-                        val argb = 0xFF000000.toInt() or rgb
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(Color(argb))
-                                .border(1.dp, SecondaryTextColor.copy(alpha = 0.4f), CircleShape)
-                                .clickable {
-                                    val out = FloatArray(3)
-                                    android.graphics.Color.colorToHSV(argb, out)
-                                    hue = out[0]
-                                    sat = out[1]
-                                    bright = out[2]
+                // 동그라미는 30dp 그대로 두고 누를 수 있는 칸만 권장 크기(48dp)로 키운다.
+                // 여덟 개를 한 줄에 두면 창 너비에 48dp 씩 들어가지 않으므로 네 개씩 두 줄로 나눈다.
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    presets.chunked(4).forEach { row ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            row.forEach { rgb ->
+                                val argb = 0xFF000000.toInt() or rgb
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            val out = FloatArray(3)
+                                            android.graphics.Color.colorToHSV(argb, out)
+                                            hue = out[0]
+                                            sat = out[1]
+                                            bright = out[2]
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(argb))
+                                            .border(1.dp, SecondaryTextColor.copy(alpha = 0.4f), CircleShape)
+                                    )
                                 }
-                        )
+                            }
+                        }
                     }
                 }
             }
@@ -851,14 +927,16 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
     )
 }
 
+/**
+ * 제목을 누르면 펼쳐지는 카드. 설정 탭의 모드 카드와 도움말 탭의 주제 카드가 함께 쓴다.
+ *
+ * @param isExpanded 처음 그릴 때 펼쳐 둘지. 사용자가 한 번 접거나 펼치면 그 뒤로는 사용자의 선택이 이긴다.
+ */
 @Composable
 fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Composable () -> Unit) {
-    var expanded by remember { mutableStateOf(isExpanded) }
-
-    // 선택된 상태가 외부에서 바뀌면 같이 반영해주기 위함
-    LaunchedEffect(isExpanded) {
-        expanded = isExpanded
-    }
+    // 펼침 상태는 목록 밖으로 스크롤되면 사라지지 않게 저장한다. remember 로 두면 펼쳐 둔 카드가
+    // 화면 밖에 나갔다 돌아왔을 때 접혀 있고, 접어 둔 카드는 다시 펼쳐져 있다.
+    var expanded by rememberSaveable { mutableStateOf(isExpanded) }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -905,44 +983,59 @@ fun ModernSlider(
             .padding(start = if (indented) 16.dp else 0.dp)
             .padding(bottom = 24.dp)
     ) {
+        // 이름·값과 슬라이더를 한 줄에 두면 끌 수 있는 막대가 80~116dp 밖에 남지 않고, 긴 번역어는
+        // 좁은 이름 칸에서 여러 줄로 접힌다. 이름과 값을 위 줄에, 슬라이더를 아래 한 줄에 둔다.
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // 슬라이더 줄을 맞추려고 이름 칸 너비를 고정한다. 번역된 이름이 길면 줄을 바꾼다.
-            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, style = wrappingLabelStyle(), modifier = Modifier.width(100.dp))
-            Slider(
-                value = value,
-                onValueChange = onValueChange,
-                // 끄는 동안에는 화면에만 반영하고, 손을 뗄 때 저장한다.
-                onValueChangeFinished = SettingsManager::flushModeSettings,
-                valueRange = min..max,
-                enabled = enabled,
-                colors = SliderDefaults.colors(
-                    thumbColor = Color.White,
-                    activeTrackColor = AccentColor,
-                    inactiveTrackColor = Color(0xFF333A44),
-                    disabledThumbColor = Color(0xFF6B7684),
-                    disabledActiveTrackColor = Color(0xFF3A4351),
-                    disabledInactiveTrackColor = Color(0xFF2A3038)
-                ),
-                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-            )
-            Text(String.format(Locale.US, "%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor, modifier = Modifier.width(40.dp))
+            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, style = wrappingLabelStyle(), modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(String.format(Locale.US, "%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
         }
-        Text(desc, fontSize = 13.sp, color = descColor, modifier = Modifier.padding(top = 8.dp))
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            // 끄는 동안에는 화면에만 반영하고, 손을 뗄 때 저장한다.
+            onValueChangeFinished = SettingsManager::flushModeSettings,
+            valueRange = min..max,
+            enabled = enabled,
+            colors = SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = AccentColor,
+                inactiveTrackColor = Color(0xFF333A44),
+                disabledThumbColor = Color(0xFF6B7684),
+                disabledActiveTrackColor = Color(0xFF3A4351),
+                disabledInactiveTrackColor = Color(0xFF2A3038)
+            ),
+            // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다.
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label }
+        )
+        Text(desc, fontSize = 13.sp, color = descColor)
     }
 }
 
 @Composable
 fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Column(modifier = Modifier.padding(bottom = 24.dp)) {
+    Column(
+        // 줄 전체를 누를 수 있게 하고 이름·설명·상태를 한 덩어리로 묶는다. 스위치만 누를 수 있으면
+        // 화면 읽어주기가 이름 없이 "스위치, 켜짐" 으로 읽고, 손가락으로도 작은 스위치만 노려야 한다.
+        modifier = Modifier
+            // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 다음 항목과의 빈 칸까지 눌린다.
+            .padding(bottom = 24.dp)
+            .toggleable(
+                value = checked,
+                role = Role.Switch,
+                onValueChange = {
+                    onCheckedChange(it)
+                    // 스위치는 한 번에 끝나는 조작이라 바로 저장한다.
+                    SettingsManager.flushModeSettings()
+                }
+            )
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
             Switch(
                 checked = checked,
-                // 스위치는 한 번에 끝나는 조작이라 바로 저장한다.
-                onCheckedChange = {
-                    onCheckedChange(it)
-                    SettingsManager.flushModeSettings()
-                },
+                // 누르는 것은 줄 전체가 받는다.
+                onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = AccentColor,

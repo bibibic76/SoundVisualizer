@@ -117,6 +117,8 @@ You can also find how to use it, why permissions are needed and the FAQ in the a
    | **Screen recording / casting** | Android only lets apps capture your phone's sound through this permission. **Your screen itself is not captured.** |
    | **Notifications** (Android 13+) | To show the running notification and its Stop button, and to tell you when it turns off without you stopping it. The app still works if you deny it. If it then turns off, only the vibration tells you, and Home shows what turned off when you open the app. |
 
+   If **Display over other apps** isn't allowed, the app tells you what to do before opening Settings. If that screen lists apps, find **SoundVisualizer** and turn its switch on, then come back — it goes on with the start you asked for.
+
    The app explains why it needs the microphone before asking. If you've denied it several times and Android stops asking, tap **Open settings** when the app prompts you, and allow the microphone under Permissions in the app info.
 
 3. Go to your home screen and open a game or video. Sounds are drawn along the edges of the screen.
@@ -126,7 +128,7 @@ You can also find how to use it, why permissions are needed and the FAQ in the a
 
 You can turn it on and off from a Quick Settings button in the notification shade without switching apps.
 
-1. Tap **Add to Quick Settings** on the app's Home tab and allow it. (On Android 12 and earlier, pull down the notification shade, tap Edit (pencil) and drag **Sound visualizer** in.)
+1. Tap **Add to Quick Settings** on the app's Home tab and allow it. If it isn't added, the app tells you how to add it yourself. (On Android 12 and earlier, pull down the notification shade, tap Edit (pencil) and drag **Sound visualizer** in.)
 2. While playing a game or watching a video, pull down the notification shade and tap **Sound visualizer** to turn it on. Android shows the screen recording consent every time you turn it on.
 3. Tap it again to turn it off. Long-press it to open the app's settings.
 
