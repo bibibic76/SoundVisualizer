@@ -141,6 +141,17 @@ jobs:
           cp "$src" "SoundVisualizer-$TAG.apk"
           size=$(du -h "SoundVisualizer-$TAG.apk" | cut -f1)
           echo "::notice title=릴리스 APK::SoundVisualizer-$TAG.apk ($size, $(basename "$src"))"
+          # R8 이 이름을 바꾸므로, 매핑 파일이 없으면 이 APK 의 크래시 로그는 영원히 읽을 수 없다.
+          # 러너는 잡이 끝나면 사라지고 다시 빌드해도 같은 매핑이 나온다는 보장이 없으니, 여기서 챙겨 둔다.
+          if [ "$SV_BUILD_VARIANT" = "release" ]; then
+            mapping=app/build/outputs/mapping/release/mapping.txt
+            if [ ! -f "$mapping" ]; then
+              echo "::error title=매핑 파일::릴리스 빌드인데 $mapping 이 없습니다. 이 APK 의 크래시는 되돌릴 수 없습니다."
+              exit 1
+            fi
+            cp "$mapping" "mapping-$TAG.txt"
+            echo "::notice title=매핑 파일::mapping-$TAG.txt ($(du -h "mapping-$TAG.txt" | cut -f1))"
+          fi
 
       # 같은 키로 서명돼야 사용자가 새 버전을 기존 앱 위에 덮어 설치할 수 있다.
       # 릴리스 키로 빌드했으면 그 키로 서명됐는지 반드시 확인하고, 아니면 실패시킨다.
@@ -181,10 +192,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           apk="SoundVisualizer-$TAG.apk"
+          # 매핑 파일도 같이 붙인다. 태그와 짝이 맞아야 그 APK 의 크래시를 되돌릴 수 있고,
+          # 릴리스에 붙여 두면 러너가 사라져도 남는다. 소스가 공개된 저장소라 매핑이 새로 드러내는 것은 없다.
+          assets=("$apk")
+          if [ -f "mapping-$TAG.txt" ]; then
+            assets+=("mapping-$TAG.txt")
+          fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$apk" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$TAG" "$apk" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
+            gh release create "$TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
           fi
           url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
           echo "::notice title=릴리스::$url"
