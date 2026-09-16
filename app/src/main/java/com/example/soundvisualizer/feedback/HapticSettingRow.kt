@@ -1,6 +1,7 @@
 package com.example.soundvisualizer.feedback
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,8 +34,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.DependentSettings
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
+import com.example.soundvisualizer.RowPressIndication
+import com.example.soundvisualizer.RowPressShape
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.WarningColor
@@ -76,12 +80,16 @@ fun HapticSettingRow(label: String, shown: Boolean) {
         // 줄 전체를 눌러 켜고 끈다. 스위치만 누를 수 있으면 화면 읽어주기가 이름 없이 "스위치, 켜짐" 으로 읽는다.
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.toggleable(
-                value = settings.enabled,
-                enabled = switchEnabled,
-                role = Role.Switch,
-                onValueChange = { SettingsManager.updateHaptic(label, settings.copy(enabled = it)) }
-            )
+            modifier = Modifier
+                .clip(RowPressShape)
+                .toggleable(
+                    value = settings.enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = RowPressIndication,
+                    enabled = switchEnabled,
+                    role = Role.Switch,
+                    onValueChange = { SettingsManager.updateHaptic(label, settings.copy(enabled = it)) }
+                )
         ) {
             Text(
                 stringResource(R.string.haptic_vibrate),
@@ -113,7 +121,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             )
         }
 
-        if (switchEnabled && settings.enabled) {
+        DependentSettings(switchEnabled && settings.enabled) {
             HapticChoiceRow(
                 title = stringResource(R.string.haptic_strength),
                 options = HapticStrength.values().toList(),

@@ -12,6 +12,16 @@ import android.provider.Settings
 import android.service.quicksettings.TileService
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.ripple
 import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -69,6 +79,7 @@ import com.example.soundvisualizer.language.LanguageSettingCard
 import com.example.soundvisualizer.tile.VisualizerTileService
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 /** 앱 화면 배경. 창·스플래시 배경(res/values/colors.xml 의 app_background)과 같은 값이어야 한다. */
 val BgColor = Color(0xFF2A2C31)
@@ -79,6 +90,22 @@ val PrimaryTextColor = Color(0xFFF2F4F6)
 val SecondaryTextColor = Color(0xFF8B95A1)
 /** 기능이 꺼져 있다는 안내 글자. DangerColor 는 어두운 배경에서 작은 글자로 읽기 어려워 밝은 주황을 쓴다. */
 val WarningColor = Color(0xFFFFB74D)
+
+/** 줄 전체를 누르는 자리의 눌림 표시 모양. 카드(20dp)보다 조금 작게 둬 카드 안쪽에서 어울린다. */
+val RowPressShape = RoundedCornerShape(12.dp)
+
+/**
+ * 줄 전체를 누르는 자리의 눌림 표시.
+ *
+ * 색을 지정하지 않은 기본 눌림 표시는 화면의 글자색을 쓴다. 이 앱은 어두운 카드 위에 밝은 글씨를
+ * 올려 두었는데 그 값은 기본 테마의 어두운 색이라, 눌린 자리가 **회색 사각형**으로 보인다. 모양도
+ * 없어서 카드의 둥근 모서리와 따로 논다. 강조색을 옅게 쓰고, 누르는 쪽에서 [RowPressShape] 로 잘라
+ * 카드와 어울리게 한다.
+ *
+ * 없애지는 않는다. 줄 전체를 누르게 해 둔 자리라 눌린 표시가 없으면 어디를 눌렀는지 알 수 없다.
+ * (탭은 밑줄이 그 역할을 하므로 그쪽만 표시를 끈다.)
+ */
+val RowPressIndication: Indication = ripple(color = AccentColor)
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -281,24 +308,54 @@ fun LauncherApp(
     onStop: () -> Unit,
     onAddTile: () -> Unit
 ) {
+    // 탭 이름은 화면 맨 위에 있다. 큰 화면에서 한 손으로 쓰면 거기까지 손이 가지 않으므로
+    // 화면 아무 데서나 좌우로 밀어도 넘어가게 한다.
+    val pagerState = rememberPagerState(initialPage = selectedTab) { TAB_COUNT }
+    val scope = rememberCoroutineScope()
+
+    // 액티비티가 탭을 정해 주는 경로(타일 길게 누르기, 멈춤 안내의 홈 이동)를 그대로 살린다.
+    LaunchedEffect(selectedTab) {
+        if (pagerState.currentPage != selectedTab) pagerState.animateScrollToPage(selectedTab)
+    }
+    // 밀어서 넘긴 결과를 액티비티에 돌려준다. 화면 회전과 복귀 때 보던 탭이 유지되는 것은
+    // 액티비티가 들고 있는 값이 맡는다.
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { onSelectTab(it) }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
         // selectableGroup 은 화면 읽어주기에 "셋 중 몇 번째"를 알려준다.
+        //
+        // 선택 표시는 액티비티가 든 값이 아니라 지금 보고 있는 쪽(currentPage)을 따른다. 밀다가 절반을
+        // 넘기는 순간 밑줄이 따라오므로, 손을 떼기 전에도 어디로 가는지 보인다.
         Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(24.dp)) {
-            TabButton(stringResource(R.string.tab_home), selectedTab == 0) { onSelectTab(0) }
+            TabButton(stringResource(R.string.tab_home), pagerState.currentPage == 0) {
+                scope.launch { pagerState.animateScrollToPage(0) }
+            }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { onSelectTab(1) }
+            TabButton(stringResource(R.string.tab_settings), pagerState.currentPage == 1) {
+                scope.launch { pagerState.animateScrollToPage(1) }
+            }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_help), selectedTab == 2) { onSelectTab(2) }
+            TabButton(stringResource(R.string.tab_help), pagerState.currentPage == 2) {
+                scope.launch { pagerState.animateScrollToPage(2) }
+            }
         }
 
-        when (selectedTab) {
-            0 -> HomeTab(onStart, onStop, onAddTile)
-            1 -> SettingsTab()
-            else -> HelpTab()
+        // 남은 높이를 전부 준다. 세 탭 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
+        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+            when (page) {
+                0 -> HomeTab(onStart, onStop, onAddTile)
+                1 -> SettingsTab()
+                else -> HelpTab()
+            }
         }
     }
 }
+
+/** 홈·설정·도움말. [LauncherApp] 의 탭 수와 [MainActivity] 의 TAB_* 이 같은 수를 가리킨다. */
+private const val TAB_COUNT = 3
 
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
@@ -621,10 +678,28 @@ fun SettingsTab() {
     }
 }
 
+/**
+ * 스위치를 켜야 쓰이는 세부 설정을 감싼다. 꺼져 있으면 자리를 차지하지 않고, 켜면 위아래로 펼쳐진다.
+ *
+ * 쓸 수 없는 설정을 흐릿하게 남겨 두면 화면만 길어지고 지금 무엇이 먹는 값인지 한눈에 들어오지 않는다.
+ * 그렇다고 움직임 없이 툭 나타났다 사라지면 어디가 늘거나 줄었는지 놓치기 쉬워서, 펼쳐지고 접히는
+ * 동안을 보여 준다.
+ */
+@Composable
+fun DependentSettings(visible: Boolean, content: @Composable ColumnScope.() -> Unit) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut()
+    ) {
+        Column(content = content)
+    }
+}
+
 @Composable
 fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, update: (ModeSettings.() -> Unit) -> Unit) {
-    // 크기 고정을 켜면 크기/진하기 대신 고정 크기/최대 진하기가 쓰인다.
-    // 그래서 어느 쪽이든 지금 실제로 먹지 않는 슬라이더는 비활성으로 둔다.
+    // 크기 고정을 켜면 크기/진하기 대신 고정 크기/최대 진하기가 쓰인다. 지금 먹지 않는 쪽은
+    // 흐릿하게 남겨 두지 않고 접는다. 흐릿한 슬라이더가 자리를 차지하면 화면만 길어진다.
     val sizeLocked = settings.intensityAsOpacity
 
     ModernSwitch(
@@ -634,30 +709,33 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
     ) {
         update { intensityAsOpacity = it }
     }
-    ModernSlider(
-        stringResource(R.string.setting_fixed_size),
-        stringResource(R.string.setting_fixed_size_desc),
-        settings.opacityFixedSize,
-        min = 10f, max = 100f, enabled = sizeLocked, indented = true
-    ) {
-        update { opacityFixedSize = it }
-    }
-    ModernSlider(
-        stringResource(R.string.setting_max_opacity),
-        stringResource(R.string.setting_max_opacity_desc),
-        settings.opacityFixedMaxOpacity,
-        min = 0f, max = 100f, enabled = sizeLocked, indented = true
-    ) {
-        update { opacityFixedMaxOpacity = it }
+    DependentSettings(sizeLocked) {
+        ModernSlider(
+            stringResource(R.string.setting_fixed_size),
+            stringResource(R.string.setting_fixed_size_desc),
+            settings.opacityFixedSize,
+            min = 10f, max = 100f, indented = true
+        ) {
+            update { opacityFixedSize = it }
+        }
+        ModernSlider(
+            stringResource(R.string.setting_max_opacity),
+            stringResource(R.string.setting_max_opacity_desc),
+            settings.opacityFixedMaxOpacity,
+            min = 0f, max = 100f, indented = true
+        ) {
+            update { opacityFixedMaxOpacity = it }
+        }
     }
 
-    ModernSlider(
-        stringResource(R.string.setting_size),
-        stringResource(R.string.setting_size_desc),
-        settings.intensity,
-        enabled = !sizeLocked
-    ) {
-        update { intensity = it }
+    DependentSettings(!sizeLocked) {
+        ModernSlider(
+            stringResource(R.string.setting_size),
+            stringResource(R.string.setting_size_desc),
+            settings.intensity
+        ) {
+            update { intensity = it }
+        }
     }
     if (isCircle) {
         ModernSlider(
@@ -669,13 +747,14 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
             update { circleRadius = it }
         }
     }
-    ModernSlider(
-        stringResource(R.string.setting_opacity),
-        stringResource(R.string.setting_opacity_desc),
-        settings.opacity,
-        enabled = !sizeLocked
-    ) {
-        update { opacity = it }
+    DependentSettings(!sizeLocked) {
+        ModernSlider(
+            stringResource(R.string.setting_opacity),
+            stringResource(R.string.setting_opacity_desc),
+            settings.opacity
+        ) {
+            update { opacity = it }
+        }
     }
     ModernSlider(
         stringResource(R.string.setting_speed),
@@ -699,13 +778,15 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
     ) {
         update { isGlowMode = it }
     }
-    ModernSlider(
-        stringResource(R.string.setting_glow_intensity),
-        stringResource(R.string.setting_glow_intensity_desc),
-        settings.glowIntensity,
-        enabled = settings.isGlowMode, indented = true
-    ) {
-        update { glowIntensity = it }
+    DependentSettings(settings.isGlowMode) {
+        ModernSlider(
+            stringResource(R.string.setting_glow_intensity),
+            stringResource(R.string.setting_glow_intensity_desc),
+            settings.glowIntensity,
+            indented = true
+        ) {
+            update { glowIntensity = it }
+        }
     }
 
     ModernSwitch(
@@ -752,7 +833,14 @@ fun ColorSettingRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .weight(1f)
-                .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+                .clip(RowPressShape)
+                .toggleable(
+                    value = checked,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = RowPressIndication,
+                    role = Role.Switch,
+                    onValueChange = onCheckedChange
+                )
         ) {
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
             Switch(
@@ -977,7 +1065,15 @@ fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Compo
         Column(modifier = Modifier.padding(24.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, 
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(bottom = if(expanded) 24.dp else 0.dp)
+                // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 펼친 내용과의 빈 칸까지 눌린다.
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = if (expanded) 24.dp else 0.dp)
+                    .clip(RowPressShape)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = RowPressIndication
+                    ) { expanded = !expanded }
             ) {
                 Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
                 Icon(
@@ -1056,8 +1152,11 @@ fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange:
         modifier = Modifier
             // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 다음 항목과의 빈 칸까지 눌린다.
             .padding(bottom = 24.dp)
+            .clip(RowPressShape)
             .toggleable(
                 value = checked,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = RowPressIndication,
                 role = Role.Switch,
                 onValueChange = {
                     onCheckedChange(it)
