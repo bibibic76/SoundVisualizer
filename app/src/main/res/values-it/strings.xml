@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">Scegli un colore</string>
     <string name="color_picker_presets">Colori comuni</string>
+    <string name="cd_preset_white">Bianco</string>
+    <string name="cd_preset_red">Rosso</string>
+    <string name="cd_preset_orange">Arancione</string>
+    <string name="cd_preset_yellow">Giallo</string>
+    <string name="cd_preset_green">Verde</string>
+    <string name="cd_preset_cyan">Turchese</string>
+    <string name="cd_preset_blue">Blu</string>
+    <string name="cd_preset_magenta">Magenta</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">Annulla</string>
 

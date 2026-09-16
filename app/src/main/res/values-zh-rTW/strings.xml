@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">選擇顏色</string>
     <string name="color_picker_presets">常用顏色</string>
+    <string name="cd_preset_white">白色</string>
+    <string name="cd_preset_red">紅色</string>
+    <string name="cd_preset_orange">橘色</string>
+    <string name="cd_preset_yellow">黃色</string>
+    <string name="cd_preset_green">綠色</string>
+    <string name="cd_preset_cyan">青色</string>
+    <string name="cd_preset_blue">藍色</string>
+    <string name="cd_preset_magenta">洋紅色</string>
     <string name="color_picker_confirm">確定</string>
     <string name="color_picker_cancel">取消</string>
 

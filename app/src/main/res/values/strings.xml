@@ -111,6 +111,15 @@
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
     <string name="color_picker_presets">Common colors</string>
+    <!-- 화면 읽어주기용 프리셋 색 이름. 색을 보지 못해도 무슨 색인지 알 수 있어야 한다. -->
+    <string name="cd_preset_white">White</string>
+    <string name="cd_preset_red">Red</string>
+    <string name="cd_preset_orange">Orange</string>
+    <string name="cd_preset_yellow">Yellow</string>
+    <string name="cd_preset_green">Green</string>
+    <string name="cd_preset_cyan">Cyan</string>
+    <string name="cd_preset_blue">Blue</string>
+    <string name="cd_preset_magenta">Magenta</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">Cancel</string>
 

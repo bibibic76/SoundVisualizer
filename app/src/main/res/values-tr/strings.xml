@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>
     <string name="color_picker_presets">Sık kullanılan renkler</string>
+    <string name="cd_preset_white">Beyaz</string>
+    <string name="cd_preset_red">Kırmızı</string>
+    <string name="cd_preset_orange">Turuncu</string>
+    <string name="cd_preset_yellow">Sarı</string>
+    <string name="cd_preset_green">Yeşil</string>
+    <string name="cd_preset_cyan">Turkuaz</string>
+    <string name="cd_preset_blue">Mavi</string>
+    <string name="cd_preset_magenta">Macenta</string>
     <string name="color_picker_confirm">Tamam</string>
     <string name="color_picker_cancel">İptal</string>
 

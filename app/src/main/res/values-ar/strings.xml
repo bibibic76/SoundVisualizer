@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">اختيار لون</string>
     <string name="color_picker_presets">ألوان شائعة</string>
+    <string name="cd_preset_white">أبيض</string>
+    <string name="cd_preset_red">أحمر</string>
+    <string name="cd_preset_orange">برتقالي</string>
+    <string name="cd_preset_yellow">أصفر</string>
+    <string name="cd_preset_green">أخضر</string>
+    <string name="cd_preset_cyan">سماوي</string>
+    <string name="cd_preset_blue">أزرق</string>
+    <string name="cd_preset_magenta">ماجنتا</string>
     <string name="color_picker_confirm">حسنًا</string>
     <string name="color_picker_cancel">إلغاء</string>
 

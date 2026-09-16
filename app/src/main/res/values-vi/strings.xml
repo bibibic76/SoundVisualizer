@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">Chọn màu</string>
     <string name="color_picker_presets">Màu thường dùng</string>
+    <string name="cd_preset_white">Trắng</string>
+    <string name="cd_preset_red">Đỏ</string>
+    <string name="cd_preset_orange">Cam</string>
+    <string name="cd_preset_yellow">Vàng</string>
+    <string name="cd_preset_green">Xanh lá cây</string>
+    <string name="cd_preset_cyan">Xanh lơ</string>
+    <string name="cd_preset_blue">Xanh dương</string>
+    <string name="cd_preset_magenta">Hồng cánh sen</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">Hủy</string>
 

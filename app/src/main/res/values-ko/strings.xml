@@ -107,6 +107,14 @@
     <!-- 색상 선택 -->
     <string name="color_picker_title">색상 선택</string>
     <string name="color_picker_presets">자주 쓰는 색</string>
+    <string name="cd_preset_white">흰색</string>
+    <string name="cd_preset_red">빨간색</string>
+    <string name="cd_preset_orange">주황색</string>
+    <string name="cd_preset_yellow">노란색</string>
+    <string name="cd_preset_green">초록색</string>
+    <string name="cd_preset_cyan">청록색</string>
+    <string name="cd_preset_blue">파란색</string>
+    <string name="cd_preset_magenta">자홍색</string>
     <string name="color_picker_confirm">확인</string>
     <string name="color_picker_cancel">취소</string>
 

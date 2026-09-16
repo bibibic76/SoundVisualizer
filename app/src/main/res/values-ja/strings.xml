@@ -107,6 +107,14 @@
     <!-- Color picker -->
     <string name="color_picker_title">色を選択</string>
     <string name="color_picker_presets">よく使う色</string>
+    <string name="cd_preset_white">白</string>
+    <string name="cd_preset_red">赤</string>
+    <string name="cd_preset_orange">オレンジ</string>
+    <string name="cd_preset_yellow">黄色</string>
+    <string name="cd_preset_green">緑</string>
+    <string name="cd_preset_cyan">水色</string>
+    <string name="cd_preset_blue">青</string>
+    <string name="cd_preset_magenta">マゼンタ</string>
     <string name="color_picker_confirm">OK</string>
     <string name="color_picker_cancel">キャンセル</string>
 
