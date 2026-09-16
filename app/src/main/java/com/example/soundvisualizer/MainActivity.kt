@@ -12,6 +12,8 @@ import android.provider.Settings
 import android.service.quicksettings.TileService
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Indication
+import androidx.compose.material3.ripple
 import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -79,6 +81,22 @@ val PrimaryTextColor = Color(0xFFF2F4F6)
 val SecondaryTextColor = Color(0xFF8B95A1)
 /** 기능이 꺼져 있다는 안내 글자. DangerColor 는 어두운 배경에서 작은 글자로 읽기 어려워 밝은 주황을 쓴다. */
 val WarningColor = Color(0xFFFFB74D)
+
+/** 줄 전체를 누르는 자리의 눌림 표시 모양. 카드(20dp)보다 조금 작게 둬 카드 안쪽에서 어울린다. */
+val RowPressShape = RoundedCornerShape(12.dp)
+
+/**
+ * 줄 전체를 누르는 자리의 눌림 표시.
+ *
+ * 색을 지정하지 않은 기본 눌림 표시는 화면의 글자색을 쓴다. 이 앱은 어두운 카드 위에 밝은 글씨를
+ * 올려 두었는데 그 값은 기본 테마의 어두운 색이라, 눌린 자리가 **회색 사각형**으로 보인다. 모양도
+ * 없어서 카드의 둥근 모서리와 따로 논다. 강조색을 옅게 쓰고, 누르는 쪽에서 [RowPressShape] 로 잘라
+ * 카드와 어울리게 한다.
+ *
+ * 없애지는 않는다. 줄 전체를 누르게 해 둔 자리라 눌린 표시가 없으면 어디를 눌렀는지 알 수 없다.
+ * (탭은 밑줄이 그 역할을 하므로 그쪽만 표시를 끈다.)
+ */
+val RowPressIndication: Indication = ripple(color = AccentColor)
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -752,7 +770,14 @@ fun ColorSettingRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .weight(1f)
-                .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+                .clip(RowPressShape)
+                .toggleable(
+                    value = checked,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = RowPressIndication,
+                    role = Role.Switch,
+                    onValueChange = onCheckedChange
+                )
         ) {
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
             Switch(
@@ -977,7 +1002,15 @@ fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Compo
         Column(modifier = Modifier.padding(24.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, 
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(bottom = if(expanded) 24.dp else 0.dp)
+                // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 펼친 내용과의 빈 칸까지 눌린다.
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = if (expanded) 24.dp else 0.dp)
+                    .clip(RowPressShape)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = RowPressIndication
+                    ) { expanded = !expanded }
             ) {
                 Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
                 Icon(
@@ -1056,8 +1089,11 @@ fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange:
         modifier = Modifier
             // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 다음 항목과의 빈 칸까지 눌린다.
             .padding(bottom = 24.dp)
+            .clip(RowPressShape)
             .toggleable(
                 value = checked,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = RowPressIndication,
                 role = Role.Switch,
                 onValueChange = {
                     onCheckedChange(it)
