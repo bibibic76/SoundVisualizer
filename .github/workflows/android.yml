@@ -2,6 +2,8 @@
 # 브랜치를 develop 에 합치기 전에 깨졌는지 알 수 있고, APK 는 Actions 실행 화면에서 받는다.
 #
 # 계측 테스트(connectedDebugAndroidTest)는 기기가 필요해서 여기서는 돌리지 않는다.
+# 대신 컴파일은 확인한다(assembleDebugAndroidTest). 그러지 않으면 계측 테스트가 쓰는 함수 이름이 바뀌어
+# 테스트가 깨져도 CI 는 계속 통과하고, 다음에 기기를 꽂을 때까지 아무도 모른다.
 #
 # job 이름(name)은 develop·main 보호 규칙의 필수 체크 이름이다. 바꾸면 저장소 규칙도 함께 바꿔야 하고,
 # 이전 이름으로 도는 진행 중인 브랜치의 PR 이 머지되지 않는다.
@@ -89,6 +91,9 @@ jobs:
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
               summary.write(f"### 유닛 테스트\n\n{line}\n")
           PY
+
+      - name: 계측 테스트 컴파일 확인
+        run: ./gradlew assembleDebugAndroidTest
 
       - name: 디버그 APK 빌드
         run: ./gradlew assembleDebug
