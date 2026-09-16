@@ -19,6 +19,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ripple
 import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
@@ -77,6 +79,7 @@ import com.example.soundvisualizer.language.LanguageSettingCard
 import com.example.soundvisualizer.tile.VisualizerTileService
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 /** 앱 화면 배경. 창·스플래시 배경(res/values/colors.xml 의 app_background)과 같은 값이어야 한다. */
 val BgColor = Color(0xFF2A2C31)
@@ -305,24 +308,54 @@ fun LauncherApp(
     onStop: () -> Unit,
     onAddTile: () -> Unit
 ) {
+    // 탭 이름은 화면 맨 위에 있다. 큰 화면에서 한 손으로 쓰면 거기까지 손이 가지 않으므로
+    // 화면 아무 데서나 좌우로 밀어도 넘어가게 한다.
+    val pagerState = rememberPagerState(initialPage = selectedTab) { TAB_COUNT }
+    val scope = rememberCoroutineScope()
+
+    // 액티비티가 탭을 정해 주는 경로(타일 길게 누르기, 멈춤 안내의 홈 이동)를 그대로 살린다.
+    LaunchedEffect(selectedTab) {
+        if (pagerState.currentPage != selectedTab) pagerState.animateScrollToPage(selectedTab)
+    }
+    // 밀어서 넘긴 결과를 액티비티에 돌려준다. 화면 회전과 복귀 때 보던 탭이 유지되는 것은
+    // 액티비티가 들고 있는 값이 맡는다.
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { onSelectTab(it) }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
         // selectableGroup 은 화면 읽어주기에 "셋 중 몇 번째"를 알려준다.
+        //
+        // 선택 표시는 액티비티가 든 값이 아니라 지금 보고 있는 쪽(currentPage)을 따른다. 밀다가 절반을
+        // 넘기는 순간 밑줄이 따라오므로, 손을 떼기 전에도 어디로 가는지 보인다.
         Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup().padding(24.dp)) {
-            TabButton(stringResource(R.string.tab_home), selectedTab == 0) { onSelectTab(0) }
+            TabButton(stringResource(R.string.tab_home), pagerState.currentPage == 0) {
+                scope.launch { pagerState.animateScrollToPage(0) }
+            }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_settings), selectedTab == 1) { onSelectTab(1) }
+            TabButton(stringResource(R.string.tab_settings), pagerState.currentPage == 1) {
+                scope.launch { pagerState.animateScrollToPage(1) }
+            }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_help), selectedTab == 2) { onSelectTab(2) }
+            TabButton(stringResource(R.string.tab_help), pagerState.currentPage == 2) {
+                scope.launch { pagerState.animateScrollToPage(2) }
+            }
         }
 
-        when (selectedTab) {
-            0 -> HomeTab(onStart, onStop, onAddTile)
-            1 -> SettingsTab()
-            else -> HelpTab()
+        // 남은 높이를 전부 준다. 세 탭 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
+        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+            when (page) {
+                0 -> HomeTab(onStart, onStop, onAddTile)
+                1 -> SettingsTab()
+                else -> HelpTab()
+            }
         }
     }
 }
+
+/** 홈·설정·도움말. [LauncherApp] 의 탭 수와 [MainActivity] 의 TAB_* 이 같은 수를 가리킨다. */
+private const val TAB_COUNT = 3
 
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
