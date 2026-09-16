@@ -5,7 +5,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 보호된 소리 안내를 띄울지 정하는 규칙.
+ * 받지 못하고 있다는 안내를 띄울지 정하는 규칙.
  *
  * 이 판단이 틀리면 둘 중 하나가 일어난다. 띄우지 않으면 청각장애 사용자는 앱이 고장 난 줄 알고,
  * 잘못 띄우면 멀쩡한 앱을 탓하게 된다. 그래서 "정말 확실할 때만 띄운다" 를 여러 각도로 확인한다.
@@ -15,12 +15,12 @@ class BlockedCaptureNoticeTest {
     private val hold = BlockedCaptureNotice.HOLD_MS
     private val clear = BlockedCaptureNotice.CLEAR_MS
 
-    /** 무음(0)만 받으며 [ms] 만큼 재생이 이어진 것으로 친다. 마지막으로 넣은 시각을 돌려준다. */
+    /** 아무것도 받지 못한 채 [ms] 만큼 재생이 이어진 것으로 친다. 마지막으로 넣은 시각을 돌려준다. */
     private fun BlockedCaptureNotice.playSilently(from: Long, ms: Long): Long {
         var now = from
         val until = from + ms
         while (now <= until) {
-            onTick(nowMs = now, canJudge = true, mediaPlaying = true, level = 0f)
+            onTick(nowMs = now, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
             now += TICK
         }
         return now - TICK
@@ -32,14 +32,14 @@ class BlockedCaptureNoticeTest {
     }
 
     @Test
-    fun `재생 중인데 무음만 들어오면 버티는 시간 뒤에 안내한다`() {
+    fun `재생 중인데 아무것도 못 받으면 버티는 시간 뒤에 안내한다`() {
         val notice = BlockedCaptureNotice()
         val start = 10_000L
         notice.playSilently(from = start, ms = hold - TICK)
         assertFalse("아직 버티는 시간을 채우지 못했다", notice.isBlocked)
         assertTrue(
             "버티는 시간을 채운 틱에서 바뀐다",
-            notice.onTick(start + hold, canJudge = true, mediaPlaying = true, level = 0f)
+            notice.onTick(start + hold, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
         )
         assertTrue(notice.isBlocked)
     }
@@ -50,8 +50,14 @@ class BlockedCaptureNoticeTest {
         val notice = BlockedCaptureNotice()
         notice.playSilently(from = 0, ms = hold)
         assertTrue(notice.isBlocked)
-        assertFalse("이미 띄운 뒤에는 그대로", notice.onTick(hold + TICK, canJudge = true, mediaPlaying = true, level = 0f))
-        assertFalse("계속 그대로", notice.onTick(hold + 60_000, canJudge = true, mediaPlaying = true, level = 0f))
+        assertFalse(
+            "이미 띄운 뒤에는 그대로",
+            notice.onTick(hold + TICK, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
+        )
+        assertFalse(
+            "계속 그대로",
+            notice.onTick(hold + 60_000, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
+        )
     }
 
     @Test
@@ -60,7 +66,7 @@ class BlockedCaptureNoticeTest {
         val notice = BlockedCaptureNotice()
         var now = 0L
         repeat(100) {
-            assertFalse(notice.onTick(now, canJudge = true, mediaPlaying = false, level = 0f))
+            assertFalse(notice.onTick(now, canJudge = true, mediaPlaying = false, peak = 0f, buffers = BUFFERS))
             now += TICK
         }
         assertFalse(notice.isBlocked)
@@ -71,7 +77,7 @@ class BlockedCaptureNoticeTest {
         val notice = BlockedCaptureNotice()
         var now = 0L
         repeat(100) {
-            assertFalse(notice.onTick(now, canJudge = true, mediaPlaying = true, level = 0.5f))
+            assertFalse(notice.onTick(now, canJudge = true, mediaPlaying = true, peak = 0.5f, buffers = BUFFERS))
             now += TICK
         }
         assertFalse(notice.isBlocked)
@@ -84,7 +90,7 @@ class BlockedCaptureNoticeTest {
         assertTrue(notice.isBlocked)
         assertTrue(
             "받은 첫 소리에서 바로 내린다",
-            notice.onTick(end + TICK, canJudge = true, mediaPlaying = true, level = 0.3f)
+            notice.onTick(end + TICK, canJudge = true, mediaPlaying = true, peak = 0.3f, buffers = BUFFERS)
         )
         assertFalse(notice.isBlocked)
     }
@@ -92,18 +98,35 @@ class BlockedCaptureNoticeTest {
     @Test
     fun `아주 작은 소리 한 번에도 세던 것을 버린다`() {
         // 눈에 보이지도 않을 만큼 작아도 받은 것은 받은 것이다. 그 앱을 탓할 수 없다.
-        val level = BlockedCaptureNotice.SILENCE_LEVEL * 2
+        val peak = BlockedCaptureNotice.SILENCE_LEVEL * 2
         val notice = BlockedCaptureNotice()
-        assertTrue(notice.hasSound(level))
+        assertTrue(notice.hasSound(peak))
         notice.playSilently(from = 0, ms = hold - TICK)
-        notice.onTick(hold, canJudge = true, mediaPlaying = true, level = level)
+        notice.onTick(hold, canJudge = true, mediaPlaying = true, peak = peak, buffers = BUFFERS)
         notice.playSilently(from = hold + TICK, ms = hold - TICK * 2)
         assertFalse("작은 소리로 끊겼으니 처음부터 다시 버텨야 한다", notice.isBlocked)
     }
 
     @Test
-    fun `무음 기준 이하는 못 받은 것으로 본다`() {
-        // 막힌 앱은 정확히 0 을 주지만, 0 하고만 비교하면 떠도는 한 샘플에도 안내가 영영 뜨지 않는다.
+    fun `볼륨을 낮춰 작게 들어온 소리는 받은 것으로 본다`() {
+        // 우리가 받는 소리에는 미디어 볼륨이 곱해져 있다. 15단계 중 1~2단계에서는 보통의 영상도
+        // 0.002 언저리로 들어오는데, 화면을 보려고 볼륨을 낮춰 두는 것은 이 앱 사용자에게 아주 흔하다.
+        // 그 정도를 무음으로 치면 멀쩡한 앱이 누명을 쓴다.
+        val notice = BlockedCaptureNotice()
+        val quiet = 0.002f
+        assertTrue("작은 볼륨으로 들어온 소리", notice.hasSound(quiet))
+        var now = 0L
+        repeat(((hold / TICK) * 3).toInt()) {
+            assertFalse(notice.onTick(now, canJudge = true, mediaPlaying = true, peak = quiet, buffers = BUFFERS))
+            now += TICK
+        }
+        assertFalse(notice.isBlocked)
+    }
+
+    @Test
+    fun `아무것도 들어오지 않은 것만 못 받은 것으로 본다`() {
+        // 막힌 앱의 소리는 볼륨과 상관없이 믹스에 섞이지 않아 정확히 0 으로 들어온다.
+        // 0 하고만 비교하지 않는 것은 부동소수점 찌꺼기를 소리로 세지 않기 위해서다.
         val notice = BlockedCaptureNotice()
         assertFalse(notice.hasSound(0f))
         assertFalse(notice.hasSound(BlockedCaptureNotice.SILENCE_LEVEL))
@@ -112,24 +135,50 @@ class BlockedCaptureNoticeTest {
     }
 
     @Test
+    fun `버퍼가 오지 않으면 안내하지 않는다`() {
+        // 우리 쪽 캡처가 멈춘 경우다(화면을 켠 뒤 오디오 서버가 버퍼를 다시 보내지 않는 등).
+        // 조용한 원인이 우리에게 있는데 앱을 탓하면, 사용자는 엉뚱한 곳을 고치러 간다.
+        val notice = BlockedCaptureNotice()
+        var now = 0L
+        repeat(((hold / TICK) * 3).toInt()) {
+            assertFalse(notice.onTick(now, canJudge = true, mediaPlaying = true, peak = 0f, buffers = 0))
+            now += TICK
+        }
+        assertFalse(notice.isBlocked)
+    }
+
+    @Test
+    fun `버퍼가 끊기면 떠 있던 안내도 바로 내린다`() {
+        // 안내를 뒷받침하던 근거(우리는 받고 있는데 소리가 없다)가 사라졌다.
+        val notice = BlockedCaptureNotice()
+        val end = notice.playSilently(from = 0, ms = hold)
+        assertTrue(notice.isBlocked)
+        assertTrue(notice.onTick(end + TICK, canJudge = true, mediaPlaying = true, peak = 0f, buffers = 0))
+        assertFalse(notice.isBlocked)
+    }
+
+    @Test
     fun `판단할 수 없는 상황이면 세던 것을 버린다`() {
-        // 볼륨 0, 통화 중, 헤드셋 연결 등. 무음의 이유가 따로 있으면 그 앱 탓을 할 수 없다.
+        // 볼륨 0, 통화 중 등. 무음의 이유가 따로 있으면 그 앱 탓을 할 수 없다.
         val notice = BlockedCaptureNotice()
         notice.playSilently(from = 0, ms = hold - TICK)
-        notice.onTick(hold, canJudge = false, mediaPlaying = true, level = 0f)
+        notice.onTick(hold, canJudge = false, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
         notice.playSilently(from = hold + TICK, ms = hold - TICK * 2)
         assertFalse("끊겼으니 처음부터 다시 센다", notice.isBlocked)
         // 다시 세기 시작한 시각(hold + TICK)에서 hold 를 채우면 그때 뜬다.
-        assertTrue("다시 버티면 뜬다", notice.onTick(hold * 2 + TICK, canJudge = true, mediaPlaying = true, level = 0f))
+        assertTrue(
+            "다시 버티면 뜬다",
+            notice.onTick(hold * 2 + TICK, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
+        )
     }
 
     @Test
     fun `판단할 수 없게 되면 떠 있던 안내도 바로 내린다`() {
-        // 안내 중에 전화가 오거나 헤드셋을 꽂으면 그때부터는 아무 말도 할 수 없다.
+        // 안내 중에 전화가 오거나 사용자가 볼륨을 0 으로 내리면 그때부터는 아무 말도 할 수 없다.
         val notice = BlockedCaptureNotice()
         val end = notice.playSilently(from = 0, ms = hold)
         assertTrue(notice.isBlocked)
-        assertTrue(notice.onTick(end + TICK, canJudge = false, mediaPlaying = true, level = 0f))
+        assertTrue(notice.onTick(end + TICK, canJudge = false, mediaPlaying = true, peak = 0f, buffers = BUFFERS))
         assertFalse(notice.isBlocked)
     }
 
@@ -141,7 +190,10 @@ class BlockedCaptureNoticeTest {
         var now = end + TICK
         val until = end + clear
         while (now < until) {
-            assertFalse("아직 내릴 때가 아니다", notice.onTick(now, canJudge = true, mediaPlaying = false, level = 0f))
+            assertFalse(
+                "아직 내릴 때가 아니다",
+                notice.onTick(now, canJudge = true, mediaPlaying = false, peak = 0f, buffers = BUFFERS)
+            )
             now += TICK
         }
         assertTrue(notice.isBlocked)
@@ -154,7 +206,8 @@ class BlockedCaptureNoticeTest {
         var now = end + TICK
         var changed = false
         repeat((clear / TICK).toInt() + 2) {
-            changed = changed || notice.onTick(now, canJudge = true, mediaPlaying = false, level = 0f)
+            changed = changed ||
+                notice.onTick(now, canJudge = true, mediaPlaying = false, peak = 0f, buffers = BUFFERS)
             now += TICK
         }
         assertTrue("근거가 사라졌으므로 내린다", changed)
@@ -166,11 +219,11 @@ class BlockedCaptureNoticeTest {
         // 잠깐 멈췄다 이어지는 경우다. 내렸다가 다시 버티게 하면 안내가 늦는다.
         val notice = BlockedCaptureNotice()
         val end = notice.playSilently(from = 0, ms = hold)
-        notice.onTick(end + TICK, canJudge = true, mediaPlaying = false, level = 0f)
-        notice.onTick(end + TICK * 2, canJudge = true, mediaPlaying = true, level = 0f)
+        notice.onTick(end + TICK, canJudge = true, mediaPlaying = false, peak = 0f, buffers = BUFFERS)
+        notice.onTick(end + TICK * 2, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
         assertTrue(notice.isBlocked)
         // 다시 끊겨도 내리는 시간을 처음부터 센다.
-        notice.onTick(end + TICK * 3, canJudge = true, mediaPlaying = false, level = 0f)
+        notice.onTick(end + TICK * 3, canJudge = true, mediaPlaying = false, peak = 0f, buffers = BUFFERS)
         assertTrue(notice.isBlocked)
     }
 
@@ -181,7 +234,7 @@ class BlockedCaptureNoticeTest {
         repeat(3) { round ->
             now = notice.playSilently(from = now, ms = hold) + TICK
             assertTrue("${round + 1}번째 안내", notice.isBlocked)
-            assertTrue(notice.onTick(now, canJudge = true, mediaPlaying = true, level = 0.4f))
+            assertTrue(notice.onTick(now, canJudge = true, mediaPlaying = true, peak = 0.4f, buffers = BUFFERS))
             now += TICK
         }
     }
@@ -200,20 +253,29 @@ class BlockedCaptureNoticeTest {
 
     @Test
     fun `틱 간격이 달라도 시각으로만 판단한다`() {
-        // 메인 스레드가 밀려 틱이 늦게 와도 6초는 6초다.
+        // 메인 스레드가 밀려 틱이 늦게 와도 15초는 15초다.
         val notice = BlockedCaptureNotice()
-        assertFalse(notice.onTick(0, canJudge = true, mediaPlaying = true, level = 0f))
-        assertFalse("한 틱만으로는 뜨지 않는다", notice.onTick(hold - 1, canJudge = true, mediaPlaying = true, level = 0f))
-        assertTrue(notice.onTick(hold, canJudge = true, mediaPlaying = true, level = 0f))
+        assertFalse(notice.onTick(0, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS))
+        assertFalse(
+            "한 틱만으로는 뜨지 않는다",
+            notice.onTick(hold - 1, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
+        )
+        assertTrue(notice.onTick(hold, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS))
     }
 
     @Test
     fun `기준값은 보수적으로 잡혀 있다`() {
         // 값을 바꿀 때 왜 그렇게 잡았는지 한 번 더 보게 남겨 둔다.
-        assertTrue("무음 기준은 그리기·진동 기준(0.01)보다 낮다", BlockedCaptureNotice.SILENCE_LEVEL < 0.01f)
+        assertTrue(
+            "볼륨을 낮춰 작게 들어온 소리를 무음으로 치면 안 된다",
+            BlockedCaptureNotice.SILENCE_LEVEL < 0.0001f
+        )
         assertTrue("0 하고만 비교하지는 않는다", BlockedCaptureNotice.SILENCE_LEVEL > 0f)
-        assertTrue("잠깐 조용한 구간을 지나 보낼 만큼 길다", BlockedCaptureNotice.HOLD_MS >= 5_000L)
-        assertTrue("사용자가 고장으로 여기기 전에는 뜬다", BlockedCaptureNotice.HOLD_MS <= 10_000L)
+        assertTrue(
+            "피드의 자동 재생 영상을 몇 초 훑고 지나가는 것만으로는 뜨지 않는다",
+            BlockedCaptureNotice.HOLD_MS >= 10_000L
+        )
+        assertTrue("사용자가 고장으로 여기기 전에는 뜬다", BlockedCaptureNotice.HOLD_MS <= 20_000L)
         assertTrue("내리는 시간은 버티는 시간보다 짧다", BlockedCaptureNotice.CLEAR_MS < BlockedCaptureNotice.HOLD_MS)
     }
 
@@ -221,13 +283,16 @@ class BlockedCaptureNoticeTest {
     fun `생성자로 기준을 바꿔 쓸 수 있다`() {
         val notice = BlockedCaptureNotice(silenceLevel = 0.1f, holdMs = 1_000L, clearMs = 500L)
         assertFalse("바꾼 기준 아래는 무음으로 본다", notice.hasSound(0.05f))
-        assertFalse(notice.onTick(0, canJudge = true, mediaPlaying = true, level = 0.05f))
-        assertTrue(notice.onTick(1_000, canJudge = true, mediaPlaying = true, level = 0.05f))
+        assertFalse(notice.onTick(0, canJudge = true, mediaPlaying = true, peak = 0.05f, buffers = BUFFERS))
+        assertTrue(notice.onTick(1_000, canJudge = true, mediaPlaying = true, peak = 0.05f, buffers = BUFFERS))
         assertTrue(notice.isBlocked)
     }
 
     private companion object {
         /** 캡처 서비스가 도는 확인 간격과 같게 둔다. */
         const val TICK = 500L
+
+        /** 그 0.5초 동안 도착하는 버퍼 수 (11.6ms 짜리 버퍼 기준). */
+        const val BUFFERS = 43
     }
 }
