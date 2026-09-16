@@ -12,7 +12,13 @@ import android.provider.Settings
 import android.service.quicksettings.TileService
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Indication
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.ripple
 import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
@@ -639,10 +645,28 @@ fun SettingsTab() {
     }
 }
 
+/**
+ * 스위치를 켜야 쓰이는 세부 설정을 감싼다. 꺼져 있으면 자리를 차지하지 않고, 켜면 위아래로 펼쳐진다.
+ *
+ * 쓸 수 없는 설정을 흐릿하게 남겨 두면 화면만 길어지고 지금 무엇이 먹는 값인지 한눈에 들어오지 않는다.
+ * 그렇다고 움직임 없이 툭 나타났다 사라지면 어디가 늘거나 줄었는지 놓치기 쉬워서, 펼쳐지고 접히는
+ * 동안을 보여 준다.
+ */
+@Composable
+fun DependentSettings(visible: Boolean, content: @Composable ColumnScope.() -> Unit) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut()
+    ) {
+        Column(content = content)
+    }
+}
+
 @Composable
 fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, update: (ModeSettings.() -> Unit) -> Unit) {
-    // 크기 고정을 켜면 크기/진하기 대신 고정 크기/최대 진하기가 쓰인다.
-    // 그래서 어느 쪽이든 지금 실제로 먹지 않는 슬라이더는 비활성으로 둔다.
+    // 크기 고정을 켜면 크기/진하기 대신 고정 크기/최대 진하기가 쓰인다. 지금 먹지 않는 쪽은
+    // 흐릿하게 남겨 두지 않고 접는다. 흐릿한 슬라이더가 자리를 차지하면 화면만 길어진다.
     val sizeLocked = settings.intensityAsOpacity
 
     ModernSwitch(
@@ -652,30 +676,33 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
     ) {
         update { intensityAsOpacity = it }
     }
-    ModernSlider(
-        stringResource(R.string.setting_fixed_size),
-        stringResource(R.string.setting_fixed_size_desc),
-        settings.opacityFixedSize,
-        min = 10f, max = 100f, enabled = sizeLocked, indented = true
-    ) {
-        update { opacityFixedSize = it }
-    }
-    ModernSlider(
-        stringResource(R.string.setting_max_opacity),
-        stringResource(R.string.setting_max_opacity_desc),
-        settings.opacityFixedMaxOpacity,
-        min = 0f, max = 100f, enabled = sizeLocked, indented = true
-    ) {
-        update { opacityFixedMaxOpacity = it }
+    DependentSettings(sizeLocked) {
+        ModernSlider(
+            stringResource(R.string.setting_fixed_size),
+            stringResource(R.string.setting_fixed_size_desc),
+            settings.opacityFixedSize,
+            min = 10f, max = 100f, indented = true
+        ) {
+            update { opacityFixedSize = it }
+        }
+        ModernSlider(
+            stringResource(R.string.setting_max_opacity),
+            stringResource(R.string.setting_max_opacity_desc),
+            settings.opacityFixedMaxOpacity,
+            min = 0f, max = 100f, indented = true
+        ) {
+            update { opacityFixedMaxOpacity = it }
+        }
     }
 
-    ModernSlider(
-        stringResource(R.string.setting_size),
-        stringResource(R.string.setting_size_desc),
-        settings.intensity,
-        enabled = !sizeLocked
-    ) {
-        update { intensity = it }
+    DependentSettings(!sizeLocked) {
+        ModernSlider(
+            stringResource(R.string.setting_size),
+            stringResource(R.string.setting_size_desc),
+            settings.intensity
+        ) {
+            update { intensity = it }
+        }
     }
     if (isCircle) {
         ModernSlider(
@@ -687,13 +714,14 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
             update { circleRadius = it }
         }
     }
-    ModernSlider(
-        stringResource(R.string.setting_opacity),
-        stringResource(R.string.setting_opacity_desc),
-        settings.opacity,
-        enabled = !sizeLocked
-    ) {
-        update { opacity = it }
+    DependentSettings(!sizeLocked) {
+        ModernSlider(
+            stringResource(R.string.setting_opacity),
+            stringResource(R.string.setting_opacity_desc),
+            settings.opacity
+        ) {
+            update { opacity = it }
+        }
     }
     ModernSlider(
         stringResource(R.string.setting_speed),
@@ -717,13 +745,15 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
     ) {
         update { isGlowMode = it }
     }
-    ModernSlider(
-        stringResource(R.string.setting_glow_intensity),
-        stringResource(R.string.setting_glow_intensity_desc),
-        settings.glowIntensity,
-        enabled = settings.isGlowMode, indented = true
-    ) {
-        update { glowIntensity = it }
+    DependentSettings(settings.isGlowMode) {
+        ModernSlider(
+            stringResource(R.string.setting_glow_intensity),
+            stringResource(R.string.setting_glow_intensity_desc),
+            settings.glowIntensity,
+            indented = true
+        ) {
+            update { glowIntensity = it }
+        }
     }
 
     ModernSwitch(

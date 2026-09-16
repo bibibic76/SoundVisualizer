@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.DependentSettings
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.RowPressIndication
@@ -120,7 +121,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             )
         }
 
-        if (switchEnabled && settings.enabled) {
+        DependentSettings(switchEnabled && settings.enabled) {
             HapticChoiceRow(
                 title = stringResource(R.string.haptic_strength),
                 options = HapticStrength.values().toList(),
