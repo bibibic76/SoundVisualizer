@@ -21,7 +21,7 @@ graph TD
 |---|---|---|
 | 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
-| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내) | Kotlin |
+| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
 | 분류 결과 연결 | `AiClassification` | Kotlin |
@@ -57,8 +57,10 @@ graph TD
 
 - 접힌 알림에는 상태 문구와 **중지** 버튼(`ACTION_STOP`)이 있고, 제목 옆에 지금 표현 모드 이름을 둡니다(`setSubText`). 접힌 상태에서는 아래 칩이 보이지 않기 때문입니다.
 - 펼치면 상태 한 줄 아래에 **모드 칩 네 개**가 나옵니다(`res/layout/notification_modes.xml`, `DecoratedCustomViewStyle`). 알림 기본 버튼(`addAction`)은 보통 세 개까지만 보여서 모드 넷과 중지가 들어가지 않습니다. 본문만 직접 그리고 머리말과 중지 버튼은 시스템이 그립니다.
-- 칩은 서비스에 `ACTION_SET_MODE`(모드 순서 번호)를 보냅니다. 캡처와 AI는 건드리지 않고 설정만 바꾸며, 오버레이는 프레임마다 모드를 읽으므로 바로 바뀝니다. 서비스는 `SettingsManager.visualMode`를 지켜보다가 어디서 바뀌든(설정 화면이든 칩이든) 알림을 고쳐 답니다. 모르는 번호가 오면 무시합니다(`VisualMode.fromOrdinal`).
-- **Android 12 이상**은 칩이 라디오 버튼(`layout-v31`)이라, 고른 칩 표시를 알림을 그리는 쪽이 바로 옮깁니다. 알림을 다시 올려서 옮기면 시스템이 다시 그리는 데 약 0.5초가 걸려 눌리지 않은 것처럼 보입니다. 한 칩이 켜지면 **꺼진 칩도 함께** 알려 오므로 `RemoteViews.EXTRA_CHECKED`가 켜짐인 것만 받습니다. 받지 않으면 방금 끈 모드가 뒤늦게 덮어써 원래 모드로 돌아갑니다. 이 값을 채울 수 있게 칩의 PendingIntent는 `FLAG_MUTABLE`이지만, 대상 서비스를 지정한 인텐트라 바뀔 수 있는 것은 그 값뿐입니다.
+- **버튼은 서비스가 아니라 `NotificationActionReceiver`로 보냅니다**(`PendingIntent.getBroadcast`). 서비스로 보내면 서비스가 떠 있지 않을 때 시스템이 새로 만들고, `onCreate`가 화면 녹화 동의 없이 `mediaProjection` 포그라운드를 시작하다 `SecurityException`으로 죽습니다(Android 14 이상, 그 아래는 캡처 없는 빈 서비스가 남음). 받는 쪽은 떠 있는 서비스(`instance`)가 있을 때만 전하고, 없으면 서비스보다 오래 남은 알림으로 보고 그 알림만 지웁니다. 리시버와 서비스의 `onCreate`·`onDestroy`는 모두 메인 스레드라 그 사이에 끼어들지 않습니다. 누른 사람이 기다리므로 포그라운드 방송(`FLAG_RECEIVER_FOREGROUND`)으로 보냅니다. 인텐트를 명령(`Stop`·`SetMode`·`Ignore`)으로 바꾸는 규칙은 `NotificationCommand`로 떼어 JVM에서 검사하고(`NotificationCommandTest`, 리시버가 매니페스트에 `exported=false`로 선언됐는지 포함), 서비스 없이 눌렀을 때 서비스가 뜨지 않고 알림이 지워지는지는 계측 테스트(`NotificationActionReceiverInstrumentedTest`)가 봅니다.
+- 이전 버전(v1.4.0 이하)은 버튼을 서비스로 보냈습니다. 그때 올라간 알림이 남아 있다가 눌려 서비스에 동작 이름이 있는 인텐트가 오면, 시작 요청이 아니므로 캡처를 열지 않고 그 때문에 새로 떴으면 조용히 내립니다. 다만 Android 14 이상에서는 `onCreate`에서 이미 죽으므로 막을 수 없습니다.
+- 칩은 `ACTION_SET_MODE`(모드 순서 번호)를 보냅니다. 캡처와 AI는 건드리지 않고 설정만 바꾸며, 오버레이는 프레임마다 모드를 읽으므로 바로 바뀝니다. 서비스는 `SettingsManager.visualMode`를 지켜보다가 어디서 바뀌든(설정 화면이든 칩이든) 알림을 고쳐 답니다. 모르는 번호가 오면 무시합니다(`VisualMode.fromOrdinal`).
+- **Android 12 이상**은 칩이 라디오 버튼(`layout-v31`)이라, 고른 칩 표시를 알림을 그리는 쪽이 바로 옮깁니다. 알림을 다시 올려서 옮기면 시스템이 다시 그리는 데 약 0.5초가 걸려 눌리지 않은 것처럼 보입니다. 한 칩이 켜지면 **꺼진 칩도 함께** 알려 오므로 `RemoteViews.EXTRA_CHECKED`가 켜짐인 것만 받습니다. 받지 않으면 방금 끈 모드가 뒤늦게 덮어써 원래 모드로 돌아갑니다. 이 값을 채울 수 있게 칩의 PendingIntent는 `FLAG_MUTABLE`이지만, 받을 곳을 지정한 인텐트라 바뀔 수 있는 것은 그 값뿐입니다.
 - **Android 11 이하**는 칩 배경과 글자색을 직접 넣고, 알림을 다시 올릴 때 표시가 옮겨갑니다.
 - 칩마다 PendingIntent 요청 번호를 다르게 둡니다(`REQUEST_MODE_BASE + 순서 번호`). 같으면 하나로 합쳐져 네 칩이 모두 같은 모드를 켭니다. 칩 자리 수가 모드 수와 같은지는 `VisualModeOrdinalTest`가 봅니다.
 - 켜진 칩은 색만으로 알리지 않고 화면 읽어주기에 "선택됨"을 덧붙입니다(`notification_mode_selected`).
@@ -323,7 +325,7 @@ lvl 0.14   shown Y    65ms (12/48/3)
 
 | 스레드 | 우선순위 | 하는 일 |
 |---|---|---|
-| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 500ms 간격 받을 수 없는 소리 확인, 꺼짐 알림 |
+| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 500ms 간격 받을 수 없는 소리 확인, 꺼짐 알림, 실행 중 알림 버튼 받기 |
 | `SV-AudioCapture` | `URGENT_AUDIO` | `AudioRecord` 읽기, 피크 전달, AI 링버퍼 복사 |
 | `SV-AiInit` | `BACKGROUND` | 모델 복사·세션 생성 (시작 시 한 번) |
 | AI 코루틴 | `Dispatchers.Default` | 250ms 간격 분석 |

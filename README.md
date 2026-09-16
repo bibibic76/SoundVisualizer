@@ -196,7 +196,7 @@ English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español ·
 
 ```bash
 ./gradlew testDebugUnitTest            # 유닛 테스트 (기기 불필요)
-./gradlew connectedDebugAndroidTest    # 계측 테스트 (기기 필요, AI 모델 골든 비교)
+./gradlew connectedDebugAndroidTest    # 계측 테스트 (기기 필요, AI 모델 골든 비교·알림 버튼)
 ```
 
 ### 자동 빌드 (CI)
@@ -235,7 +235,7 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 
 | 위치 | 역할 |
 |---|---|
-| `AudioCaptureService` | 폰 내부 소리를 받는 포그라운드 서비스 (화면이 꺼지면 쉬기: `ScreenOffPause`, 실행 중 알림의 모드 칩) |
+| `AudioCaptureService` | 폰 내부 소리를 받는 포그라운드 서비스 (화면이 꺼지면 쉬기: `ScreenOffPause`, 실행 중 알림의 모드 칩. 알림 버튼은 `NotificationActionReceiver` 가 받음) |
 | `StopReason` / `StopAlert` | 사용자가 끄지 않았는데 꺼졌을 때 진동·알림·홈 화면 안내로 알리기 |
 | `AudioEngine` / `cpp/native-lib.cpp` | 좌우 채널 최대 진폭 측정 (C++) |
 | `OverlayService` | 화면 가장자리 오버레이 창을 띄우는 서비스 |
