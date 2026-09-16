@@ -4,6 +4,8 @@
 # - 이 파일이 생기기 전 커밋에 단 태그는 Actions 탭 → "릴리스 APK" → Run workflow 에서 태그 이름을 넣어 돌린다.
 #   이때 워크플로는 기본 브랜치의 것을 쓰고, 빌드할 코드는 그 태그에서 받는다.
 # - 릴리스가 없으면 만들고(설명은 지난 태그 이후 머지된 PR 로 자동 작성), 있으면 APK 만 붙이거나 바꾼다.
+# - 릴리스 키 Secret 이 등록돼 있으면 R8 로 줄이고 서명한 릴리스 APK 를, 없으면 지금까지처럼 디버그 APK 를 붙인다.
+#   키를 만들고 Secret 을 등록하는 방법은 CONTRIBUTING.md 의 "릴리스 서명 키" 를 본다.
 
 name: 릴리스 APK
 
@@ -55,36 +57,83 @@ jobs:
       - name: Gradle 설정 (의존성 캐시)
         uses: gradle/actions/setup-gradle@v6
 
-      # android.yml 과 같은 서명 키를 쓴다. Secret 이 없으면 임시 키로 서명되어 기존 앱 위에 덮어쓸 수 없다.
-      # 키 경로는 SV_DEBUG_KEYSTORE 로 넘긴다. 이 설정을 읽지 못하는 예전 태그의 빌드 설정은 임시 키로 서명된다.
-      - name: 디버그 서명 키 복원
+      # 릴리스 키 Secret 이 다 있으면 서명된 릴리스 APK 를, 없으면 지금까지처럼 디버그 APK 를 붙인다.
+      # 릴리스 서명 설정이 들어가기 전 태그는 assembleRelease 가 서명 없는 APK 를 내놓아 설치되지 않으므로,
+      # 그 태그의 빌드 설정에 SV_RELEASE_KEYSTORE 가 있는지 확인한 뒤에만 릴리스 쪽으로 간다.
+      # 디버그 키는 물러날 때를 위해 언제나 풀어 둔다. (android.yml 과 같은 방식, 경로를 SV_DEBUG_KEYSTORE 로 넘긴다)
+      - name: 서명 키 복원
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
           if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
             keystore="$RUNNER_TEMP/debug.keystore"
             echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$keystore"
             echo "SV_DEBUG_KEYSTORE=$keystore" >> "$GITHUB_ENV"
-            echo "공유 디버그 키로 서명합니다."
+          fi
+
+          # 릴리스로 갈 수 없는 이유를 먼저 찾는다. 이유가 없으면 릴리스로 간다.
+          if [ -z "$RELEASE_KEYSTORE_BASE64" ]; then
+            reason="RELEASE_KEYSTORE_BASE64 Secret 이 없습니다"
+          elif [ -z "$RELEASE_KEYSTORE_PASSWORD" ] || [ -z "$RELEASE_KEY_ALIAS" ] || [ -z "$RELEASE_KEY_PASSWORD" ]; then
+            reason="릴리스 키 Secret 4개 중 비어 있는 것이 있습니다"
+          elif ! grep -q SV_RELEASE_KEYSTORE app/build.gradle.kts; then
+            reason="이 태그의 빌드 설정에는 릴리스 서명이 없습니다"
           else
-            echo "::warning title=임시 서명::DEBUG_KEYSTORE_BASE64 Secret 이 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
+            reason=""
+          fi
+
+          if [ -z "$reason" ]; then
+            keystore="$RUNNER_TEMP/release.jks"
+            echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$keystore"
+            echo "SV_RELEASE_KEYSTORE=$keystore" >> "$GITHUB_ENV"
+            echo "SV_BUILD_VARIANT=release" >> "$GITHUB_ENV"
+            echo "::notice title=서명::팀 릴리스 키로 서명한 릴리스 APK 를 만듭니다."
+          else
+            echo "SV_BUILD_VARIANT=debug" >> "$GITHUB_ENV"
+            if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+              echo "::notice title=서명::$reason. 지금까지처럼 공유 디버그 키로 서명한 디버그 APK 를 붙입니다."
+            else
+              echo "::warning title=임시 서명::$reason. DEBUG_KEYSTORE_BASE64 도 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
+            fi
           fi
 
       # 예전 커밋은 gradlew 에 실행 권한이 없을 수 있다.
+      # 비밀번호는 GITHUB_ENV 에 적지 않고 이 단계의 환경 변수로만 넘긴다. 다른 단계까지 따라다니지 않게 한다.
       - name: APK 빌드
+        env:
+          SV_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          SV_RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          SV_RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          if [ "$SV_BUILD_VARIANT" = "release" ]; then
+            ./gradlew assembleRelease
+          else
+            ./gradlew assembleDebug
+          fi
 
       # ABI 별로 나눠 빌드하는 버전은 폰용(arm64) APK 를, 그 전 버전은 하나로 합쳐진 APK 를 쓴다.
       - name: APK 이름 정리
         run: |
-          dir=app/build/outputs/apk/debug
-          if [ -f "$dir/app-arm64-v8a-debug.apk" ]; then
-            src="$dir/app-arm64-v8a-debug.apk"
-          elif [ -f "$dir/app-debug.apk" ]; then
-            src="$dir/app-debug.apk"
+          if [ "$SV_BUILD_VARIANT" = "release" ]; then
+            dir=app/build/outputs/apk/release
+            candidates="$dir/app-arm64-v8a-release.apk $dir/app-release.apk"
           else
+            dir=app/build/outputs/apk/debug
+            candidates="$dir/app-arm64-v8a-debug.apk $dir/app-debug.apk"
+          fi
+          src=""
+          for candidate in $candidates; do
+            if [ -f "$candidate" ]; then
+              src="$candidate"
+              break
+            fi
+          done
+          if [ -z "$src" ]; then
             echo "::error title=APK::빌드 결과에서 APK 를 찾지 못했습니다."
             ls -R "$dir" || true
             exit 1
@@ -92,26 +141,50 @@ jobs:
           cp "$src" "SoundVisualizer-$TAG.apk"
           size=$(du -h "SoundVisualizer-$TAG.apk" | cut -f1)
           echo "::notice title=릴리스 APK::SoundVisualizer-$TAG.apk ($size, $(basename "$src"))"
+          # R8 이 이름을 바꾸므로, 매핑 파일이 없으면 이 APK 의 크래시 로그는 영원히 읽을 수 없다.
+          # 러너는 잡이 끝나면 사라지고 다시 빌드해도 같은 매핑이 나온다는 보장이 없으니, 여기서 챙겨 둔다.
+          if [ "$SV_BUILD_VARIANT" = "release" ]; then
+            mapping=app/build/outputs/mapping/release/mapping.txt
+            if [ ! -f "$mapping" ]; then
+              echo "::error title=매핑 파일::릴리스 빌드인데 $mapping 이 없습니다. 이 APK 의 크래시는 되돌릴 수 없습니다."
+              exit 1
+            fi
+            cp "$mapping" "mapping-$TAG.txt"
+            echo "::notice title=매핑 파일::mapping-$TAG.txt ($(du -h "mapping-$TAG.txt" | cut -f1))"
+          fi
 
-      # 공유 키로 서명돼야 사용자가 새 버전을 기존 앱 위에 덮어 설치할 수 있다.
-      # 서명 경로 설정(SV_DEBUG_KEYSTORE)이 들어간 버전인데 다른 키로 서명됐으면 실패시키고, 그 전 버전은 경고만 남긴다.
+      # 같은 키로 서명돼야 사용자가 새 버전을 기존 앱 위에 덮어 설치할 수 있다.
+      # 릴리스 키로 빌드했으면 그 키로 서명됐는지 반드시 확인하고, 아니면 실패시킨다.
+      # 디버그 키 쪽은 지금까지와 같다. 서명 경로 설정(SV_DEBUG_KEYSTORE)이 들어간 버전인데 다른 키로 서명됐으면
+      # 실패시키고, 그 전 버전은 경고만 남긴다.
       - name: APK 서명 확인
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         run: |
           apk="SoundVisualizer-$TAG.apk"
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
           apk_sha=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
-          if [ -z "${SV_DEBUG_KEYSTORE:-}" ]; then
+          if [ "$SV_BUILD_VARIANT" = "release" ]; then
+            key_sha=$(keytool -exportcert -alias "$RELEASE_KEY_ALIAS" -keystore "$SV_RELEASE_KEYSTORE" -storepass "$RELEASE_KEYSTORE_PASSWORD" | sha256sum | cut -d' ' -f1)
+            if [ "$apk_sha" = "$key_sha" ]; then
+              echo "::notice title=APK 서명::팀 릴리스 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+            else
+              echo "::error title=APK 서명::팀 릴리스 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
+              exit 1
+            fi
+          elif [ -z "${SV_DEBUG_KEYSTORE:-}" ]; then
             echo "::notice title=APK 서명::임시 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
-            exit 0
-          fi
-          key_sha=$(keytool -exportcert -alias androiddebugkey -keystore "$SV_DEBUG_KEYSTORE" -storepass android | sha256sum | cut -d' ' -f1)
-          if [ "$apk_sha" = "$key_sha" ]; then
-            echo "::notice title=APK 서명::공유 디버그 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
-          elif grep -q SV_DEBUG_KEYSTORE app/build.gradle.kts; then
-            echo "::error title=APK 서명::공유 디버그 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
-            exit 1
           else
-            echo "::warning title=APK 서명::이 버전의 빌드 설정은 공유 키 경로를 읽지 못해 임시 키로 서명됐습니다. 기존 앱을 지우고 설치해야 합니다."
+            key_sha=$(keytool -exportcert -alias androiddebugkey -keystore "$SV_DEBUG_KEYSTORE" -storepass android | sha256sum | cut -d' ' -f1)
+            if [ "$apk_sha" = "$key_sha" ]; then
+              echo "::notice title=APK 서명::공유 디버그 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
+            elif grep -q SV_DEBUG_KEYSTORE app/build.gradle.kts; then
+              echo "::error title=APK 서명::공유 디버그 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
+              exit 1
+            else
+              echo "::warning title=APK 서명::이 버전의 빌드 설정은 공유 키 경로를 읽지 못해 임시 키로 서명됐습니다. 기존 앱을 지우고 설치해야 합니다."
+            fi
           fi
 
       - name: 릴리스에 APK 붙이기
@@ -119,10 +192,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           apk="SoundVisualizer-$TAG.apk"
+          # 매핑 파일도 같이 붙인다. 태그와 짝이 맞아야 그 APK 의 크래시를 되돌릴 수 있고,
+          # 릴리스에 붙여 두면 러너가 사라져도 남는다. 소스가 공개된 저장소라 매핑이 새로 드러내는 것은 없다.
+          assets=("$apk")
+          if [ -f "mapping-$TAG.txt" ]; then
+            assets+=("mapping-$TAG.txt")
+          fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$apk" --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$TAG" "$apk" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
+            gh release create "$TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
           fi
           url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
           echo "::notice title=릴리스::$url"
