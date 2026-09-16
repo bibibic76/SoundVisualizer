@@ -8,6 +8,7 @@
     <string name="home_subtitle">Dessine sur votre écran les sons que vous ne pouvez pas voir.\nDes jeux vidéo aux films, découvrez une toute nouvelle expérience.</string>
     <string name="home_status_running">État : actif</string>
     <string name="home_status_idle">État : prêt</string>
+    <string name="home_capture_blocked">Aucun son ne parvient au visualiseur : rien ne peut donc être dessiné. Il se peut que l\'application qui diffuse le son n\'autorise pas son partage (c\'est le cas des vidéos protégées), ou que le son y soit coupé.</string>
     <string name="home_ai_unavailable">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance et les alertes par vibration sont désactivées. Essayez de désactiver puis de réactiver la visualisation.</string>
     <string name="home_stopped_dismiss">Masquer le message</string>
     <string name="home_start">Démarrer</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">Visualisation du son en cours.</string>
     <string name="notification_stop">Arrêter</string>
     <string name="notification_text_ai_unavailable">Visualisation du son en cours. La détection du type de son ne fonctionne pas, les alertes par vibration sont donc désactivées.</string>
+    <string name="notification_text_capture_blocked">Aucun son ne parvient au visualiseur. Il se peut que l\'application qui diffuse le son n\'autorise pas son partage, ou que le son y soit coupé.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">Visualisation désactivée</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">Bon à savoir</string>
     <string name="help_note_direction">L\'application distingue la gauche de la droite, mais pas l\'avant de l\'arrière. Les graphismes en haut et en bas de l\'écran représentent les sons entendus de façon similaire des deux côtés, ainsi que la sensation d\'espace.</string>
     <string name="help_note_mono">Les sons identiques à gauche et à droite (mono) sont affichés uniquement vers l\'avant.</string>
-    <string name="help_note_sources">Seuls les sons des médias et des jeux sont capturés. Les appels, les sons de notification et les alarmes ne le sont pas, et le son des applications qui bloquent la capture audio (comme certaines applications vidéo) ne peut pas être visualisé.</string>
+    <string name="help_note_sources">Seuls les sons des médias et des jeux sont capturés. Les appels, les sons de notification et les alarmes ne le sont pas, et le son des applications qui bloquent la capture audio (comme certaines applications vidéo) ne peut pas être visualisé. Si du son est diffusé mais qu\'aucun graphisme ne s\'affiche pendant environ 15 secondes, l\'onglet Accueil et la notification persistante vous préviennent. Une application qui s\'est mise elle-même en sourdine donne exactement le même résultat : nous ne pouvons donc pas vous dire lequel des deux est en cause.</string>
     <string name="help_note_stopped">Démarrer un enregistrement d\'écran, un partage d\'écran ou une diffusion désactive la visualisation : elle utilise le même accord d\'enregistrement d\'écran, et Android ne l\'accorde qu\'à une seule application à la fois. Si une autre application enregistre, partage ou diffuse, la réactiver y mettra fin. Le plus souvent, quand la visualisation se désactive sans que vous l\'ayez arrêtée, votre téléphone vibre trois fois longuement et affiche une notification avec un bouton « Réactiver ». Mettre fin à la capture du son depuis les commandes de partage d\'écran de votre téléphone déclenche le même avertissement ; en cas d\'arrêt forcé ou de plantage, aucun avertissement n\'est possible. Si les notifications sont désactivées, seule la vibration vous prévient, et l\'onglet Accueil indique ce qui s\'est désactivé lorsque vous ouvrez l\'application.</string>
     <string name="help_note_screen_off">Quand l\'écran est éteint, l\'application se met en pause pour économiser la batterie et reprend dès que vous rallumez l\'écran. Vous pouvez modifier ce comportement sous « Batterie », dans l\'onglet Paramètres.</string>
     <string name="help_note_ai">L\'IA peut se tromper dans la classification des sons. Lorsque votre sécurité est en jeu, ne comptez pas uniquement sur cette application.</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">La visualisation s\'est désactivée sans que je l\'aie arrêtée.</string>
     <string name="help_faq_stopped_a">Elle se désactive quand un enregistrement d\'écran, un partage d\'écran ou une diffusion démarre, ou quand la capture du son s\'arrête à cause d\'une erreur. Appuyez sur « Réactiver » dans la notification, ou réactivez-la depuis l\'onglet Accueil ou les Réglages rapides. Android redemande l\'accord d\'enregistrement d\'écran chaque fois, et la réactiver met fin à tout enregistrement, partage ou diffusion en cours.</string>
     <string name="help_faq_no_graphic_q">Aucun graphisme ne s\'affiche.</string>
-    <string name="help_faq_no_graphic_a">Vérifiez si l\'application qui diffuse le son bloque la capture audio. Dans l\'onglet Paramètres, vérifiez aussi que le réglage « Opacité » n\'est pas trop faible et que l\'affichage du type de son entendu n\'est pas désactivé.</string>
+    <string name="help_faq_no_graphic_a">Vérifiez si l\'application qui diffuse le son bloque la capture audio et si le son n\'y est pas coupé. Si le visualiseur ne reçoit aucun son pendant un certain temps, l\'onglet Accueil et la notification persistante vous le signalent. Dans l\'onglet Paramètres, vérifiez aussi que le réglage « Opacité » n\'est pas trop faible et que l\'affichage du type de son entendu n\'est pas désactivé.</string>
     <string name="help_faq_no_vibration_q">Le téléphone ne vibre pas.</string>
     <string name="help_faq_no_vibration_a">Dans l\'onglet Paramètres, sous « Types de sons (IA) », vérifiez que « Afficher » et « Vibration » sont tous deux activés pour le type de son concerné. Si la vibration est désactivée dans les paramètres de votre téléphone, il est possible qu\'il ne vibre pas.</string>
     <string name="help_faq_install_q">Une nouvelle version ne s\'installe pas.</string>

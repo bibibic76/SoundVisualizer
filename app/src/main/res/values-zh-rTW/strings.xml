@@ -8,6 +8,7 @@
     <string name="home_subtitle">將看不見的聲音直接描繪在螢幕上。\n從遊戲到電影，開啟全新的體驗。</string>
     <string name="home_status_running">狀態：執行中</string>
     <string name="home_status_idle">狀態：準備就緒</string>
+    <string name="home_capture_blocked">目前接收不到聲音，因此無法繪製任何圖形。可能是正在播放的應用程式不允許分享聲音 (受保護的影片就是這樣)，也可能是該應用程式本身的聲音已靜音。</string>
     <string name="home_ai_unavailable">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示，震動提醒也已關閉。請試著關閉聲音視覺化後再重新開啟。</string>
     <string name="home_stopped_dismiss">關閉提示</string>
     <string name="home_start">開始</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">正在將聲音視覺化。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_text_ai_unavailable">正在將聲音視覺化。由於無法辨識聲音類型，震動提醒已關閉。</string>
+    <string name="notification_text_capture_blocked">目前接收不到聲音。可能是正在播放的應用程式不允許分享聲音，也可能是該應用程式本身的聲音已靜音。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">視覺化關閉通知</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">注意事項</string>
     <string name="help_note_direction">可以分辨左右，但無法分辨前後。螢幕上方和下方的圖形代表兩側聽起來差不多的聲音，以及空間感效果。</string>
     <string name="help_note_mono">左右完全相同的聲音 (單聲道) 只會顯示在正前方。</string>
-    <string name="help_note_sources">只會擷取媒體和遊戲的聲音。通話、通知音效和鬧鐘不在擷取範圍內；禁止擷取音訊的應用程式 (例如部分影片應用程式) 也無法視覺化。</string>
+    <string name="help_note_sources">只會擷取媒體和遊戲的聲音。通話、通知音效和鬧鐘不在擷取範圍內；禁止擷取音訊的應用程式 (例如部分影片應用程式) 也無法視覺化。如果有聲音在播放，卻持續約 15 秒都沒有繪製出任何圖形，「首頁」和執行中的通知會提醒你。不過，應用程式自己靜音時看起來完全一樣，因此無法告訴你究竟是哪一種情況。</string>
     <string name="help_note_stopped">開始螢幕錄影、螢幕分享或投放時，聲音視覺化會關閉，因為它也使用同一項螢幕錄影同意，而 Android 一次只允許一個應用程式使用。如果其他應用程式正在錄影、分享或投放，重新開啟時會結束對方的作業。在你沒有自行關閉的情況下關閉時，手機通常會有三次長震動，並顯示帶有「重新開啟」按鈕的通知。從手機的螢幕分享控制項停止擷取聲音時，也會顯示同樣的提醒；應用程式被強制停止或異常結束時，則無法通知你。如果你關閉了通知，就只會以震動提醒，開啟應用程式後「首頁」會顯示關閉的原因。</string>
     <string name="help_note_screen_off">螢幕關閉期間會暫停以節省電力，並在你開啟螢幕後繼續。你可以在「設定」分頁的「電池」中變更這項設定。</string>
     <string name="help_note_ai">AI 分類可能會出錯。在攸關安全的情況下，請勿將這個應用程式當作唯一的依靠。</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">我沒有關閉它，它卻自己關掉了。</string>
     <string name="help_faq_stopped_a">開始螢幕錄影、螢幕分享或投放，或是聲音擷取因錯誤而中斷時，它就會關閉。請輕觸通知中的「重新開啟」，或從「首頁」或快速設定重新開啟。基於 Android 政策，每次都會詢問你是否同意螢幕錄影；重新開啟也會結束正在進行的錄影、分享或投放。</string>
     <string name="help_faq_no_graphic_q">看不到任何圖形。</string>
-    <string name="help_faq_no_graphic_a">請確認正在播放的應用程式是否禁止擷取音訊。另外，也請確認「設定」分頁中的「不透明度」沒有調得太低，以及目前這種聲音類型的顯示沒有關閉。</string>
+    <string name="help_faq_no_graphic_a">請確認正在播放的應用程式是否禁止擷取音訊，以及該應用程式內的聲音是否已關閉。如果持續接收不到聲音，「首頁」和執行中的通知會提醒你。另外，也請確認「設定」分頁中的「不透明度」沒有調得太低，以及目前這種聲音類型的顯示沒有關閉。</string>
     <string name="help_faq_no_vibration_q">沒有震動。</string>
     <string name="help_faq_no_vibration_a">請在「設定」分頁的「聲音類型 (AI)」中，確認該類型的「顯示」和「震動」都已開啟。如果手機設定中關閉了震動，也可能不會震動。</string>
     <string name="help_faq_install_q">無法安裝新版本。</string>

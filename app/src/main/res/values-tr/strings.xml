@@ -8,6 +8,7 @@
     <string name="home_subtitle">Göremediğiniz sesleri doğrudan ekranınıza çizer.\nOyunlardan filmlere, yepyeni bir deneyim yaşayın.</string>
     <string name="home_status_running">Durum: Çalışıyor</string>
     <string name="home_status_idle">Durum: Hazır</string>
+    <string name="home_capture_blocked">Görselleştirmeye hiç ses ulaşmıyor; bu yüzden hiçbir şey çizilemiyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir (korumalı videolarda durum böyledir) veya o uygulamanın kendi sesi kapalı olabilir.</string>
     <string name="home_ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve titreşim uyarıları kapalı. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
     <string name="home_stopped_dismiss">Uyarıyı kapat</string>
     <string name="home_start">Başlat</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">Ses görselleştiriliyor.</string>
     <string name="notification_stop">Durdur</string>
     <string name="notification_text_ai_unavailable">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için titreşim uyarıları kapalı.</string>
+    <string name="notification_text_capture_blocked">Görselleştirmeye ses ulaşmıyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir veya o uygulamanın kendi sesi kapalı olabilir.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">Görselleştirme kapandı</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">Bilmeniz gerekenler</string>
     <string name="help_note_direction">Uygulama sağı ve solu ayırt edebilir, ancak önü ve arkayı ayırt edemez. Ekranın üst ve alt kısmındaki grafikler, her iki tarafta eşit duyulan sesleri ve uzamsal etkiyi gösterir.</string>
     <string name="help_note_mono">Solda ve sağda tamamen aynı olan sesler (mono) yalnızca ön tarafa doğru gösterilir.</string>
-    <string name="help_note_sources">Yalnızca medya ve oyun sesleri yakalanır. Telefon görüşmeleri, bildirim sesleri ve alarmlar yakalanmaz. Ses yakalamayı engelleyen uygulamalar (bazı video uygulamaları gibi) görselleştirilemez.</string>
+    <string name="help_note_sources">Yalnızca medya ve oyun sesleri yakalanır. Telefon görüşmeleri, bildirim sesleri ve alarmlar yakalanmaz. Ses yakalamayı engelleyen uygulamalar (bazı video uygulamaları gibi) görselleştirilemez. Ses çaldığı hâlde yaklaşık 15 saniye boyunca hiçbir şey çizilmezse “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir. Ancak uygulamanın kendi sesini kapatmış olması da tıpatıp aynı görünür; bu yüzden ikisinden hangisinin geçerli olduğunu size söyleyemeyiz.</string>
     <string name="help_note_stopped">Ekran kaydı, ekran paylaşımı veya yayın başlatmak görselleştirmeyi kapatır; çünkü görselleştirme de aynı ekran kaydı onayını kullanır ve Android bunu aynı anda yalnızca tek bir uygulamaya verir. Başka bir uygulama kayıt, paylaşım ya da yayın yapıyorsa yeniden açtığınızda o işlem sona erer. Siz durdurmadığınız hâlde kapandığında telefon çoğu durumda art arda üç uzun titreşim verir ve “Yeniden aç” düğmesi bulunan bir bildirim gösterir. Ses yakalamayı telefonunuzun ekran paylaşımı bildiriminden durdurduğunuzda da aynı uyarı görünür; zorla durdurma veya çökme durumunda ise hiçbir bilgi verilemez. Bildirimler kapalıysa yalnızca titreşim haber verir; uygulamayı açtığınızda “Ana sayfa” sekmesinde neyin kapandığını görürsünüz.</string>
     <string name="help_note_screen_off">Ekran kapalıyken pilden tasarruf etmek için duraklar, ekranı açtığınızda kaldığı yerden devam eder. Bunu “Ayarlar” sekmesindeki “Pil” bölümünden değiştirebilirsiniz.</string>
     <string name="help_note_ai">Yapay zeka sınıflandırması hatalı olabilir. Güvenliğin söz konusu olduğu durumlarda yalnızca bu uygulamaya güvenmeyin.</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">Ben durdurmadığım hâlde kapandı.</string>
     <string name="help_faq_stopped_a">Ekran kaydı, ekran paylaşımı ya da yayın başladığında veya bir hata nedeniyle ses yakalama durduğunda kapanır. Bildirimdeki “Yeniden aç” düğmesine dokunun ya da “Ana sayfa” sekmesinden veya Hızlı Ayarlar\'dan yeniden açın. Android, ekran kaydı onayını her seferinde ister; yeniden açtığınızda da o sırada süren kayıt, paylaşım veya yayın sona erer.</string>
     <string name="help_faq_no_graphic_q">Hiç grafik göremiyorum.</string>
-    <string name="help_faq_no_graphic_a">Kullandığınız uygulamanın ses yakalamayı engelleyip engellemediğini kontrol edin. Ayrıca “Ayarlar” sekmesinde “Opaklık” değerinin çok düşük olmadığından ve o an çalan ses türünün gösterimini kapatmadığınızdan emin olun.</string>
+    <string name="help_faq_no_graphic_a">Video izlediğiniz ya da oyun oynadığınız uygulamanın ses yakalamayı engelleyip engellemediğini ve o uygulamada sesin kapalı olup olmadığını kontrol edin. Görselleştirmeye bir süre boyunca ses ulaşmazsa “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir. Ayrıca “Ayarlar” sekmesinde “Opaklık” değerinin çok düşük olmadığından ve o an çalan ses türünün gösteriminin kapalı olmadığından emin olun.</string>
     <string name="help_faq_no_vibration_q">Telefon titreşmiyor.</string>
     <string name="help_faq_no_vibration_a">“Ayarlar” sekmesindeki “Ses türleri (yapay zeka)” bölümünde, ilgili tür için hem gösterme ayarının (ör. “Tehlike seslerini göster”) hem de “Titreşim” ayarının açık olduğundan emin olun. Telefonunuzun ayarlarında titreşim kapatılmışsa telefon titreşmeyebilir.</string>
     <string name="help_faq_install_q">Yeni sürüm yüklenmiyor.</string>

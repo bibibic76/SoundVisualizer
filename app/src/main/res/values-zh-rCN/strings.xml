@@ -8,6 +8,7 @@
     <string name="home_subtitle">将看不见的声音呈现在屏幕上。\n从游戏到观影，开启全新体验。</string>
     <string name="home_status_running">状态：运行中</string>
     <string name="home_status_idle">状态：待启动</string>
+    <string name="home_capture_blocked">本应用当前接收不到声音，因此无法绘制任何图形。可能是正在播放声音的应用不允许共享自己的声音（受保护的视频就属于这种情况），也可能是该应用自身已静音。</string>
     <string name="home_ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示，振动提醒也已关闭。请尝试将可视化关闭后重新开启。</string>
     <string name="home_stopped_dismiss">关闭提示</string>
     <string name="home_start">启动</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">正在进行声音可视化。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_text_ai_unavailable">正在进行声音可视化。由于无法识别声音类型，振动提醒已关闭。</string>
+    <string name="notification_text_capture_blocked">本应用当前接收不到声音。可能是正在播放声音的应用不允许共享自己的声音，也可能是该应用自身已静音。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">可视化关闭提醒</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">注意事项</string>
     <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>
     <string name="help_note_mono">左右声道完全相同的声音（单声道）只会显示为来自正前方。</string>
-    <string name="help_note_sources">仅捕获媒体和游戏声音。电话通话、通知提示音和闹钟不在捕获范围内；禁止音频捕获的应用（如部分视频应用）的声音无法可视化。</string>
+    <string name="help_note_sources">仅捕获媒体和游戏声音。电话通话、通知提示音和闹钟不在捕获范围内；禁止音频捕获的应用（如部分视频应用）的声音无法可视化。如果声音正在播放，却持续约 15 秒都没有绘制出任何图形，“首页”和运行中的通知会提示您。不过，应用自行静音时的表现完全相同，因此无法告知您究竟属于哪一种情况。</string>
     <string name="help_note_stopped">开始屏幕录制、屏幕共享或投屏会让可视化关闭，因为它们使用同一项屏幕录制授权，而 Android 一次只允许一个应用使用。如果其他应用正在录制、共享或投屏，重新开启会使其结束。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。从手机的屏幕共享通知中结束声音捕获时，也会显示同样的提醒；如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
     <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。</string>
     <string name="help_note_ai">AI 分类可能出错。在涉及安全的情况下，请勿将本应用作为唯一的保障手段。</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">我没有手动停止，它却自己关闭了。</string>
     <string name="help_faq_stopped_a">开始屏幕录制、屏幕共享或投屏时，或声音捕获因出错而中断时，可视化会关闭。请点按通知中的“重新开启”，或从“首页”或“快捷设置”中重新开启。每次开启时 Android 都会再次询问是否同意屏幕录制；重新开启会结束正在进行的录制、共享或投屏。</string>
     <string name="help_faq_no_graphic_q">看不到任何图形。</string>
-    <string name="help_faq_no_graphic_a">请检查正在播放的应用是否禁止音频捕获。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
+    <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
     <string name="help_faq_no_vibration_q">没有振动。</string>
     <string name="help_faq_no_vibration_a">请在“设置”标签页的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。如果在手机设置中关闭了振动，则可能不会振动。</string>
     <string name="help_faq_install_q">无法安装新版本。</string>

@@ -8,6 +8,7 @@
     <string name="home_subtitle">Macht Geräusche direkt auf Ihrem Bildschirm sichtbar.\nOb Gaming oder Film – erleben Sie etwas ganz Neues.</string>
     <string name="home_status_running">Status: Aktiv</string>
     <string name="home_status_idle">Status: Bereit</string>
+    <string name="home_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an, daher kann nichts dargestellt werden. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu (bei geschützten Videos ist das so), oder in dieser App ist der Ton ausgeschaltet.</string>
     <string name="home_ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und Vibrationswarnungen sind aus. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
     <string name="home_stopped_dismiss">Hinweis ausblenden</string>
     <string name="home_start">Starten</string>
@@ -132,6 +133,7 @@
     <string name="notification_text">Geräusche werden visualisiert.</string>
     <string name="notification_stop">Stopp</string>
     <string name="notification_text_ai_unavailable">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher sind Vibrationswarnungen aus.</string>
+    <string name="notification_text_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu, oder in dieser App ist der Ton ausgeschaltet.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
     <string name="stopped_channel_name">Visualisierung ausgeschaltet</string>
@@ -188,7 +190,7 @@
     <string name="help_notes_title">Gut zu wissen</string>
     <string name="help_note_direction">Links und rechts werden unterschieden, vorne und hinten jedoch nicht. Grafiken am oberen und unteren Bildschirmrand zeigen Geräusche, die auf beiden Seiten gleich stark zu hören sind, sowie den Raumeindruck.</string>
     <string name="help_note_mono">Geräusche, die links und rechts identisch sind (Mono), werden nur als von vorne kommend angezeigt.</string>
-    <string name="help_note_sources">Erfasst wird nur der Ton von Medien und Spielen. Anrufe, Benachrichtigungstöne und Wecker gehören nicht dazu. Der Ton von Apps, welche die Audioerfassung blockieren (z. B. manche Video-Apps), kann nicht visualisiert werden.</string>
+    <string name="help_note_sources">Erfasst wird nur der Ton von Medien und Spielen. Anrufe, Benachrichtigungstöne und Wecker gehören nicht dazu. Der Ton von Apps, welche die Audioerfassung blockieren (z. B. manche Video-Apps), kann nicht visualisiert werden. Wenn Ton wiedergegeben wird, aber etwa 15 Sekunden lang nichts dargestellt wird, weisen der Tab „Startseite“ und die Benachrichtigung während der Ausführung darauf hin. Wenn sich eine App selbst stummgeschaltet hat, sieht das für uns aber genauso aus; welcher der beiden Fälle vorliegt, können wir Ihnen daher nicht sagen.</string>
     <string name="help_note_stopped">Wenn eine Bildschirmaufnahme, eine Bildschirmfreigabe oder eine Übertragung startet, schaltet sich die Tonvisualisierung aus: Sie nutzt dieselbe Zustimmung zur Bildschirmaufnahme, und Android erlaubt sie immer nur einer App. Wenn eine andere App gerade den Bildschirm aufnimmt, freigibt oder überträgt, wird dieser Vorgang beim erneuten Einschalten beendet. Schaltet sie sich aus, ohne dass Sie sie beendet haben, vibriert Ihr Smartphone meist dreimal lang und zeigt eine Benachrichtigung mit der Schaltfläche „Wieder einschalten“. Beenden Sie die Audioerfassung über die Freigabeanzeige Ihres Smartphones, erscheint derselbe Hinweis; bei „Beenden erzwingen“ oder einem Absturz ist kein Hinweis möglich. Sind Benachrichtigungen ausgeschaltet, meldet nur die Vibration den Ausfall, und beim Öffnen der App zeigt der Tab „Startseite“, was sich ausgeschaltet hat.</string>
     <string name="help_note_screen_off">Solange der Bildschirm aus ist, pausiert die App, um Akku zu sparen, und macht weiter, sobald Sie den Bildschirm einschalten. Sie können das im Tab „Einstellungen“ unter „Akku“ ändern.</string>
     <string name="help_note_ai">Die Einordnung durch die KI kann falsch sein. Verlassen Sie sich in Situationen, in denen es um Sicherheit geht, nicht allein auf diese App.</string>
@@ -197,7 +199,7 @@
     <string name="help_faq_stopped_q">Die Tonvisualisierung hat sich ausgeschaltet, ohne dass ich sie beendet habe.</string>
     <string name="help_faq_stopped_a">Sie schaltet sich aus, wenn eine Bildschirmaufnahme, eine Bildschirmfreigabe oder eine Übertragung startet oder wenn die Audioerfassung durch einen Fehler abbricht. Tippen Sie in der Benachrichtigung auf „Wieder einschalten“ oder schalten Sie sie im Tab „Startseite“ oder über die Schnelleinstellungen wieder ein. Android fragt jedes Mal erneut nach der Zustimmung zur Bildschirmaufnahme, und beim erneuten Einschalten wird eine laufende Aufnahme, Freigabe oder Übertragung beendet.</string>
     <string name="help_faq_no_graphic_q">Ich sehe keine Grafiken.</string>
-    <string name="help_faq_no_graphic_a">Prüfen Sie, ob die App, in der Sie gerade etwas abspielen, die Audioerfassung blockiert. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist.</string>
+    <string name="help_faq_no_graphic_a">Prüfen Sie, ob die App, in der Sie gerade etwas abspielen, die Audioerfassung blockiert und ob in dieser App der Ton ausgeschaltet ist. Wenn längere Zeit kein Ton bei der Tonvisualisierung ankommt, weisen der Tab „Startseite“ und die Benachrichtigung während der Ausführung darauf hin. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist.</string>
     <string name="help_faq_no_vibration_q">Das Smartphone vibriert nicht.</string>
     <string name="help_faq_no_vibration_a">Prüfen Sie im Tab „Einstellungen“ unter „Geräuscharten (KI)“, ob für die betreffende Art sowohl „… zeigen“ als auch „Vibrieren“ eingeschaltet sind. Wenn die Vibration in den Einstellungen Ihres Smartphones deaktiviert ist, vibriert es möglicherweise nicht.</string>
     <string name="help_faq_install_q">Eine neue Version lässt sich nicht installieren.</string>
