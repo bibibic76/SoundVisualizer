@@ -214,8 +214,10 @@
 
     <!-- 도움말: 제보 -->
     <string name="help_report_title">제보하기</string>
-    <string name="help_report_desc">버그나, 소리가 다른 종류로 표시된 경우를 알려 주세요. 브라우저에서 GitHub이 열리고 앱·기기 정보가 미리 채워집니다. GitHub 계정이 필요하며, 계정이 없으면 아래 정보를 복사해 다른 방법으로 보내 주셔도 됩니다. 소리는 보내지 않습니다.</string>
+    <string name="help_report_desc">버그나, 소리가 다른 종류로 표시된 경우를 알려 주세요. 브라우저에서 GitHub이 열리고 앱·기기 정보가 미리 채워집니다. GitHub 계정이 필요하니, 계정이 없으면 메일로 보내 주세요. 소리는 보내지 않습니다.</string>
     <string name="help_report_button">GitHub에 제보하기</string>
+    <string name="help_report_mail">메일로 제보하기</string>
+    <string name="help_report_no_mail">메일을 보낼 앱이 없습니다. 기기 정보를 복사해 다른 방법으로 보내 주세요.</string>
     <string name="help_report_copy">기기 정보 복사</string>
     <string name="help_report_copied">기기 정보를 복사했습니다.</string>
     <string name="help_report_no_browser">링크를 열 브라우저가 없습니다. 기기 정보를 복사해 보내 주세요.</string>

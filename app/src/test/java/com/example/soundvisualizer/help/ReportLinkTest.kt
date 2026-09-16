@@ -57,6 +57,19 @@ class ReportLinkTest {
     }
 
     @Test
+    fun `메일과 이슈가 같은 본문을 쓴다`() {
+        val prompt = "무슨 일이 있었나요?"
+        val body = ReportLink.body(prompt, env)
+        val fromUrl = URLDecoder.decode(
+            ReportLink.issueUrl("제보", prompt, env).substringAfter("&body="), "UTF-8"
+        )
+
+        assertEquals(body, fromUrl)
+        assertTrue(body.startsWith(prompt))
+        assertTrue(body.endsWith(env))
+    }
+
+    @Test
     fun `빈 값이 와도 줄 수와 순서는 그대로다`() {
         val empty = ReportLink.environment("", "", 0, "", "", "")
 

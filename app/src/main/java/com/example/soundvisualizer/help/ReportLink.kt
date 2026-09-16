@@ -34,10 +34,12 @@ object ReportLink {
      * GitHub 은 title/body 쿼리로 새 이슈 화면을 채워 준다. 값은 모두 인코딩하므로
      * 사용자가 쓸 자리에 줄바꿈이나 한글이 있어도 주소가 깨지지 않는다.
      */
-    fun issueUrl(title: String, bodyPrompt: String, environment: String): String {
-        val body = if (bodyPrompt.isEmpty()) environment else "$bodyPrompt\n\n$environment"
-        return "$ISSUES_URL?title=${encode(title)}&body=${encode(body)}"
-    }
+    fun issueUrl(title: String, bodyPrompt: String, environment: String): String =
+        "$ISSUES_URL?title=${encode(title)}&body=${encode(body(bodyPrompt, environment))}"
+
+    /** 사용자가 쓸 자리와 환경 정보를 합친 제보 본문. GitHub 이슈와 메일이 같은 본문을 쓴다. */
+    fun body(bodyPrompt: String, environment: String): String =
+        if (bodyPrompt.isEmpty()) environment else "$bodyPrompt\n\n$environment"
 
     private fun encode(value: String): String = URLEncoder.encode(value, Charsets.UTF_8.name())
 }

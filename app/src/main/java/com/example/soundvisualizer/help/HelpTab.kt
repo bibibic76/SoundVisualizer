@@ -172,6 +172,8 @@ private fun ReportSection() {
     val issueBody = stringResource(R.string.help_report_issue_body)
     val copied = stringResource(R.string.help_report_copied)
     val noBrowser = stringResource(R.string.help_report_no_browser)
+    val noMail = stringResource(R.string.help_report_no_mail)
+    val reportEmail = stringResource(R.string.help_report_email)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
@@ -198,6 +200,30 @@ private fun ReportSection() {
         ) {
             Text(
                 stringResource(R.string.help_report_button),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                // ACTION_SENDTO + mailto: 는 메일 앱만 고른다. 제목·본문은 추가 정보로 넘겨 주소 길이에 걸리지 않게 한다.
+                val intent = Intent(Intent.ACTION_SENDTO, "mailto:$reportEmail".toUri()).apply {
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf(reportEmail))
+                    putExtra(Intent.EXTRA_SUBJECT, issueTitle)
+                    putExtra(Intent.EXTRA_TEXT, ReportLink.body(issueBody, environment))
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(context, noMail, Toast.LENGTH_LONG).show()
+                }
+            },
+            border = BorderStroke(1.dp, AccentColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_mail),
                 fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor
             )
         }
