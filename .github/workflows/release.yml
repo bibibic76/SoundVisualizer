@@ -86,18 +86,37 @@ jobs:
             reason=""
           fi
 
+          # 어느 키로 서명할지와 어느 변형으로 빌드할지는 따로 정한다. R8 은 서명과 상관이 없다.
+          # 둘을 묶어 두면 릴리스 키가 없다는 이유로 축소까지 못 받는다(56MB 대 34MB).
           if [ -z "$reason" ]; then
             keystore="$RUNNER_TEMP/release.jks"
             echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$keystore"
             echo "SV_RELEASE_KEYSTORE=$keystore" >> "$GITHUB_ENV"
+            echo "SV_SIGNING_KEY=release" >> "$GITHUB_ENV"
             echo "SV_BUILD_VARIANT=release" >> "$GITHUB_ENV"
             echo "::notice title=서명::팀 릴리스 키로 서명한 릴리스 APK 를 만듭니다."
           else
-            echo "SV_BUILD_VARIANT=debug" >> "$GITHUB_ENV"
             if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
-              echo "::notice title=서명::$reason. 지금까지처럼 공유 디버그 키로 서명한 디버그 APK 를 붙입니다."
+              echo "SV_SIGNING_KEY=debug" >> "$GITHUB_ENV"
             else
-              echo "::warning title=임시 서명::$reason. DEBUG_KEYSTORE_BASE64 도 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다."
+              echo "SV_SIGNING_KEY=temp" >> "$GITHUB_ENV"
+            fi
+
+            # 이 태그의 빌드 설정이 릴리스 서명을 알면, 릴리스 키가 없을 때 디버그 키로 물러난다.
+            # 그러면 R8 로 줄인 APK 를 같은 키로 서명해 기존 설치 위에 덮을 수 있다. 그 설정이
+            # 없던 예전 태그는 릴리스 변형이 서명 없는 APK 를 내므로 지금까지처럼 디버그로 간다.
+            if grep -q SV_RELEASE_KEYSTORE app/build.gradle.kts; then
+              echo "SV_BUILD_VARIANT=release" >> "$GITHUB_ENV"
+              variant_note="R8 로 줄인 릴리스 APK 를 만듭니다."
+            else
+              echo "SV_BUILD_VARIANT=debug" >> "$GITHUB_ENV"
+              variant_note="이 태그의 빌드 설정에는 릴리스 서명이 없어 디버그 APK 를 만듭니다."
+            fi
+
+            if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+              echo "::notice title=서명::$reason. 공유 디버그 키로 서명합니다. $variant_note"
+            else
+              echo "::warning title=임시 서명::$reason. DEBUG_KEYSTORE_BASE64 도 없어 임시 키로 서명합니다. 이 APK 는 기존에 설치된 앱 위에 덮어쓸 수 없습니다. $variant_note"
             fi
           fi
 
@@ -165,7 +184,8 @@ jobs:
           apk="SoundVisualizer-$TAG.apk"
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
           apk_sha=$("$apksigner" verify --print-certs "$apk" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)
-          if [ "$SV_BUILD_VARIANT" = "release" ]; then
+          # 빌드 변형이 아니라 서명한 키를 기준으로 가른다. "릴리스 변형 + 공유 디버그 키" 가 있다.
+          if [ "$SV_SIGNING_KEY" = "release" ]; then
             key_sha=$(keytool -exportcert -alias "$RELEASE_KEY_ALIAS" -keystore "$SV_RELEASE_KEYSTORE" -storepass "$RELEASE_KEYSTORE_PASSWORD" | sha256sum | cut -d' ' -f1)
             if [ "$apk_sha" = "$key_sha" ]; then
               echo "::notice title=APK 서명::팀 릴리스 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
@@ -176,7 +196,7 @@ jobs:
               echo "::error title=APK 서명::팀 릴리스 키로 서명되지 않았습니다. APK $apk_sha / 키 $key_sha"
               exit 1
             fi
-          elif [ -z "${SV_DEBUG_KEYSTORE:-}" ]; then
+          elif [ "$SV_SIGNING_KEY" = "temp" ]; then
             echo "::notice title=APK 서명::임시 키 (인증서 SHA-256 ${apk_sha:0:16}…)"
           else
             key_sha=$(keytool -exportcert -alias androiddebugkey -keystore "$SV_DEBUG_KEYSTORE" -storepass android | sha256sum | cut -d' ' -f1)
