@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pausar com a tela desligada</string>
     <string name="setting_pause_screen_off_desc">Com a tela desligada, o app para de capturar o som, de detectar tipos de som e de vibrar para economizar bateria, e volta a funcionar quando você liga a tela. Desative para continuar recebendo avisos por vibração com a tela desligada.</string>
+    <string name="setting_reduced_frame_rate">Desenhar os gráficos com menos frequência</string>
+    <string name="setting_reduced_frame_rate_desc">Redesenha os gráficos 30 vezes por segundo em vez de 60. Economiza bateria quando você deixa o app em execução por muito tempo, mas o movimento fica menos suave. O som continua sendo capturado tão frequentemente quanto antes.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Mostrar sons ambientes</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Captura de áudio</string>
     <string name="notification_text">Visualizando os sons.</string>
     <string name="notification_stop">Parar</string>
+    <string name="notification_mode_selected">%1$s, selecionado</string>
     <string name="notification_text_ai_unavailable">Visualizando os sons. A detecção do tipo de som não está funcionando, então os avisos por vibração estão desligados.</string>
     <string name="notification_text_capture_blocked">A visualização não está recebendo som. Pode ser que o app que está tocando não permita compartilhar o som dele ou que o som esteja desligado dentro do próprio app.</string>
 
@@ -208,6 +211,18 @@
     <string name="help_faq_battery_a">O app só desenha quando há som e fica em espera quando está tudo em silêncio. Mas, como continua capturando o som, recomendamos desligar quando não estiver usando.</string>
     <string name="help_faq_language_q">Como mudo o idioma do app?</string>
     <string name="help_faq_language_a">Toque em “Idioma” no topo da aba Ajustes e escolha um. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Relatar um problema</string>
+    <string name="help_report_desc">Conte para nós sobre um bug ou sobre um som que foi mostrado com o tipo errado. O GitHub é aberto no seu navegador com as informações do app e do dispositivo já preenchidas, por isso é preciso ter uma conta no GitHub. Se não tiver uma, envie um e-mail para nós. Nenhum áudio é enviado em momento algum.</string>
+    <string name="help_report_button">Relatar no GitHub</string>
+    <string name="help_report_mail">Relatar por e-mail</string>
+    <string name="help_report_no_mail">Não há um app de e-mail para enviar. Copie os dados do dispositivo e envie de outra forma.</string>
+    <string name="help_report_copy">Copiar dados do dispositivo</string>
+    <string name="help_report_copied">Dados do dispositivo copiados.</string>
+    <string name="help_report_no_browser">Não há um navegador para abrir o link. Copie os dados do dispositivo e envie para nós de outra forma.</string>
+    <string name="help_report_issue_title">Relato enviado pelo app</string>
+    <string name="help_report_issue_body">O que aconteceu?\n\nO que você estava ouvindo (app, tipo de som)?\n\nO que você esperava em vez disso?</string>
 
     <string name="help_about_title">Sobre</string>
     <string name="help_about_version">Versão %1$s</string>

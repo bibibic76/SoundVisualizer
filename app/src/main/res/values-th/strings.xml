@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">หยุดชั่วคราวเมื่อหน้าจอดับ</string>
     <string name="setting_pause_screen_off_desc">ขณะหน้าจอดับ แอปจะหยุดจับเสียง แยกประเภทเสียง และสั่น เพื่อประหยัดแบตเตอรี่ แล้วทำงานต่อเมื่อคุณเปิดหน้าจอ ปิดตัวเลือกนี้หากต้องการรับการแจ้งเตือนด้วยการสั่นขณะหน้าจอดับ</string>
+    <string name="setting_reduced_frame_rate">วาดกราฟิกให้ถี่น้อยลง</string>
+    <string name="setting_reduced_frame_rate_desc">วาดกราฟิก 30 ครั้งต่อวินาทีแทน 60 ครั้ง ช่วยประหยัดแบตเตอรี่เมื่อเปิดแอปทิ้งไว้นานๆ แต่การเคลื่อนไหวจะลื่นไหลน้อยลง ส่วนการจับเสียงยังคงทำถี่เท่าเดิม</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">แสดงเสียงแวดล้อม</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">การจับเสียง</string>
     <string name="notification_text">กำลังแสดงภาพเสียง</string>
     <string name="notification_stop">หยุด</string>
+    <string name="notification_mode_selected">%1$s, เลือกแล้ว</string>
     <string name="notification_text_ai_unavailable">กำลังแสดงภาพเสียง ระบบแยกประเภทเสียงไม่ทำงาน จึงปิดการแจ้งเตือนด้วยการสั่น</string>
     <string name="notification_text_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
 
@@ -208,6 +211,18 @@
     <string name="help_faq_battery_a">แอปจะวาดภาพเฉพาะเมื่อมีเสียง และจะพักการทำงานเมื่อเงียบ แต่เนื่องจากแอปจับเสียงอยู่ตลอดขณะทำงาน เราจึงแนะนำให้ปิดเมื่อไม่ได้ใช้งาน</string>
     <string name="help_faq_language_q">เปลี่ยนภาษาของแอปได้อย่างไร</string>
     <string name="help_faq_language_a">แตะ “ภาษา” ที่ด้านบนของแท็บการตั้งค่า แล้วเลือกภาษาที่ต้องการ หากเลือก “ค่าเริ่มต้นของระบบ” แอปจะใช้ภาษาเดียวกับโทรศัพท์ ใน Android 13 ขึ้นไป คุณยังเปลี่ยนภาษาได้ที่ “ภาษาของแอป” ในการตั้งค่าของโทรศัพท์</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">รายงานปัญหา</string>
+    <string name="help_report_desc">แจ้งให้เราทราบเกี่ยวกับข้อบกพร่อง หรือเสียงที่ถูกแสดงผิดประเภท GitHub จะเปิดขึ้นในเบราว์เซอร์ของคุณ โดยกรอกข้อมูลแอปและอุปกรณ์ไว้ให้แล้ว จึงต้องมีบัญชี GitHub หากไม่มีบัญชี โปรดส่งอีเมลถึงเราแทน จะไม่มีการส่งข้อมูลเสียงใดๆ ออกไปเลย</string>
+    <string name="help_report_button">รายงานผ่าน GitHub</string>
+    <string name="help_report_mail">รายงานทางอีเมล</string>
+    <string name="help_report_no_mail">ไม่มีแอปอีเมลสำหรับส่ง โปรดคัดลอกข้อมูลอุปกรณ์แล้วส่งด้วยวิธีอื่น</string>
+    <string name="help_report_copy">คัดลอกข้อมูลอุปกรณ์</string>
+    <string name="help_report_copied">คัดลอกข้อมูลอุปกรณ์แล้ว</string>
+    <string name="help_report_no_browser">ไม่มีเบราว์เซอร์สำหรับเปิดลิงก์ โปรดคัดลอกข้อมูลอุปกรณ์แล้วส่งถึงเราแทน</string>
+    <string name="help_report_issue_title">รายงานจากแอป</string>
+    <string name="help_report_issue_body">เกิดอะไรขึ้น\n\nคุณกำลังฟังอะไรอยู่ (แอปใด เสียงประเภทใด)\n\nคุณคาดว่าควรจะเป็นอย่างไร</string>
 
     <string name="help_about_title">เกี่ยวกับแอป</string>
     <string name="help_about_version">เวอร์ชัน %1$s</string>

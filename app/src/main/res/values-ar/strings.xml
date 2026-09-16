@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">التوقف المؤقت عند انطفاء الشاشة</string>
     <string name="setting_pause_screen_off_desc">أثناء انطفاء الشاشة يتوقف التطبيق عن التقاط الصوت وتحديد أنواع الأصوات والاهتزاز لتوفير البطارية، ثم يواصل عمله عند تشغيل الشاشة. أوقف هذا الخيار إذا أردت أن تصلك تنبيهات الاهتزاز والشاشة مطفأة.</string>
+    <string name="setting_reduced_frame_rate">رسم الرسومات بوتيرة أقل</string>
+    <string name="setting_reduced_frame_rate_desc">يُعيد رسم الرسومات 30 مرة في الثانية بدلًا من 60 مرة. يوفّر ذلك البطارية عندما تترك التطبيق قيد التشغيل لفترة طويلة، لكن الحركة تصبح أقل سلاسة. أما التقاط الصوت فيستمر بالوتيرة نفسها دون تغيير.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">إظهار الأصوات المحيطة</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">التقاط الصوت</string>
     <string name="notification_text">جارٍ عرض الأصوات على الشاشة.</string>
     <string name="notification_stop">إيقاف</string>
+    <string name="notification_mode_selected">%1$s، محدّد</string>
     <string name="notification_text_ai_unavailable">جارٍ عرض الأصوات على الشاشة. لا يمكن تحديد نوع الصوت، لذا تنبيهات الاهتزاز معطّلة.</string>
     <string name="notification_text_capture_blocked">لا يصل أي صوت إلى «الصوت المرئي». قد لا يسمح التطبيق الذي يشغّل الصوت الآن بمشاركة صوته، أو قد يكون صوت ذلك التطبيق نفسه مكتومًا.</string>
 
@@ -208,6 +211,18 @@
     <string name="help_faq_battery_a">لا يرسم التطبيق إلا عند وجود صوت، ويدخل في وضع الخمول عندما يسود الهدوء. ولكن لأنه يواصل التقاط الصوت، ننصح بإيقافه عندما لا تستخدمه.</string>
     <string name="help_faq_language_q">كيف أغيّر لغة التطبيق؟</string>
     <string name="help_faq_language_a">انقر على «اللغة» في أعلى علامة تبويب «الإعدادات» واختر لغة. عند اختيار «الإعداد التلقائي للنظام» يستخدم التطبيق لغة هاتفك. في Android 13 والإصدارات الأحدث، يمكنك أيضًا تغييرها من «لغات التطبيقات» في إعدادات هاتفك.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">الإبلاغ عن مشكلة</string>
+    <string name="help_report_desc">أخبرنا عن خطأ برمجي، أو عن صوت عُرض على أنه من نوع غير صحيح. يُفتح GitHub في متصفحك مع ملء معلومات التطبيق والجهاز مسبقًا، لذا يلزمك حساب على GitHub. إذا لم يكن لديك حساب، فأرسل إلينا رسالة بالبريد الإلكتروني بدلًا من ذلك. لا يتم إرسال أي صوت من هاتفك على الإطلاق.</string>
+    <string name="help_report_button">الإبلاغ عبر GitHub</string>
+    <string name="help_report_mail">الإبلاغ عبر البريد الإلكتروني</string>
+    <string name="help_report_no_mail">لا يوجد تطبيق بريد إلكتروني لإرسال الرسالة. انسخ معلومات الجهاز وأرسلها بطريقة أخرى.</string>
+    <string name="help_report_copy">نسخ معلومات الجهاز</string>
+    <string name="help_report_copied">تم نسخ معلومات الجهاز.</string>
+    <string name="help_report_no_browser">لا يوجد متصفح لفتح الرابط. انسخ معلومات الجهاز وأرسلها إلينا بدلًا من ذلك.</string>
+    <string name="help_report_issue_title">بلاغ من التطبيق</string>
+    <string name="help_report_issue_body">ماذا حدث؟\n\nما الذي كنت تستمع إليه (أي تطبيق، وما نوع الصوت)؟\n\nما الذي كنت تتوقع حدوثه بدلًا من ذلك؟</string>
 
     <string name="help_about_title">حول التطبيق</string>
     <string name="help_about_version">الإصدار %1$s</string>

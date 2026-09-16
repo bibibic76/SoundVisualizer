@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause quand l\'écran est éteint</string>
     <string name="setting_pause_screen_off_desc">Quand l\'écran est éteint, la capture du son, la détection du type de son et les vibrations s\'arrêtent pour économiser la batterie, et tout reprend dès que vous rallumez l\'écran. Désactivez cette option pour continuer à recevoir les alertes par vibration lorsque l\'écran est éteint.</string>
+    <string name="setting_reduced_frame_rate">Dessiner les graphismes moins souvent</string>
+    <string name="setting_reduced_frame_rate_desc">Redessine les graphismes 30 fois par seconde au lieu de 60. Cela économise la batterie si vous laissez l\'application tourner longtemps, mais les mouvements sont moins fluides. Le son, lui, est capturé toujours aussi souvent.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Afficher l\'ambiance</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Capture audio</string>
     <string name="notification_text">Visualisation du son en cours.</string>
     <string name="notification_stop">Arrêter</string>
+    <string name="notification_mode_selected">%1$s, sélectionné</string>
     <string name="notification_text_ai_unavailable">Visualisation du son en cours. La détection du type de son ne fonctionne pas, les alertes par vibration sont donc désactivées.</string>
     <string name="notification_text_capture_blocked">Aucun son ne parvient au visualiseur. Il se peut que l\'application qui diffuse le son n\'autorise pas son partage, ou que le son y soit coupé.</string>
 
@@ -208,6 +211,18 @@
     <string name="help_faq_battery_a">Elle ne dessine que lorsqu\'il y a du son et se met en veille quand tout est silencieux. Comme elle capture le son en continu, nous vous recommandons toutefois de la désactiver quand vous ne l\'utilisez pas.</string>
     <string name="help_faq_language_q">Comment changer la langue de l\'application ?</string>
     <string name="help_faq_language_a">Appuyez sur « Langue » en haut de l\'onglet Paramètres, puis choisissez une langue. Avec « Langue du système », l\'application suit la langue de votre téléphone. Sous Android 13 ou version ultérieure, vous pouvez aussi changer la langue de l\'application depuis « Langues des applis », dans les paramètres de votre téléphone.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Signaler un problème</string>
+    <string name="help_report_desc">Signalez-nous un bug, ou un son dont le type affiché était incorrect. GitHub s\'ouvre dans votre navigateur avec les informations de l\'application et de l\'appareil déjà renseignées : il vous faut donc un compte GitHub. Si vous n\'en avez pas, envoyez-nous plutôt un e-mail. Aucune donnée audio n\'est jamais envoyée.</string>
+    <string name="help_report_button">Signaler sur GitHub</string>
+    <string name="help_report_mail">Signaler par e-mail</string>
+    <string name="help_report_no_mail">Aucune application d\'e-mail pour l\'envoi. Copiez les informations de l\'appareil et transmettez-les autrement.</string>
+    <string name="help_report_copy">Copier les infos de l\'appareil</string>
+    <string name="help_report_copied">Informations de l\'appareil copiées.</string>
+    <string name="help_report_no_browser">Aucun navigateur pour ouvrir le lien. Copiez plutôt les informations de l\'appareil et envoyez-les-nous.</string>
+    <string name="help_report_issue_title">Signalement depuis l\'application</string>
+    <string name="help_report_issue_body">Que s\'est-il passé ?\n\nQu\'écoutiez-vous (application, type de son) ?\n\nÀ quoi vous attendiez-vous plutôt ?</string>
 
     <string name="help_about_title">À propos</string>
     <string name="help_about_version">Version %1$s</string>

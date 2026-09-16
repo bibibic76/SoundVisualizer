@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Tạm dừng khi màn hình tắt</string>
     <string name="setting_pause_screen_off_desc">Khi màn hình tắt, ứng dụng ngừng thu âm thanh, ngừng nhận diện loại âm thanh và ngừng rung để tiết kiệm pin, rồi tiếp tục khi bạn bật màn hình. Hãy tắt tùy chọn này nếu bạn muốn vẫn nhận được thông báo rung lúc màn hình tắt.</string>
+    <string name="setting_reduced_frame_rate">Giảm tần suất vẽ đồ họa</string>
+    <string name="setting_reduced_frame_rate_desc">Vẽ lại đồ họa 30 lần mỗi giây thay vì 60 lần. Cách này giúp tiết kiệm pin khi bạn để ứng dụng chạy trong thời gian dài, nhưng chuyển động sẽ kém mượt hơn. Tần suất thu âm thanh vẫn giữ nguyên.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Hiện âm thanh môi trường</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Thu âm thanh</string>
     <string name="notification_text">Đang trực quan hóa âm thanh.</string>
     <string name="notification_stop">Dừng</string>
+    <string name="notification_mode_selected">%1$s, đã chọn</string>
     <string name="notification_text_ai_unavailable">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên thông báo rung đang tắt.</string>
     <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
 
@@ -208,6 +211,18 @@
     <string name="help_faq_battery_a">Ứng dụng chỉ vẽ khi có âm thanh và chuyển sang trạng thái chờ khi yên tĩnh. Tuy nhiên, vì ứng dụng liên tục thu âm thanh, bạn nên tắt ứng dụng khi không sử dụng.</string>
     <string name="help_faq_language_q">Làm cách nào để đổi ngôn ngữ ứng dụng?</string>
     <string name="help_faq_language_a">Nhấn “Ngôn ngữ” ở đầu thẻ Cài đặt rồi chọn một ngôn ngữ. “Mặc định của hệ thống” sẽ dùng ngôn ngữ của điện thoại. Trên Android 13 trở lên, bạn cũng có thể đổi trong mục “Ngôn ngữ ứng dụng” ở phần cài đặt của điện thoại.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Báo cáo sự cố</string>
+    <string name="help_report_desc">Hãy cho chúng tôi biết khi bạn gặp lỗi, hoặc khi một âm thanh bị hiện sai loại. GitHub sẽ mở trong trình duyệt với thông tin ứng dụng và thiết bị đã được điền sẵn, nên bạn cần có tài khoản GitHub. Nếu không có tài khoản, hãy gửi email cho chúng tôi. Ứng dụng không bao giờ gửi đi bất kỳ âm thanh nào.</string>
+    <string name="help_report_button">Báo cáo trên GitHub</string>
+    <string name="help_report_mail">Báo cáo qua email</string>
+    <string name="help_report_no_mail">Không có ứng dụng email nào để gửi. Hãy sao chép thông tin thiết bị và gửi bằng cách khác.</string>
+    <string name="help_report_copy">Sao chép thông tin thiết bị</string>
+    <string name="help_report_copied">Đã sao chép thông tin thiết bị.</string>
+    <string name="help_report_no_browser">Không có trình duyệt nào để mở liên kết. Thay vào đó, hãy sao chép thông tin thiết bị và gửi cho chúng tôi.</string>
+    <string name="help_report_issue_title">Báo cáo từ ứng dụng</string>
+    <string name="help_report_issue_body">Chuyện gì đã xảy ra?\n\nLúc đó bạn đang nghe gì (ứng dụng nào, loại âm thanh nào)?\n\nBạn đã mong đợi kết quả như thế nào?</string>
 
     <string name="help_about_title">Giới thiệu</string>
     <string name="help_about_version">Phiên bản %1$s</string>
