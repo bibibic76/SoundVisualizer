@@ -61,6 +61,31 @@ class BlockedCaptureNoticeTest {
     }
 
     @Test
+    fun `재생이 잠깐 끊기면 버티던 시간을 처음부터 다시 센다`() {
+        // 안내의 근거는 "끊기지 않고" 이어진 어긋남이다. 재생이 멈춘 구간은 받을 소리가 없었던 구간이라
+        // 근거가 되지 못한다. 이 규칙이 빠지면 짧은 무음이 여러 번 쌓여, 소리를 잘 넘겨주던 앱에도
+        // 언젠가는 안내가 뜬다. 피드를 넘기며 자동 재생 영상을 스치는 흔한 사용에서 바로 드러난다.
+        val notice = BlockedCaptureNotice()
+        val firstEnd = notice.playSilently(from = 0, ms = hold - TICK)
+        assertFalse("아직 버티는 시간을 채우지 못했다", notice.isBlocked)
+
+        // 재생이 한 틱 멈춘다 (다음 화로 넘어가기, 장면 전환).
+        assertFalse(
+            notice.onTick(firstEnd + TICK, canJudge = true, mediaPlaying = false, peak = 0f, buffers = BUFFERS)
+        )
+
+        // 다시 재생. 앞 구간을 그대로 세고 있었다면 여기서 곧바로 안내가 뜬다.
+        val resume = firstEnd + 2 * TICK
+        notice.playSilently(from = resume, ms = hold - TICK)
+        assertFalse("끊긴 앞 구간은 세지 않는다", notice.isBlocked)
+
+        assertTrue(
+            "다시 시작한 시점부터 버티는 시간을 채우면 그때 안내한다",
+            notice.onTick(resume + hold, canJudge = true, mediaPlaying = true, peak = 0f, buffers = BUFFERS)
+        )
+    }
+
+    @Test
     fun `진짜 조용할 때는 안내하지 않는다`() {
         // 폰이 아무것도 재생하지 않으면 받을 소리 자체가 없다. 아무리 오래 기다려도 뜨면 안 된다.
         val notice = BlockedCaptureNotice()
