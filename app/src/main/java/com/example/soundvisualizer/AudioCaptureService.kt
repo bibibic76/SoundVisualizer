@@ -37,6 +37,12 @@ import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.HapticNotifier
 import com.example.soundvisualizer.language.AppLanguage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -104,6 +110,9 @@ class AudioCaptureService : Service() {
 
     private var screenReceiverRegistered = false
 
+    /** 알림의 모드 표시를 맞추는 데만 쓴다. 메인 스레드에서 돌고 onDestroy 에서 취소한다. */
+    private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+
     private val projectionCallback = object : MediaProjection.Callback() {
         // 다른 앱이 화면 녹화·공유·전송을 시작했거나(안드로이드는 한 번에 한 앱만 허용한다),
         // 사용자가 시스템 UI 에서 캡처를 끈 경우. 콜백만으로는 둘을 구분할 수 없다.
@@ -129,6 +138,9 @@ class AudioCaptureService : Service() {
 
         /** 실행 중 알림의 중지 버튼. 사용자가 끈 것으로 본다. */
         const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
+
+        /** 실행 중 알림의 모드 바꾸기 버튼. 다음 표현 모드로 넘긴다. 캡처와 AI 는 건드리지 않는다. */
+        const val ACTION_NEXT_MODE = "com.example.soundvisualizer.action.NEXT_MODE"
         private const val CHANNEL_ID = "AudioCaptureChannel"
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
@@ -252,6 +264,8 @@ class AudioCaptureService : Service() {
         // 표시하면 아직 onCreate 가 안 돌아 false 로 덮어써진다.
         SettingsManager.setServiceRunning(true)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
+        observeVisualMode()
 
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
         registerScreenReceiver()
@@ -403,6 +417,12 @@ class AudioCaptureService : Service() {
         if (intent?.action != ACTION_STOP) stopRequested = false
         if (intent?.action == ACTION_STOP) {
             stopEverything(StopReason.UserRequested)
+            return START_NOT_STICKY
+        }
+        if (intent?.action == ACTION_NEXT_MODE) {
+            // 캡처도 AI 도 건드리지 않는다. 오버레이는 프레임마다 모드를 읽으므로 바로 바뀐다.
+            // 알림의 모드 표시는 [observeVisualMode] 가 맞춘다.
+            SettingsManager.setVisualMode(SettingsManager.visualMode.value.next())
             return START_NOT_STICKY
         }
         if (intent != null && audioRecord == null) {
@@ -796,6 +816,8 @@ class AudioCaptureService : Service() {
 
     override fun onDestroy() {
         stopLatch.onDestroy()
+        // 내려가는 중에 모드가 바뀌어도 알림을 다시 올리지 않는다.
+        serviceScope.cancel()
         isRunning = false
         instance = null
         cancelAiResume()
@@ -869,11 +891,28 @@ class AudioCaptureService : Service() {
         StopAlert.post(this, CHANNEL_ID, NOTIFICATION_ID, createNotification())
     }
 
+    /**
+     * 모드가 바뀌면 알림의 모드 표시를 맞춘다. 앱 설정에서 바꾸든 알림 버튼으로 바꾸든 같은 곳을 지난다.
+     *
+     * 지금 값은 이미 알림에 들어 있으므로 첫 값은 흘린다.
+     */
+    private fun observeVisualMode() {
+        serviceScope.launch {
+            SettingsManager.visualMode.drop(1).collect { refreshOngoingNotification() }
+        }
+    }
+
     private fun createNotification(): Notification {
         val stopIntent = PendingIntent.getService(
             this,
             0,
             Intent(this, AudioCaptureService::class.java).setAction(ACTION_STOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val nextModeIntent = PendingIntent.getService(
+            this,
+            2,
+            Intent(this, AudioCaptureService::class.java).setAction(ACTION_NEXT_MODE),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val openIntent = PendingIntent.getActivity(
@@ -896,8 +935,11 @@ class AudioCaptureService : Service() {
             .setContentTitle(getString(R.string.notification_title))
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            // 알림만 보고도 지금 어떤 모드로 그려지는지 알 수 있게 제목 옆에 모드 이름을 둔다.
+            .setSubText(getString(SettingsManager.visualMode.value.labelRes))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
+            .addAction(0, getString(R.string.notification_next_mode), nextModeIntent)
             .addAction(0, getString(R.string.notification_stop), stopIntent)
             .setOngoing(true)
             .setSilent(true)
