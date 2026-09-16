@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    실행 중 알림에서 지금 고른 모드 칩. 알림 배경은 기기와 밝기 설정에 따라 밝을 수도 어두울 수도 있어서,
+    칩 자체를 진한 색으로 채우고 글자를 밝게 둔다. 그러면 어느 배경에서도 읽힌다.
+
+    누르면 시스템이 알림을 다시 그리기까지 0.5초쯤 걸린다(기기에서 잰 값). 그동안 화면이 아무 반응도
+    보이지 않으면 눌리지 않은 줄 알고 다시 누르게 되므로, 물결 효과로 누른 순간을 바로 알린다.
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#66FFFFFF">
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFFFF" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/notification_chip_on" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</ripple>

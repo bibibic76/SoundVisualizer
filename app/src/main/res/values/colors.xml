@@ -6,4 +6,14 @@
     -->
     <color name="app_background">#2A2C31</color>
 
+    <!--
+        실행 중 알림의 모드 칩. 알림 배경색은 기기·테마마다 달라서 밝을 수도 어두울 수도 있는데,
+        RemoteViews 에서는 테마 속성을 믿고 쓰기 어렵다. 그래서 칩을 진한 색으로 채우고 글자를 밝게 둬서
+        배경이 어느 쪽이든 읽히게 한다. 고른 칩은 앱의 강조색(MainActivity.kt 의 AccentColor)과 같은 값이다.
+    -->
+    <color name="notification_chip_on">#3182F6</color>
+    <color name="notification_chip_off">#4A4F57</color>
+    <color name="notification_chip_text_on">#FFFFFF</color>
+    <color name="notification_chip_text_off">#E6E9ED</color>
+
 </resources>

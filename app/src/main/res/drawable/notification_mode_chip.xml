@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12 이상에서 쓰는 모드 칩 배경(layout-v31/notification_modes.xml).
+
+    고른 칩인지를 `state_checked` 로 판단한다. 이렇게 두면 칩을 누른 순간 알림을 그리는 쪽에서 곧바로
+    배경을 바꾼다. 우리가 알림을 다시 올려서 바꾸면 기기에서 잰 기준으로 0.5초가 걸린다.
+
+    색을 왜 고정하는지는 colors.xml 의 notification_chip_* 주석에 적어 두었다.
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#66FFFFFF">
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFFFF" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <item>
+        <selector>
+            <item android:state_checked="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/notification_chip_on" />
+                    <corners android:radius="18dp" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/notification_chip_off" />
+                    <corners android:radius="18dp" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</ripple>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 모드 칩의 글자색. 배경과 같이 `state_checked` 로 정해야 누른 즉시 함께 바뀐다. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:color="@color/notification_chip_text_on" />
+    <item android:color="@color/notification_chip_text_off" />
+</selector>
