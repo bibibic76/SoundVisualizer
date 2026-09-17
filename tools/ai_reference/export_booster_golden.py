@@ -101,6 +101,18 @@ def apply_booster(clf: ReferenceClassifier, probs: np.ndarray, score: float) -> 
             post_index = gun_idx
             post_display = clf._class_names[gun_idx]
             post_conf = max(post_conf, gun_prob)
+    elif (not block) and has_strong and not has_gunshot_cue:
+        cue_candidates = [
+            (int(top_idx[i]), float(top_probs[i]))
+            for i in range(5)
+            if int(top_idx[i]) >= 0
+            and clf._is_strong_danger_keyword(clf._class_names[int(top_idx[i])])
+            and not clf._is_gunshot_keyword(clf._class_names[int(top_idx[i])])
+        ]
+        if cue_candidates:
+            post_index, _ = max(cue_candidates, key=lambda item: item[1])
+            post_coarse = "danger"
+            post_display = clf._class_names[post_index]
 
     return {
         "gunshot_score": float(score),
