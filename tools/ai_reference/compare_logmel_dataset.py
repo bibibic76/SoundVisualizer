@@ -76,6 +76,26 @@ def mono16k_for_replay(path: Path) -> np.ndarray:
     )
 
 
+def mono16k_windows(path: Path, mode: str) -> list[np.ndarray]:
+    if mode == "tail":
+        return [mono16k_for_replay(path)]
+
+    mono, sample_rate, _ = load_wav_as_capture_mono(path)
+    destination_length = max(
+        1,
+        int(round(mono.size * 16000.0 / float(sample_rate))),
+    )
+    resampled = resample_mono_float_to_16k_custom(
+        mono,
+        sample_rate,
+        destination_length,
+    )
+    return [
+        resampled[start : start + REQUIRED_MONO_16K_SAMPLES]
+        for start in range(0, resampled.size, REQUIRED_MONO_16K_SAMPLES)
+    ]
+
+
 def booster_score(classifier: ReferenceClassifier, features: np.ndarray) -> float:
     return float(
         np.asarray(
@@ -168,11 +188,68 @@ def summarize(rows: list[dict], frontend: str, label: str) -> dict:
     }
 
 
+def precision_recall_f1(
+    labels: np.ndarray,
+    scores: np.ndarray,
+    threshold: float,
+) -> dict[str, float]:
+    predicted = scores >= threshold
+    true_positive = int(np.sum(predicted & (labels == 1)))
+    false_positive = int(np.sum(predicted & (labels == 0)))
+    false_negative = int(np.sum(~predicted & (labels == 1)))
+    precision = (
+        true_positive / (true_positive + false_positive)
+        if true_positive + false_positive
+        else 0.0
+    )
+    recall = (
+        true_positive / (true_positive + false_negative)
+        if true_positive + false_negative
+        else 0.0
+    )
+    f1 = 2.0 * precision * recall / (precision + recall) if precision + recall else 0.0
+    return {
+        "threshold": float(threshold),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
+    }
+
+
+def booster_discrimination(rows: list[dict], frontend: str, score_key: str) -> dict:
+    labels = np.asarray([row["label"] == "positive" for row in rows], dtype=np.int32)
+    scores = np.asarray([row[frontend][score_key] for row in rows], dtype=np.float64)
+    positive_scores = scores[labels == 1]
+    negative_scores = scores[labels == 0]
+    comparisons = positive_scores[:, None] - negative_scores[None, :]
+    auc = float(np.mean((comparisons > 0.0) + 0.5 * (comparisons == 0.0)))
+    candidates = [
+        precision_recall_f1(labels, scores, float(threshold))
+        for threshold in np.unique(scores)
+    ]
+    best = max(candidates, key=lambda item: (item["f1"], item["threshold"]))
+    return {
+        "auc": auc,
+        "best_full_dataset": best,
+        "at_recorded_training_threshold_0_28": precision_recall_f1(
+            labels,
+            scores,
+            0.28,
+        ),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     parser.add_argument("--wav-dir", type=Path, required=True)
     parser.add_argument("--json", type=Path)
+    parser.add_argument(
+        "--window-mode",
+        choices=("tail", "mean-nonoverlap"),
+        default="tail",
+        help="Replay the last app-sized window or average all non-overlapping windows",
+    )
     args = parser.parse_args()
 
     model_dir = args.repo / "app/src/main/assets/ai"
@@ -181,25 +258,36 @@ def main() -> int:
     paths = sorted(args.wav_dir.glob("*.wav"))
     rows = []
     for path in paths:
-        mono16k = mono16k_for_replay(path)
-        log_mels = frontend_log_mels(mono16k, args.repo)
+        windows = mono16k_windows(path, args.window_mode)
+        log_mel_windows: dict[str, list[np.ndarray]] = {}
+        for window in windows:
+            for frontend, log_mel in frontend_log_mels(window, args.repo).items():
+                log_mel_windows.setdefault(frontend, []).append(log_mel)
         label = "positive" if path.stem.startswith(POSITIVE_PREFIXES) else "negative"
-        row = {"file": path.name, "label": label}
-        for frontend, log_mel in log_mels.items():
-            logits = yamnet.logits(log_mel)
-            probabilities = yamnet.softmax(logits)
-            sigmoid_scores = yamnet.sigmoid(logits)
+        row = {"file": path.name, "label": label, "windows": len(windows)}
+        for frontend, log_mels in log_mel_windows.items():
+            logits_per_window = np.stack(
+                [yamnet.logits(log_mel) for log_mel in log_mels]
+            )
+            logits = logits_per_window.mean(axis=0)
+            probabilities = np.stack(
+                [yamnet.softmax(values) for values in logits_per_window]
+            ).mean(axis=0)
+            sigmoid_scores = np.stack(
+                [yamnet.sigmoid(values) for values in logits_per_window]
+            ).mean(axis=0)
             row[frontend] = classify_probs(
                 classifier,
                 probabilities,
                 sigmoid_scores,
                 logits,
             )
+            log_mel_values = np.stack(log_mels)
             row[f"{frontend}_stats"] = {
-                "min": float(log_mel.min()),
-                "max": float(log_mel.max()),
-                "mean": float(log_mel.mean()),
-                "std": float(log_mel.std()),
+                "min": float(log_mel_values.min()),
+                "max": float(log_mel_values.max()),
+                "mean": float(log_mel_values.mean()),
+                "std": float(log_mel_values.std()),
             }
         rows.append(row)
 
@@ -211,7 +299,10 @@ def main() -> int:
             "qualcomm_source_log_mel follows the pinned torch recipe but has not been compared numerically with torchaudio",
             "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
             "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
+            "mean-nonoverlap windowing is a diagnostic approximation, not a recovered training pipeline",
+            "Booster discrimination metrics use the full training corpus and are not held-out performance estimates",
         ],
+        "window_mode": args.window_mode,
         "files": len(rows),
         "top1_changed": sum(
             row[frontends[0]]["top1"] != row[frontends[-1]]["top1"] for row in rows
@@ -246,6 +337,17 @@ def main() -> int:
             }
             for frontend in frontends
         },
+        "booster_discrimination": {
+            frontend: {
+                score_key: booster_discrimination(rows, frontend, score_key)
+                for score_key in (
+                    "booster_softmax_score",
+                    "booster_sigmoid_score",
+                    "booster_raw_logits_score",
+                )
+            }
+            for frontend in frontends
+        },
         "rows": rows,
     }
     rendered = json.dumps(report, indent=2, ensure_ascii=False)
@@ -257,11 +359,13 @@ def main() -> int:
                 key: report[key]
                 for key in (
                     "limitations",
+                    "window_mode",
                     "files",
                     "top1_changed",
                     "coarse_changed",
                     "comparisons",
                     "summary",
+                    "booster_discrimination",
                 )
             },
             indent=2,
