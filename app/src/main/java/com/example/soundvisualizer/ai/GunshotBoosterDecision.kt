@@ -23,7 +23,9 @@ object GunshotBoosterDecision {
         val preBoosterConfidence: Float,
         val postBoosterConfidence: Float,
         val hasGunshotCue: Boolean,
-        val hasStrongDangerCue: Boolean
+        val hasStrongDangerCue: Boolean,
+        /** A non-gunshot danger cue promoted the coarse class without booster adoption. */
+        val dangerCuePromoted: Boolean
     )
 
     /**
@@ -70,7 +72,9 @@ object GunshotBoosterDecision {
             reason =
                 "gunshot_cue score=${fmt(gunshotScore)} evidence=${fmt(evidence)} adopt=${pyBool(adopt)}"
         } else if (isGameMixMaskDisplay(display) || hasStrongDangerCue) {
-            adopt = gunshotScore >= 0.50f || (gunshotScore >= 0.40f && evidence >= 0.04f)
+            // A score-only adoption is unsafe: the current booster can emit ~0.505 for
+            // unrelated audio. Strong non-gunshot cues still promote danger below.
+            adopt = gunshotScore >= 0.40f && evidence >= 0.04f
             reason =
                 "game_mix_or_strong_danger score=${fmt(gunshotScore)} evidence=${fmt(evidence)} adopt=${pyBool(adopt)}"
         } else {
@@ -83,6 +87,7 @@ object GunshotBoosterDecision {
         var postDisplay = display
         var postIndex = pre.yamnetClassIndex
         var postConf = conf
+        var dangerCuePromoted = false
 
         if (adopt) {
             postCoarse = "danger"
@@ -92,6 +97,15 @@ object GunshotBoosterDecision {
                 postIndex = gunIdx
                 postDisplay = classNames[gunIdx]
                 postConf = max(postConf, gunProb)
+            }
+        } else if (hasStrongDangerCue && !hasGunshotCue) {
+            val (cueIdx, _) = tryPickBestStrongDangerDisplay(topIdx, topProbs, classNames)
+            if (cueIdx >= 0) {
+                postCoarse = "danger"
+                postIndex = cueIdx
+                postDisplay = classNames[cueIdx]
+                // Preserve YAMNet confidence; the booster score is not evidence here.
+                dangerCuePromoted = true
             }
         }
 
@@ -110,7 +124,8 @@ object GunshotBoosterDecision {
             preBoosterConfidence = conf,
             postBoosterConfidence = postConf,
             hasGunshotCue = hasGunshotCue,
-            hasStrongDangerCue = hasStrongDangerCue
+            hasStrongDangerCue = hasStrongDangerCue,
+            dangerCuePromoted = dangerCuePromoted
         )
     }
 
@@ -149,7 +164,8 @@ object GunshotBoosterDecision {
             preBoosterConfidence = pre.confidence,
             postBoosterConfidence = pre.confidence,
             hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5),
-            hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5)
+            hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5),
+            dangerCuePromoted = false
         )
     }
 
@@ -243,6 +259,24 @@ object GunshotBoosterDecision {
             if (probs[i] > bestP) {
                 bestP = probs[i]
                 bestI = i
+            }
+        }
+        return bestI to bestP
+    }
+
+    private fun tryPickBestStrongDangerDisplay(
+        topIndices: IntArray,
+        topProbs: FloatArray,
+        classNames: List<String>
+    ): Pair<Int, Float> {
+        var bestI = -1
+        var bestP = 0f
+        for (i in 0 until minOf(5, topIndices.size)) {
+            val index = topIndices[i]
+            if (index < 0 || isGunshotKeyword(classNames[index])) continue
+            if (isStrongDangerKeyword(classNames[index]) && topProbs[i] > bestP) {
+                bestI = index
+                bestP = topProbs[i]
             }
         }
         return bestI to bestP

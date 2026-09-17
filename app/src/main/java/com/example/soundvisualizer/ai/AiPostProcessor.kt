@@ -13,6 +13,7 @@ class AiPostProcessor(
         val display: String,
         val confidence: Float,
         val adoptedDangerFromBooster: Boolean = false,
+        val dangerCuePromoted: Boolean = false,
         /** Top-5에 strong danger keyword 존재 (threshold 완화용). */
         val hasStrongDangerCue: Boolean = false,
         /** Top-5에 critical danger keyword 존재 (threshold 완화용). */
@@ -94,7 +95,8 @@ class AiPostProcessor(
             hasStrongDangerCue = frame.hasStrongDangerCue,
             hasCriticalDangerCue = frame.hasCriticalDangerCue
         )
-        val meets = frame.confidence >= effective
+        val meets = frame.confidence >= effective ||
+            (frame.coarse == "danger" && frame.dangerCuePromoted)
 
         // Snapshot for InferenceResult-equivalent used by hysteresis
         val rCoarse = frame.coarse
@@ -110,7 +112,7 @@ class AiPostProcessor(
             display = rDisplay,
             confidence = rConf,
             adoptedDangerFromBooster = rAdopted,
-            criticalDangerEvent = rCritical
+            criticalDangerEvent = rCritical || frame.dangerCuePromoted
         )
 
         val usePreview =

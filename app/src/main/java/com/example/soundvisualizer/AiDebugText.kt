@@ -83,8 +83,10 @@ object AiDebugText {
         } else {
             "bst off"
         }
+        val top5 = result.top5.take(5).joinToString(",") { "${it.name}:${twoDecimals(it.probability)}" }
         return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   " +
-            "$booster   prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
+            "$booster ev ${twoDecimals(result.gunshotEvidence)} why ${result.boosterReason} " +
+            "top5 [$top5]   prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
     }
 
     private fun timingOf(result: AiClassificationResult): String =

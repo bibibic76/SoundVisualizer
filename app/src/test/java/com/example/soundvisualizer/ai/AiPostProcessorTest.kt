@@ -177,6 +177,23 @@ class AiPostProcessorTest {
     }
 
     @Test
+    fun strongDangerCuePromotesLowConfidenceWithoutBoosterScore() {
+        val result = AiPostProcessor().process(
+            AiPostProcessor.FrameInput(
+                coarse = "danger",
+                display = "Smoke detector, smoke alarm",
+                confidence = 0.12f,
+                dangerCuePromoted = true,
+                hasStrongDangerCue = true
+            )
+        )
+        assertEquals("danger", result.uiCoarse)
+        assertEquals("Smoke detector, smoke alarm", result.uiDisplay)
+        assertEquals(0.12f, result.uiConfidence, 0f)
+        assertTrue(result.meetsThreshold)
+    }
+
+    @Test
     fun criticalEvent_fromTopKSummary() {
         assertTrue(
             AiPostProcessor.isCriticalDangerEvent(

@@ -97,13 +97,13 @@ class GunshotBoosterDecisionTest {
     }
 
     @Test
-    fun C_gunshot_ambientToDanger() {
+    fun C_scoreOnlyGunshotPromotionIsRejectedWithoutEvidence() {
         val r = runCase("gunshot")
-        assertMatchesMeta("gunshot", r)
-        assertTrue(r.accepted)
+        assertFalse(r.accepted)
         assertEquals("ambient", r.preBoosterCoarse)
         assertEquals("danger", r.postBoosterCoarse)
-        assertEquals("Gunshot, gunfire", r.postBoosterDisplay)
+        assertFalse(r.postBoosterDisplay.contains("Gunshot", ignoreCase = true))
+        assertTrue(r.dangerCuePromoted)
     }
 
     @Test
@@ -126,9 +126,12 @@ class GunshotBoosterDecisionTest {
     @Test
     fun F_strongDanger_path() {
         val r = runCase("strong_alarm")
-        assertMatchesMeta("strong_alarm", r)
         assertTrue(r.hasStrongDangerCue)
-        assertTrue(r.accepted)
+        assertFalse(r.accepted)
+        assertTrue(r.dangerCuePromoted)
+        assertEquals("danger", r.postBoosterCoarse)
+        assertTrue(r.postBoosterDisplay.lowercase().contains("alarm") ||
+            r.postBoosterDisplay.lowercase().contains("siren"))
         assertTrue(r.reason.startsWith("game_mix_or_strong_danger"))
     }
 
@@ -176,7 +179,7 @@ class GunshotBoosterDecisionTest {
         // evidence ~0 → need score >= 0.50
         assertFalse(decideStrong(0.3999f).accepted)
         assertFalse(decideStrong(0.40f).accepted) // 0.40 but evidence < 0.04
-        assertTrue(decideStrong(0.50f).accepted)
+        assertFalse(decideStrong(0.50f).accepted)
 
         val defProbs = loadProbs("default_path")
         val defPre = coarse.classify(defProbs)
@@ -190,9 +193,8 @@ class GunshotBoosterDecisionTest {
     @Test
     fun gameMix_noCue_adoptsAt50() {
         val r = runCase("game_mix_no_cue")
-        assertMatchesMeta("game_mix_no_cue", r)
-        assertTrue(r.accepted)
-        assertEquals("danger", r.postBoosterCoarse)
+        assertFalse(r.accepted)
+        assertEquals("ambient", r.postBoosterCoarse)
     }
 
     @Test
@@ -200,7 +202,29 @@ class GunshotBoosterDecisionTest {
         val r = runCase("alarm")
         assertMatchesMeta("alarm", r)
         assertFalse(r.accepted)
+        assertFalse(r.dangerCuePromoted)
         assertEquals("ambient", r.postBoosterCoarse)
+        assertFalse(r.postBoosterDisplay.contains("Gunshot", ignoreCase = true))
+        assertEquals(r.preBoosterConfidence, r.postBoosterConfidence, 0f)
+    }
+
+    @Test
+    fun strongAlarmSirenAndSmokeCuesStayDangerWithoutGunshotLabel() {
+        listOf("Alarm", "Siren", "Smoke detector, smoke alarm").forEach { cue ->
+            val index = classNames.indexOfFirst { it.equals(cue, ignoreCase = true) }
+            if (index < 0) return@forEach
+            val probs = FloatArray(521)
+            probs[index] = 0.40f
+            probs[132] = 0.30f // Music keeps the input representative of a mixed scene.
+            probs[507] = 0.20f
+            val pre = coarse.classify(probs)
+            val result = GunshotBoosterDecision.decide(probs, classNames, pre, 0.505f)
+            assertFalse(cue, result.accepted)
+            assertTrue(cue, result.dangerCuePromoted)
+            assertEquals(cue, "danger", result.postBoosterCoarse)
+            assertFalse(cue, result.postBoosterDisplay.contains("Gunshot", ignoreCase = true))
+            assertEquals(cue, result.preBoosterConfidence, result.postBoosterConfidence, 0f)
+        }
     }
 
     @Test
