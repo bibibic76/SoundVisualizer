@@ -1,0 +1,27 @@
+name: AI frontend TensorFlow parity
+
+on:
+  push:
+    branches:
+      - investigate/117-yamnet-preprocessing-parity
+    paths:
+      - "tools/ai_reference/**"
+      - ".github/workflows/ai-frontend-parity.yml"
+
+jobs:
+  tensorflow-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/ai_reference/requirements.txt
+      - name: TensorFlow 및 reference 의존성 설치
+        run: python -m pip install numpy onnxruntime tensorflow-cpu
+      - name: TensorFlow log-mel 수치 parity 확인
+        run: >-
+          python tools/ai_reference/verify_tensorflow_logmel_parity.py
+          --repo "$GITHUB_WORKSPACE"
