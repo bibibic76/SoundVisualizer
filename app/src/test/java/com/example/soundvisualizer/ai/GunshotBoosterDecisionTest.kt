@@ -99,6 +99,7 @@ class GunshotBoosterDecisionTest {
     @Test
     fun C_scoreOnlyGunshotPromotionIsRejectedWithoutEvidence() {
         val r = runCase("gunshot")
+        assertMatchesMeta("gunshot", r)
         assertFalse(r.accepted)
         assertEquals("ambient", r.preBoosterCoarse)
         assertEquals("danger", r.postBoosterCoarse)
@@ -126,6 +127,7 @@ class GunshotBoosterDecisionTest {
     @Test
     fun F_strongDanger_path() {
         val r = runCase("strong_alarm")
+        assertMatchesMeta("strong_alarm", r)
         assertTrue(r.hasStrongDangerCue)
         assertFalse(r.accepted)
         assertTrue(r.dangerCuePromoted)
@@ -176,10 +178,14 @@ class GunshotBoosterDecisionTest {
         fun decideStrong(score: Float) =
             GunshotBoosterDecision.decide(strongProbs, classNames, strongPre, score)
 
-        // evidence ~0 → need score >= 0.50
+        // Evidence가 없으면 score가 0.50이어도 Booster를 채택하지 않는다.
         assertFalse(decideStrong(0.3999f).accepted)
         assertFalse(decideStrong(0.40f).accepted) // 0.40 but evidence < 0.04
         assertFalse(decideStrong(0.50f).accepted)
+        assertEquals(
+            boundaries.getJSONObject("strong_at_50").getBoolean("accepted"),
+            decideStrong(0.50f).accepted
+        )
 
         val defProbs = loadProbs("default_path")
         val defPre = coarse.classify(defProbs)
@@ -191,8 +197,9 @@ class GunshotBoosterDecisionTest {
     }
 
     @Test
-    fun gameMix_noCue_adoptsAt50() {
+    fun gameMix_noCue_rejectsScoreOnlyAt50() {
         val r = runCase("game_mix_no_cue")
+        assertMatchesMeta("game_mix_no_cue", r)
         assertFalse(r.accepted)
         assertEquals("ambient", r.postBoosterCoarse)
     }
