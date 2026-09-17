@@ -296,7 +296,7 @@ def main() -> int:
     report = {
         "limitations": [
             "official_log_mel is a NumPy port; verify_tensorflow_logmel_parity.py checks its numerical parity separately",
-            "qualcomm_source_log_mel follows the pinned torch recipe but has not been compared numerically with torchaudio",
+            "qualcomm_source_log_mel is a NumPy port; verify_torchaudio_logmel_parity.py checks its numerical parity separately",
             "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
             "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
             "mean-nonoverlap windowing is a diagnostic approximation, not a recovered training pipeline",

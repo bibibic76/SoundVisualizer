@@ -94,7 +94,7 @@ def official_log_mel(mono16k: np.ndarray) -> np.ndarray:
 
 
 def qualcomm_source_log_mel(mono16k: np.ndarray) -> np.ndarray:
-    """Return a NumPy approximation of the pinned Qualcomm torch frontend."""
+    """Return the NumPy port of the pinned Qualcomm torch frontend."""
     fitted = _fit(mono16k)
     padded = np.pad(fitted, NFFT // 2, mode="reflect")
     frames = np.stack(
