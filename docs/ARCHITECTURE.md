@@ -410,10 +410,18 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 
 화면은 Compose가 그리지만, 앱을 켜서 첫 화면을 그리기 전과 액티비티가 다시 만들어지는 동안에는 창 테마(`res/values/themes.xml`의 `Theme.SoundVisualizer`)의 배경이 보입니다. 이 색이 앱 배경과 다르면 앱을 켤 때마다 다른 색이 번쩍입니다.
 
-- 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경과 상태 표시줄을 `@color/app_background`(#2A2C31)로 칠합니다.
+- 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경·상태 표시줄·내비게이션 바를 `@color/app_background`(#2A2C31)로 칠합니다. 바 색은 첫 화면이 뜨기 전의 시작 창에서만 쓰입니다(Android 14 이하). 첫 화면이 뜨면 아래처럼 바가 투명해집니다.
 - Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`). 아이콘은 런처 아이콘을 그대로 씁니다.
 - `app_background`는 Compose의 `BgColor`(`MainActivity.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
+- **화면은 시스템 바 밑까지 그립니다(edge-to-edge, #138).**
+  - `MainActivity`가 `enableEdgeToEdge`로 바를 투명하게 합니다.
+  - `LauncherApp`은 탭과 내용을 `safeDrawingPadding`으로 상태 표시줄·내비게이션 바·카메라 구멍에서 비켜 놓습니다. 비켜 놓은 자리에는 바깥 `Surface`가 칠한 앱 배경색이 보입니다.
+  - Android 15 이상은 targetSdk 35부터 이 방식을 강제하고, 36부터는 끌 수도 없습니다. 옛 버전(10~14)도 같은 모양이 되게 직접 켭니다.
+  - 앱 화면은 폰의 라이트·다크 모드와 상관없이 늘 어두우므로, 바의 아이콘은 밝게 고정합니다(`SystemBarStyle.dark`).
+  - Compose 테마(`SoundVisualizerTheme`)는 창을 건드리지 않습니다. 같은 테마를 쓰는 타일의 투명 화면에 앱 화면의 바 설정이 따라가면 안 되고, 창의 `statusBarColor`는 Android 15 이상에서 효과도 없기 때문입니다.
+  - 탭 이름이 바에 가리지 않는지는 `LauncherInsetsInstrumentedTest`가 기기에서 확인합니다. 상태 표시줄이 24dp인 기기(Android 10 에뮬레이터 등)에서는 여백을 빼도 겹치지 않아 통과하므로, 최신 기기에서 돌려야 의미가 있습니다.
 - 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 이 테마를 쓰지 않고 매니페스트에서 투명 테마(`Theme.Translucent.NoTitleBar`)를 따로 지정합니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
+  - 이 투명 테마는 바 배경을 직접 그리지 않아, 권한 안내 창이 떠 있는 동안 위아래 바가 검게 보입니다. targetSdk 34 때도 같았습니다(Android 10·API 37 에뮬레이터에서 비교, #138).
 
 ---
 
