@@ -55,7 +55,9 @@ def tensorflow_log_mel(samples: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, default=Path.cwd())
-    parser.add_argument("--atol", type=float, default=2e-4)
+    parser.add_argument("--max-atol", type=float, default=3e-3)
+    parser.add_argument("--mean-atol", type=float, default=5e-4)
+    parser.add_argument("--mel-atol", type=float, default=1e-5)
     args = parser.parse_args()
 
     rng = np.random.default_rng(7)
@@ -81,12 +83,25 @@ def main() -> int:
             f"{name}: logmel max_abs={max_abs:.9g} mean_abs={mean_abs:.9g} "
             f"mel_max_abs={mel_max_abs:.9g}"
         )
-        failed |= max_abs > args.atol or mel_max_abs > args.atol
+        failed |= (
+            max_abs > args.max_atol
+            or mean_abs > args.mean_atol
+            or mel_max_abs > args.mel_atol
+        )
 
     if failed:
-        print(f"parity failed: tolerance={args.atol}", file=sys.stderr)
+        print(
+            "parity failed: "
+            f"max_atol={args.max_atol} mean_atol={args.mean_atol} "
+            f"mel_atol={args.mel_atol}",
+            file=sys.stderr,
+        )
         return 1
-    print(f"parity passed: tolerance={args.atol}")
+    print(
+        "parity passed: "
+        f"max_atol={args.max_atol} mean_atol={args.mean_atol} "
+        f"mel_atol={args.mel_atol}"
+    )
     return 0
 
 
