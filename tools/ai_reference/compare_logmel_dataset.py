@@ -86,17 +86,13 @@ def booster_score(classifier: ReferenceClassifier, features: np.ndarray) -> floa
     )
 
 
-def classify_probs(
-    classifier: ReferenceClassifier,
-    probabilities: np.ndarray,
-    logits: np.ndarray,
-) -> dict:
-    top_indices, top_probs = classifier._compute_top5(probabilities)
+def map_scores(classifier: ReferenceClassifier, scores: np.ndarray) -> dict:
+    top_indices, top_probs = classifier._compute_top5(scores)
     top_index = int(top_indices[0])
     confidence = float(top_probs[0])
     display = classifier._class_names[top_index]
     top_index, confidence, display = classifier._prefer_danger_when_top_is_masked_by_game_mix(
-        probabilities,
+        scores,
         top_index,
         confidence,
         display,
@@ -117,9 +113,21 @@ def classify_probs(
         "confidence": confidence,
         "coarse": coarse,
         "top5": top5,
-        "booster_softmax_score": booster_score(classifier, probabilities),
-        "booster_raw_logits_score": booster_score(classifier, logits),
     }
+
+
+def classify_probs(
+    classifier: ReferenceClassifier,
+    probabilities: np.ndarray,
+    sigmoid_scores: np.ndarray,
+    logits: np.ndarray,
+) -> dict:
+    result = map_scores(classifier, probabilities)
+    result["sigmoid"] = map_scores(classifier, sigmoid_scores)
+    result["booster_softmax_score"] = booster_score(classifier, probabilities)
+    result["booster_sigmoid_score"] = booster_score(classifier, sigmoid_scores)
+    result["booster_raw_logits_score"] = booster_score(classifier, logits)
+    return result
 
 
 def score_distribution(values: list[float]) -> dict[str, float]:
@@ -138,9 +146,15 @@ def summarize(rows: list[dict], frontend: str, label: str) -> dict:
     return {
         "count": len(selected),
         "top1": Counter(item["top1"] for item in selected).most_common(10),
-        "coarse": dict(Counter(item["coarse"] for item in selected)),
+        "softmax_coarse": dict(Counter(item["coarse"] for item in selected)),
+        "sigmoid_coarse": dict(
+            Counter(item["sigmoid"]["coarse"] for item in selected)
+        ),
         "booster_softmax_score": score_distribution(
             [item["booster_softmax_score"] for item in selected]
+        ),
+        "booster_sigmoid_score": score_distribution(
+            [item["booster_sigmoid_score"] for item in selected]
         ),
         "booster_raw_logits_score": score_distribution(
             [item["booster_raw_logits_score"] for item in selected]
@@ -168,7 +182,13 @@ def main() -> int:
         for frontend, log_mel in log_mels.items():
             logits = yamnet.logits(log_mel)
             probabilities = yamnet.softmax(logits)
-            row[frontend] = classify_probs(classifier, probabilities, logits)
+            sigmoid_scores = yamnet.sigmoid(logits)
+            row[frontend] = classify_probs(
+                classifier,
+                probabilities,
+                sigmoid_scores,
+                logits,
+            )
             row[f"{frontend}_stats"] = {
                 "min": float(log_mel.min()),
                 "max": float(log_mel.max()),
@@ -183,7 +203,7 @@ def main() -> int:
         "limitations": [
             "official_log_mel is a NumPy port; verify_tensorflow_logmel_parity.py checks its numerical parity separately",
             "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
-            "raw-logit Booster input is diagnostic only; the training feature contract is not yet proven",
+            "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
         ],
         "files": len(rows),
         "top1_changed": sum(

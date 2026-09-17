@@ -98,6 +98,15 @@ class Yamnet:
         probabilities = np.exp(logits - logits.max())
         return probabilities / probabilities.sum()
 
+    @staticmethod
+    def sigmoid(logits: np.ndarray) -> np.ndarray:
+        logits = np.asarray(logits, dtype=np.float64).reshape(-1)
+        return np.where(
+            logits >= 0.0,
+            1.0 / (1.0 + np.exp(-logits)),
+            np.exp(logits) / (1.0 + np.exp(logits)),
+        )
+
     def probs(self, log_mel: np.ndarray) -> np.ndarray:
         return self.softmax(self.logits(log_mel))
 
