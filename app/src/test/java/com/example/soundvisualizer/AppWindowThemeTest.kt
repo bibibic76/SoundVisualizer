@@ -44,6 +44,7 @@ class AppWindowThemeTest {
         )
         assertEquals("창 배경", COLOR_REF, theme.items["android:windowBackground"])
         assertEquals("상태 표시줄", COLOR_REF, theme.items["android:statusBarColor"])
+        assertEquals("내비게이션 바", COLOR_REF, theme.items["android:navigationBarColor"])
     }
 
     @Test

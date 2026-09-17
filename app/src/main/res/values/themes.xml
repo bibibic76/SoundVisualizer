@@ -8,8 +8,13 @@
     -->
     <style name="Base.Theme.SoundVisualizer" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/app_background</item>
-        <!-- Compose 테마(SoundVisualizerTheme)가 칠하는 상태 표시줄 색을 미리 맞춰, 첫 화면이 뜰 때 색이 바뀌지 않게 한다. -->
+        <!--
+            첫 화면이 뜨면 MainActivity 가 바를 투명하게 바꿔 앱 배경이 비치게 한다(enableEdgeToEdge).
+            그 전의 시작 창도 바가 같은 색이어야 켜는 순간 바의 색이 바뀌지 않는다. (Android 14 이하에서만 쓰인다.
+            Android 15 이상은 이 앱의 창을 처음부터 투명한 바로 그리고, 그 밑에 창 배경이 보인다.)
+        -->
         <item name="android:statusBarColor">@color/app_background</item>
+        <item name="android:navigationBarColor">@color/app_background</item>
     </style>
 
     <style name="Theme.SoundVisualizer" parent="Base.Theme.SoundVisualizer" />
