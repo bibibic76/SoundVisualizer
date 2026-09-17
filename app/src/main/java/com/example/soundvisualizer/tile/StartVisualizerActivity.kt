@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import com.example.soundvisualizer.CapturePermissionDialog
 import com.example.soundvisualizer.CapturePermissionDialogs
 import com.example.soundvisualizer.CapturePermissionFlow
 import com.example.soundvisualizer.MainActivity
@@ -51,10 +50,8 @@ class StartVisualizerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // 회전 뒤에도 떠 있던 안내 창을 다시 그려야 하므로 아래의 재생성 검사보다 먼저 붙인다.
         setContent {
-            // 테마가 이 창의 상태 표시줄 색을 바꾸므로, 안내 창이 떠 있을 때만 씌운다.
-            if (capturePermission.dialog != CapturePermissionDialog.None) {
-                SoundVisualizerTheme { CapturePermissionDialogs(capturePermission) }
-            }
+            // 안내 창만 그린다. 테마가 창의 바를 건드리지 않으므로 안내 창이 떠 있을 때만 씌울 까닭이 없다.
+            SoundVisualizerTheme { CapturePermissionDialogs(capturePermission) }
         }
 
         // 회전 등으로 다시 만들어진 경우, 이미 띄운 권한·동의 창의 결과는 이 인스턴스로 전달된다.

@@ -22,7 +22,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -140,6 +142,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 화면을 시스템 바 밑까지 그린다. 바를 비켜 놓는 것은 LauncherApp 이 한다.
+        // Android 15 이상은 targetSdk 35 부터 이 방식을 강제하므로, 옛 버전(10~14)도 같은 모양이 되게 직접 켠다(#138).
+        // 앱 화면은 폰의 라이트·다크 모드와 상관없이 늘 어두우므로 바의 아이콘을 밝게 고정한다.
+        // 바 자체는 투명해서 앱 배경이 그대로 비친다.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
         SettingsManager.init(this)
         AppLanguage.migrateLegacyChoice(this)
         // 권한은 [실행]을 눌렀을 때 받는다 (CapturePermissionFlow.start).
@@ -305,7 +315,9 @@ fun LauncherApp(
         snapshotFlow { pagerState.currentPage }.collect { onSelectTab(it) }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    // 액티비티가 화면을 시스템 바 밑까지 그리므로, 탭과 내용은 상태 표시줄·내비게이션 바·카메라 구멍을 비켜 놓는다.
+    // 비켜 놓은 자리에도 앱 배경색이 보이는 것은 바깥 Surface 가 창 전체를 칠하기 때문이다.
+    Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
         // selectableGroup 은 화면 읽어주기에 "셋 중 몇 번째"를 알려준다.
         //

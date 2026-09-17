@@ -13,7 +13,9 @@ android {
         applicationId = "com.example.soundvisualizer"
         // AudioPlaybackCapture(내부 오디오 캡처)는 Android 10(API 29) 이상에서만 동작한다.
         minSdk = 29
-        targetSdk = 34
+        // 새 Android 의 동작 규칙(화면을 시스템 바 밑까지 그리기 등)에 맞췄다는 표시다. 설치할 수 있는 폰은 minSdk 가 정한다.
+        // 올릴 때는 그 버전의 동작 변경을 옛 버전(Android 10)과 최신 기기에서 함께 확인한다(#138).
+        targetSdk = 36
         versionCode = 7
         versionName = "1.5.0"
 
