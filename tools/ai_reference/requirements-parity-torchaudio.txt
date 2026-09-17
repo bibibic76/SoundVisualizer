@@ -1,0 +1,7 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+numpy==2.5.3
+onnxruntime==1.30.0
+torch==2.9.1+cpu
+torchaudio==2.9.1
+torch-audioset @ git+https://github.com/w-hc/torch_audioset.git@e8852c53becef811784754a2de9c4617d8db2156
