@@ -36,7 +36,7 @@ jobs:
           python-version: "3.12"
       - name: Torch CPU 및 reference 의존성 설치
         run: |
-          python -m pip install numpy
+          python -m pip install numpy onnxruntime
           python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
       - name: torchaudio log-mel 수치 parity 확인
         run: >-
