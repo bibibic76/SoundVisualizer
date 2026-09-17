@@ -184,6 +184,8 @@ English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español ·
 ### 빌드
 
 - Android Studio, JDK 17, Android SDK / NDK / CMake가 필요합니다.
+  - Android Gradle Plugin 9.4 · Gradle 9.7 · Kotlin 2.4 를 씁니다. 오래된 Android Studio 는 이 프로젝트를 동기화하지 못하므로 최신 버전으로 엽니다.
+  - SDK 는 compileSdk 37 이 필요합니다. NDK 는 빌드할 때 AGP 가 고른 버전(지금은 28.2)을 자동으로 받습니다.
 - 디버그 APK 만들기:
 
   ```bash
