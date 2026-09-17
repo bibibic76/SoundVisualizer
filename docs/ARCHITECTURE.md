@@ -99,6 +99,11 @@ graph TD
 
 - **API**: `AudioPlaybackCaptureConfiguration`으로 미디어·게임·알 수 없음 용도의 소리를 받습니다. 캡처를 막아둔 앱의 소리는 받을 수 없습니다(Android 정책).
 - **형식**: 스테레오 float PCM. 샘플레이트는 기기 출력 레이트를 우선 쓰고, 안 되면 48kHz → 44.1kHz 순으로 시도합니다. 출력과 다른 레이트를 요청하면 캡처 경로에 리샘플러가 끼어 지연이 늘기 때문입니다.
+  - **2채널보다 많이 받을 수 없습니다.** 그래서 앞뒤(서라운드)는 구분하지 못합니다(도움말 `help_note_direction`). Galaxy S25+(Android 16)에서 확인했습니다(#136).
+    - 오디오 정책에는 원격 서브믹스가 4채널(앞 좌우 + 뒤 좌우, 입력 `0x3000c`)까지 적혀 있습니다.
+    - 그러나 이 경로로 4채널·5.1·채널 번호 4개를 요청하면 `AudioRecord.Builder` 안에서 거절됩니다. `AudioPolicy.createAudioRecordSink` → `AudioFormat.inChannelMaskFromOutChannelMask` 가 1·2채널만 받고, `IllegalArgumentException("Unsupported channel configuration for input.")` 을 던집니다. 요청이 오디오 서버까지 가지 않습니다.
+    - 정책을 직접 등록하는 API(`AudioManager.registerAudioPolicy`)는 시스템 권한이 필요해 우회할 공개 경로가 없습니다. 재생하는 앱이 5.1 로 내더라도 우리가 받는 것은 2채널로 섞인 소리입니다.
+    - 2채널에서 위상으로 뒤쪽 성분을 추정하는 방법(매트릭스 디코딩)은 넓게 퍼지는 울림도 "뒤" 로 읽혀, 방향을 틀리게 보여 줄 위험이 커서 쓰지 않습니다.
 - **캡처 스레드** `SV-AudioCapture` (`THREAD_PRIORITY_URGENT_AUDIO`)가 한 번에 1024 float(512프레임)씩 읽고, 읽을 때마다 두 곳으로 넘깁니다.
   1. **시각화용**: `AudioRecord`가 채운 direct `ByteBuffer`를 `AudioEngine.pushAudioBuffer`로 넘깁니다. JNI가 버퍼 주소를 그대로 읽으므로 복사와 할당이 없습니다.
   2. **AI용**: 재사용하는 `FloatArray`에 복사해 `AiAudioBuffer`에 넣습니다. 여기서 좌우를 평균해 모노로 합칩니다. 추론은 캡처 스레드에서 하지 않습니다.
