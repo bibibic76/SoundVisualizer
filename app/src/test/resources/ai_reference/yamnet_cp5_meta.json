@@ -51,8 +51,8 @@
     "gunshot": {
       "gunshot_score": 0.5047634243965149,
       "gunshot_evidence": 0.0,
-      "accepted": true,
-      "reason": "game_mix_or_strong_danger score=0.5048 evidence=0.0000 adopt=True",
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.5048 evidence=0.0000 adopt=False",
       "has_gunshot_cue": false,
       "has_strong_danger_cue": true,
       "pre": {
@@ -90,9 +90,9 @@
       },
       "post": {
         "coarse": "danger",
-        "display": "Gunshot, gunfire",
-        "confidence": 0.5047634243965149,
-        "yamnet_class_index": 421
+        "display": "Alarm",
+        "confidence": 0.12252969294786453,
+        "yamnet_class_index": 382
       }
     },
     "alarm": {
@@ -284,10 +284,10 @@
       }
     },
     "strong_alarm": {
-      "gunshot_score": 0.50998854637146,
+      "gunshot_score": 0.5099884867668152,
       "gunshot_evidence": 0.0,
-      "accepted": true,
-      "reason": "game_mix_or_strong_danger score=0.5100 evidence=0.0000 adopt=True",
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.5100 evidence=0.0000 adopt=False",
       "has_gunshot_cue": false,
       "has_strong_danger_cue": true,
       "pre": {
@@ -326,7 +326,7 @@
       "post": {
         "coarse": "danger",
         "display": "Alarm",
-        "confidence": 0.50998854637146,
+        "confidence": 0.23076923191547394,
         "yamnet_class_index": 382
       }
     },
@@ -380,8 +380,8 @@
     "game_mix_no_cue": {
       "gunshot_score": 0.5067203044891357,
       "gunshot_evidence": 0.0,
-      "accepted": true,
-      "reason": "game_mix_or_strong_danger score=0.5067 evidence=0.0000 adopt=True",
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.5067 evidence=0.0000 adopt=False",
       "has_gunshot_cue": false,
       "has_strong_danger_cue": false,
       "pre": {
@@ -418,7 +418,7 @@
         ]
       },
       "post": {
-        "coarse": "danger",
+        "coarse": "ambient",
         "display": "Sound effect",
         "confidence": 0.5384615659713745,
         "yamnet_class_index": 498
@@ -655,7 +655,7 @@
         ]
       },
       "post": {
-        "coarse": "ambient",
+        "coarse": "danger",
         "display": "Alarm",
         "confidence": 0.23076923191547394,
         "yamnet_class_index": 382
@@ -702,7 +702,7 @@
         ]
       },
       "post": {
-        "coarse": "ambient",
+        "coarse": "danger",
         "display": "Alarm",
         "confidence": 0.23076923191547394,
         "yamnet_class_index": 382
@@ -711,8 +711,8 @@
     "strong_at_50": {
       "gunshot_score": 0.5,
       "gunshot_evidence": 0.0,
-      "accepted": true,
-      "reason": "game_mix_or_strong_danger score=0.5000 evidence=0.0000 adopt=True",
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.5000 evidence=0.0000 adopt=False",
       "has_gunshot_cue": false,
       "has_strong_danger_cue": true,
       "pre": {
@@ -751,7 +751,7 @@
       "post": {
         "coarse": "danger",
         "display": "Alarm",
-        "confidence": 0.5,
+        "confidence": 0.23076923191547394,
         "yamnet_class_index": 382
       }
     },
@@ -796,7 +796,7 @@
         ]
       },
       "post": {
-        "coarse": "ambient",
+        "coarse": "danger",
         "display": "Alarm",
         "confidence": 0.23076923191547394,
         "yamnet_class_index": 382

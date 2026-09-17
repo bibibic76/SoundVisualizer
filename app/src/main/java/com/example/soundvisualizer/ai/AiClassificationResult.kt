@@ -10,6 +10,10 @@ data class AiClassificationResult(
     val confidence: Float,
     /** Valid only when [boosterAvailable] is true; otherwise [Float.NaN]. */
     val gunshotScore: Float,
+    val top5: List<YamnetCoarseClassifier.TopClassHit> = emptyList(),
+    val gunshotEvidence: Float = 0f,
+    val boosterReason: String = "",
+    val dangerCuePromoted: Boolean = false,
     val boosterAvailable: Boolean,
     val preBoosterCoarse: String,
     val boosterAccepted: Boolean,

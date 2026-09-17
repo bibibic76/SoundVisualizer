@@ -39,9 +39,10 @@
       },
       "pre_booster_coarse": "ambient",
       "gunshot_score": 0.5068124532699585,
-      "booster_accepted": true,
-      "ui_coarse": "danger",
-      "ui_display": "Gunshot, gunfire"
+      "booster_accepted": false,
+      "ui_coarse": "ambient",
+      "ui_display": "Musical instrument",
+      "assert_ui_display": false
     },
     "alarm": {
       "source": {
@@ -66,10 +67,10 @@
       },
       "pre_booster_coarse": "ambient",
       "gunshot_score": 0.5055438280105591,
-      "booster_accepted": true,
+      "booster_accepted": false,
       "ui_coarse": "danger",
-      "ui_display": "Gunshot, gunfire",
-      "assert_ui_display": false,
+      "ui_display": "Alarm",
+      "assert_ui_display": true,
       "ui_display_follow_up_issue": 116
     }
   }

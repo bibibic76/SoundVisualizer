@@ -313,6 +313,7 @@ class RealtimeAiPipeline private constructor(
                 display = decision.postBoosterDisplay,
                 confidence = decision.postBoosterConfidence,
                 adoptedDangerFromBooster = decision.accepted,
+                dangerCuePromoted = decision.dangerCuePromoted,
                 hasStrongDangerCue = decision.hasStrongDangerCue,
                 hasCriticalDangerCue = hasCritical,
                 topKSummary = topKSummary
@@ -325,6 +326,10 @@ class RealtimeAiPipeline private constructor(
             display = post.uiDisplay,
             confidence = post.uiConfidence,
             gunshotScore = decision.gunshotScore,
+            top5 = pre.top5,
+            gunshotEvidence = decision.gunshotEvidence,
+            boosterReason = decision.reason,
+            dangerCuePromoted = decision.dangerCuePromoted,
             boosterAvailable = decision.boosterAvailable,
             preBoosterCoarse = decision.preBoosterCoarse,
             boosterAccepted = decision.accepted,
@@ -429,10 +434,10 @@ class RealtimeAiPipeline private constructor(
                 "streak=${post.candidateCoarse}:${post.candidateStreak} " +
                 "ui=${post.uiCoarse}/${post.uiDisplay} " +
                 "uiConf=${"%.5f".format(java.util.Locale.US, post.uiConfidence)} " +
-                "ms[pre=${"%.1f".format(result.preprocessMs)} " +
-                "yam=${"%.1f".format(result.yamnetMs)} " +
-                "bst=${"%.1f".format(result.boosterMs)} " +
-                "tot=${"%.1f".format(result.totalMs)}]"
+                "ms[pre=${"%.1f".format(java.util.Locale.US, result.preprocessMs)} " +
+                "yam=${"%.1f".format(java.util.Locale.US, result.yamnetMs)} " +
+                "bst=${"%.1f".format(java.util.Locale.US, result.boosterMs)} " +
+                "tot=${"%.1f".format(java.util.Locale.US, result.totalMs)}]"
         )
     }
 
