@@ -420,8 +420,13 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
   - 앱 화면은 폰의 라이트·다크 모드와 상관없이 늘 어두우므로, 바의 아이콘은 밝게 고정합니다(`SystemBarStyle.dark`).
   - Compose 테마(`SoundVisualizerTheme`)는 창을 건드리지 않습니다. 같은 테마를 쓰는 타일의 투명 화면에 앱 화면의 바 설정이 따라가면 안 되고, 창의 `statusBarColor`는 Android 15 이상에서 효과도 없기 때문입니다.
   - 탭 이름이 바에 가리지 않는지는 `LauncherInsetsInstrumentedTest`가 기기에서 확인합니다. 상태 표시줄이 24dp인 기기(Android 10 에뮬레이터 등)에서는 여백을 빼도 겹치지 않아 통과하므로, 최신 기기에서 돌려야 의미가 있습니다.
-- 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 이 테마를 쓰지 않고 매니페스트에서 투명 테마(`Theme.Translucent.NoTitleBar`)를 따로 지정합니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
-  - 이 투명 테마는 바 배경을 직접 그리지 않아, 권한 안내 창이 떠 있는 동안 위아래 바가 검게 보입니다. targetSdk 34 때도 같았습니다(Android 10·API 37 에뮬레이터에서 비교, #138).
+- 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 앱 화면 테마 대신 전용 투명 테마(`Theme.SoundVisualizer.Translucent`)를 씁니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
+  - **예전 테마의 문제:** 예전에는 플랫폼의 `Theme.Translucent.NoTitleBar`를 썼습니다. 이 옛 테마는 시스템 바 배경을 그리지 않아, 권한 안내 창이 떠 있는 동안 위아래 바가 검게 칠해졌습니다.
+  - **지금 테마:** Material 테마에 바 색을 투명으로 둬서 보던 앱이 비칩니다(#142). 나머지 항목은 옛 투명 테마가 하던 일(투명 배경, 창 전환 애니메이션 없음)을 그대로 옮긴 것입니다.
+  - **`backgroundDimEnabled`를 두지 않는 이유:** 안내 창(Compose 대화 상자)이 이 값을 물려받아, 끄면 창 뒤가 어두워지지 않습니다.
+  - **Android 10 에뮬레이터에서는 여전히 바가 검게 보입니다.** 뒤를 어둡게 하는 떠 있는 창(대화 상자)이 맨 위에 있으면 시스템이 바를 칠하기 때문이고, 바꾸기 전과 같습니다.
+  - **확인한 기기:** API 37 에뮬레이터와 Galaxy S25+(Android 16)에서는 안내 창 뒤로 보던 화면이 어둡게 비칩니다. Android 11~14 는 확인하지 못했습니다.
+  - **테스트:** 매니페스트가 이 테마를 가리키는지, 그 테마가 Material 기반에 바까지 투명한지는 `AppWindowThemeTest`가 봅니다.
 
 ---
 

@@ -20,6 +20,23 @@
     <style name="Theme.SoundVisualizer" parent="Base.Theme.SoundVisualizer" />
 
     <!--
+        빠른 설정 타일이 여는 투명 화면(tile/StartVisualizerActivity). 보던 게임·영상 위에 권한 안내 창만 띄운다.
+        옛 플랫폼 테마(Theme.Translucent.NoTitleBar)는 시스템 바 배경을 직접 그리지 않아, 안내 창이 떠 있는 동안
+        위아래 바가 검게 칠해졌다. Material 테마는 바 배경을 창이 그리므로, 그 색을 투명하게 두면 보던 앱이 비친다(#142).
+        나머지 항목은 옛 투명 테마가 하던 일(투명 배경, 창 전환 애니메이션 없음)을 그대로 옮긴 것이다.
+    -->
+    <style name="Theme.SoundVisualizer.Translucent" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <!-- backgroundDimEnabled 는 두지 않는다. 안내 창(Compose 대화 상자)이 이 값을 물려받아, 끄면 창 뒤가 어두워지지 않는다. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--
         실행 중 알림에서 모드를 고르는 칩 하나(notification_modes.xml).
         네 개가 가로 폭을 똑같이 나눠 가지므로 너비는 0dp + weight 1 이다.
         누르는 자리는 48dp 아래로 내려가지 않게 한다. 게임 위에서 급하게 누르는 버튼이다.
