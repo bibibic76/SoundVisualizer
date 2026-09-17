@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -32,6 +33,12 @@ private const val DEBUG_POLL_MS = 100L
 
 /** 창 알파(약 0.8)가 곱해지므로 판은 완전히 불투명하게 둔다. 반투명을 쓰면 두 번 곱해져 흐려진다. */
 private val PlateColor = Color(0xFF101216)
+
+/** 본문 글자. 밝은 게임 화면 위에서도 읽히도록 밝게 둔다. */
+private val MainTextColor = Color(0xFFE8EAED)
+
+/** top-5 목록. 위의 판정 줄과 구분되게 조금 흐리지만, 같은 이유로 불투명하게 둔다. */
+private val Top5TextColor = Color(0xFFB0B4BA)
 
 /**
  * 개발자 모드에서 오버레이 왼쪽 위에 뜨는 AI 분류 결과.
@@ -109,7 +116,13 @@ fun AiDebugOverlay() {
             DebugText(lines.confidence, weight = FontWeight.Bold)
         }
         DebugText(lines.detail)
+        DebugText(lines.verdict)
         DebugText(lines.timing)
+        // 모델이 가장 높게 본 이름들. 위의 줄과 섞이지 않게 조금 띄우고 흐리게 둔다.
+        if (lines.top5.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            lines.top5.forEach { DebugText(it, color = Top5TextColor) }
+        }
     }
 }
 
@@ -118,10 +131,14 @@ fun AiDebugOverlay() {
  * 밝은 게임 화면 위에서도 읽히도록 판은 불투명하게, 글자는 밝게 둔다.
  */
 @Composable
-private fun DebugText(text: String, weight: FontWeight = FontWeight.Normal) {
+private fun DebugText(
+    text: String,
+    weight: FontWeight = FontWeight.Normal,
+    color: Color = MainTextColor
+) {
     Text(
         text,
-        color = Color(0xFFE8EAED),
+        color = color,
         fontSize = 11.sp,
         fontWeight = weight,
         fontFamily = FontFamily.Monospace

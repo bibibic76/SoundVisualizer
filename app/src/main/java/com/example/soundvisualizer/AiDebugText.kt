@@ -11,7 +11,9 @@ import java.util.Locale
  * @param label 모델이 말한 이름 (raw YAMNet 클래스명)
  * @param confidence 확신도 두 자리
  * @param detail 임계값·부스터·프리뷰·나이
+ * @param verdict 부스터 판정 이유·총소리 근거·경보 신호 승격 여부
  * @param timing 소리 크기·표시 여부·단계별 소요시간
+ * @param top5 모델이 가장 높게 본 이름들. 한 줄에 하나씩 순위·이름·확률
  */
 data class AiDebugLines(
     val colorLabel: String?,
@@ -19,7 +21,9 @@ data class AiDebugLines(
     val label: String,
     val confidence: String,
     val detail: String,
-    val timing: String
+    val verdict: String,
+    val timing: String,
+    val top5: List<String>
 )
 
 /**
@@ -42,6 +46,14 @@ object AiDebugText {
     /** 분류는 돌지만 첫 결과가 아직 없는 상태. 캡처 직후와 화면을 다시 켠 직후가 여기다. */
     const val COARSE_WAITING = "WAIT"
 
+    /**
+     * top-5 이름 칸의 폭(글자 수). 고정폭 글꼴 11sp 에서 순위·확률까지 한 줄이 폰 폭 안에 들어간다.
+     * 더 긴 이름("Vehicle horn, car horn, honking" 등)은 줄여서 끝에 [ELLIPSIS] 를 붙인다.
+     */
+    const val TOP5_NAME_WIDTH = 26
+
+    const val ELLIPSIS = "…"
+
     fun format(
         result: AiClassificationResult?,
         nowMs: Long,
@@ -60,7 +72,9 @@ object AiDebugText {
                 label = if (aiAvailable) "no result yet" else "model load failed",
                 confidence = NONE,
                 detail = NONE,
-                timing = levelText
+                verdict = NONE,
+                timing = levelText,
+                top5 = emptyList()
             )
         }
 
@@ -71,7 +85,11 @@ object AiDebugText {
             label = result.display.ifEmpty { "(none)" },
             confidence = twoDecimals(result.confidence),
             detail = detailOf(result, nowMs),
-            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}"
+            verdict = verdictOf(result),
+            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}",
+            top5 = result.top5.take(5).mapIndexed { i, hit ->
+                "${i + 1} ${fitName(hit.name)} ${twoDecimals(hit.probability)}"
+            }
         )
     }
 
@@ -83,11 +101,27 @@ object AiDebugText {
         } else {
             "bst off"
         }
-        val top5 = result.top5.take(5).joinToString(",") { "${it.name}:${twoDecimals(it.probability)}" }
-        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   " +
-            "$booster ev ${twoDecimals(result.gunshotEvidence)} why ${result.boosterReason} " +
-            "top5 [$top5]   prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
+        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   $booster   " +
+            "prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
     }
+
+    /**
+     * 위험으로 올린 까닭. 부스터 채택(`bst`)과 경보 신호 승격(`cue`)은 서로 다른 길이라 따로 보여준다.
+     *
+     * 판정 이유 문자열은 뒤에 점수·근거를 다시 붙여 오므로 이름(첫 낱말)만 쓴다. 근거는 `ev` 로 따로 둔다.
+     */
+    private fun verdictOf(result: AiClassificationResult): String {
+        val reason = result.boosterReason.substringBefore(' ').ifEmpty { NONE }
+        return "why $reason   ev ${twoDecimals(result.gunshotEvidence)}   cue ${yesNo(result.dangerCuePromoted)}"
+    }
+
+    /** 고정폭 칸에 맞춘 이름. 짧으면 공백으로 채워 확률이 한 줄에 세로로 맞는다. */
+    private fun fitName(name: String): String =
+        if (name.length > TOP5_NAME_WIDTH) {
+            name.take(TOP5_NAME_WIDTH - ELLIPSIS.length) + ELLIPSIS
+        } else {
+            name.padEnd(TOP5_NAME_WIDTH)
+        }
 
     private fun timingOf(result: AiClassificationResult): String =
         "${wholeMillis(result.totalMs)}ms " +
