@@ -1,7 +1,9 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
+import com.example.soundvisualizer.ai.YamnetCoarseClassifier.TopClassHit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -29,7 +31,11 @@ class AiDebugTextTest {
         preprocessMs: Double = 12.0,
         yamnetMs: Double = 48.0,
         boosterMs: Double = 3.0,
-        totalMs: Double = 65.0
+        totalMs: Double = 65.0,
+        top5: List<TopClassHit> = emptyList(),
+        gunshotEvidence: Float = 0f,
+        boosterReason: String = "",
+        dangerCuePromoted: Boolean = false
     ) = AiClassificationResult(
         coarse = coarse,
         display = display,
@@ -44,8 +50,14 @@ class AiDebugTextTest {
         preprocessMs = preprocessMs,
         yamnetMs = yamnetMs,
         boosterMs = boosterMs,
-        totalMs = totalMs
+        totalMs = totalMs,
+        top5 = top5,
+        gunshotEvidence = gunshotEvidence,
+        boosterReason = boosterReason,
+        dangerCuePromoted = dangerCuePromoted
     )
+
+    private fun hit(name: String, probability: Float) = TopClassHit(index = 0, name = name, probability = probability)
 
     private fun format(
         result: AiClassificationResult?,
@@ -116,6 +128,67 @@ class AiDebugTextTest {
     }
 
     @Test
+    fun `판정 줄에는 이유 이름과 근거와 승격 여부를 보여준다`() {
+        val lines = format(
+            result(
+                boosterReason = "game_mix_or_strong_danger score=0.5050 evidence=0.0000 adopt=False",
+                gunshotEvidence = 0.07f,
+                dangerCuePromoted = true
+            )
+        )
+
+        // 이유 문자열 뒤에 붙어 오는 점수·근거는 bst·ev 와 겹치므로 이름만 쓴다.
+        assertEquals("why game_mix_or_strong_danger   ev 0.07   cue Y", lines.verdict)
+        assertFalse(lines.detail, lines.detail.contains("why"))
+        assertFalse(lines.detail, lines.detail.contains("score="))
+    }
+
+    @Test
+    fun `판정 이유가 없으면 값이 없다고 보여준다`() {
+        assertEquals("why -   ev 0.00   cue N", format(result(boosterReason = "")).verdict)
+    }
+
+    @Test
+    fun `top-5 를 한 줄에 하나씩 순위와 함께 보여준다`() {
+        val lines = format(result(top5 = listOf(hit("Music", 0.6f), hit("Siren", 0.08f))))
+
+        assertEquals(
+            listOf(
+                "1 " + "Music".padEnd(AiDebugText.TOP5_NAME_WIDTH) + " 0.60",
+                "2 " + "Siren".padEnd(AiDebugText.TOP5_NAME_WIDTH) + " 0.08"
+            ),
+            lines.top5
+        )
+    }
+
+    @Test
+    fun `긴 이름은 칸에 맞춰 줄여 확률 자리가 흔들리지 않는다`() {
+        val lines = format(
+            result(top5 = listOf(hit("Vehicle horn, car horn, honking", 0.10f), hit("Air horn, truck horn", 0.14f)))
+        )
+
+        val long = lines.top5[0]
+        assertTrue(long, long.contains("Vehicle horn, car horn, h" + AiDebugText.ELLIPSIS))
+        // 두 줄의 길이가 같아야 확률이 같은 열에 선다.
+        assertEquals(lines.top5[1].length, long.length)
+    }
+
+    @Test
+    fun `top-5 는 다섯 줄까지만 만든다`() {
+        val hits = (1..6).map { hit("Class $it", 0.1f) }
+        assertEquals(5, format(result(top5 = hits)).top5.size)
+    }
+
+    @Test
+    fun `top-5 가 없으면 줄을 만들지 않는다`() {
+        assertTrue(format(result()).top5.isEmpty())
+
+        val waiting = format(null)
+        assertTrue(waiting.top5.isEmpty())
+        assertEquals(AiDebugText.NONE, waiting.verdict)
+    }
+
+    @Test
     fun `소리 크기와 표시 여부와 소요시간을 보여준다`() {
         val lines = format(result(), level = 0.14f, shown = false)
 
@@ -148,9 +221,11 @@ class AiDebugTextTest {
         val original = Locale.getDefault()
         try {
             Locale.setDefault(Locale.forLanguageTag("ar"))
-            val lines = format(result())
+            val lines = format(result(top5 = listOf(hit("Music", 0.6f)), gunshotEvidence = 0.07f))
 
             assertEquals("0.41", lines.confidence)
+            assertTrue(lines.verdict, lines.verdict.contains("ev 0.07"))
+            assertTrue(lines.top5[0], lines.top5[0].endsWith(" 0.60"))
             assertTrue(lines.detail, lines.detail.contains("age 0.2s"))
             assertTrue(lines.timing, lines.timing.contains("65ms (12/48/3)"))
         } finally {
