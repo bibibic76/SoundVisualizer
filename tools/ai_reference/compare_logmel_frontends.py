@@ -26,6 +26,10 @@ def _hz_to_mel_htk(f):
     return 1127.0 * np.log1p(np.asarray(f, dtype=np.float64) / 700.0)
 
 
+def _mel_to_hz_htk(m):
+    return 700.0 * np.expm1(np.asarray(m, dtype=np.float64) / 1127.0)
+
+
 def tf_linear_to_mel_weight_matrix(
     num_mel=MELS,
     num_bins=NFFT // 2 + 1,
@@ -48,8 +52,28 @@ def tf_linear_to_mel_weight_matrix(
     return np.pad(weights, [[1, 0], [0, 0]])
 
 
+def torchaudio_mel_weight_matrix(
+    num_mel=MELS,
+    num_bins=NFFT // 2 + 1,
+    sr=SR,
+    lo=125.0,
+    hi=7500.0,
+) -> np.ndarray:
+    """Calculate torchaudio's default HTK [linear bins, mel bins] matrix."""
+    linear_frequencies = np.linspace(0.0, sr // 2, num_bins)[:, None]
+    mel_edges = np.linspace(_hz_to_mel_htk(lo), _hz_to_mel_htk(hi), num_mel + 2)
+    frequency_edges = _mel_to_hz_htk(mel_edges)
+    edge_widths = frequency_edges[1:] - frequency_edges[:-1]
+    slopes = frequency_edges[None, :] - linear_frequencies
+    down_slopes = -slopes[:, :-2] / edge_widths[:-1]
+    up_slopes = slopes[:, 2:] / edge_widths[1:]
+    return np.maximum(0.0, np.minimum(down_slopes, up_slopes))
+
+
 _TF_MEL = tf_linear_to_mel_weight_matrix()
+_TORCH_MEL = torchaudio_mel_weight_matrix()
 _HANN = _hann_periodic()
+_TORCH_HANN = np.pad(_HANN, (NFFT - WIN) // 2)
 
 
 def _fit(mono16k: np.ndarray) -> np.ndarray:
@@ -67,6 +91,17 @@ def official_log_mel(mono16k: np.ndarray) -> np.ndarray:
     )
     magnitude = np.abs(np.fft.rfft(frames, n=NFFT))
     return np.log(magnitude @ _TF_MEL + LOG_EPS).astype(np.float32)
+
+
+def qualcomm_source_log_mel(mono16k: np.ndarray) -> np.ndarray:
+    """Return a NumPy approximation of the pinned Qualcomm torch frontend."""
+    fitted = _fit(mono16k)
+    padded = np.pad(fitted, NFFT // 2, mode="reflect")
+    frames = np.stack(
+        [padded[t * HOP : t * HOP + NFFT] * _TORCH_HANN for t in range(FRAMES)]
+    )
+    magnitude = np.abs(np.fft.rfft(frames, n=NFFT))
+    return np.log(magnitude @ _TORCH_MEL + LOG_EPS).astype(np.float32)
 
 
 def current_log_mel(mono16k: np.ndarray, repo: Path) -> np.ndarray:
@@ -170,11 +205,16 @@ def main() -> int:
 
     for name, samples in cases:
         current = current_log_mel(samples, args.repo)
+        qualcomm = qualcomm_source_log_mel(samples)
         official = official_log_mel(samples)
         print(f"== {name}")
         print(
             f"  current  log-mel[{current.min():6.2f},{current.max():6.2f}] "
             f"| {model.top(current)}"
+        )
+        print(
+            f"  qualcomm log-mel[{qualcomm.min():6.2f},{qualcomm.max():6.2f}] "
+            f"| {model.top(qualcomm)}"
         )
         print(
             f"  official log-mel[{official.min():6.2f},{official.max():6.2f}] "

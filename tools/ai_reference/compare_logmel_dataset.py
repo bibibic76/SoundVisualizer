@@ -27,6 +27,7 @@ from compare_logmel_frontends import (
     _fit,
     current_log_mel,
     official_log_mel,
+    qualcomm_source_log_mel,
 )
 from preprocess import (
     REQUIRED_MONO_16K_SAMPLES,
@@ -49,8 +50,13 @@ def frontend_log_mels(mono16k: np.ndarray, repo: Path) -> dict[str, np.ndarray]:
     power = magnitude * magnitude
     return {
         "current_power_integer_mel": current_log_mel(mono16k, repo),
-        "magnitude_integer_mel": np.log(magnitude @ _CURRENT_MEL + LOG_EPS).astype(np.float32),
+        "magnitude_integer_mel": np.log(
+            magnitude @ _CURRENT_MEL + LOG_EPS
+        ).astype(np.float32),
         "power_tf_mel": np.log(power @ _TF_MEL + LOG_EPS).astype(np.float32),
+        "qualcomm_source_magnitude_torch_mel_centered": qualcomm_source_log_mel(
+            mono16k
+        ),
         "official_magnitude_tf_mel": official_log_mel(mono16k),
     }
 
@@ -202,6 +208,7 @@ def main() -> int:
     report = {
         "limitations": [
             "official_log_mel is a NumPy port; verify_tensorflow_logmel_parity.py checks its numerical parity separately",
+            "qualcomm_source_log_mel follows the pinned torch recipe but has not been compared numerically with torchaudio",
             "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
             "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
         ],
@@ -212,6 +219,26 @@ def main() -> int:
         "coarse_changed": sum(
             row[frontends[0]]["coarse"] != row[frontends[-1]]["coarse"] for row in rows
         ),
+        "comparisons": {
+            f"{left}_vs_{right}": {
+                "top1_changed": sum(
+                    row[left]["top1"] != row[right]["top1"] for row in rows
+                ),
+                "coarse_changed": sum(
+                    row[left]["coarse"] != row[right]["coarse"] for row in rows
+                ),
+            }
+            for left, right in (
+                (
+                    "current_power_integer_mel",
+                    "qualcomm_source_magnitude_torch_mel_centered",
+                ),
+                (
+                    "qualcomm_source_magnitude_torch_mel_centered",
+                    "official_magnitude_tf_mel",
+                ),
+            )
+        },
         "summary": {
             frontend: {
                 label: summarize(rows, frontend, label)
@@ -224,7 +251,23 @@ def main() -> int:
     rendered = json.dumps(report, indent=2, ensure_ascii=False)
     if args.json:
         args.json.write_text(rendered, encoding="utf-8")
-    print(json.dumps({key: report[key] for key in ("limitations", "files", "top1_changed", "coarse_changed", "summary")}, indent=2, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                key: report[key]
+                for key in (
+                    "limitations",
+                    "files",
+                    "top1_changed",
+                    "coarse_changed",
+                    "comparisons",
+                    "summary",
+                )
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
     return 0
 
 
