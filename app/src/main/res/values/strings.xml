@@ -198,6 +198,7 @@
     <string name="help_mode_outline_desc">Draws only a thin outline of the wave, so it covers less of your game.</string>
     <string name="help_mode_circle_desc">A ring in the center of the screen swells toward the sound.</string>
     <string name="help_modes_note">Settings like size and opacity are saved separately for each mode and can be changed in the Settings tab.</string>
+    <string name="help_modes_notification">While it\'s on, you can expand the running notification to switch modes without opening the app.</string>
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
@@ -224,6 +225,7 @@
     <string name="help_faq_install_a">An APK built elsewhere has a different signature and can\'t be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.</string>
     <string name="help_faq_battery_q">Does it use a lot of battery?</string>
     <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. While the screen is off it stops capturing sound by default. Because it keeps capturing while the screen is on, though, we recommend turning it off when you\'re not using it.</string>
+    <string name="help_faq_battery_less_drawing">While sound is playing, drawing the graphic uses the most power. Turning on “Draw the graphic less often” under Battery in Settings uses less, though the movement is less smooth.</string>
     <string name="help_faq_language_q">How do I change the app language?</string>
     <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
 

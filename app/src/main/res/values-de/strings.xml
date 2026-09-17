@@ -183,6 +183,7 @@
     <string name="help_mode_outline_desc">Zeichnet nur eine dünne Kontur der Welle und verdeckt so weniger von Ihrem Spiel.</string>
     <string name="help_mode_circle_desc">Ein Ring in der Bildschirmmitte dehnt sich in Richtung des Geräuschs aus.</string>
     <string name="help_modes_note">Einstellungen wie „Größe“ und „Deckkraft“ werden für jeden Modus separat gespeichert und lassen sich im Tab „Einstellungen“ ändern.</string>
+    <string name="help_modes_notification">Solange die Tonvisualisierung eingeschaltet ist, können Sie die Benachrichtigung während der Ausführung aufklappen und dort den Modus wechseln, ohne die App zu öffnen.</string>
 
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
@@ -209,6 +210,7 @@
     <string name="help_faq_install_a">Eine anderswo erstellte APK hat eine andere Signatur und kann daher nicht als Update für die vorhandene App installiert werden. Deinstallieren Sie zuerst die vorhandene App und installieren Sie dann die neue Version. Dabei werden Ihre Einstellungen zurückgesetzt.</string>
     <string name="help_faq_battery_q">Verbraucht die App viel Akku?</string>
     <string name="help_faq_battery_a">Die App stellt nur dann Grafiken dar, wenn Ton wiedergegeben wird, und ruht bei Stille. Da sie aber laufend Ton erfasst, empfehlen wir, sie auszuschalten, wenn Sie sie nicht verwenden.</string>
+    <string name="help_faq_battery_less_drawing">Während Ton wiedergegeben wird, verbraucht das Zeichnen der Grafiken den meisten Strom. Wenn Sie im Tab „Einstellungen“ unter „Akku“ die Option „Grafiken seltener zeichnen“ einschalten, verbraucht die App weniger Strom, dafür sind die Bewegungen weniger flüssig.</string>
     <string name="help_faq_language_q">Wie ändere ich die App-Sprache?</string>
     <string name="help_faq_language_a">Tippen Sie oben im Tab „Einstellungen“ auf „Sprache“ und wählen Sie eine Sprache aus. „Systemstandard“ übernimmt die Sprache Ihres Smartphones. Ab Android 13 können Sie die Sprache auch in den Einstellungen Ihres Smartphones unter „App-Sprachen“ ändern.</string>
 

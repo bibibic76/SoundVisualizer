@@ -183,6 +183,7 @@
     <string name="help_mode_outline_desc">Hanya menggambar garis tipis di sepanjang kontur ombak, sehingga tidak banyak menutupi layar game Anda.</string>
     <string name="help_mode_circle_desc">Cincin di tengah layar mengembang ke arah datangnya suara.</string>
     <string name="help_modes_note">Setelan seperti Ukuran dan Opasitas disimpan terpisah untuk setiap mode dan dapat diubah di tab Setelan.</string>
+    <string name="help_modes_notification">Selama aplikasi berjalan, Anda dapat meluaskan notifikasinya untuk mengganti mode tanpa membuka aplikasi.</string>
 
     <string name="help_sound_title">Jenis suara dan getaran</string>
     <string name="help_sound_kinds">AI mengelompokkan suara yang terdengar menjadi suara latar, percakapan, dan suara bahaya. Secara default, suara latar berwarna putih, percakapan kuning, dan suara bahaya merah. Di tab Setelan, Anda dapat mengubah warna setiap jenis dan memilih apakah jenis tersebut ditampilkan.</string>
@@ -209,6 +210,7 @@
     <string name="help_faq_install_a">APK yang dibuat di tempat lain memiliki tanda tangan yang berbeda, sehingga tidak dapat diinstal di atas aplikasi yang sudah ada. Uninstal aplikasi yang ada terlebih dahulu, lalu instal. Setelan Anda akan direset.</string>
     <string name="help_faq_battery_q">Apakah aplikasi ini boros baterai?</string>
     <string name="help_faq_battery_a">Aplikasi hanya menggambar saat ada suara dan beralih ke mode siaga saat hening. Namun, karena aplikasi terus menangkap suara, sebaiknya matikan saat tidak digunakan.</string>
+    <string name="help_faq_battery_less_drawing">Saat ada suara, daya paling banyak terpakai untuk menggambar grafik. Jika Anda menyalakan “Menggambar grafik lebih jarang” di bagian Baterai pada tab Setelan, daya yang terpakai lebih sedikit, tetapi gerakannya menjadi kurang mulus.</string>
     <string name="help_faq_language_q">Bagaimana cara mengubah bahasa aplikasi?</string>
     <string name="help_faq_language_a">Ketuk “Bahasa” di bagian atas tab Setelan, lalu pilih bahasa. “Default sistem” mengikuti bahasa ponsel Anda. Di Android 13 dan versi lebih baru, Anda juga dapat mengubahnya di “Bahasa aplikasi” pada setelan ponsel.</string>
 

@@ -183,6 +183,7 @@
     <string name="help_mode_outline_desc">Desenha só um contorno fino da onda, então cobre menos a tela do jogo.</string>
     <string name="help_mode_circle_desc">Um anel no centro da tela se expande na direção do som.</string>
     <string name="help_modes_note">Ajustes como Tamanho e Opacidade são salvos separadamente para cada modo e podem ser alterados na aba Ajustes.</string>
+    <string name="help_modes_notification">Enquanto a visualização estiver ligada, você pode expandir a notificação em andamento para trocar de modo sem abrir o app.</string>
 
     <string name="help_sound_title">Tipos de som e vibração</string>
     <string name="help_sound_kinds">A IA separa os sons em três tipos: sons ambientes, vozes e sons de perigo. Por padrão, os sons ambientes aparecem em branco, as vozes em amarelo e os sons de perigo em vermelho. Na aba Ajustes, você pode mudar a cor de cada tipo e escolher se ele é mostrado.</string>
@@ -209,6 +210,7 @@
     <string name="help_faq_install_a">Um APK gerado em outro lugar tem uma assinatura diferente e não pode ser instalado por cima do app atual. Desinstale o app atual primeiro e depois instale a nova versão. Isso redefine seus ajustes.</string>
     <string name="help_faq_battery_q">Gasta muita bateria?</string>
     <string name="help_faq_battery_a">O app só desenha quando há som e fica em espera quando está tudo em silêncio. Mas, como continua capturando o som, recomendamos desligar quando não estiver usando.</string>
+    <string name="help_faq_battery_less_drawing">Quando há som, desenhar os gráficos é o que mais consome energia. Se você ativar “Desenhar os gráficos com menos frequência” em Bateria, na aba Ajustes, o app passa a consumir menos energia, mas o movimento fica menos suave.</string>
     <string name="help_faq_language_q">Como mudo o idioma do app?</string>
     <string name="help_faq_language_a">Toque em “Idioma” no topo da aba Ajustes e escolha um. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
 

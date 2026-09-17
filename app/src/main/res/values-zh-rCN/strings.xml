@@ -183,6 +183,7 @@
     <string name="help_mode_outline_desc">只绘制细细的波浪轮廓线，对游戏画面的遮挡更少。</string>
     <string name="help_mode_circle_desc">屏幕中央的圆环会朝声音传来的方向鼓起。</string>
     <string name="help_modes_note">“大小”“不透明度”等设置会按模式分别保存，可在“设置”标签页中更改。</string>
+    <string name="help_modes_notification">开启期间，可以展开运行中的通知，无需打开应用即可切换模式。</string>
 
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
@@ -209,6 +210,7 @@
     <string name="help_faq_install_a">在其他地方构建的 APK 签名不同，无法在现有应用上覆盖安装。请先卸载现有应用，然后再安装。此操作会重置您的设置。</string>
     <string name="help_faq_battery_q">耗电量大吗？</string>
     <string name="help_faq_battery_a">只在有声音时才绘制图形，安静时会进入待机状态。不过，由于需要持续捕获声音，建议您在不使用时将其关闭。</string>
+    <string name="help_faq_battery_less_drawing">有声音时，绘制图形最耗电。在“设置”标签页的“电池”中开启“降低图形绘制频率”，可以减少耗电，但图形的动画会不那么流畅。</string>
     <string name="help_faq_language_q">如何更改应用语言？</string>
     <string name="help_faq_language_a">点按“设置”标签页顶部的“语言”，然后选择一种语言。选择“系统默认”将跟随手机的语言。在 Android 13 及更高版本中，您也可以在手机设置的“应用语言”中更改。</string>
 

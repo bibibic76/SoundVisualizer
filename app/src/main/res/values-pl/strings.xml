@@ -183,6 +183,7 @@
     <string name="help_mode_outline_desc">Rysuje tylko cienki kontur fali, więc mniej zasłania grę.</string>
     <string name="help_mode_circle_desc">Pierścień na środku ekranu wybrzusza się w stronę, z której dochodzi dźwięk.</string>
     <string name="help_modes_note">Ustawienia takie jak „Rozmiar” i „Krycie” są zapisywane osobno dla każdego trybu. Możesz je zmienić na karcie „Ustawienia”.</string>
+    <string name="help_modes_notification">Gdy wizualizacja jest włączona, możesz rozwinąć powiadomienie o działaniu aplikacji i zmienić tryb, nie otwierając aplikacji.</string>
 
     <string name="help_sound_title">Rodzaje dźwięków i wibracje</string>
     <string name="help_sound_kinds">AI dzieli to, co słychać, na dźwięki otoczenia, mowę i dźwięki zagrożenia. Domyślnie dźwięki otoczenia są oznaczane na biało, mowa na żółto, a dźwięki zagrożenia na czerwono. Na karcie „Ustawienia” możesz zmienić kolor każdego rodzaju i to, czy jest pokazywany.</string>
@@ -209,6 +210,7 @@
     <string name="help_faq_install_a">Plik APK zbudowany w innym miejscu ma inny podpis, więc nie może zastąpić zainstalowanej aplikacji. Najpierw odinstaluj obecną aplikację, a potem zainstaluj nową wersję. Spowoduje to zresetowanie ustawień.</string>
     <string name="help_faq_battery_q">Czy aplikacja mocno zużywa baterię?</string>
     <string name="help_faq_battery_a">Aplikacja rysuje grafikę tylko wtedy, gdy słychać dźwięk, a w ciszy przechodzi w stan spoczynku. Ponieważ jednak cały czas przechwytuje dźwięk, zalecamy ją wyłączać, gdy z niej nie korzystasz.</string>
+    <string name="help_faq_battery_less_drawing">Gdy słychać dźwięk, najwięcej energii zużywa rysowanie grafiki. Jeśli włączysz „Rzadziej rysuj grafikę” w sekcji „Bateria” na karcie „Ustawienia”, aplikacja będzie zużywać mniej energii, ale ruch będzie mniej płynny.</string>
     <string name="help_faq_language_q">Jak zmienić język aplikacji?</string>
     <string name="help_faq_language_a">Naciśnij „Język” u góry karty „Ustawienia” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
 
