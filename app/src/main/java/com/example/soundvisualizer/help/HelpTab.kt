@@ -89,7 +89,7 @@ fun HelpTab() {
                 TitledItem(R.string.mode_pad, R.string.help_mode_pad_desc)
                 TitledItem(R.string.mode_outline, R.string.help_mode_outline_desc)
                 TitledItem(R.string.mode_circle, R.string.help_mode_circle_desc)
-                Paragraphs(R.string.help_modes_note)
+                Paragraphs(R.string.help_modes_note, R.string.help_modes_notification)
             }
         }
         item {
@@ -121,7 +121,11 @@ fun HelpTab() {
                 TitledItem(R.string.help_faq_no_graphic_q, R.string.help_faq_no_graphic_a)
                 TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_a)
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)
-                TitledItem(R.string.help_faq_battery_q, R.string.help_faq_battery_a)
+                TitledItem(
+                    R.string.help_faq_battery_q,
+                    R.string.help_faq_battery_a,
+                    R.string.help_faq_battery_less_drawing
+                )
                 TitledItem(R.string.help_faq_language_q, R.string.help_faq_language_a)
             }
         }
@@ -293,16 +297,23 @@ private fun Bullets(@StringRes vararg items: Int) {
     }
 }
 
-/** 굵은 제목 한 줄과 설명. 권한, 모드, 자주 묻는 질문에 쓴다. */
+/**
+ * 굵은 제목 한 줄과 설명. 권한, 모드, 자주 묻는 질문에 쓴다.
+ *
+ * 설명을 여러 문단으로 받는다. 답을 보탤 때 기존 문자열을 고치면 16개 언어 번역이 옛 내용으로 남으므로,
+ * 새 문단을 따로 만들어 붙인다.
+ */
 @Composable
-private fun TitledItem(@StringRes title: Int, @StringRes description: Int) {
+private fun TitledItem(@StringRes title: Int, @StringRes vararg descriptions: Int) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(stringResource(title), fontSize = BodySize, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
-        Text(
-            stringResource(description),
-            fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        descriptions.forEach { res ->
+            Text(
+                stringResource(res),
+                fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
     }
 }
 
