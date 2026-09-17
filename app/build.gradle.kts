@@ -1,12 +1,13 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.example.soundvisualizer"
-    compileSdk = 36
+    // 어떤 API 로 컴파일할지만 정한다. 최신 androidx(core 1.19, Compose 1.12)가 37 이상을 요구한다.
+    // 앱의 동작 규칙은 targetSdk, 설치할 수 있는 폰은 minSdk 가 정한다.
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.soundvisualizer"
@@ -81,12 +82,10 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+    // Kotlin 의 바이트코드 버전도 여기(targetCompatibility)를 따른다. AGP 9 부터 kotlinOptions 블록이 없다.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -146,33 +145,35 @@ android {
         // 영어·한국어 말고 다른 언어는 번역이 늦어도 영어로 보이므로 경고로만 둔다.
         // 영어(values)와 한국어(values-ko)가 빠짐없는지는 StringResourcesTest 가 막는다.
         warning += "MissingTranslation"
-        xmlReport = true
-        htmlReport = true
+        // XML·HTML 보고서(build/reports/lint-results-debug.*)는 AGP 9 부터 설정 없이 늘 만들어진다. CI 가 그 파일을 읽는다.
     }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    // 펼치기·들어가기 화살표(Icons.Default·Icons.AutoMirrored). material3 1.4 부터 따라오지 않아 직접 적는다.
+    implementation("androidx.compose.material:material-icons-core")
 
     // ONNX Runtime Android — loads yamnet.onnx with its yamnet.data external weights as-is
+    // 버전을 올리면 추론 결과가 달라질 수 있어 AI 담당이 정한다(#140).
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
 
     testImplementation("junit:junit:4.13.2")
     // Real org.json for JVM unit tests (the Android stub is not mocked by default)
-    testImplementation("org.json:json:20240303")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    testImplementation("org.json:json:20260814")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:rules:1.7.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

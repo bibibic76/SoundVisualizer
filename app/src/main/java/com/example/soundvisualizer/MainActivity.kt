@@ -191,7 +191,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** 화면 회전으로 다시 만들어지는 동안만 [pendingStart] 를 넘긴다. 프로세스가 죽으면 함께 사라져야 한다. */
-    @Suppress("DEPRECATION")
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onRetainCustomNonConfigurationInstance(): Any = pendingStart
 
     private fun openTabFor(intent: Intent?) {
