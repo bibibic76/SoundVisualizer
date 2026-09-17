@@ -86,13 +86,20 @@ class Yamnet:
         with open(assets / "yamnet_class_map.csv", encoding="utf-8") as file:
             self.names = [row["display_name"] for row in csv.DictReader(file)]
 
-    def probs(self, log_mel: np.ndarray) -> np.ndarray:
-        logits = self.session.run(
+    def logits(self, log_mel: np.ndarray) -> np.ndarray:
+        return self.session.run(
             None,
             {"audio": log_mel.reshape(1, 1, FRAMES, MELS)},
-        )[0].reshape(-1).astype(np.float64)
+        )[0].reshape(-1).astype(np.float32)
+
+    @staticmethod
+    def softmax(logits: np.ndarray) -> np.ndarray:
+        logits = np.asarray(logits, dtype=np.float64).reshape(-1)
         probabilities = np.exp(logits - logits.max())
         return probabilities / probabilities.sum()
+
+    def probs(self, log_mel: np.ndarray) -> np.ndarray:
+        return self.softmax(self.logits(log_mel))
 
     def top(self, log_mel: np.ndarray, k: int = 3) -> str:
         probabilities = self.probs(log_mel)

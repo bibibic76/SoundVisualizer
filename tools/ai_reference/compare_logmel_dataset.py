@@ -70,7 +70,27 @@ def mono16k_for_replay(path: Path) -> np.ndarray:
     )
 
 
-def classify_probs(classifier: ReferenceClassifier, probabilities: np.ndarray) -> dict:
+def booster_score(classifier: ReferenceClassifier, features: np.ndarray) -> float:
+    return float(
+        np.asarray(
+            classifier._booster.run(
+                [classifier._booster_out],
+                {
+                    classifier._booster_in: np.asarray(
+                        features,
+                        dtype=np.float32,
+                    ).reshape(1, -1)
+                },
+            )[0]
+        ).reshape(-1)[0]
+    )
+
+
+def classify_probs(
+    classifier: ReferenceClassifier,
+    probabilities: np.ndarray,
+    logits: np.ndarray,
+) -> dict:
     top_indices, top_probs = classifier._compute_top5(probabilities)
     top_index = int(top_indices[0])
     confidence = float(top_probs[0])
@@ -90,14 +110,6 @@ def classify_probs(classifier: ReferenceClassifier, probabilities: np.ndarray) -
         }
         for i in range(5)
     ]
-    booster_score = float(
-        np.asarray(
-            classifier._booster.run(
-                [classifier._booster_out],
-                {classifier._booster_in: probabilities.astype(np.float32).reshape(1, -1)},
-            )[0]
-        ).reshape(-1)[0]
-    )
     return {
         "top1": top5[0]["name"],
         "top1_probability": top5[0]["probability"],
@@ -105,7 +117,19 @@ def classify_probs(classifier: ReferenceClassifier, probabilities: np.ndarray) -
         "confidence": confidence,
         "coarse": coarse,
         "top5": top5,
-        "booster_score": booster_score,
+        "booster_softmax_score": booster_score(classifier, probabilities),
+        "booster_raw_logits_score": booster_score(classifier, logits),
+    }
+
+
+def score_distribution(values: list[float]) -> dict[str, float]:
+    quantiles = np.quantile(values, [0.0, 0.25, 0.5, 0.75, 1.0])
+    return {
+        "min": float(quantiles[0]),
+        "q25": float(quantiles[1]),
+        "median": float(quantiles[2]),
+        "q75": float(quantiles[3]),
+        "max": float(quantiles[4]),
     }
 
 
@@ -115,9 +139,12 @@ def summarize(rows: list[dict], frontend: str, label: str) -> dict:
         "count": len(selected),
         "top1": Counter(item["top1"] for item in selected).most_common(10),
         "coarse": dict(Counter(item["coarse"] for item in selected)),
-        "booster_score_median": float(np.median([item["booster_score"] for item in selected])),
-        "booster_score_min": float(np.min([item["booster_score"] for item in selected])),
-        "booster_score_max": float(np.max([item["booster_score"] for item in selected])),
+        "booster_softmax_score": score_distribution(
+            [item["booster_softmax_score"] for item in selected]
+        ),
+        "booster_raw_logits_score": score_distribution(
+            [item["booster_raw_logits_score"] for item in selected]
+        ),
     }
 
 
@@ -139,7 +166,9 @@ def main() -> int:
         label = "positive" if path.stem.startswith(POSITIVE_PREFIXES) else "negative"
         row = {"file": path.name, "label": label}
         for frontend, log_mel in log_mels.items():
-            row[frontend] = classify_probs(classifier, yamnet.probs(log_mel))
+            logits = yamnet.logits(log_mel)
+            probabilities = yamnet.softmax(logits)
+            row[frontend] = classify_probs(classifier, probabilities, logits)
             row[f"{frontend}_stats"] = {
                 "min": float(log_mel.min()),
                 "max": float(log_mel.max()),
@@ -152,8 +181,9 @@ def main() -> int:
 
     report = {
         "limitations": [
-            "official_log_mel is a NumPy port and has not yet been compared numerically with TensorFlow",
-            "positive/negative labels are inferred only from filename prefixes",
+            "official_log_mel is a NumPy port; verify_tensorflow_logmel_parity.py checks its numerical parity separately",
+            "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
+            "raw-logit Booster input is diagnostic only; the training feature contract is not yet proven",
         ],
         "files": len(rows),
         "top1_changed": sum(
