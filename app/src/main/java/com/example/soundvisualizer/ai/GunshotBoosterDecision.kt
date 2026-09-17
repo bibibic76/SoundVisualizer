@@ -149,23 +149,34 @@ object GunshotBoosterDecision {
             topProbs[i] = pre.top5[i].probability
         }
 
+        val evidence = sumGunshotProbabilityFromTop5(topIdx, topProbs, classNames, 5)
+        val hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5)
+        val hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5, topProbs)
+        val blockPromotion =
+            pre.coarse == "speech" ||
+                isSpeechLikeDisplay(pre.displayName) ||
+                isSilenceLikeDisplay(pre.displayName) ||
+                pre.confidence < 0.12f
+        val (cueIdx, _) = tryPickBestStrongDangerDisplay(topIdx, topProbs, classNames)
+        val promote = !blockPromotion && hasStrongDangerCue && !hasGunshotCue && cueIdx >= 0
+
         return Result(
             boosterAvailable = false,
             gunshotScore = Float.NaN,
-            gunshotEvidence = sumGunshotProbabilityFromTop5(topIdx, topProbs, classNames, 5),
+            gunshotEvidence = evidence,
             accepted = false,
             reason = "booster_unavailable",
             preBoosterCoarse = pre.coarse,
-            postBoosterCoarse = pre.coarse,
+            postBoosterCoarse = if (promote) "danger" else pre.coarse,
             preBoosterDisplay = pre.displayName,
-            postBoosterDisplay = pre.displayName,
+            postBoosterDisplay = if (promote) classNames[cueIdx] else pre.displayName,
             preBoosterClassIndex = pre.yamnetClassIndex,
-            postBoosterClassIndex = pre.yamnetClassIndex,
+            postBoosterClassIndex = if (promote) cueIdx else pre.yamnetClassIndex,
             preBoosterConfidence = pre.confidence,
             postBoosterConfidence = pre.confidence,
-            hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5),
-            hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5, topProbs),
-            dangerCuePromoted = false
+            hasGunshotCue = hasGunshotCue,
+            hasStrongDangerCue = hasStrongDangerCue,
+            dangerCuePromoted = promote
         )
     }
 

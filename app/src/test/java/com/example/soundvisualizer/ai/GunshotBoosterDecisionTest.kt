@@ -244,7 +244,7 @@ class GunshotBoosterDecisionTest {
 
     @Test
     fun boosterUnavailable_keepsYamnetResultWithoutInventingAScore() {
-        val probs = loadProbs("gunshot")
+        val probs = loadProbs("default_path")
         val pre = coarse.classify(probs)
 
         val result = GunshotBoosterDecision.unavailable(probs, classNames, pre)
@@ -256,6 +256,21 @@ class GunshotBoosterDecisionTest {
         assertEquals(pre.coarse, result.preBoosterCoarse)
         assertEquals(pre.coarse, result.postBoosterCoarse)
         assertEquals(pre.displayName, result.postBoosterDisplay)
+        assertEquals(pre.confidence, result.postBoosterConfidence, 0f)
+    }
+
+    @Test
+    fun boosterUnavailable_stillPromotesStrongAlarmCue() {
+        val probs = loadProbs("strong_alarm")
+        val pre = coarse.classify(probs)
+
+        val result = GunshotBoosterDecision.unavailable(probs, classNames, pre)
+
+        assertFalse(result.boosterAvailable)
+        assertFalse(result.accepted)
+        assertTrue(result.dangerCuePromoted)
+        assertEquals("danger", result.postBoosterCoarse)
+        assertEquals("Alarm", result.postBoosterDisplay)
         assertEquals(pre.confidence, result.postBoosterConfidence, 0f)
     }
 }

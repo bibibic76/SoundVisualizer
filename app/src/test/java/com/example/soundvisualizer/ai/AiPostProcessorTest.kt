@@ -143,6 +143,18 @@ class AiPostProcessorTest {
         assertEquals(0.25f, eff("danger"), 0f) // no cues → no relax
         assertEquals(0.20f, eff("danger", strong = true), 0f)
         assertEquals(0.18f, eff("danger", adopted = true, strong = true), 0f)
+        assertEquals(
+            0.12f,
+            AiPostProcessor.computeEffectiveThreshold(
+                coarse = "danger",
+                baseThreshold = 0.25f,
+                adoptedDangerFromBooster = false,
+                hasStrongDangerCue = true,
+                hasCriticalDangerCue = false,
+                dangerCuePromoted = true
+            ),
+            0f
+        )
 
         // meets uses >=
         assertFalse(0.2499f >= 0.25f)
@@ -182,7 +194,7 @@ class AiPostProcessorTest {
             AiPostProcessor.FrameInput(
                 coarse = "danger",
                 display = "Smoke detector, smoke alarm",
-                confidence = 0.12f,
+                confidence = 0.119f,
                 dangerCuePromoted = true,
                 hasStrongDangerCue = true
             )
@@ -194,14 +206,14 @@ class AiPostProcessorTest {
             AiPostProcessor.FrameInput(
                 coarse = "danger",
                 display = "Smoke detector, smoke alarm",
-                confidence = 0.22f,
+                confidence = 0.12f,
                 dangerCuePromoted = true,
                 hasStrongDangerCue = true
             )
         )
         assertEquals("danger", confirmed.uiCoarse)
         assertEquals("Smoke detector, smoke alarm", confirmed.uiDisplay)
-        assertEquals(0.22f, confirmed.uiConfidence, 0f)
+        assertEquals(0.12f, confirmed.uiConfidence, 0f)
         assertTrue(confirmed.meetsThreshold)
     }
 

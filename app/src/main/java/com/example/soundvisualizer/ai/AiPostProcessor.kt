@@ -48,10 +48,13 @@ class AiPostProcessor(
             baseThreshold: Float,
             adoptedDangerFromBooster: Boolean,
             hasStrongDangerCue: Boolean,
-            hasCriticalDangerCue: Boolean
+            hasCriticalDangerCue: Boolean,
+            dangerCuePromoted: Boolean = false
         ): Float {
             var effective = baseThreshold
-            if (coarse == "danger" &&
+            if (coarse == "danger" && dangerCuePromoted) {
+                effective = minOf(effective, 0.12f)
+            } else if (coarse == "danger" &&
                 (hasStrongDangerCue || hasCriticalDangerCue || adoptedDangerFromBooster)
             ) {
                 effective = minOf(effective, if (adoptedDangerFromBooster) 0.18f else 0.20f)
@@ -93,7 +96,8 @@ class AiPostProcessor(
             baseThreshold = baseConfidenceThreshold,
             adoptedDangerFromBooster = frame.adoptedDangerFromBooster,
             hasStrongDangerCue = frame.hasStrongDangerCue,
-            hasCriticalDangerCue = frame.hasCriticalDangerCue
+            hasCriticalDangerCue = frame.hasCriticalDangerCue,
+            dangerCuePromoted = frame.dangerCuePromoted
         )
         val meets = frame.confidence >= effective
 
