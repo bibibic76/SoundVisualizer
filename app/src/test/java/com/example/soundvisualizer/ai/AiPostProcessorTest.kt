@@ -177,7 +177,7 @@ class AiPostProcessorTest {
     }
 
     @Test
-    fun strongDangerCuePromotesLowConfidenceWithoutBoosterScore() {
+    fun strongDangerCueStillUsesEffectiveThreshold() {
         val result = AiPostProcessor().process(
             AiPostProcessor.FrameInput(
                 coarse = "danger",
@@ -187,10 +187,22 @@ class AiPostProcessorTest {
                 hasStrongDangerCue = true
             )
         )
-        assertEquals("danger", result.uiCoarse)
-        assertEquals("Smoke detector, smoke alarm", result.uiDisplay)
-        assertEquals(0.12f, result.uiConfidence, 0f)
-        assertTrue(result.meetsThreshold)
+        assertEquals("ambient", result.uiCoarse)
+        assertFalse(result.meetsThreshold)
+
+        val confirmed = AiPostProcessor().process(
+            AiPostProcessor.FrameInput(
+                coarse = "danger",
+                display = "Smoke detector, smoke alarm",
+                confidence = 0.22f,
+                dangerCuePromoted = true,
+                hasStrongDangerCue = true
+            )
+        )
+        assertEquals("danger", confirmed.uiCoarse)
+        assertEquals("Smoke detector, smoke alarm", confirmed.uiDisplay)
+        assertEquals(0.22f, confirmed.uiConfidence, 0f)
+        assertTrue(confirmed.meetsThreshold)
     }
 
     @Test

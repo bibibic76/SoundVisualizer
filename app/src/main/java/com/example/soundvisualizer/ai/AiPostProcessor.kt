@@ -95,8 +95,7 @@ class AiPostProcessor(
             hasStrongDangerCue = frame.hasStrongDangerCue,
             hasCriticalDangerCue = frame.hasCriticalDangerCue
         )
-        val meets = frame.confidence >= effective ||
-            (frame.coarse == "danger" && frame.dangerCuePromoted)
+        val meets = frame.confidence >= effective
 
         // Snapshot for InferenceResult-equivalent used by hysteresis
         val rCoarse = frame.coarse
@@ -112,7 +111,7 @@ class AiPostProcessor(
             display = rDisplay,
             confidence = rConf,
             adoptedDangerFromBooster = rAdopted,
-            criticalDangerEvent = rCritical || frame.dangerCuePromoted
+            criticalDangerEvent = rCritical
         )
 
         val usePreview =

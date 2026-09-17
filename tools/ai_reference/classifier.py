@@ -225,7 +225,7 @@ class ReferenceClassifier:
         coarse = self._vote_coarse_from_top5(top_idx, top_probs, 3)
         coarse_conf = conf
         danger_evidence = self._sum_coarse_probability_from_top5(top_idx, top_probs, 5, "danger")
-        has_strong_danger_cue = self._has_strong_danger_cue_in_top5(top_idx, 5)
+        has_strong_danger_cue = self._has_strong_danger_cue_in_top5(top_idx, 5, top_probs)
         has_critical_danger_cue = self._has_critical_danger_cue_in_top5(top_idx, 5)
         yamnet_coarse = coarse
         adopted_danger_from_booster = False
@@ -253,7 +253,7 @@ class ReferenceClassifier:
                     f"gunshot_cue score={gunshot_score:.4f} evidence={gunshot_evidence:.4f} adopt={adopt}"
                 )
             elif self._is_game_mix_mask_display(display) or has_strong_danger_cue:
-                adopt = gunshot_score >= 0.50 or (gunshot_score >= 0.40 and gunshot_evidence >= 0.04)
+                adopt = gunshot_score >= 0.40 and gunshot_evidence >= 0.04
                 booster_reason = (
                     f"game_mix_or_strong_danger score={gunshot_score:.4f} "
                     f"evidence={gunshot_evidence:.4f} adopt={adopt}"
@@ -578,10 +578,11 @@ class ReferenceClassifier:
                 return True
         return False
 
-    def _has_strong_danger_cue_in_top5(self, top_indices, k: int) -> bool:
+    def _has_strong_danger_cue_in_top5(self, top_indices, k: int, top_probs=None) -> bool:
         for idx in range(min(5, k)):
             i = int(top_indices[idx])
-            if i >= 0 and self._is_strong_danger_keyword(self._class_names[i]):
+            probability = float(top_probs[idx]) if top_probs is not None else 1.0
+            if i >= 0 and probability >= 0.05 and self._is_strong_danger_keyword(self._class_names[i]):
                 return True
         return False
 
@@ -659,6 +660,8 @@ class ReferenceClassifier:
         if self._is_gunshot_keyword(name):
             return True
         s = name.lower()
+        if "alarm clock" in s:
+            return False
         return any(k in s for k in ("explosion", "fireworks", "firecracker", "siren", "alarm"))
 
     def _is_critical_danger_keyword(self, name: str) -> bool:

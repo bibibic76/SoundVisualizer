@@ -51,7 +51,7 @@ object GunshotBoosterDecision {
 
         val evidence = sumGunshotProbabilityFromTop5(topIdx, topProbs, classNames, 5)
         val hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5)
-        val hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5)
+        val hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5, topProbs)
 
         val yamnetCoarse = pre.coarse
         val display = pre.displayName
@@ -98,7 +98,7 @@ object GunshotBoosterDecision {
                 postDisplay = classNames[gunIdx]
                 postConf = max(postConf, gunProb)
             }
-        } else if (hasStrongDangerCue && !hasGunshotCue) {
+        } else if (!blockBooster && hasStrongDangerCue && !hasGunshotCue) {
             val (cueIdx, _) = tryPickBestStrongDangerDisplay(topIdx, topProbs, classNames)
             if (cueIdx >= 0) {
                 postCoarse = "danger"
@@ -164,7 +164,7 @@ object GunshotBoosterDecision {
             preBoosterConfidence = pre.confidence,
             postBoosterConfidence = pre.confidence,
             hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5),
-            hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5),
+            hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5, topProbs),
             dangerCuePromoted = false
         )
     }
@@ -209,6 +209,7 @@ object GunshotBoosterDecision {
         if (name.isNullOrEmpty()) return false
         if (isGunshotKeyword(name)) return true
         val s = name.lowercase()
+        if ("alarm clock" in s) return false
         return "explosion" in s || "fireworks" in s || "firecracker" in s ||
             "siren" in s || "alarm" in s
     }
@@ -238,14 +239,22 @@ object GunshotBoosterDecision {
         return false
     }
 
-    fun hasStrongDangerCueInTop5(topIndices: IntArray, classNames: List<String>, k: Int): Boolean {
+    fun hasStrongDangerCueInTop5(
+        topIndices: IntArray,
+        classNames: List<String>,
+        k: Int,
+        topProbs: FloatArray? = null
+    ): Boolean {
         val limit = minOf(5, k)
         for (idx in 0 until limit) {
             val i = topIndices[idx]
-            if (i >= 0 && isStrongDangerKeyword(classNames[i])) return true
+            val probability = topProbs?.getOrNull(idx) ?: 1f
+            if (i >= 0 && isStrongDangerKeyword(classNames[i]) && probability >= STRONG_DANGER_CUE_MIN_PROBABILITY) return true
         }
         return false
     }
+
+    private const val STRONG_DANGER_CUE_MIN_PROBABILITY = 0.05f
 
     fun tryPickBestGunshotDisplay(
         probs: FloatArray,

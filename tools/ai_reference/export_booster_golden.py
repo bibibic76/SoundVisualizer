@@ -69,7 +69,7 @@ def apply_booster(clf: ReferenceClassifier, probs: np.ndarray, score: float) -> 
 
     evidence = clf._sum_gunshot_probability_from_top5(top_idx, top_probs, 5)
     has_gunshot_cue = clf._has_gunshot_cue_in_top5(top_idx, 5)
-    has_strong = clf._has_strong_danger_cue_in_top5(top_idx, 5)
+    has_strong = clf._has_strong_danger_cue_in_top5(top_idx, 5, top_probs)
 
     block = (
         coarse == "speech"
@@ -84,7 +84,7 @@ def apply_booster(clf: ReferenceClassifier, probs: np.ndarray, score: float) -> 
         adopt = score >= 0.20 and evidence >= 0.05
         reason = f"gunshot_cue score={score:.4f} evidence={evidence:.4f} adopt={adopt}"
     elif clf._is_game_mix_mask_display(display) or has_strong:
-        adopt = score >= 0.50 or (score >= 0.40 and evidence >= 0.04)
+        adopt = score >= 0.40 and evidence >= 0.04
         reason = (
             f"game_mix_or_strong_danger score={score:.4f} evidence={evidence:.4f} adopt={adopt}"
         )

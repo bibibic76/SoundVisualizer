@@ -228,6 +228,21 @@ class GunshotBoosterDecisionTest {
     }
 
     @Test
+    fun speechTop1BlocksStrongCuePromotion() {
+        val probs = FloatArray(521)
+        val speech = classNames.indexOfFirst { it.equals("Speech", ignoreCase = true) }
+        val siren = classNames.indexOfFirst { it.equals("Siren", ignoreCase = true) }
+        if (speech < 0 || siren < 0) return
+        probs[speech] = 0.80f
+        probs[siren] = 0.10f
+        val pre = coarse.classify(probs)
+        val result = GunshotBoosterDecision.decide(probs, classNames, pre, 0.505f)
+        assertEquals("speech", result.preBoosterCoarse)
+        assertFalse(result.dangerCuePromoted)
+        assertEquals("speech", result.postBoosterCoarse)
+    }
+
+    @Test
     fun boosterUnavailable_keepsYamnetResultWithoutInventingAScore() {
         val probs = loadProbs("gunshot")
         val pre = coarse.classify(probs)
