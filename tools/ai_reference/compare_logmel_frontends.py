@@ -5,17 +5,44 @@ import argparse
 import csv
 import math
 import sys
-import wave
 from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort
+
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from preprocess import (
+    compute_log_mel_spectrogram,
+    resample_mono_float_to_16k_custom,
+)
+from wav_io import load_wav_as_capture_mono
 
 SR = 16000
 N = 15600
 WIN, HOP, NFFT = 400, 160, 512
 FRAMES, MELS = 96, 64
 LOG_EPS = 0.001
+
+# Source provenance for the frontend used by Qualcomm's YAMNet recipe:
+#
+# * qai-hub-models commit 7925bdd04586a87b09914164903f51b3f889c4aa
+#   - src/qai_hub_models/models/yamnet/model.py::_sample_inputs_impl
+#   - src/qai_hub_models/models/yamnet/app.py::preprocessing_yamnet_from_source
+#   - model.py pins w-hc/torch_audioset at commit e8852c5
+#   - https://github.com/qualcomm/ai-hub-models/tree/7925bdd04586a87b09914164903f51b3f889c4aa/src/qai_hub_models/models/yamnet
+# * torch_audioset commit e8852c5
+#   - torch_audioset/data/torch_input_processing.py::WaveformToInput
+#   - torch_audioset/data/torch_input_processing.py::VGGishLogMelSpectrogram
+#   - https://github.com/w-hc/torch_audioset/blob/e8852c5/torch_audioset/data/torch_input_processing.py
+#
+# The packaged ONNX metadata does not record these source revisions, so this is
+# a reproducible reconstruction of the Qualcomm recipe, not proof of the exact
+# source tree used to export the packaged artifact.
+QAI_HUB_MODELS_COMMIT = "7925bdd04586a87b09914164903f51b3f889c4aa"
+TORCH_AUDIOSET_COMMIT = "e8852c53becef811784754a2de9c4617d8db2156"
 
 
 def _hann_periodic(n: int = WIN) -> np.ndarray:
@@ -94,7 +121,12 @@ def official_log_mel(mono16k: np.ndarray) -> np.ndarray:
 
 
 def qualcomm_source_log_mel(mono16k: np.ndarray) -> np.ndarray:
-    """Return the NumPy port of the pinned Qualcomm torch frontend."""
+    """Return the NumPy port of the pinned Qualcomm-recipe source frontend.
+
+    The source locations and revisions are recorded above. The corresponding
+    parity script imports ``WaveformToInput`` from the pinned torch_audioset
+    revision and compares this port against that source implementation.
+    """
     fitted = _fit(mono16k)
     padded = np.pad(fitted, NFFT // 2, mode="reflect")
     frames = np.stack(
@@ -104,12 +136,9 @@ def qualcomm_source_log_mel(mono16k: np.ndarray) -> np.ndarray:
     return np.log(magnitude @ _TORCH_MEL + LOG_EPS).astype(np.float32)
 
 
-def current_log_mel(mono16k: np.ndarray, repo: Path) -> np.ndarray:
+def current_log_mel(mono16k: np.ndarray, _repo: Path) -> np.ndarray:
     """Return the repository's current reference frontend as [96, 64]."""
-    sys.path.insert(0, str(repo / "tools"))
-    from ai_reference import preprocess as pp
-
-    return pp.compute_log_mel_spectrogram(
+    return compute_log_mel_spectrogram(
         _fit(mono16k).astype(np.float32)
     ).reshape(FRAMES, MELS)
 
@@ -136,11 +165,7 @@ class Yamnet:
     @staticmethod
     def sigmoid(logits: np.ndarray) -> np.ndarray:
         logits = np.asarray(logits, dtype=np.float64).reshape(-1)
-        return np.where(
-            logits >= 0.0,
-            1.0 / (1.0 + np.exp(-logits)),
-            np.exp(logits) / (1.0 + np.exp(logits)),
-        )
+        return np.exp(-np.logaddexp(0.0, -logits))
 
     def probs(self, log_mel: np.ndarray) -> np.ndarray:
         return self.softmax(self.logits(log_mel))
@@ -154,20 +179,17 @@ class Yamnet:
 
 
 def read_wav_mono16k(path: Path) -> np.ndarray:
-    """Read 16-bit PCM WAV and linearly resample it to 16 kHz mono."""
-    with wave.open(str(path)) as wav:
-        channels = wav.getnchannels()
-        rate = wav.getframerate()
-        width = wav.getsampwidth()
-        raw = wav.readframes(wav.getnframes())
-    if width != 2:
-        raise ValueError(f"{path}: only 16-bit PCM is supported (sampwidth={width})")
-    samples = np.frombuffer(raw, dtype="<i2").astype(np.float64) / 32768.0
-    samples = samples.reshape(-1, channels).mean(axis=1)
-    if rate != SR:
-        target_times = np.arange(0, len(samples) / rate, 1.0 / SR)
-        samples = np.interp(target_times, np.arange(len(samples)) / rate, samples)
-    return samples
+    """Read PCM WAV and resample it with the app-parity Kaiser FIR."""
+    mono, sample_rate, _ = load_wav_as_capture_mono(path)
+    destination_length = max(
+        1,
+        int(round(mono.size * SR / float(sample_rate))),
+    )
+    return resample_mono_float_to_16k_custom(
+        mono,
+        sample_rate,
+        destination_length,
+    )
 
 
 def main() -> int:

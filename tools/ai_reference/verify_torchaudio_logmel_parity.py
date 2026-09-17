@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare the NumPy Qualcomm-source frontend with the torchaudio operations."""
+"""Compare the NumPy Qualcomm-source frontend with pinned upstream source."""
 from __future__ import annotations
 
 import argparse
@@ -14,51 +14,27 @@ if str(ROOT) not in sys.path:
 
 from compare_logmel_frontends import (
     FRAMES,
-    HOP,
-    LOG_EPS,
     MELS,
     N,
-    NFFT,
     SR,
-    WIN,
     _TORCH_MEL,
     qualcomm_source_log_mel,
 )
 
 
-def torchaudio_log_mel(samples: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def torch_audioset_log_mel(samples: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     import torch
-    import torchaudio
+    from torch_audioset.data.torch_input_processing import WaveformToInput
 
     fitted = np.zeros(N, dtype=np.float32)
     source = np.asarray(samples, dtype=np.float32).reshape(-1)[:N]
     fitted[: source.size] = source
     waveform = torch.from_numpy(fitted).reshape(1, -1)
-    spectrogram = torchaudio.transforms.Spectrogram(
-        n_fft=NFFT,
-        win_length=WIN,
-        hop_length=HOP,
-        pad=0,
-        window_fn=torch.hann_window,
-        power=2.0,
-        normalized=False,
-        center=True,
-        pad_mode="reflect",
-        onesided=True,
-    )(waveform)
-    magnitude = torch.sqrt(spectrogram)
-    mel_scale = torchaudio.transforms.MelScale(
-        n_mels=MELS,
-        sample_rate=SR,
-        f_min=125.0,
-        f_max=7500.0,
-        n_stft=NFFT // 2 + 1,
-        norm=None,
-        mel_scale="htk",
-    )
-    mel = mel_scale(magnitude)
-    log_mel = torch.log(mel + LOG_EPS)[0, :, :FRAMES].transpose(0, 1)
-    return log_mel.numpy(), mel_scale.fb.numpy()
+    transform = WaveformToInput()
+    patches, _ = transform.wavform_to_log_mel(waveform, SR)
+    log_mel = patches[0, 0]
+    mel = transform.mel_trans_ope.mel_scale.fb
+    return log_mel.detach().numpy(), mel.detach().numpy()
 
 
 def main() -> int:
@@ -90,7 +66,7 @@ def main() -> int:
     failed = False
     for name, samples in cases.items():
         numpy_result = qualcomm_source_log_mel(samples)
-        torch_result, torch_mel = torchaudio_log_mel(samples)
+        torch_result, torch_mel = torch_audioset_log_mel(samples)
         if torch_result.shape != (FRAMES, MELS):
             raise AssertionError(f"{name}: unexpected torchaudio shape {torch_result.shape}")
         max_abs = float(np.max(np.abs(numpy_result - torch_result)))

@@ -25,6 +25,8 @@ from compare_logmel_frontends import (
     _HANN,
     _TF_MEL,
     _fit,
+    QAI_HUB_MODELS_COMMIT,
+    TORCH_AUDIOSET_COMMIT,
     current_log_mel,
     official_log_mel,
     qualcomm_source_log_mel,
@@ -90,9 +92,23 @@ def mono16k_windows(path: Path, mode: str) -> list[np.ndarray]:
         sample_rate,
         destination_length,
     )
+    return mean_nonoverlap_windows(resampled)
+
+
+def mean_nonoverlap_windows(resampled: np.ndarray) -> list[np.ndarray]:
+    """Return full windows, except that a wholly short file remains usable."""
+    if resampled.size <= REQUIRED_MONO_16K_SAMPLES:
+        # The frontend pads this only window. Once a file has a full window,
+        # however, a short tail is excluded instead of receiving equal weight.
+        return [resampled]
+    full_window_count = resampled.size // REQUIRED_MONO_16K_SAMPLES
     return [
         resampled[start : start + REQUIRED_MONO_16K_SAMPLES]
-        for start in range(0, resampled.size, REQUIRED_MONO_16K_SAMPLES)
+        for start in range(
+            0,
+            full_window_count * REQUIRED_MONO_16K_SAMPLES,
+            REQUIRED_MONO_16K_SAMPLES,
+        )
     ]
 
 
@@ -294,11 +310,29 @@ def main() -> int:
     frontends = list(frontend_log_mels(np.zeros(REQUIRED_MONO_16K_SAMPLES), args.repo))
 
     report = {
+        "source_provenance": {
+            "qualcomm_recipe": {
+                "repository": "https://github.com/qualcomm/ai-hub-models",
+                "commit": QAI_HUB_MODELS_COMMIT,
+                "entrypoint": "src/qai_hub_models/models/yamnet/app.py::preprocessing_yamnet_from_source",
+            },
+            "torch_audioset": {
+                "repository": "https://github.com/w-hc/torch_audioset",
+                "commit": TORCH_AUDIOSET_COMMIT,
+                "functions": [
+                    "torch_audioset/data/torch_input_processing.py::WaveformToInput",
+                    "torch_audioset/data/torch_input_processing.py::VGGishLogMelSpectrogram",
+                ],
+            },
+            "parity_scope": "verify_torchaudio_logmel_parity.py compares the NumPy port with WaveformToInput imported from the pinned torch_audioset commit under pinned torch/torchaudio versions",
+        },
         "limitations": [
             "official_log_mel is a NumPy port; verify_tensorflow_logmel_parity.py checks its numerical parity separately",
-            "qualcomm_source_log_mel is a NumPy port; verify_torchaudio_logmel_parity.py checks its numerical parity separately",
+            "the packaged ONNX metadata does not identify its source revision, so Qualcomm recipe parity does not prove which exact source tree exported the artifact",
             "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
             "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
+            "coarse is the top-5 mapper vote only, not the app's final UI result after Booster, safety promotion, thresholding, and hysteresis",
+            "mean-nonoverlap drops a trailing partial window when at least one full window exists; a file shorter than one window is zero-padded by the frontend",
             "mean-nonoverlap windowing is a diagnostic approximation, not a recovered training pipeline",
             "Booster discrimination metrics use the full training corpus and are not held-out performance estimates",
         ],
@@ -359,6 +393,7 @@ def main() -> int:
                 key: report[key]
                 for key in (
                     "limitations",
+                    "source_provenance",
                     "window_mode",
                     "files",
                     "top1_changed",
