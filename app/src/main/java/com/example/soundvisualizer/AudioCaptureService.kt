@@ -577,6 +577,9 @@ class AudioCaptureService : Service() {
             if (bytes > 0) {
                 val floats = bytes / BYTES_PER_FLOAT
                 AudioEngine.pushAudioBuffer(buffer, floats)
+                // 쉬는 오버레이를 소리가 난 이 버퍼에서 바로 깨운다(#170). 원자 변수를 읽고, 오버레이가 쉬는 중이면
+                // 소리 크기를 한 번 더 읽는다. 할당은 없다.
+                OverlayWake.onBuffer()
                 // AI 는 캡처 스레드에서 추론하지 않는다. 링버퍼로 복사만 하고 즉시 반환된다.
                 aiPipeline?.let { pipeline ->
                     floatView.position(0)

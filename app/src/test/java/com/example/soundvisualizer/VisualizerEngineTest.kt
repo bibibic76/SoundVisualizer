@@ -378,6 +378,60 @@ class VisualizerEngineTest {
         assertTrue("여전히 조용하면 idle 을 유지한다", engine.debugState().idle)
     }
 
+    // ---------------------------------------------------------------
+    // 대기 중 소리 신호로 잠들어도 되는지 (#170)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `조용한 대기는 한 번 확인한 뒤부터 소리가 날 때까지 잠들어도 된다`() {
+        val engine = newEngine(FakeInputs())
+        engine.tickUntilIdle()
+        assertFalse("대기로 내려오자마자 확인도 없이 잠든다", engine.canSleepUntilLoud)
+
+        engine.pollWake()
+        assertTrue(engine.canSleepUntilLoud)
+    }
+
+    @Test
+    fun `표시를 꺼 둔 소리가 나는 동안에는 잠들지 않고 33ms 확인을 이어 간다`() {
+        // 잠들면 소리 신호가 버퍼마다 깨워서 확인보다 오히려 잦아진다.
+        val (engine, fake) = hiddenAmbientIdle()
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.pollWake()
+        assertTrue(engine.debugState().idle)
+        assertFalse(engine.canSleepUntilLoud)
+    }
+
+    @Test
+    fun `소리를 보관하는 동안에는 잠들지 않고 보관이 끝나면 잠든다`() {
+        // 늦게 올 위협음 판정을 보려면 소리가 끝난 뒤에도 약 1초 동안 확인해야 한다.
+        val (engine, fake) = hiddenAmbientIdle()
+        fake.left = 0.9f
+        fake.right = 0.9f
+        engine.pollWake()
+        fake.left = 0f
+        fake.right = 0f
+        engine.poll(24) // 0.8초
+        assertFalse("보관한 소리가 남았는데 잠든다", engine.canSleepUntilLoud)
+
+        engine.poll(12) // 1.2초
+        assertTrue("보관이 끝났는데 계속 확인한다", engine.canSleepUntilLoud)
+    }
+
+    @Test
+    fun `그릴 수 없는 설정에서 소리가 나면 잠들지 않는다`() {
+        val fake = FakeInputs(settings = ModeSettings(opacity = 0f))
+        val engine = newEngine(fake)
+        fake.left = 0.8f
+        fake.right = 0.8f
+        engine.advance(frames = 120)
+        assertTrue(engine.debugState().idle)
+
+        engine.pollWake()
+        assertFalse(engine.canSleepUntilLoud)
+    }
+
     @Test
     fun `표시가 꺼진 종류의 소리가 계속 나면 대기 상태로 내려간다`() {
         val fake = FakeInputs(shown = false)

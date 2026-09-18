@@ -244,6 +244,7 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 | `AudioEngine` / `cpp/native-lib.cpp` | 좌우 채널 최대 진폭 측정 (C++) |
 | `OverlayService` | 화면 가장자리 오버레이 창을 띄우는 서비스 |
 | `VisualizerOverlay` / `VisualizerEngine` | 프레임 렌더 루프와 네 가지 모드(`VisualMode`) 렌더링 |
+| `SoundWakeSignal` | 쉬는 오버레이를 캡처 스레드가 소리 난 순간 깨우는 신호 |
 | `ai/` | 소리 분류 파이프라인 (전처리 → YAMNet → Gunshot Booster → 후처리) |
 | `AiClassification` | 분류기와 렌더러를 잇는 연결 지점 |
 | `AiDebugOverlay` / `AiDebugText` | 개발자 모드 (설정 맨 아래): 오버레이에 AI 분류 결과를 그대로 띄워 팀이 정확도를 확인 |
