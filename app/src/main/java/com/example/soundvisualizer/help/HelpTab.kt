@@ -38,13 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AppMonospace
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
@@ -186,7 +186,7 @@ private fun ReportSection() {
         )
         Text(
             environment,
-            fontSize = 13.sp, lineHeight = 19.sp, fontFamily = FontFamily.Monospace, color = SecondaryTextColor
+            fontSize = 13.sp, lineHeight = 19.sp, fontFamily = AppMonospace, color = SecondaryTextColor
         )
         OutlinedButton(
             onClick = {
@@ -334,10 +334,11 @@ private fun LicenseDialog(onDismiss: () -> Unit) {
         containerColor = CardColor,
         title = { Text(stringResource(R.string.help_licenses_title), color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
         text = {
-            // 고지 파일은 고정폭 글꼴 기준으로 줄을 맞춰 두었다.
+            // 고지 파일은 고정폭 글꼴 기준으로 줄을 맞춰 두었다. 삼성 폰은 시스템 monospace 를 비례폭으로 그려서
+            // 구분선과 들여쓰기가 어긋나므로 앱에 넣은 글꼴을 쓴다(#162).
             Text(
                 text,
-                fontSize = 11.sp, lineHeight = 15.sp, fontFamily = FontFamily.Monospace, color = SecondaryTextColor,
+                fontSize = 11.sp, lineHeight = 15.sp, fontFamily = AppMonospace, color = SecondaryTextColor,
                 modifier = Modifier.verticalScroll(rememberScrollState())
             )
         },

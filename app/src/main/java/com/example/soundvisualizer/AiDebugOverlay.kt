@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -128,6 +127,7 @@ fun AiDebugOverlay() {
 
 /**
  * HUD 한 줄. 고정폭 글꼴을 써서 값이 4Hz 로 바뀌어도 자리가 흔들리지 않게 한다.
+ * 시스템의 monospace 는 삼성 폰에서 고정폭이 아니게 그려져서 앱에 넣은 [AppMonospace] 를 쓴다(#162).
  * 밝은 게임 화면 위에서도 읽히도록 판은 불투명하게, 글자는 밝게 둔다.
  */
 @Composable
@@ -141,6 +141,6 @@ private fun DebugText(
         color = color,
         fontSize = 11.sp,
         fontWeight = weight,
-        fontFamily = FontFamily.Monospace
+        fontFamily = AppMonospace
     )
 }
