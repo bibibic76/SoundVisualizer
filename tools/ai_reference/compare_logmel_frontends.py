@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import onnxruntime as ort
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -145,6 +144,8 @@ def current_log_mel(mono16k: np.ndarray, _repo: Path) -> np.ndarray:
 
 class Yamnet:
     def __init__(self, repo: Path):
+        import onnxruntime as ort
+
         assets = repo / "app/src/main/assets/ai"
         self.session = ort.InferenceSession(str(assets / "yamnet.onnx"))
         with open(assets / "yamnet_class_map.csv", encoding="utf-8") as file:

@@ -68,7 +68,7 @@ class ReferenceClassifier:
     DANGER_IMMEDIATE_SWITCH_CONFIDENCE = 0.28
     DANGER_EXIT_RELAXED_CONFIDENCE = 0.27
 
-    def __init__(self, model_dir: str | Path):
+    def __init__(self, model_dir: str | Path, load_booster: bool = True):
         self.model_dir = Path(model_dir)
         self._hann = create_hann_window(400)
         self._mel = create_mel_filter_bank()
@@ -103,7 +103,7 @@ class ReferenceClassifier:
         self._booster_in = None
         self._booster_out = None
         booster_path = self.model_dir / "gunshot_booster.onnx"
-        if booster_path.is_file():
+        if load_booster and booster_path.is_file():
             self._booster = ort.InferenceSession(
                 str(booster_path), sess_options=so, providers=["CPUExecutionProvider"]
             )

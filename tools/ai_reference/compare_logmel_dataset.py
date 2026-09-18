@@ -166,9 +166,10 @@ def classify_probs(
 ) -> dict:
     result = map_scores(classifier, probabilities)
     result["sigmoid"] = map_scores(classifier, sigmoid_scores)
-    result["booster_softmax_score"] = booster_score(classifier, probabilities)
-    result["booster_sigmoid_score"] = booster_score(classifier, sigmoid_scores)
-    result["booster_raw_logits_score"] = booster_score(classifier, logits)
+    if classifier._booster is not None:
+        result["booster_softmax_score"] = booster_score(classifier, probabilities)
+        result["booster_sigmoid_score"] = booster_score(classifier, sigmoid_scores)
+        result["booster_raw_logits_score"] = booster_score(classifier, logits)
     return result
 
 
@@ -183,25 +184,36 @@ def score_distribution(values: list[float]) -> dict[str, float]:
     }
 
 
-def summarize(rows: list[dict], frontend: str, label: str) -> dict:
+def summarize(
+    rows: list[dict],
+    frontend: str,
+    label: str,
+    include_booster: bool = True,
+) -> dict:
     selected = [row[frontend] for row in rows if row["label"] == label]
-    return {
+    summary = {
         "count": len(selected),
         "top1": Counter(item["top1"] for item in selected).most_common(10),
         "softmax_coarse": dict(Counter(item["coarse"] for item in selected)),
         "sigmoid_coarse": dict(
             Counter(item["sigmoid"]["coarse"] for item in selected)
         ),
-        "booster_softmax_score": score_distribution(
-            [item["booster_softmax_score"] for item in selected]
-        ),
-        "booster_sigmoid_score": score_distribution(
-            [item["booster_sigmoid_score"] for item in selected]
-        ),
-        "booster_raw_logits_score": score_distribution(
-            [item["booster_raw_logits_score"] for item in selected]
-        ),
     }
+    if include_booster:
+        summary.update(
+            {
+                "booster_softmax_score": score_distribution(
+                    [item["booster_softmax_score"] for item in selected]
+                ),
+                "booster_sigmoid_score": score_distribution(
+                    [item["booster_sigmoid_score"] for item in selected]
+                ),
+                "booster_raw_logits_score": score_distribution(
+                    [item["booster_raw_logits_score"] for item in selected]
+                ),
+            }
+        )
+    return summary
 
 
 def precision_recall_f1(
@@ -266,11 +278,16 @@ def main() -> int:
         default="tail",
         help="Replay the last app-sized window or average all non-overlapping windows",
     )
+    parser.add_argument(
+        "--yamnet-only",
+        action="store_true",
+        help="Do not load or evaluate Gunshot Booster; report YAMNet + current mapper only",
+    )
     args = parser.parse_args()
 
     model_dir = args.repo / "app/src/main/assets/ai"
     yamnet = Yamnet(args.repo)
-    classifier = ReferenceClassifier(model_dir)
+    classifier = ReferenceClassifier(model_dir, load_booster=not args.yamnet_only)
     paths = sorted(args.wav_dir.glob("*.wav"))
     rows = []
     for path in paths:
@@ -330,13 +347,23 @@ def main() -> int:
             "official_log_mel is a NumPy port; verify_tensorflow_logmel_parity.py checks its numerical parity separately",
             "the packaged ONNX metadata does not identify its source revision, so Qualcomm recipe parity does not prove which exact source tree exported the artifact",
             "positive/negative labels are inferred only from filename prefixes and are not three-class ground truth",
-            "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
-            "coarse is the top-5 mapper vote only, not the app's final UI result after Booster, safety promotion, thresholding, and hysteresis",
+            "coarse is the top-5 mapper vote only, not the app's final UI result after safety promotion, thresholding, and hysteresis",
+            "softmax_coarse follows the current mapper input; sigmoid_coarse is an activation diagnostic, not a production recommendation",
             "mean-nonoverlap drops a trailing partial window when at least one full window exists; a file shorter than one window is zero-padded by the frontend",
             "mean-nonoverlap windowing is a diagnostic approximation, not a recovered training pipeline",
-            "Booster discrimination metrics use the full training corpus and are not held-out performance estimates",
-        ],
+        ]
+        + (
+            [
+                "YAMNet-only mode neither loads nor evaluates Gunshot Booster",
+            ]
+            if args.yamnet_only
+            else [
+                "Booster activation/input variants are diagnostic only; the training feature contract is not yet proven",
+                "Booster discrimination metrics use the full training corpus and are not held-out performance estimates",
+            ]
+        ),
         "window_mode": args.window_mode,
+        "evaluation_mode": "yamnet_only" if args.yamnet_only else "yamnet_and_booster_diagnostic",
         "files": len(rows),
         "top1_changed": sum(
             row[frontends[0]]["top1"] != row[frontends[-1]]["top1"] for row in rows
@@ -366,12 +393,20 @@ def main() -> int:
         },
         "summary": {
             frontend: {
-                label: summarize(rows, frontend, label)
+                label: summarize(
+                    rows,
+                    frontend,
+                    label,
+                    include_booster=not args.yamnet_only,
+                )
                 for label in ("positive", "negative")
             }
             for frontend in frontends
         },
-        "booster_discrimination": {
+        "rows": rows,
+    }
+    if not args.yamnet_only:
+        report["booster_discrimination"] = {
             frontend: {
                 score_key: booster_discrimination(rows, frontend, score_key)
                 for score_key in (
@@ -381,9 +416,7 @@ def main() -> int:
                 )
             }
             for frontend in frontends
-        },
-        "rows": rows,
-    }
+        }
     rendered = json.dumps(report, indent=2, ensure_ascii=False)
     if args.json:
         args.json.write_text(rendered, encoding="utf-8")
@@ -395,6 +428,7 @@ def main() -> int:
                     "limitations",
                     "source_provenance",
                     "window_mode",
+                    "evaluation_mode",
                     "files",
                     "top1_changed",
                     "coarse_changed",
@@ -402,6 +436,7 @@ def main() -> int:
                     "summary",
                     "booster_discrimination",
                 )
+                if key in report
             },
             indent=2,
             ensure_ascii=False,
