@@ -27,8 +27,7 @@ import kotlin.system.measureNanoTime
 class RealtimeAiPipeline private constructor(
     private val context: Context,
     private val audioBuffer: AiAudioBuffer,
-    private val preprocessor: AudioPreprocessor,
-    private val qualcommSourcePreprocessor: QualcommSourceAudioPreprocessor,
+    private val frontendSwitcher: AiFrontendSwitcher,
     private val yamnet: YamnetInference,
     private val booster: GunshotBoosterInference?,
     private val coarseClassifier: YamnetCoarseClassifier,
@@ -103,8 +102,8 @@ class RealtimeAiPipeline private constructor(
             }
             val appContext = context.applicationContext
             val audioBuffer = AiAudioBuffer(captureSampleRate, channels)
-            val preprocessor = AudioPreprocessor()
-            val qualcommSourcePreprocessor = QualcommSourceAudioPreprocessor()
+            // 실제 전처리기는 inference thread에서 선택된 것 하나만 처음 사용할 때 만든다.
+            val frontendSwitcher = AiFrontendSwitcher()
             val coarseClassifier = YamnetCoarseClassifier(names)
             val postProcessor = AiPostProcessor()
 
@@ -118,8 +117,7 @@ class RealtimeAiPipeline private constructor(
                     RealtimeAiPipeline(
                         context = appContext,
                         audioBuffer = audioBuffer,
-                        preprocessor = preprocessor,
-                        qualcommSourcePreprocessor = qualcommSourcePreprocessor,
+                        frontendSwitcher = frontendSwitcher,
                         yamnet = yamnet,
                         booster = booster,
                         coarseClassifier = coarseClassifier,
@@ -286,11 +284,7 @@ class RealtimeAiPipeline private constructor(
                 sourceSampleRate = audioBuffer.sampleRate,
                 destination = mono16kScratch
             )
-            logMel = when (diagnosticConfig.frontendMode) {
-                AiFrontendMode.CURRENT -> preprocessor.computeLogMelSpectrogram(mono16kScratch)
-                AiFrontendMode.QUALCOMM_SOURCE ->
-                    qualcommSourcePreprocessor.computeLogMelSpectrogram(mono16kScratch)
-            }
+            logMel = frontendSwitcher.compute(diagnosticConfig.frontendMode, mono16kScratch)
         }
         val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
 
