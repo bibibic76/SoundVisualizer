@@ -65,12 +65,13 @@
 |---|---|---|
 | main | `main` | `main` |
 | develop | `develop` | `develop` |
-| feature | `feature/{이슈번호}-{기능명}` | `feature/12-map-search` |
-| bugfix | `bugfix/{이슈번호}-{내용}` | `bugfix/27-overlay-crash` |
-| hotfix | `hotfix/{이슈번호}-{내용}` | `hotfix/34-search-bug` |
+| feature | `feature/{이슈번호}-{기능명}` | `feature/138-target-sdk-36` |
+| bugfix | `bugfix/{이슈번호}-{내용}` | `bugfix/142-tile-translucent-bars` |
+| hotfix | `hotfix/{이슈번호}-{내용}` | `hotfix/34-capture-crash` |
 | release | `release/v{major}.{minor}.{patch}` | `release/v1.1.0` |
 
 - `feature`, `bugfix`, `hotfix`는 **이슈 번호를 반드시 브랜치명 앞에** 붙입니다.
+- 지금까지 거의 모든 작업이 `feature`(48건)와 `bugfix`(22건)였습니다. 위생·문서·CI 작업도 성격에 맞춰 둘 중 하나를 씁니다. `hotfix`는 아직 쓴 적이 없어서 위 예시만 형식을 보여 줍니다.
 - 브랜치명은 **영어 소문자, 숫자, 하이픈(`-`)** 으로 작성합니다. 종류와 이름은 `/`로 나누고, 버전에는 `.`을 씁니다. (공백·언더스코어·한글 금지)
 - 버전은 `MAJOR.MINOR.PATCH` 형식을 사용하고, 태그는 `v1.1.0`처럼 작성합니다.
 
@@ -87,27 +88,50 @@
    # feature: develop에서 분기
    git switch develop
    git pull origin develop
-   git switch -c feature/12-map-search
+   git switch -c feature/138-target-sdk-36
 
    # bugfix: develop에서 분기
    git switch develop
    git pull origin develop
-   git switch -c bugfix/27-overlay-crash
+   git switch -c bugfix/142-tile-translucent-bars
 
    # hotfix: main에서 분기
    git switch main
    git pull origin main
-   git switch -c hotfix/34-search-bug
+   git switch -c hotfix/34-capture-crash
    ```
 3. **작업 & 커밋** — 커밋 메시지에 이슈 번호를 포함합니다.
    ```bash
-   git commit -m "feat: 지도 검색 API 연동 (#12)"
-   git commit -m "fix: 오버레이 종료 시 크래시 수정 (#27)"
-   git push -u origin feature/12-map-search
+   git commit -m "chore: targetSdk 를 36 으로 올리고 화면을 시스템 바 밑까지 그린다 (#138)"
+   git commit -m "fix: 타일로 켤 때 권한 안내 창 뒤의 시스템 바를 투명하게 둔다 (#142)"
+   git push -u origin feature/138-target-sdk-36
    ```
+
+   맨 앞의 종류는 아래에서 고릅니다. 지금까지 `develop` 에 쓰인 것들입니다.
+
+   | 종류 | 언제 | 예시 |
+   |---|---|---|
+   | `feat` | 기능을 더한다 | `feat: 실행 중 알림에서 모드를 골라 바꾼다 (#114)` |
+   | `fix` | 잘못 동작하는 것을 고친다 | `fix: 타일로 켤 때 권한 안내 창 뒤의 시스템 바를 투명하게 둔다 (#142)` |
+   | `refactor` | 동작을 그대로 두고 구조만 바꾼다 | `refactor: MainActivity.kt 를 화면별 파일로 나눈다 (#148)` |
+   | `perf` | 같은 동작을 더 싸게 만든다 | `perf: 무음 상태에서 불필요한 AI 추론 생략 (#5)` |
+   | `test` | 테스트를 더하거나 고친다 | `test: 라벨과 모드가 제 설정으로 이어지는지 고정 (#105)` |
+   | `docs` | 문서만 고친다 | `docs: 소리 받기가 2채널로 제한되는 이유를 적는다 (#136)` |
+   | `i18n` | 문구를 번역한다 | `i18n: 새 문구 13개를 16개 언어로 번역 (#123)` |
+   | `build` | 빌드 설정·의존성을 바꾼다 | `build: 릴리스 키가 없어도 R8 로 줄인 APK 를 배포한다 (#96)` |
+   | `ci` | GitHub Actions 를 바꾼다 | `ci: parity 워크플로가 fixture 변경에도 돌게 한다 (#152)` |
+   | `chore` | 위의 어디에도 안 들어가는 정리 | `chore: 린트 기준선을 없애고 의도한 결정은 그 자리에 적는다 (#154)` |
+   | `diag` | 원인을 찾기 위한 진단 도구·계측 | `diag: YAMNet 전처리 계약 비교 도구 추가 (#143)` |
+   | `merge` | `main` 과 `develop` 을 손으로 맞춘다 | `merge: main의 초기 문서 커밋을 v1.1.0 배포에 반영` |
+
+   - 제목은 **무엇을 하는지 한 줄**로 씁니다. 종류 뒤에 `:` 과 공백을 두고, 끝에 `(#이슈번호)` 를 붙입니다.
+   - Squash 로 머지하면 GitHub 이 뒤에 PR 번호를 더해 `fix: … (#146) (#147)` 처럼 남습니다. 직접 적지 않아도 됩니다.
+   - 브랜치 종류와 커밋 종류는 **다른 축**입니다. 예를 들어 `feature/138-target-sdk-36` 브랜치의 커밋은 `chore: targetSdk 를 36 으로 올리고 화면을 시스템 바 밑까지 그린다 (#138)` 였습니다.
+   - `release:` 는 커밋이 아니라 **배포 PR(`develop` → `main`)의 제목**에만 씁니다(`release: v1.4.0`). 버전 자체를 올리는 커밋은 `chore: 버전을 1.4.0 으로 올린다 (#109)` 처럼 `chore` 입니다.
+   - 초기 커밋 몇 개에는 `fix(ui):` 처럼 괄호로 범위를 적은 것이 있습니다. 지금은 쓰지 않습니다.
 4. **PR 생성** — base는 feature·bugfix면 `develop`, hotfix면 `main` (머지 후 `main` → `develop` PR로 반영)
    - PR을 열면 PR 템플릿이 자동으로 채워지고, 팀장에게 리뷰가 자동으로 요청됩니다.
-   - PR 제목은 커밋 메시지 규칙과 같게 씁니다. (예: `feat: 지도 검색 기능 추가 (#12)`, `fix: 오버레이 종료 시 크래시 수정 (#27)`) Squash로 머지하면 제목이 그대로 커밋 메시지가 됩니다.
+   - PR 제목은 커밋 메시지 규칙과 같게 씁니다. (예: `chore: targetSdk 를 36 으로 올리고 화면을 시스템 바 밑까지 그린다 (#138)`) Squash로 머지하면 제목이 그대로 커밋 메시지가 됩니다.
    - `Closes #` 뒤에 이슈 번호를 적습니다. (예: `Closes #12` → 머지 시 이슈 자동 종료)
    - CI가 통과하고 `확인 사항` 체크리스트를 모두 확인한 뒤, 팀장 승인을 받아 머지합니다.
 5. **정리** — 머지하면 원격 작업 브랜치는 자동으로 삭제됩니다. 로컬 브랜치만 정리합니다.
@@ -115,7 +139,7 @@
    git switch develop
    git pull origin develop
    git fetch --prune
-   git branch -D feature/12-map-search
+   git branch -D feature/138-target-sdk-36
    ```
 
    Squash로 머지한 브랜치는 git이 "머지되지 않은 브랜치"로 보기 때문에 `-d`로는 지워지지 않습니다. `-D`를 씁니다.
