@@ -27,17 +27,20 @@ import kotlin.system.measureNanoTime
 class RealtimeAiPipeline private constructor(
     private val context: Context,
     private val audioBuffer: AiAudioBuffer,
-    private val preprocessor: AudioPreprocessor,
+    private val frontendSwitcher: AiFrontendSwitcher,
     private val yamnet: YamnetInference,
     private val booster: GunshotBoosterInference?,
     private val coarseClassifier: YamnetCoarseClassifier,
     private val classNames: List<String>,
     private val postProcessor: AiPostProcessor,
+    private val diagnosticConfigProvider: () -> AiDiagnosticConfig,
     private val predictIntervalMs: Long = AI_PREDICT_INTERVAL_MS
 ) : AutoCloseable {
 
     data class TickDiagnostics(
         val result: AiClassificationResult,
+        val frontendMode: AiFrontendMode,
+        val boosterEnabled: Boolean,
         val mono16k: FloatArray,
         val logMel: FloatArray,
         val probabilities: FloatArray,
@@ -91,14 +94,16 @@ class RealtimeAiPipeline private constructor(
         fun create(
             context: Context,
             captureSampleRate: Int = AiAudioBuffer.DEFAULT_CAPTURE_SAMPLE_RATE,
-            channels: Int = 2
+            channels: Int = 2,
+            diagnosticConfigProvider: () -> AiDiagnosticConfig = { AiDiagnosticConfig.DEFAULT }
         ): RealtimeAiPipeline {
             val names = context.assets.open("ai/yamnet_class_map.csv").use {
                 YamnetCoarseClassifier.loadClassNames(it)
             }
             val appContext = context.applicationContext
             val audioBuffer = AiAudioBuffer(captureSampleRate, channels)
-            val preprocessor = AudioPreprocessor()
+            // 실제 전처리기는 inference thread에서 선택된 것 하나만 처음 사용할 때 만든다.
+            val frontendSwitcher = AiFrontendSwitcher()
             val coarseClassifier = YamnetCoarseClassifier(names)
             val postProcessor = AiPostProcessor()
 
@@ -112,12 +117,13 @@ class RealtimeAiPipeline private constructor(
                     RealtimeAiPipeline(
                         context = appContext,
                         audioBuffer = audioBuffer,
-                        preprocessor = preprocessor,
+                        frontendSwitcher = frontendSwitcher,
                         yamnet = yamnet,
                         booster = booster,
                         coarseClassifier = coarseClassifier,
                         classNames = names,
-                        postProcessor = postProcessor
+                        postProcessor = postProcessor,
+                        diagnosticConfigProvider = diagnosticConfigProvider
                     )
                 }
             )
@@ -135,6 +141,7 @@ class RealtimeAiPipeline private constructor(
     private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
     private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
     private var lastLogMs = 0L
+    private var appliedDiagnosticConfig: AiDiagnosticConfig? = null
 
     private val captureNeed =
         CaptureAudioMath.captureSamplesForOneYamnetWindow(audioBuffer.sampleRate)
@@ -157,6 +164,7 @@ class RealtimeAiPipeline private constructor(
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
+        appliedDiagnosticConfig = null
         lastResult.set(null)
         inferenceExecutions.set(0)
         silenceSkippedTicks.set(0)
@@ -211,6 +219,7 @@ class RealtimeAiPipeline private constructor(
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
+        appliedDiagnosticConfig = null
         lastResult.set(null)
         inferenceExecutions.set(0)
         silenceSkippedTicks.set(0)
@@ -257,6 +266,14 @@ class RealtimeAiPipeline private constructor(
     private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         inferenceExecutions.incrementAndGet()
         val t0 = System.nanoTime()
+        // Read once: a settings change takes effect on the next tick, never halfway through this one.
+        val diagnosticConfig = diagnosticConfigProvider()
+        val previousDiagnosticConfig = appliedDiagnosticConfig
+        if (previousDiagnosticConfig != null && previousDiagnosticConfig != diagnosticConfig) {
+            // Candidate/confirmed history from one A/B arm must not leak into the next arm.
+            postProcessor.reset()
+        }
+        appliedDiagnosticConfig = diagnosticConfig
 
         var logMel: FloatArray
         val preprocessNs = measureNanoTime {
@@ -267,7 +284,7 @@ class RealtimeAiPipeline private constructor(
                 sourceSampleRate = audioBuffer.sampleRate,
                 destination = mono16kScratch
             )
-            logMel = preprocessor.computeLogMelSpectrogram(mono16kScratch)
+            logMel = frontendSwitcher.compute(diagnosticConfig.frontendMode, mono16kScratch)
         }
         val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
 
@@ -279,7 +296,7 @@ class RealtimeAiPipeline private constructor(
         val pre = coarseClassifier.classify(yamnetResult.probabilities)
 
         var gunshotScore: Float? = null
-        val boosterNs = if (booster != null) measureNanoTime {
+        val boosterNs = if (diagnosticConfig.boosterEnabled && booster != null) measureNanoTime {
             gunshotScore = booster.score(yamnetResult.probabilities)
         } else {
             0L
@@ -299,6 +316,11 @@ class RealtimeAiPipeline private constructor(
                 classNames = classNames,
                 pre = pre
             )
+        }
+        val diagnosticBoosterReason = if (diagnosticConfig.boosterEnabled) {
+            decision.reason
+        } else {
+            "booster_disabled"
         }
 
         val topKSummary = pre.top5.joinToString(separator = " | ") { it.name }
@@ -328,7 +350,7 @@ class RealtimeAiPipeline private constructor(
             gunshotScore = decision.gunshotScore,
             top5 = pre.top5,
             gunshotEvidence = decision.gunshotEvidence,
-            boosterReason = decision.reason,
+            boosterReason = diagnosticBoosterReason,
             dangerCuePromoted = decision.dangerCuePromoted,
             boosterAvailable = decision.boosterAvailable,
             preBoosterCoarse = decision.preBoosterCoarse,
@@ -339,7 +361,9 @@ class RealtimeAiPipeline private constructor(
             preprocessMs = preprocessNs / 1e6,
             yamnetMs = yamnetNs / 1e6,
             boosterMs = boosterNs / 1e6,
-            totalMs = totalMs
+            totalMs = totalMs,
+            frontendMode = diagnosticConfig.frontendMode,
+            boosterEnabled = diagnosticConfig.boosterEnabled
         )
         lastResult.set(result)
 
@@ -350,6 +374,8 @@ class RealtimeAiPipeline private constructor(
                 logMel = logMel,
                 pre = pre,
                 decision = decision,
+                diagnosticConfig = diagnosticConfig,
+                diagnosticBoosterReason = diagnosticBoosterReason,
                 post = post
             )
         }
@@ -357,6 +383,8 @@ class RealtimeAiPipeline private constructor(
         if (!diagnostics || mono16kCopy == null) return null
         return TickDiagnostics(
             result = result,
+            frontendMode = diagnosticConfig.frontendMode,
+            boosterEnabled = diagnosticConfig.boosterEnabled,
             mono16k = mono16kCopy,
             logMel = logMel.copyOf(),
             probabilities = yamnetResult.probabilities.copyOf(),
@@ -381,7 +409,7 @@ class RealtimeAiPipeline private constructor(
             postBoosterConfidence = decision.postBoosterConfidence,
             gunshotScore = decision.gunshotScore,
             gunshotEvidence = decision.gunshotEvidence,
-            boosterReason = decision.reason,
+            boosterReason = diagnosticBoosterReason,
             boosterAvailable = decision.boosterAvailable,
             boosterAccepted = decision.accepted,
             effectiveThreshold = post.effectiveThreshold,
@@ -400,6 +428,8 @@ class RealtimeAiPipeline private constructor(
         logMel: FloatArray,
         pre: YamnetCoarseClassifier.Result,
         decision: GunshotBoosterDecision.Result,
+        diagnosticConfig: AiDiagnosticConfig,
+        diagnosticBoosterReason: String,
         post: AiPostProcessor.FrameResult
     ) {
         val now = System.currentTimeMillis()
@@ -411,6 +441,9 @@ class RealtimeAiPipeline private constructor(
         Log.d(
             TAG,
             "AI_RESULT input[sr=${audioBuffer.sampleRate} ch=${audioBuffer.channelCount}] " +
+                "config[frontend=${diagnosticConfig.frontendMode.diagnosticName} " +
+                "booster=${if (diagnosticConfig.boosterEnabled) "on" else "disabled"} " +
+                "available=${decision.boosterAvailable}] " +
                 "mono16k[rms=${"%.5f".format(java.util.Locale.US, rms(mono16k))} " +
                 "peak=${"%.5f".format(java.util.Locale.US, peak(mono16k))} " +
                 "mean=${"%.5f".format(java.util.Locale.US, mean(mono16k))}] " +
@@ -426,7 +459,7 @@ class RealtimeAiPipeline private constructor(
                 "preConf=${"%.5f".format(java.util.Locale.US, decision.preBoosterConfidence)} " +
                 "booster[score=${"%.5f".format(java.util.Locale.US, decision.gunshotScore)} " +
                 "evidence=${"%.5f".format(java.util.Locale.US, decision.gunshotEvidence)} " +
-                "accepted=${decision.accepted} reason=${decision.reason}] " +
+                "accepted=${decision.accepted} reason=$diagnosticBoosterReason] " +
                 "post=${decision.postBoosterCoarse}/${decision.postBoosterDisplay} " +
                 "postConf=${"%.5f".format(java.util.Locale.US, decision.postBoosterConfidence)} " +
                 "threshold=${"%.5f".format(java.util.Locale.US, post.effectiveThreshold)} " +

@@ -180,6 +180,15 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 7. **후처리**: 확신도 기준과 히스테리시스를 적용해 라벨이 매번 흔들리지 않게 합니다. 위협음은 다른 종류보다 빨리 전환됩니다. 확신도가 기준에 못 미치면 **이전 라벨을 유지**합니다. (`AiPostProcessor`)
 8. 결과를 `AtomicReference`에 저장합니다. 읽는 쪽은 락 없이 가져갑니다.
 
+기본 경로는 계속 `AudioPreprocessor`와 Gunshot Booster를 사용합니다. 개발자 모드를 켠 동안에만
+설정에서 pinned Qualcomm source frontend와 Booster 우회를 고를 수 있습니다(#160). 파이프라인은
+틱 시작 때 설정 한 벌을 읽고 frontend 하나만 실행하며, Booster를 끄면 ONNX 점수 계산을 건너뜁니다.
+조합을 바꾼 첫 틱에는 이전 조합의 candidate/confirmed 이력이 섞이지 않도록 후처리 상태를 비웁니다.
+전처리기는 파이프라인 초기화 때 두 개를 만들지 않고 첫 tick에서 선택된 하나만 만듭니다. 선택이
+바뀌면 이전 인스턴스 참조를 버리고 새 선택만 유지해 두 구현의 작업 버퍼를 함께 보관하지 않습니다.
+개발자 모드를 끄면 저장해 둔 선택과 상관없이 다음 틱부터 기본 경로로 돌아갑니다. 이 진단 선택은
+mapper·임계값·히스테리시스·Booster 모델을 바꾸지 않습니다.
+
 ### 결과 전달 (`AiClassification`)
 
 캡처 서비스와 오버레이 서비스는 서로를 모릅니다. 캡처 쪽이 파이프라인을 **시작하면서** 결과를 읽는 함수를 `AiClassification.attach`로 걸어두고, 오버레이는 `AiClassification.coarse()`만 호출합니다. 분류기가 없으면 항상 `ambient`를 돌려줍니다.
@@ -198,7 +207,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 골든 픽스처(`app/src/test/resources/ai_reference/`)는 고리 셋의 가운데입니다. **Kotlin ↔ 커밋된 픽스처**는 위의 테스트가 보고, **픽스처를 만든 Python 기준 구현 ↔ 실제 TensorFlow·torch_audioset**은 `AI frontend reference parity` 워크플로(`verify_tensorflow_logmel_parity.py`, `verify_torchaudio_logmel_parity.py`)가 봅니다. 픽스처만 다시 만들어 올려도 두 번째 검사가 돌아야 하므로 — 안 돌면 골든 테스트가 그 새 픽스처에 맞춰 통과합니다 — 그 워크플로의 `paths` 에는 `tools/ai_reference/` 와 함께 픽스처 폴더도 들어 있습니다(#152).
 - 리샘플러는 Python 기준 구현과 44.1·48kHz 모두 오차 1e-5 안으로 맞는지(`CaptureAudioPathTest`), 통과대역과 저지대역 요건을 채우는지 봅니다. 이 비교에 쓰는 짧은 픽스처는 라이선스 오디오 없이 `export_resample_parity_golden.py`로 다시 만들 수 있습니다. 실제 소리로 끝까지 도는 e2e 골든은 원본 오디오의 출처·라이선스·SHA-256을 `realtime_e2e_sources.json`에 적어 두고, 오디오 파일 자체는 커밋하지 않습니다.
 
-**진단 로그** (`debuggable` 빌드만): 분석 결과를 2초에 한 번 `AI_RESULT` 로그로 풀어 남깁니다. 입력 형식(레이트·채널), 16kHz 신호의 RMS·피크·평균, log-mel의 최솟값·최댓값·평균·표준편차, YAMNet top-5, 종류별 점수, Booster 전후의 종류·이름·확신도, 총소리 점수·근거·채택 사유, 후처리의 임계값·확정 상태·연속 횟수입니다. 캡처를 시작할 때는 요청한 형식과 실제로 열린 형식을 한 줄 남깁니다. 배포판(릴리스 APK)에는 남지 않으므로, 배포판을 쓰는 기기에서 볼 때는 개발자 모드(4장)를 씁니다. 개발자 모드가 읽는 `AiClassificationResult`에도 top-5·총소리 근거·판정 이유·경보 신호 승격 여부가 실려 있습니다(#131).
+**진단 로그** (`debuggable` 빌드만): 분석 결과를 2초에 한 번 `AI_RESULT` 로그로 풀어 남깁니다. 실제 사용한 frontend와 Booster 설정·사용 가능 여부, 입력 형식(레이트·채널), 16kHz 신호의 RMS·피크·평균, log-mel의 최솟값·최댓값·평균·표준편차, YAMNet top-5, 종류별 점수, Booster 전후의 종류·이름·확신도, 총소리 점수·근거·채택 사유, 후처리의 임계값·확정 상태·연속 횟수입니다. 캡처를 시작할 때는 요청한 형식과 실제로 열린 형식을 한 줄 남깁니다. 배포판(릴리스 APK)에는 남지 않으므로, 배포판을 쓰는 기기에서 볼 때는 개발자 모드(4장)를 씁니다. 개발자 모드가 읽는 `AiClassificationResult`에도 frontend·Booster 설정, top-5·총소리 근거·판정 이유·경보 신호 승격 여부가 실려 있습니다(#131, #160).
 
 ---
 
@@ -241,7 +250,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 ```text
 DANGER ● Alarm 0.12
-thr Y   pre ambient   bst N 0.50   prev N   age 0.2s
+path qualcomm   thr Y   pre ambient   bst disabled   prev N   age 0.2s
 why game_mix_or_strong_danger   ev 0.00   cue Y
 lvl 0.14   shown Y   65ms (12/48/3)
 1 Air horn, truck horn       0.12
@@ -257,6 +266,7 @@ lvl 0.14   shown Y   65ms (12/48/3)
 
 | 표시 | 없으면 생기는 오독 |
 |---|---|
+| `path`·`bst disabled/unavailable` | 어느 frontend와 Booster 조건으로 나온 결과인지, Booster를 일부러 끈 것인지 모델을 못 불러온 것인지 구분할 수 없습니다 |
 | `thr` (`meetsThreshold`) | 임계값을 못 넘는 동안 확정값이 **전부 얼어붙습니다**. 이게 없으면 "AI가 못 잡는다"와 "임계값을 못 넘는다"를 구분할 수 없습니다 |
 | `age` (결과가 나온 뒤 흐른 시간) | 무음이면 추론을 건너뛰고 마지막 결과를 그대로 들고 있습니다. 나이가 자라는 것이 "지금 추론이 돌지 않는다"는 신호입니다 |
 | `pre`·`bst` (Booster 전 종류, 채택 여부·점수) | Booster가 채택되면 종류뿐 아니라 **이름까지 총소리 클래스명으로 갈아치웁니다**. 이게 없으면 모델이 하지 않은 말을 모델 탓으로 채점합니다 |
@@ -333,7 +343,7 @@ lvl 0.14   shown Y   65ms (12/48/3)
 - 실행 상태(`isServiceRunning`), AI 사용 가능 여부(`aiAvailable`), 화면 꺼짐으로 쉬는 중(`isCapturePaused`), 소리를 받을 수 없는 중(`isCaptureBlocked`)은 캡처 서비스가 알려주는 값이라 저장하지 않습니다.
 - 마지막으로 뜻하지 않게 꺼진 이유(`lastUnexpectedStop`)는 캡처 서비스가 알려주지만, 프로세스가 끝난 뒤 앱을 열어도 홈에서 보이도록 이름으로 저장합니다. 모르는 이름(항목을 바꾼 뒤)이면 안내가 없는 것으로 봅니다. 읽기·쓰기(`loadLastUnexpectedStop`·`putLastUnexpectedStop`)는 `StopNoticeSettingsTest`가 확인합니다.
 - "화면이 꺼지면 일시정지"의 기본값은 `PAUSE_WHEN_SCREEN_OFF_DEFAULT` 한 곳에만 둡니다. 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 모르고 지나갑니다(`ScreenOffPauseTest`).
-- 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다.
+- 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다. frontend·Booster A/B 선택은 저장하지만 개발자 모드가 꺼져 있으면 `AiDiagnosticConfig.DEFAULT`만 파이프라인에 넘깁니다. `AiDiagnosticSettingTest`가 기본값·저장 복원·이 안전 복귀를 지킵니다.
 - "그래픽 덜 자주 그리기"(`reducedFrameRate`, 4장)의 기본값은 `REDUCED_FRAME_RATE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 소리를 눈으로 보는 앱이라 부드러운 쪽이 기본이고, 오래 켜 두는 사람이 고릅니다. 저장·복원과 엔진의 프레임 수까지 이어지는 배선은 `ReducedFrameRateTest`가 봅니다.
 - 테스트는 `SettingsManager.load(SharedPreferences)`에 메모리 가짜 프리퍼런스를 넣어 값을 세웁니다(`init(context)`는 "처음 한 번만" 규칙을 지키고 이 함수를 부릅니다). 이 객체는 싱글턴이라 값을 바꾼 테스트는 `@After`에서 기본값으로 되돌립니다.
 

@@ -21,6 +21,46 @@ import kotlin.math.max
 class RealtimeAiPipelineInstrumentedTest {
 
     @Test
+    fun developerConfig_switchesFrontendAndBypassesBoosterOnNextTick() {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext
+        val test = InstrumentationRegistry.getInstrumentation().context
+        val stereo = loadF32(test.assets.open("ai_reference/e2e_gunshot_stereo44100.bin"))
+        var config = AiDiagnosticConfig.DEFAULT
+
+        RealtimeAiPipeline.create(
+            app,
+            captureSampleRate = 44100,
+            channels = 2,
+            diagnosticConfigProvider = { config }
+        ).use { pipeline ->
+            ingest(pipeline, stereo)
+            val current = requireNotNull(pipeline.runTickForTest())
+
+            config = AiDiagnosticConfig(
+                frontendMode = AiFrontendMode.QUALCOMM_SOURCE,
+                boosterEnabled = false
+            )
+            ingest(pipeline, stereo)
+            val qualcommWithoutBooster = requireNotNull(pipeline.runTickForTest())
+
+            assertEquals(AiFrontendMode.CURRENT, current.frontendMode)
+            assertTrue(current.boosterEnabled)
+            assertTrue(current.boosterAvailable)
+
+            assertEquals(AiFrontendMode.QUALCOMM_SOURCE, qualcommWithoutBooster.frontendMode)
+            assertEquals(false, qualcommWithoutBooster.boosterEnabled)
+            assertEquals(false, qualcommWithoutBooster.boosterAvailable)
+            assertTrue(qualcommWithoutBooster.gunshotScore.isNaN())
+            assertEquals(0.0, qualcommWithoutBooster.result.boosterMs, 0.0)
+            assertEquals("booster_disabled", qualcommWithoutBooster.boosterReason)
+            assertTrue(
+                "the two frontend contracts must not silently use the same output",
+                !current.logMel.contentEquals(qualcommWithoutBooster.logMel)
+            )
+        }
+    }
+
+    @Test
     fun e2e_stereo44100_matchesPythonReference() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
         val test = InstrumentationRegistry.getInstrumentation().context
@@ -38,13 +78,7 @@ class RealtimeAiPipelineInstrumentedTest {
                 val expectedProbs = loadF32(test.assets.open("ai_reference/e2e_${name}_probs.bin"))
                 val exp = cases.getJSONObject(name)
 
-                var offset = 0
-                while (offset < stereo.size) {
-                    val n = minOf(1024, stereo.size - offset)
-                    val chunk = stereo.copyOfRange(offset, offset + n)
-                    pipeline.ingestInterleavedForTest(chunk, n)
-                    offset += n
-                }
+                ingest(pipeline, stereo)
 
                 val tick = pipeline.runTickForTest()
                 if (name == "silence") {
@@ -102,6 +136,15 @@ class RealtimeAiPipelineInstrumentedTest {
         val out = FloatArray(bytes.size / 4)
         ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(out)
         return out
+    }
+
+    private fun ingest(pipeline: RealtimeAiPipeline, stereo: FloatArray) {
+        var offset = 0
+        while (offset < stereo.size) {
+            val count = minOf(1024, stereo.size - offset)
+            pipeline.ingestInterleavedForTest(stereo.copyOfRange(offset, offset + count), count)
+            offset += count
+        }
     }
 
     private fun maxAbs(a: FloatArray, b: FloatArray): Float {
