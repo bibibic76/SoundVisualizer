@@ -208,11 +208,12 @@ English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español ·
 - **APK 받기**: 실행 결과 화면 아래 **Artifacts** 의 `SoundVisualizer-arm64-run번호` 를 받아 압축을 풀면 폰용 APK 가 있습니다. 14일간 보관됩니다.
 - **Lint**: 구버전 안드로이드에 없는 API 호출, 권한 확인 누락 같은 문제를 기기 없이 찾습니다.
   - 새로 생긴 **오류**가 있으면 CI 가 실패하고, **경고**는 개수와 위치만 표시합니다. PR 의 파일 화면에도 해당 줄에 표시됩니다.
-  - 이미 알고 미뤄둔 문제(라이브러리 업데이트 알림)는 기준선 `app/lint-baseline.xml` 에 기록되어 있어 실패로 치지 않습니다.
+  - 기준선(`lint-baseline.xml`)은 쓰지 않습니다. 미뤄둔 문제를 덮어 두면 상황이 나빠져도 같은 메시지로 계속 덮이기 때문입니다(#154). 일부러 그렇게 둔 것은 그 자리에 `//noinspection` 과 이유를 적습니다.
+  - 그래서 지금은 `targetSdk` 가 최신이 아니라는 경고 하나가 늘 보입니다. 사실이고, `targetSdk` 를 37 로 올리면(#155) 사라집니다.
   - 전체 리포트는 **Artifacts** 의 `lint-report-run번호` 에 있습니다. 로컬에서는 `./gradlew lintDebug` 로 같은 검사를 돌립니다.
 - **릴리스 APK**: `main` 에 `v1.0.0` 같은 버전 태그를 push 하면 그 코드로 폰용 APK 를 빌드해 [Releases](https://github.com/bibibic76/SoundVisualizer/releases) 에 붙입니다. 이 워크플로가 생기기 전 커밋에 단 태그는 **Actions → 릴리스 APK → Run workflow** 에서 태그 이름을 넣어 돌립니다.
 - **계측 테스트**는 기기가 필요해서 CI 에서는 돌리지 않습니다.
-  - 화면 여백 테스트(`LauncherInsetsInstrumentedTest`)는 Compose 테스트 도구를 씁니다. 지금 쓰는 Espresso 3.6.1 이 API 37 기기를 지원하지 않아 거기서는 실패합니다. Android 16(API 36)까지는 돕니다.
+  - 화면 여백 테스트(`LauncherInsetsInstrumentedTest`)는 Compose 테스트 도구를 씁니다. Espresso 3.6.1 은 API 37 기기에서 돌지 못했는데, 3.7.0 으로 올린 뒤(#141) Android 10·16 과 API 37 에서 모두 돕니다.
 
 #### 같은 서명으로 빌드하기 (저장소 관리자가 한 번 설정)
 

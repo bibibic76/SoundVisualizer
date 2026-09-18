@@ -138,9 +138,11 @@ android {
     }
 
     lint {
-        // 이미 있던 문제는 기준선에 기록해 두고, 새로 생긴 문제만 잡는다.
-        // 기준선에 있는 문제를 고쳤으면 lint-baseline.xml 을 지우고 lintDebug 를 한 번 돌려 다시 만든다.
-        baseline = file("lint-baseline.xml")
+        // 기준선(lint-baseline.xml)은 쓰지 않는다. 덮고 있던 것이 두 건뿐이었고 둘 다 "아직 못 고친 문제"가
+        // 아니라 우리가 내린 결정이었다(#154). 결정은 결정이 있는 자리에 적는다 — ONNX Runtime 고정은
+        // 아래 의존성 줄의 //noinspection 에, targetSdk 를 올리는 일은 이슈 #155 에 있다.
+        // 특히 OldTargetApi 는 메시지에 버전 숫자가 없어서, 한 번 기준선에 넣으면 안드로이드가 몇 번 더
+        // 올라가도 같은 메시지로 계속 덮인다. targetSdk 가 34 에 머문 것을 아무도 몰랐던 #138 이 그 경로다.
         // 오류만 빌드를 실패시킨다. 경고는 CI 실행 화면에 개수와 위치로만 보인다.
         abortOnError = true
         warningsAsErrors = false
@@ -188,7 +190,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
 
     // ONNX Runtime Android — loads yamnet.onnx with its yamnet.data external weights as-is
-    // 버전을 올리면 추론 결과가 달라질 수 있어 AI 담당이 정한다(#140).
+    // 버전을 올리면 추론 결과가 달라질 수 있어 AI 담당이 정한다(#140). 그래서 lint 의 업데이트 알림도
+    // 여기서만 끈다. 다른 의존성의 알림은 살아 있어야 하므로 검사 자체를 끄지는 않는다(#154).
+    //noinspection NewerVersionAvailable
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
 
     testImplementation("junit:junit:4.13.2")
