@@ -19,7 +19,7 @@ graph TD
 
 | 단계 | 코드 | 언어 |
 |---|---|---|
-| 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
+| 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors` (화면), `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
 | 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
@@ -412,7 +412,7 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 
 - 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경·상태 표시줄·내비게이션 바를 `@color/app_background`(#2A2C31)로 칠합니다. 바 색은 첫 화면이 뜨기 전의 시작 창에서만 쓰입니다(Android 14 이하). 첫 화면이 뜨면 아래처럼 바가 투명해집니다.
 - Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`). 아이콘은 런처 아이콘을 그대로 씁니다.
-- `app_background`는 Compose의 `BgColor`(`MainActivity.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
+- `app_background`는 Compose의 `BgColor`(`UiColors.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
 - **화면은 시스템 바 밑까지 그립니다(edge-to-edge, #138).**
   - `MainActivity`가 `enableEdgeToEdge`로 바를 투명하게 합니다.
   - `LauncherApp`은 탭과 내용을 `safeDrawingPadding`으로 상태 표시줄·내비게이션 바·카메라 구멍에서 비켜 놓습니다. 비켜 놓은 자리에는 바깥 `Surface`가 칠한 앱 배경색이 보입니다.

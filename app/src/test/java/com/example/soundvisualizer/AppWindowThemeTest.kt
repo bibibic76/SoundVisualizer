@@ -30,7 +30,7 @@ class AppWindowThemeTest {
         val colors = parseElements("values/colors.xml", "color")
         val value = colors[APP_BACKGROUND] ?: throw AssertionError("values/colors.xml 에 $APP_BACKGROUND 가 없습니다")
         assertEquals(
-            "values/colors.xml 의 $APP_BACKGROUND 를 MainActivity.kt 의 BgColor 와 같게 맞추세요",
+            "values/colors.xml 의 $APP_BACKGROUND 를 UiColors.kt 의 BgColor 와 같게 맞추세요",
             BgColor.toArgb(),
             parseColor(value)
         )
