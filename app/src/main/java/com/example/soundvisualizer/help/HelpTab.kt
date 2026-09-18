@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,7 +39,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -336,11 +339,19 @@ private fun LicenseDialog(onDismiss: () -> Unit) {
         text = {
             // 고지 파일은 고정폭 글꼴 기준으로 줄을 맞춰 두었다. 삼성 폰은 시스템 monospace 를 비례폭으로 그려서
             // 구분선과 들여쓰기가 어긋나므로 앱에 넣은 글꼴을 쓴다(#162).
-            Text(
-                text,
-                fontSize = 11.sp, lineHeight = 15.sp, fontFamily = AppMonospace, color = SecondaryTextColor,
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            )
+            // 80칸짜리 구분선은 이 창에서 두세 줄로 꺾이므로 창에 들어가는 칸 수로 줄여 한 줄로 그린다(#167).
+            // 칸 수는 실제 글꼴로 '=' 100개의 폭을 재서 한 글자 폭을 구해 창 폭으로 나눈다.
+            val style = TextStyle(fontSize = 11.sp, lineHeight = 15.sp, fontFamily = AppMonospace, color = SecondaryTextColor)
+            val measurer = rememberTextMeasurer()
+            BoxWithConstraints {
+                val hundredWidth = remember(measurer, style) { measurer.measure("=".repeat(100), style).size.width }
+                val columns = if (hundredWidth > 0) (constraints.maxWidth * 100L / hundredWidth).toInt() else 0
+                Text(
+                    licenseDisplayText(text, columns),
+                    style = style,
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.help_close), color = AccentColor) }
