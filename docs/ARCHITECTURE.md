@@ -195,6 +195,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - `tools/ai_reference/`: 전처리·추론의 Python 기준 구현과 골든 데이터 생성 스크립트
 - 유닛 테스트(`app/src/test/.../ai/`): 전처리 골든 비교, 분류 매핑, Booster 판정, 후처리
 - 계측 테스트(`app/src/androidTest/.../ai/`): 실제 ONNX 모델 추론 비교 (기기 필요)
+- 골든 픽스처(`app/src/test/resources/ai_reference/`)는 고리 셋의 가운데입니다. **Kotlin ↔ 커밋된 픽스처**는 위의 테스트가 보고, **픽스처를 만든 Python 기준 구현 ↔ 실제 TensorFlow·torch_audioset**은 `AI frontend reference parity` 워크플로(`verify_tensorflow_logmel_parity.py`, `verify_torchaudio_logmel_parity.py`)가 봅니다. 픽스처만 다시 만들어 올려도 두 번째 검사가 돌아야 하므로 — 안 돌면 골든 테스트가 그 새 픽스처에 맞춰 통과합니다 — 그 워크플로의 `paths` 에는 `tools/ai_reference/` 와 함께 픽스처 폴더도 들어 있습니다(#152).
 - 리샘플러는 Python 기준 구현과 44.1·48kHz 모두 오차 1e-5 안으로 맞는지(`CaptureAudioPathTest`), 통과대역과 저지대역 요건을 채우는지 봅니다. 이 비교에 쓰는 짧은 픽스처는 라이선스 오디오 없이 `export_resample_parity_golden.py`로 다시 만들 수 있습니다. 실제 소리로 끝까지 도는 e2e 골든은 원본 오디오의 출처·라이선스·SHA-256을 `realtime_e2e_sources.json`에 적어 두고, 오디오 파일 자체는 커밋하지 않습니다.
 
 **진단 로그** (`debuggable` 빌드만): 분석 결과를 2초에 한 번 `AI_RESULT` 로그로 풀어 남깁니다. 입력 형식(레이트·채널), 16kHz 신호의 RMS·피크·평균, log-mel의 최솟값·최댓값·평균·표준편차, YAMNet top-5, 종류별 점수, Booster 전후의 종류·이름·확신도, 총소리 점수·근거·채택 사유, 후처리의 임계값·확정 상태·연속 횟수입니다. 캡처를 시작할 때는 요청한 형식과 실제로 열린 형식을 한 줄 남깁니다. 배포판(릴리스 APK)에는 남지 않으므로, 배포판을 쓰는 기기에서 볼 때는 개발자 모드(4장)를 씁니다. 개발자 모드가 읽는 `AiClassificationResult`에도 top-5·총소리 근거·판정 이유·경보 신호 승격 여부가 실려 있습니다(#131).

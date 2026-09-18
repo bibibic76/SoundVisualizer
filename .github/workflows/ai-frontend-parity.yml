@@ -3,8 +3,14 @@ name: AI frontend reference parity
 on:
   workflow_dispatch:
   pull_request:
+    # 전처리 정확성은 고리 세 개로 이어져 있다.
+    #   Kotlin ↔ 커밋된 fixture(app/src/test/resources) ↔ 실제 TensorFlow·torch_audioset
+    # 첫 고리는 app 의 golden 테스트가, 마지막 고리는 이 워크플로가 본다. 그래서 fixture 만 다시
+    # 생성해 올려도 이 검사가 돌아야 한다. 안 돌면 golden 테스트가 그 새 fixture 에 맞춰 통과하므로,
+    # 상류와 어긋난 값이 초록불을 받고 들어온다 (#152).
     paths:
       - "tools/ai_reference/**"
+      - "app/src/test/resources/ai_reference/**"
       - ".github/workflows/ai-frontend-parity.yml"
 
 concurrency:
