@@ -1,6 +1,7 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
+import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier.TopClassHit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -35,7 +36,9 @@ class AiDebugTextTest {
         top5: List<TopClassHit> = emptyList(),
         gunshotEvidence: Float = 0f,
         boosterReason: String = "",
-        dangerCuePromoted: Boolean = false
+        dangerCuePromoted: Boolean = false,
+        frontendMode: AiFrontendMode = AiFrontendMode.CURRENT,
+        boosterEnabled: Boolean = true
     ) = AiClassificationResult(
         coarse = coarse,
         display = display,
@@ -54,7 +57,9 @@ class AiDebugTextTest {
         top5 = top5,
         gunshotEvidence = gunshotEvidence,
         boosterReason = boosterReason,
-        dangerCuePromoted = dangerCuePromoted
+        dangerCuePromoted = dangerCuePromoted,
+        frontendMode = frontendMode,
+        boosterEnabled = boosterEnabled
     )
 
     private fun hit(name: String, probability: Float) = TopClassHit(index = 0, name = name, probability = probability)
@@ -93,15 +98,33 @@ class AiDebugTextTest {
         assertTrue(lines.detail, lines.detail.contains("pre ambient"))
         assertTrue(lines.detail, lines.detail.contains("bst N 0.83"))
         assertTrue(lines.detail, lines.detail.contains("prev Y"))
+        assertTrue(lines.detail, lines.detail.contains("path current"))
     }
 
     @Test
-    fun `부스터가 없으면 점수 자리에 NaN 을 띄우지 않는다`() {
+    fun `부스터 모델이 없으면 점수 자리에 NaN 을 띄우지 않는다`() {
         // boosterAvailable 이 false 면 gunshotScore 는 NaN 이라고 문서화돼 있다.
         val lines = format(result(boosterAvailable = false, gunshotScore = Float.NaN))
 
-        assertTrue(lines.detail, lines.detail.contains("bst off"))
+        assertTrue(lines.detail, lines.detail.contains("bst unavailable"))
         assertTrue("NaN 이 화면에 뜨면 안 된다: ${lines.detail}", !lines.detail.contains("NaN"))
+    }
+
+    @Test
+    fun `선택한 Qualcomm frontend와 비활성화한 Booster를 구분해 보여준다`() {
+        val lines = format(
+            result(
+                frontendMode = AiFrontendMode.QUALCOMM_SOURCE,
+                boosterEnabled = false,
+                boosterAvailable = false,
+                gunshotScore = Float.NaN,
+                boosterReason = "booster_disabled"
+            )
+        )
+
+        assertTrue(lines.detail, lines.detail.contains("path qualcomm"))
+        assertTrue(lines.detail, lines.detail.contains("bst disabled"))
+        assertEquals("why booster_disabled   ev 0.00   cue N", lines.verdict)
     }
 
     @Test

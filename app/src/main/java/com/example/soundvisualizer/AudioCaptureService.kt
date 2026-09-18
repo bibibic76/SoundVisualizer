@@ -332,7 +332,12 @@ class AudioCaptureService : Service() {
         Thread({
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val pipeline = try {
-                RealtimeAiPipeline.create(appContext, rate, channels = 2)
+                RealtimeAiPipeline.create(
+                    appContext,
+                    rate,
+                    channels = 2,
+                    diagnosticConfigProvider = SettingsManager::activeAiDiagnosticConfig
+                )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
                 null

@@ -96,12 +96,13 @@ object AiDebugText {
     private fun detailOf(result: AiClassificationResult, nowMs: Long): String {
         // 부스터가 채택되면 종류뿐 아니라 이름까지 총소리 클래스명으로 갈아치운다. 그래서 pre(부스터 전
         // 종류)와 bst(채택 여부·점수)가 없으면, 모델이 하지 않은 말을 모델 탓으로 채점하게 된다.
-        val booster = if (result.boosterAvailable) {
-            "bst ${yesNo(result.boosterAccepted)} ${twoDecimals(result.gunshotScore)}"
-        } else {
-            "bst off"
+        val booster = when {
+            !result.boosterEnabled -> "bst disabled"
+            result.boosterAvailable -> "bst ${yesNo(result.boosterAccepted)} ${twoDecimals(result.gunshotScore)}"
+            else -> "bst unavailable"
         }
-        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   $booster   " +
+        return "path ${result.frontendMode.diagnosticName}   thr ${yesNo(result.meetsThreshold)}   " +
+            "pre ${result.preBoosterCoarse}   $booster   " +
             "prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
     }
 

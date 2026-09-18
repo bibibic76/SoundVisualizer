@@ -95,6 +95,10 @@
     <!-- settings_section_developer 와 같은 이유로 영어·한국어만 둔다. -->
     <string name="setting_developer_mode" tools:ignore="MissingTranslation">Developer mode</string>
     <string name="setting_developer_mode_desc" tools:ignore="MissingTranslation">Shows what the AI heard — the sound name it reported, how sure it was, and how long it took — in the top-left corner of the overlay, so the team can check how accurate it is. The readout is in English and is not meant for everyday use.</string>
+    <string name="setting_ai_qualcomm_frontend" tools:ignore="MissingTranslation">Qualcomm YAMNet frontend</string>
+    <string name="setting_ai_qualcomm_frontend_desc" tools:ignore="MissingTranslation">Uses the pinned Qualcomm source preprocessing contract instead of the current app preprocessing. This diagnostic choice applies from the next AI result.</string>
+    <string name="setting_ai_booster" tools:ignore="MissingTranslation">Gunshot Booster</string>
+    <string name="setting_ai_booster_desc" tools:ignore="MissingTranslation">Runs the existing Gunshot Booster after YAMNet. Turn it off to inspect the existing YAMNet mapping and post-processing without Booster inference.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
