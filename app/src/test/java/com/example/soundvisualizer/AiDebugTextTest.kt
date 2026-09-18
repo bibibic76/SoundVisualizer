@@ -98,7 +98,9 @@ class AiDebugTextTest {
         assertTrue(lines.detail, lines.detail.contains("pre ambient"))
         assertTrue(lines.detail, lines.detail.contains("bst N 0.83"))
         assertTrue(lines.detail, lines.detail.contains("prev Y"))
-        assertTrue(lines.detail, lines.detail.contains("path current"))
+        // 어느 전처리를 썼는지는 detail 이 아니라 그 전처리 시간이 있는 줄에 둔다(#165).
+        assertTrue(lines.timing, lines.timing.contains("path current"))
+        assertFalse(lines.detail, lines.detail.contains("path"))
     }
 
     @Test
@@ -122,7 +124,7 @@ class AiDebugTextTest {
             )
         )
 
-        assertTrue(lines.detail, lines.detail.contains("path qualcomm"))
+        assertTrue(lines.timing, lines.timing.contains("path qualcomm"))
         assertTrue(lines.detail, lines.detail.contains("bst disabled"))
         assertEquals("why booster_disabled   ev 0.00   cue N", lines.verdict)
     }
@@ -142,6 +144,48 @@ class AiDebugTextTest {
     fun `결과가 나온 뒤 흐른 시간을 보여준다`() {
         assertTrue(format(result(timestampMs = 1_000L), nowMs = 1_200L).detail.contains("age 0.2s"))
         assertTrue(format(result(timestampMs = 1_000L), nowMs = 4_500L).detail.contains("age 3.5s"))
+    }
+
+    @Test
+    fun `오래된 결과의 나이는 짧게 쓴다`() {
+        // 100초가 넘으면 소수점은 뜻이 없고 줄만 길어진다(#165). 경계에서 반올림으로 자리가 늘지 않는지도 본다.
+        fun age(elapsedMs: Long) = format(result(timestampMs = 0L), nowMs = elapsedMs).detail.substringAfter("age ")
+        assertEquals("99.9s", age(99_949L))
+        assertEquals("100s", age(99_950L))
+        assertEquals("999s", age(999_499L))
+        assertEquals("17m", age(999_500L))
+        assertEquals("60m", age(3_600_000L))
+    }
+
+    @Test
+    fun `모든 줄이 HUD 한 줄에 들어간다`() {
+        // 가장 긴 경우를 골라 만든다. 58자를 넘으면 폭 411dp 폰에서 두 줄로 꺾인다(#165).
+        val longestName = "Livestock, farm animals, working animals"   // YAMNet 클래스 이름 중 가장 긴 것(40자)
+        val worst = listOf(
+            // 부스터 모델이 없고, 한참 조용해 결과가 오래된 경우. detail 이 가장 길다.
+            result(
+                coarse = AiClassification.AMBIENT, display = longestName, confidence = 0.41f,
+                preBoosterCoarse = AiClassification.AMBIENT, boosterAvailable = false, gunshotScore = Float.NaN,
+                meetsThreshold = false, timestampMs = 0L,
+                frontendMode = AiFrontendMode.QUALCOMM_SOURCE,
+                boosterReason = "blocked_speech_silence_or_low_conf score=0.1",
+                preprocessMs = 400.0, yamnetMs = 800.0, boosterMs = 34.0, totalMs = 1234.0,
+                top5 = List(5) { hit(longestName, 0.12f) }
+            ),
+            // 부스터를 일부러 끈 경우.
+            result(display = longestName, boosterEnabled = false, boosterAvailable = false, gunshotScore = Float.NaN)
+        )
+        for (nowMs in listOf(200L, 99_949L, 999_499L, 59_999_999L)) {
+            for (r in worst) {
+                val lines = format(r, nowMs = nowMs, level = 1f)
+                for (line in listOf(lines.detail, lines.verdict, lines.timing) + lines.top5) {
+                    assertTrue("${line.length}자: $line", line.length <= AiDebugText.HUD_MAX_COLUMNS)
+                }
+                // 첫 줄은 종류·이름·확신도를 따로 그리고 사이에 간격(6dp·점 8dp·6dp·8dp = 28dp, 약 4.2자)이 있다.
+                val firstRow = lines.coarse.length + lines.label.length + lines.confidence.length + 5
+                assertTrue("첫 줄 약 ${firstRow}자", firstRow <= AiDebugText.HUD_MAX_COLUMNS)
+            }
+        }
     }
 
     @Test

@@ -250,9 +250,9 @@ mapper·임계값·히스테리시스·Booster 모델을 바꾸지 않습니다.
 
 ```text
 DANGER ● Alarm 0.12
-path qualcomm   thr Y   pre ambient   bst disabled   prev N   age 0.2s
+thr Y   pre ambient   bst disabled   prev N   age 0.2s
 why game_mix_or_strong_danger   ev 0.00   cue Y
-lvl 0.14   shown Y   65ms (12/48/3)
+lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 1 Air horn, truck horn       0.12
 2 Sound effect               0.10
 3 Buzzer                     0.09
@@ -284,6 +284,7 @@ lvl 0.14   shown Y   65ms (12/48/3)
 - Android 12 이상에서는 창 알파(약 0.8)가 곱해지므로 판은 **완전히 불투명한** 검정으로 둡니다. 안쪽에 반투명을 쓰면 알파가 두 번 곱해져 흐려집니다.
 - 화면 읽어주기는 이 표시를 건너뜁니다(`clearAndSetSemantics`). 개발용 글자라 정작 이 앱 사용자에게는 소음입니다.
 - 줄 만들기는 `AiDebugText`라는 순수 로직으로 빼 기기 없이 검사합니다(`AiDebugTextTest`). NaN 점수, 확정 이름이 빈 경우, 뒤로 간 시계, 긴 top-5 이름, 그리고 앱 언어 때문에 숫자가 아랍 숫자로 나오는 것까지 고정합니다.
+- **한 줄은 58자까지입니다**(`AiDebugText.HUD_MAX_COLUMNS`). 폭 411dp 폰을 글꼴 크기 기본값으로 쓸 때 글자 영역이 383dp 이고, 고정폭 글꼴 11sp 는 글자당 6.6dp 입니다. 넘으면 줄이 두 줄로 꺾여 읽기 어려워집니다. 그래서 어느 전처리를 썼는지(`path`)는 detail 줄이 아니라 그 전처리 시간이 있는 줄 끝에 두고, 100초가 넘은 결과의 나이는 `123s`·`17m` 처럼 짧게 씁니다(#165). `AiDebugTextTest` 가 가장 긴 경우(부스터 모델 없음, 가장 긴 판정 이유와 클래스 이름, 느린 기기의 소요시간)로 모든 줄을 재어 봅니다.
 - 글꼴은 **앱에 넣은 고정폭 글꼴**(`AppMonospace`, `UiFonts.kt`)입니다. 시스템의 `FontFamily.Monospace` 를 쓰면 삼성 One UI 가 비례폭으로 덮어써서, 값이 바뀔 때 자리가 흔들리고 top-5 확률이 한 열에 서지 않습니다. Galaxy S25+ 에서 `lvl 0.00` 의 글자 간격이 11.5~19px 로 들쭉날쭉했고, 같은 코드가 Pixel(AOSP) 에서는 17px 로 고르게 나왔습니다(#162). 넣은 글꼴은 AOSP 의 `DroidSansMono.ttf` 를 고치지 않은 것이고, 도움말의 라이선스 고지와 제보용 기기 정보도 같은 글꼴을 씁니다. `AppMonospaceFontTest` 가 이 글꼴이 정말 고정폭인지, HUD 가 찍을 수 있는 글자(YAMNet 클래스 이름 521개, 말줄임표 포함)가 모두 들어 있는지 확인합니다. 빠진 글자는 그 글자만 시스템 글꼴로 그려져 그 줄이 다시 비례폭이 됩니다.
 
 ### 한 프레임의 계산 (`VisualizerEngine.tick`)
