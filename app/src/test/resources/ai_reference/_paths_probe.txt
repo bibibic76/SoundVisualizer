@@ -1,2 +1,0 @@
-이 파일은 parity 워크플로의 paths 필터를 확인하려고 잠시 올린 것이다 (#152).
-fixture 폴더만 바뀐 PR 에서 "AI frontend reference parity" 가 도는지 보고, 같은 PR 안에서 지운다.
