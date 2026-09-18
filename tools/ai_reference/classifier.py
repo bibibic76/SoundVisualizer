@@ -44,6 +44,7 @@ class InferenceResult:
     inference_time_ms: float
     top_k_summary: Optional[str] = None
     adopted_danger_from_booster: bool = False
+    danger_cue_promoted: bool = False
 
 
 @dataclass
@@ -67,7 +68,7 @@ class ReferenceClassifier:
     DANGER_IMMEDIATE_SWITCH_CONFIDENCE = 0.28
     DANGER_EXIT_RELAXED_CONFIDENCE = 0.27
 
-    def __init__(self, model_dir: str | Path):
+    def __init__(self, model_dir: str | Path, load_booster: bool = True):
         self.model_dir = Path(model_dir)
         self._hann = create_hann_window(400)
         self._mel = create_mel_filter_bank()
@@ -102,7 +103,7 @@ class ReferenceClassifier:
         self._booster_in = None
         self._booster_out = None
         booster_path = self.model_dir / "gunshot_booster.onnx"
-        if booster_path.is_file():
+        if load_booster and booster_path.is_file():
             self._booster = ort.InferenceSession(
                 str(booster_path), sess_options=so, providers=["CPUExecutionProvider"]
             )
@@ -225,18 +226,18 @@ class ReferenceClassifier:
         coarse = self._vote_coarse_from_top5(top_idx, top_probs, 3)
         coarse_conf = conf
         danger_evidence = self._sum_coarse_probability_from_top5(top_idx, top_probs, 5, "danger")
-        has_strong_danger_cue = self._has_strong_danger_cue_in_top5(top_idx, 5)
+        has_strong_danger_cue = self._has_strong_danger_cue_in_top5(top_idx, 5, top_probs)
         has_critical_danger_cue = self._has_critical_danger_cue_in_top5(top_idx, 5)
+        has_gunshot_cue = self._has_gunshot_cue_in_top5(top_idx, 5)
         yamnet_coarse = coarse
         adopted_danger_from_booster = False
+        danger_cue_promoted = False
         gunshot_score = None
         booster_reason = "booster_unavailable"
 
         if self._booster is not None:
             gunshot_score = self._predict_gunshot_booster_score(probs)
             gunshot_evidence = self._sum_gunshot_probability_from_top5(top_idx, top_probs, 5)
-            has_gunshot_cue = self._has_gunshot_cue_in_top5(top_idx, 5)
-
             block_booster = (
                 yamnet_coarse == "speech"
                 or self._is_speech_like_display(display)
@@ -253,7 +254,7 @@ class ReferenceClassifier:
                     f"gunshot_cue score={gunshot_score:.4f} evidence={gunshot_evidence:.4f} adopt={adopt}"
                 )
             elif self._is_game_mix_mask_display(display) or has_strong_danger_cue:
-                adopt = gunshot_score >= 0.50 or (gunshot_score >= 0.40 and gunshot_evidence >= 0.04)
+                adopt = gunshot_score >= 0.40 and gunshot_evidence >= 0.04
                 booster_reason = (
                     f"game_mix_or_strong_danger score={gunshot_score:.4f} "
                     f"evidence={gunshot_evidence:.4f} adopt={adopt}"
@@ -274,8 +275,35 @@ class ReferenceClassifier:
                     display = self._class_names[gun_idx]
                     coarse_conf = max(coarse_conf, gun_prob)
 
+        block_promotion = (
+            yamnet_coarse == "speech"
+            or self._is_speech_like_display(display)
+            or self._is_silence_like_display(display)
+            or conf < 0.12
+        )
+        if (
+            not adopted_danger_from_booster
+            and not block_promotion
+            and has_strong_danger_cue
+            and not has_gunshot_cue
+        ):
+            candidates = [
+                (int(top_idx[i]), float(top_probs[i]))
+                for i in range(5)
+                if int(top_idx[i]) >= 0
+                and self._is_strong_danger_keyword(self._class_names[int(top_idx[i])])
+                and not self._is_gunshot_keyword(self._class_names[int(top_idx[i])])
+            ]
+            if candidates:
+                max_index, _ = max(candidates, key=lambda item: item[1])
+                coarse = "danger"
+                display = self._class_names[max_index]
+                danger_cue_promoted = True
+
         effective_threshold = confidence_threshold
-        if coarse == "danger" and (has_strong_danger_cue or has_critical_danger_cue or adopted_danger_from_booster):
+        if coarse == "danger" and danger_cue_promoted:
+            effective_threshold = min(effective_threshold, 0.12)
+        elif coarse == "danger" and (has_strong_danger_cue or has_critical_danger_cue or adopted_danger_from_booster):
             effective_threshold = min(effective_threshold, 0.18 if adopted_danger_from_booster else 0.20)
         elif coarse == "speech":
             effective_threshold = max(effective_threshold, 0.25)
@@ -295,6 +323,7 @@ class ReferenceClassifier:
             inference_time_ms=float(infer_ms),
             top_k_summary=top_k,
             adopted_danger_from_booster=bool(adopted_danger_from_booster),
+            danger_cue_promoted=bool(danger_cue_promoted),
         )
 
         diag["top5"] = [
@@ -307,6 +336,7 @@ class ReferenceClassifier:
         diag["gunshot_score"] = None if gunshot_score is None else float(gunshot_score)
         diag["booster_accepted"] = bool(adopted_danger_from_booster)
         diag["booster_reason"] = booster_reason
+        diag["danger_cue_promoted"] = bool(danger_cue_promoted)
         diag["effective_threshold"] = float(effective_threshold)
         diag["danger_evidence"] = float(danger_evidence)
 
@@ -374,7 +404,7 @@ class ReferenceClassifier:
     ) -> Tuple[InferenceResult, Optional[FrameTrace], Dict[str, Any]]:
         """
         One-shot path matching realtime preprocess:
-        mono@captureSR → linear resample to 15600@16k → PredictFromMono16k → optional hysteresis.
+        mono@captureSR → FIR anti-aliased resample to 15600@16k → PredictFromMono16k → optional hysteresis.
         """
         mono_capture = np.asarray(mono_capture, dtype=np.float32).reshape(-1)
         need = capture_samples_for_one_yamnet_window(capture_sample_rate)
@@ -578,10 +608,11 @@ class ReferenceClassifier:
                 return True
         return False
 
-    def _has_strong_danger_cue_in_top5(self, top_indices, k: int) -> bool:
+    def _has_strong_danger_cue_in_top5(self, top_indices, k: int, top_probs=None) -> bool:
         for idx in range(min(5, k)):
             i = int(top_indices[idx])
-            if i >= 0 and self._is_strong_danger_keyword(self._class_names[i]):
+            probability = float(top_probs[idx]) if top_probs is not None else 1.0
+            if i >= 0 and probability >= 0.05 and self._is_strong_danger_keyword(self._class_names[i]):
                 return True
         return False
 
@@ -659,6 +690,8 @@ class ReferenceClassifier:
         if self._is_gunshot_keyword(name):
             return True
         s = name.lower()
+        if "alarm clock" in s:
+            return False
         return any(k in s for k in ("explosion", "fireworks", "firecracker", "siren", "alarm"))
 
     def _is_critical_danger_keyword(self, name: str) -> bool:

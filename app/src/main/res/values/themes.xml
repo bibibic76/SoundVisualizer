@@ -8,9 +8,66 @@
     -->
     <style name="Base.Theme.SoundVisualizer" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/app_background</item>
-        <!-- Compose 테마(SoundVisualizerTheme)가 칠하는 상태 표시줄 색을 미리 맞춰, 첫 화면이 뜰 때 색이 바뀌지 않게 한다. -->
+        <!--
+            첫 화면이 뜨면 MainActivity 가 바를 투명하게 바꿔 앱 배경이 비치게 한다(enableEdgeToEdge).
+            그 전의 시작 창도 바가 같은 색이어야 켜는 순간 바의 색이 바뀌지 않는다. (Android 14 이하에서만 쓰인다.
+            Android 15 이상은 이 앱의 창을 처음부터 투명한 바로 그리고, 그 밑에 창 배경이 보인다.)
+        -->
         <item name="android:statusBarColor">@color/app_background</item>
+        <item name="android:navigationBarColor">@color/app_background</item>
     </style>
 
     <style name="Theme.SoundVisualizer" parent="Base.Theme.SoundVisualizer" />
+
+    <!--
+        빠른 설정 타일이 여는 투명 화면(tile/StartVisualizerActivity). 보던 게임·영상 위에 권한 안내 창만 띄운다.
+        옛 플랫폼 테마(Theme.Translucent.NoTitleBar)는 시스템 바 배경을 직접 그리지 않아, 안내 창이 떠 있는 동안
+        위아래 바가 검게 칠해졌다. Material 테마는 바 배경을 창이 그리므로, 그 색을 투명하게 두면 보던 앱이 비친다(#142).
+        나머지 항목은 옛 투명 테마가 하던 일(투명 배경, 창 전환 애니메이션 없음)을 그대로 옮긴 것이다.
+    -->
+    <style name="Theme.SoundVisualizer.Translucent" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <!-- backgroundDimEnabled 는 두지 않는다. 안내 창(Compose 대화 상자)이 이 값을 물려받아, 끄면 창 뒤가 어두워지지 않는다. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--
+        실행 중 알림에서 모드를 고르는 칩 하나(notification_modes.xml).
+        네 개가 가로 폭을 똑같이 나눠 가지므로 너비는 0dp + weight 1 이다.
+        누르는 자리는 48dp 아래로 내려가지 않게 한다. 게임 위에서 급하게 누르는 버튼이다.
+        글자와 배경색을 왜 고정하는지는 colors.xml 의 notification_chip_* 주석에 적어 두었다.
+    -->
+    <style name="NotificationModeChipBase">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginEnd">6dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+    </style>
+
+    <!-- Android 11 이하에서 쓰는 칩. 고른 칩 표시는 AudioCaptureService 가 배경과 글자색을 직접 바꿔서 한다. -->
+    <style name="NotificationModeChip" parent="NotificationModeChipBase">
+        <item name="android:background">@drawable/notification_mode_chip_off</item>
+        <item name="android:textColor">@color/notification_chip_text_off</item>
+    </style>
+
+    <!--
+        Android 12 이상에서 쓰는 칩. 고른 칩 표시가 `state_checked` 로 정해지므로, 누른 즉시 알림을 그리는
+        쪽에서 바뀐다. 라디오 동그라미는 지우고 칩 모양만 남긴다.
+    -->
+    <style name="NotificationModeChipButton" parent="NotificationModeChipBase">
+        <item name="android:background">@drawable/notification_mode_chip</item>
+        <item name="android:textColor">@color/notification_mode_chip_text</item>
+        <item name="android:button">@null</item>
+    </style>
 </resources>

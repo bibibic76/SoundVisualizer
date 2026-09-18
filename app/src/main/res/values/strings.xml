@@ -90,9 +90,15 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause while the screen is off</string>
     <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off.</string>
+    <string name="setting_reduced_frame_rate">Draw the graphic less often</string>
+    <string name="setting_reduced_frame_rate_desc">Redraws the graphic 30 times a second instead of 60. It saves battery while you leave the app running for a long time, but the movement is less smooth. The sound is still picked up just as often.</string>
     <!-- settings_section_developer 와 같은 이유로 영어·한국어만 둔다. -->
     <string name="setting_developer_mode" tools:ignore="MissingTranslation">Developer mode</string>
     <string name="setting_developer_mode_desc" tools:ignore="MissingTranslation">Shows what the AI heard — the sound name it reported, how sure it was, and how long it took — in the top-left corner of the overlay, so the team can check how accurate it is. The readout is in English and is not meant for everyday use.</string>
+    <string name="setting_ai_qualcomm_frontend" tools:ignore="MissingTranslation">Qualcomm YAMNet frontend</string>
+    <string name="setting_ai_qualcomm_frontend_desc" tools:ignore="MissingTranslation">Uses the pinned Qualcomm source preprocessing contract instead of the current app preprocessing. This diagnostic choice applies from the next AI result.</string>
+    <string name="setting_ai_booster" tools:ignore="MissingTranslation">Gunshot Booster</string>
+    <string name="setting_ai_booster_desc" tools:ignore="MissingTranslation">Runs the existing Gunshot Booster after YAMNet. Turn it off to inspect the existing YAMNet mapping and post-processing without Booster inference.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
@@ -146,6 +152,8 @@
     <string name="notification_title" translatable="false">SoundVisualizer</string>
     <string name="notification_text">Visualizing sound.</string>
     <string name="notification_stop">Stop</string>
+    <!-- %1$s is the mode name. Read out for the mode that is currently on, so it is not shown by colour alone. -->
+    <string name="notification_mode_selected">%1$s, selected</string>
     <string name="notification_text_ai_unavailable">Visualizing sound. Sound type detection isn\'t working, so vibration alerts are off.</string>
     <string name="notification_text_capture_blocked">No sound is reaching the visualizer. The app you\'re using may not allow its sound to be shared, or its own sound may be muted.</string>
 
@@ -194,6 +202,7 @@
     <string name="help_mode_outline_desc">Draws only a thin outline of the wave, so it covers less of your game.</string>
     <string name="help_mode_circle_desc">A ring in the center of the screen swells toward the sound.</string>
     <string name="help_modes_note">Settings like size and opacity are saved separately for each mode and can be changed in the Settings tab.</string>
+    <string name="help_modes_notification">While it\'s on, you can expand the running notification to switch modes without opening the app.</string>
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
@@ -220,8 +229,23 @@
     <string name="help_faq_install_a">An APK built elsewhere has a different signature and can\'t be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.</string>
     <string name="help_faq_battery_q">Does it use a lot of battery?</string>
     <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. While the screen is off it stops capturing sound by default. Because it keeps capturing while the screen is on, though, we recommend turning it off when you\'re not using it.</string>
+    <string name="help_faq_battery_less_drawing">While sound is playing, drawing the graphic uses the most power. Turning on “Draw the graphic less often” under Battery in Settings uses less, though the movement is less smooth.</string>
     <string name="help_faq_language_q">How do I change the app language?</string>
     <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Report a problem</string>
+    <string name="help_report_desc">Tell us about a bug, or a sound that was shown as the wrong type. GitHub opens in your browser with your app and device details filled in, so it needs a GitHub account. Without one, send us an email instead. No audio is ever sent.</string>
+    <string name="help_report_button">Report on GitHub</string>
+    <!-- Where reports arrive. Not translated: it is an address, and it is the same everywhere. -->
+    <string name="help_report_email" translatable="false">nawwhod@gmail.com</string>
+    <string name="help_report_mail">Report by email</string>
+    <string name="help_report_no_mail">No email app to send with. Copy the device details and send them another way.</string>
+    <string name="help_report_copy">Copy device details</string>
+    <string name="help_report_copied">Device details copied.</string>
+    <string name="help_report_no_browser">No browser to open the link. Copy the device details and send them to us instead.</string>
+    <string name="help_report_issue_title">Report from the app</string>
+    <string name="help_report_issue_body">What happened?\n\nWhat were you listening to (app, kind of sound)?\n\nWhat did you expect instead?</string>
 
     <string name="help_about_title">About</string>
     <string name="help_about_version">Version %1$s</string>

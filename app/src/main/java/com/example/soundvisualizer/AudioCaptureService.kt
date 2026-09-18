@@ -20,6 +20,7 @@ import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -27,6 +28,7 @@ import android.os.PowerManager
 import android.os.Process
 import android.os.SystemClock
 import android.util.Log
+import android.widget.RemoteViews
 import androidx.annotation.MainThread
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
@@ -37,6 +39,12 @@ import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.HapticNotifier
 import com.example.soundvisualizer.language.AppLanguage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -104,6 +112,9 @@ class AudioCaptureService : Service() {
 
     private var screenReceiverRegistered = false
 
+    /** 알림의 모드 표시를 맞추는 데만 쓴다. 메인 스레드에서 돌고 onDestroy 에서 취소한다. */
+    private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+
     private val projectionCallback = object : MediaProjection.Callback() {
         // 다른 앱이 화면 녹화·공유·전송을 시작했거나(안드로이드는 한 번에 한 앱만 허용한다),
         // 사용자가 시스템 UI 에서 캡처를 끈 경우. 콜백만으로는 둘을 구분할 수 없다.
@@ -127,10 +138,27 @@ class AudioCaptureService : Service() {
         const val EXTRA_RESULT_CODE = "RESULT_CODE"
         const val EXTRA_RESULT_DATA = "RESULT_DATA"
 
-        /** 실행 중 알림의 중지 버튼. 사용자가 끈 것으로 본다. */
-        const val ACTION_STOP = "com.example.soundvisualizer.action.STOP"
+        /**
+         * 모드 칩의 PendingIntent 요청 번호가 시작하는 자리. 모드마다 [NotificationCommand.EXTRA_MODE_ORDINAL] 만 다른 인텐트를 쓰는데,
+         * PendingIntent 는 요청 번호가 같으면 같은 것으로 보고 하나만 남긴다. 그러면 칩 넷이 모두 같은 모드를 켠다.
+         * 아래 0·1 번(중지·앱 열기)과 겹치지 않게 띄워 둔다.
+         */
+        private const val REQUEST_MODE_BASE = 10
+
+        /**
+         * 모드 칩의 뷰 번호. [VisualMode] 의 차례와 짝을 이룬다. 모드를 더하면 여기와
+         * [R.layout.notification_modes] 에도 칩을 더해야 한다. 어긋나면 VisualModeOrdinalTest 가 알려 준다.
+         */
+        val MODE_CHIP_IDS = intArrayOf(
+            R.id.notification_mode_0,
+            R.id.notification_mode_1,
+            R.id.notification_mode_2,
+            R.id.notification_mode_3
+        )
         private const val CHANNEL_ID = "AudioCaptureChannel"
-        private const val NOTIFICATION_ID = 1
+
+        /** 실행 중 알림의 번호. 서비스보다 오래 남은 알림을 지우는지 계측 테스트가 같은 번호로 확인한다. */
+        internal const val NOTIFICATION_ID = 1
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
 
@@ -218,6 +246,27 @@ class AudioCaptureService : Service() {
                 context.stopService(Intent(context, AudioCaptureService::class.java))
             }
         }
+
+        /**
+         * 실행 중 알림의 버튼이 보낸 명령을 떠 있는 서비스에 전한다. ([NotificationActionReceiver])
+         *
+         * 떠 있는 서비스가 없는데 버튼이 눌렸다면 그 알림은 서비스보다 오래 남은 것이다. 서비스를 새로 띄우지 않고
+         * 알림만 지운다. 어떤 버튼이었든 마찬가지다.
+         */
+        @MainThread
+        fun handleNotificationCommand(context: Context, command: NotificationCommand) {
+            val service = instance
+            if (service == null) {
+                context.getSystemService(NotificationManager::class.java)?.cancel(NOTIFICATION_ID)
+                return
+            }
+            when (command) {
+                NotificationCommand.Stop -> service.stopEverything(StopReason.UserRequested)
+                // 캡처도 AI 도 건드리지 않는다. 오버레이는 프레임마다 모드를 읽으므로 바로 바뀐다.
+                is NotificationCommand.SetMode -> SettingsManager.setVisualMode(command.mode)
+                NotificationCommand.Ignore -> Unit
+            }
+        }
     }
 
     // Android 12 이하에서 알림 문구를 앱 언어로 보여준다. 13 이상은 시스템이 적용한다.
@@ -253,6 +302,8 @@ class AudioCaptureService : Service() {
         SettingsManager.setServiceRunning(true)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
+        observeVisualMode()
+
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
         registerScreenReceiver()
 
@@ -281,7 +332,12 @@ class AudioCaptureService : Service() {
         Thread({
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
             val pipeline = try {
-                RealtimeAiPipeline.create(appContext, rate, channels = 2)
+                RealtimeAiPipeline.create(
+                    appContext,
+                    rate,
+                    channels = 2,
+                    diagnosticConfigProvider = SettingsManager::activeAiDiagnosticConfig
+                )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
                 null
@@ -388,7 +444,9 @@ class AudioCaptureService : Service() {
             val fallback = if (rate == candidates.first()) "" else ", fell back from ${candidates.first()}"
             Log.i(
                 TAG,
-                "capture sample rate: $rate (device reported $reported, " +
+                "capture format requested[sr=$rate chMask=$CHANNEL_CONFIG encoding=$AUDIO_FORMAT] " +
+                    "actual[sr=${record.sampleRate} ch=${record.channelCount} encoding=${record.audioFormat}] " +
+                    "(device reported $reported, " +
                     "AI supported=${AiCaptureSampleRatePolicy.isSupportedForAi(rate)}$fallback)"
             )
             return record
@@ -399,12 +457,15 @@ class AudioCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // 내려가기 전에 다시 켜면 onCreate 없이 여기로 온다. 지난 끄기는 이번 실행과 상관없다.
-        if (intent?.action != ACTION_STOP) stopRequested = false
-        if (intent?.action == ACTION_STOP) {
-            stopEverything(StopReason.UserRequested)
+        // 알림 버튼은 이제 NotificationActionReceiver 가 받는다. 시작 요청에는 동작 이름이 없으므로, 이름이 있으면
+        // 서비스로 보내던 옛 버전의 알림이 남아 있다가 눌린 것이다. 캡처를 열지 않고, 그 때문에 새로 떴으면 조용히 내린다.
+        // 시작 요청으로 읽으면 동의 결과가 없어 "켜지 못했다" 고 잘못 알린다.
+        if (intent?.action != null) {
+            if (audioRecord == null) stopEverything(StopReason.UserRequested)
             return START_NOT_STICKY
         }
+        // 내려가기 전에 다시 켜면 onCreate 없이 여기로 온다. 지난 끄기는 이번 실행과 상관없다.
+        stopRequested = false
         if (intent != null && audioRecord == null) {
             val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
             val resultData = IntentCompat.getParcelableExtra(intent, EXTRA_RESULT_DATA, Intent::class.java)
@@ -516,6 +577,9 @@ class AudioCaptureService : Service() {
             if (bytes > 0) {
                 val floats = bytes / BYTES_PER_FLOAT
                 AudioEngine.pushAudioBuffer(buffer, floats)
+                // 쉬는 오버레이를 소리가 난 이 버퍼에서 바로 깨운다(#170). 원자 변수를 읽고, 오버레이가 쉬는 중이면
+                // 소리 크기를 한 번 더 읽는다. 할당은 없다.
+                OverlayWake.onBuffer()
                 // AI 는 캡처 스레드에서 추론하지 않는다. 링버퍼로 복사만 하고 즉시 반환된다.
                 aiPipeline?.let { pipeline ->
                     floatView.position(0)
@@ -796,6 +860,8 @@ class AudioCaptureService : Service() {
 
     override fun onDestroy() {
         stopLatch.onDestroy()
+        // 내려가는 중에 모드가 바뀌어도 알림을 다시 올리지 않는다.
+        serviceScope.cancel()
         isRunning = false
         instance = null
         cancelAiResume()
@@ -869,11 +935,33 @@ class AudioCaptureService : Service() {
         StopAlert.post(this, CHANNEL_ID, NOTIFICATION_ID, createNotification())
     }
 
+    /**
+     * 모드가 바뀌면 알림의 모드 표시를 맞춘다. 앱 설정에서 바꾸든 알림 버튼으로 바꾸든 같은 곳을 지난다.
+     *
+     * 지금 값은 이미 알림에 들어 있으므로 첫 값은 흘린다.
+     */
+    private fun observeVisualMode() {
+        serviceScope.launch {
+            SettingsManager.visualMode.drop(1).collect { refreshOngoingNotification() }
+        }
+    }
+
+    /**
+     * 알림 버튼이 보낼 인텐트. 서비스가 아니라 [NotificationActionReceiver] 로 보낸다.
+     *
+     * 누른 사람이 기다리고 있으므로 포그라운드 방송으로 보낸다. 백그라운드 방송은 시스템이 바쁘면 몇 초씩
+     * 밀릴 수 있어, 칩을 눌러도 모드가 늦게 바뀐다.
+     */
+    private fun notificationActionIntent(action: String): Intent =
+        Intent(this, NotificationActionReceiver::class.java)
+            .setAction(action)
+            .addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+
     private fun createNotification(): Notification {
-        val stopIntent = PendingIntent.getService(
+        val stopIntent = PendingIntent.getBroadcast(
             this,
             0,
-            Intent(this, AudioCaptureService::class.java).setAction(ACTION_STOP),
+            notificationActionIntent(NotificationCommand.ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val openIntent = PendingIntent.getActivity(
@@ -895,12 +983,86 @@ class AudioCaptureService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notification_title))
             .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            // 접은 알림은 시스템이 그리므로 위 setContentText 가 그대로 보인다.
+            // 펼치면 아래 본문이 그 자리를 대신하면서 모드 칩이 함께 나온다.
+            .setCustomBigContentView(buildModeChooser(text))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            // 접힌 상태에서는 칩이 보이지 않으므로, 펼치지 않고도 지금 모드를 알 수 있게 제목 옆에 이름을 둔다.
+            .setSubText(getString(SettingsManager.visualMode.value.labelRes))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
             .addAction(0, getString(R.string.notification_stop), stopIntent)
             .setOngoing(true)
             .setSilent(true)
             .build()
+    }
+
+    /**
+     * 펼친 알림의 본문. 상태 한 줄과 모드를 고르는 칩 네 개를 담는다([R.layout.notification_modes]).
+     *
+     * 지금 켜져 있는 모드는 색을 채워 표시하고, 화면을 읽어 주는 기능에는 "선택됨"을 덧붙인다.
+     * 색만으로 알리면 색을 구별하기 어려운 사람에게는 어느 것이 켜져 있는지 전해지지 않는다.
+     *
+     * Android 12 이상에서는 칩이 라디오 버튼이라([R.layout.notification_modes] 의 v31 판)
+     * 고른 칩이 바뀌는 것을 알림을 그리는 쪽이 직접 처리한다. 그래서 누른 즉시 표시가 옮겨간다.
+     * 그 아래 버전은 우리가 배경과 글자색을 넣어 주고, 알림을 다시 올릴 때 표시가 옮겨간다.
+     */
+    private fun buildModeChooser(statusText: String): RemoteViews {
+        val views = RemoteViews(packageName, R.layout.notification_modes)
+        views.setTextViewText(R.id.notification_status, statusText)
+
+        val current = SettingsManager.visualMode.value
+        for ((index, mode) in VisualMode.values().withIndex()) {
+            val chip = MODE_CHIP_IDS[index]
+            val label = getString(mode.labelRes)
+            val selected = mode == current
+            val chipIntent = notificationActionIntent(NotificationCommand.ACTION_SET_MODE)
+                .putExtra(NotificationCommand.EXTRA_MODE_ORDINAL, mode.ordinal)
+            views.setTextViewText(chip, label)
+            views.setContentDescription(
+                chip,
+                if (selected) getString(R.string.notification_mode_selected, label) else label
+            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // 색은 state_checked 로 정해져 있으므로 켜짐만 알려 주면 된다.
+                views.setCompoundButtonChecked(chip, selected)
+                // 한 칩이 켜지면 켜져 있던 칩이 꺼지는 것도 함께 알려 온다. 어느 쪽인지는 알림을 그리는 쪽이
+                // EXTRA_CHECKED 로 채워 주므로, 그 값을 받으려면 인텐트를 고칠 수 있게 둬야 한다.
+                // 갈 곳을 지정한 인텐트라 바뀔 수 있는 것은 이 값뿐이다.
+                views.setOnCheckedChangeResponse(
+                    chip,
+                    RemoteViews.RemoteResponse.fromPendingIntent(
+                        PendingIntent.getBroadcast(
+                            this,
+                            REQUEST_MODE_BASE + mode.ordinal,
+                            chipIntent,
+                            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                    )
+                )
+            } else {
+                val intent = PendingIntent.getBroadcast(
+                    this,
+                    REQUEST_MODE_BASE + mode.ordinal,
+                    chipIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+                views.setInt(
+                    chip,
+                    "setBackgroundResource",
+                    if (selected) R.drawable.notification_mode_chip_on else R.drawable.notification_mode_chip_off
+                )
+                // 고른 칩만 색을 지정하면, 알림을 고쳐 달 때 전에 골랐던 칩에 색이 남을 수 있다. 넷 다 정해 준다.
+                views.setTextColor(
+                    chip,
+                    ContextCompat.getColor(
+                        this,
+                        if (selected) R.color.notification_chip_text_on else R.color.notification_chip_text_off
+                    )
+                )
+                views.setOnClickPendingIntent(chip, intent)
+            }
+        }
+        return views
     }
 }

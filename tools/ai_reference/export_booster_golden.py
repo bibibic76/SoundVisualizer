@@ -69,7 +69,7 @@ def apply_booster(clf: ReferenceClassifier, probs: np.ndarray, score: float) -> 
 
     evidence = clf._sum_gunshot_probability_from_top5(top_idx, top_probs, 5)
     has_gunshot_cue = clf._has_gunshot_cue_in_top5(top_idx, 5)
-    has_strong = clf._has_strong_danger_cue_in_top5(top_idx, 5)
+    has_strong = clf._has_strong_danger_cue_in_top5(top_idx, 5, top_probs)
 
     block = (
         coarse == "speech"
@@ -84,7 +84,7 @@ def apply_booster(clf: ReferenceClassifier, probs: np.ndarray, score: float) -> 
         adopt = score >= 0.20 and evidence >= 0.05
         reason = f"gunshot_cue score={score:.4f} evidence={evidence:.4f} adopt={adopt}"
     elif clf._is_game_mix_mask_display(display) or has_strong:
-        adopt = score >= 0.50 or (score >= 0.40 and evidence >= 0.04)
+        adopt = score >= 0.40 and evidence >= 0.04
         reason = (
             f"game_mix_or_strong_danger score={score:.4f} evidence={evidence:.4f} adopt={adopt}"
         )
@@ -101,6 +101,18 @@ def apply_booster(clf: ReferenceClassifier, probs: np.ndarray, score: float) -> 
             post_index = gun_idx
             post_display = clf._class_names[gun_idx]
             post_conf = max(post_conf, gun_prob)
+    elif (not block) and has_strong and not has_gunshot_cue:
+        cue_candidates = [
+            (int(top_idx[i]), float(top_probs[i]))
+            for i in range(5)
+            if int(top_idx[i]) >= 0
+            and clf._is_strong_danger_keyword(clf._class_names[int(top_idx[i])])
+            and not clf._is_gunshot_keyword(clf._class_names[int(top_idx[i])])
+        ]
+        if cue_candidates:
+            post_index, _ = max(cue_candidates, key=lambda item: item[1])
+            post_coarse = "danger"
+            post_display = clf._class_names[post_index]
 
     return {
         "gunshot_score": float(score),

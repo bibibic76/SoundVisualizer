@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">屏幕关闭时暂停</string>
     <string name="setting_pause_screen_off_desc">屏幕关闭期间停止捕获声音、识别声音类型和振动，以节省电量，屏幕点亮后自动继续。如果希望屏幕关闭时仍收到振动提醒，请关闭此项。</string>
+    <string name="setting_reduced_frame_rate">降低图形绘制频率</string>
+    <string name="setting_reduced_frame_rate_desc">图形每秒重绘 30 次，而不是 60 次。让应用长时间运行时可以节省电量，但图形的动画会不那么流畅。声音捕获的间隔保持不变。</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">显示环境音</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">音频捕获</string>
     <string name="notification_text">正在进行声音可视化。</string>
     <string name="notification_stop">停止</string>
+    <string name="notification_mode_selected">%1$s，已选中</string>
     <string name="notification_text_ai_unavailable">正在进行声音可视化。由于无法识别声音类型，振动提醒已关闭。</string>
     <string name="notification_text_capture_blocked">本应用当前接收不到声音。可能是正在播放声音的应用不允许共享自己的声音，也可能是该应用自身已静音。</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">只绘制细细的波浪轮廓线，对游戏画面的遮挡更少。</string>
     <string name="help_mode_circle_desc">屏幕中央的圆环会朝声音传来的方向鼓起。</string>
     <string name="help_modes_note">“大小”“不透明度”等设置会按模式分别保存，可在“设置”标签页中更改。</string>
+    <string name="help_modes_notification">开启期间，可以展开运行中的通知，无需打开应用即可切换模式。</string>
 
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">在其他地方构建的 APK 签名不同，无法在现有应用上覆盖安装。请先卸载现有应用，然后再安装。此操作会重置您的设置。</string>
     <string name="help_faq_battery_q">耗电量大吗？</string>
     <string name="help_faq_battery_a">只在有声音时才绘制图形，安静时会进入待机状态。不过，由于需要持续捕获声音，建议您在不使用时将其关闭。</string>
+    <string name="help_faq_battery_less_drawing">有声音时，绘制图形最耗电。在“设置”标签页的“电池”中开启“降低图形绘制频率”，可以减少耗电，但图形的动画会不那么流畅。</string>
     <string name="help_faq_language_q">如何更改应用语言？</string>
     <string name="help_faq_language_a">点按“设置”标签页顶部的“语言”，然后选择一种语言。选择“系统默认”将跟随手机的语言。在 Android 13 及更高版本中，您也可以在手机设置的“应用语言”中更改。</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">报告问题</string>
+    <string name="help_report_desc">如果遇到程序错误，或者某个声音被显示成了错误的类型，请告诉我们。浏览器中会打开 GitHub，并预先填入应用和设备信息，因此需要 GitHub 账号。如果没有账号，请改用电子邮件发送给我们。本应用绝不会发送任何音频。</string>
+    <string name="help_report_button">在 GitHub 上报告</string>
+    <string name="help_report_mail">通过电子邮件报告</string>
+    <string name="help_report_no_mail">没有可用于发送邮件的应用。请复制设备信息，并通过其他方式发送。</string>
+    <string name="help_report_copy">复制设备信息</string>
+    <string name="help_report_copied">已复制设备信息。</string>
+    <string name="help_report_no_browser">没有可打开链接的浏览器。请改为复制设备信息并发送给我们。</string>
+    <string name="help_report_issue_title">来自应用的报告</string>
+    <string name="help_report_issue_body">发生了什么？\n\n您当时在听什么（哪个应用、哪种声音）？\n\n您原本期望的结果是什么？</string>
 
     <string name="help_about_title">关于</string>
     <string name="help_about_version">版本 %1$s</string>

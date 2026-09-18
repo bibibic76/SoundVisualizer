@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">螢幕關閉時暫停</string>
     <string name="setting_pause_screen_off_desc">螢幕關閉期間會停止擷取聲音、辨識聲音類型和震動以節省電力，並在你開啟螢幕後繼續。如果希望螢幕關閉時仍收到震動提醒，請關閉這個選項。</string>
+    <string name="setting_reduced_frame_rate">降低圖形繪製頻率</string>
+    <string name="setting_reduced_frame_rate_desc">圖形每秒重新繪製 30 次，而不是 60 次。讓應用程式長時間執行時可以節省電力，但圖形的動畫會比較不流暢。聲音擷取的間隔維持不變。</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">顯示環境音</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">音訊擷取</string>
     <string name="notification_text">正在將聲音視覺化。</string>
     <string name="notification_stop">停止</string>
+    <string name="notification_mode_selected">%1$s，已選取</string>
     <string name="notification_text_ai_unavailable">正在將聲音視覺化。由於無法辨識聲音類型，震動提醒已關閉。</string>
     <string name="notification_text_capture_blocked">目前接收不到聲音。可能是正在播放的應用程式不允許分享聲音，也可能是該應用程式本身的聲音已靜音。</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">只以細線描繪波浪的輪廓，較不會遮住遊戲畫面。</string>
     <string name="help_mode_circle_desc">螢幕中央的圓環會朝聲音來源的方向膨脹。</string>
     <string name="help_modes_note">「大小」、「不透明度」等設定會依模式分別儲存，可以在「設定」分頁中變更。</string>
+    <string name="help_modes_notification">運作期間，你可以展開執行中的通知，不必開啟應用程式就能切換模式。</string>
 
     <string name="help_sound_title">聲音類型與震動</string>
     <string name="help_sound_kinds">AI 會將聽到的聲音分為環境音、人聲和危險音。預設情況下，環境音為白色、人聲為黃色、危險音為紅色。你可以在「設定」分頁中變更各類型的顏色，以及是否顯示。</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">在其他地方建置的 APK 簽章不同，無法直接覆蓋安裝現有的應用程式。請先解除安裝現有的應用程式，再進行安裝。這樣做會重設你的設定。</string>
     <string name="help_faq_battery_q">會很耗電嗎？</string>
     <string name="help_faq_battery_a">只有在有聲音時才會繪製圖形，安靜時會進入待機狀態。不過，由於會持續擷取聲音，建議不使用時將它關閉。</string>
+    <string name="help_faq_battery_less_drawing">有聲音時，繪製圖形最耗電。在「設定」分頁的「電池」中開啟「降低圖形繪製頻率」，可以減少耗電，但圖形的動畫會比較不流暢。</string>
     <string name="help_faq_language_q">如何變更應用程式語言？</string>
     <string name="help_faq_language_a">輕觸「設定」分頁頂端的「語言」，然後選擇想使用的語言。選擇「系統預設」會跟隨手機的語言。在 Android 13 以上版本中，也可以在手機設定的「應用程式語言」中變更。</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">回報問題</string>
+    <string name="help_report_desc">如果遇到程式錯誤，或是聲音被顯示成錯誤的類型，請告訴我們。瀏覽器會開啟 GitHub，並預先填入應用程式和裝置資訊，因此需要 GitHub 帳號。如果沒有帳號，請改用電子郵件寄給我們。這個應用程式絕不會傳送任何音訊。</string>
+    <string name="help_report_button">在 GitHub 上回報</string>
+    <string name="help_report_mail">透過電子郵件回報</string>
+    <string name="help_report_no_mail">找不到可以寄送電子郵件的應用程式。請複製裝置資訊，再透過其他方式傳送。</string>
+    <string name="help_report_copy">複製裝置資訊</string>
+    <string name="help_report_copied">已複製裝置資訊。</string>
+    <string name="help_report_no_browser">找不到可以開啟連結的瀏覽器。請改為複製裝置資訊並傳送給我們。</string>
+    <string name="help_report_issue_title">來自應用程式的回報</string>
+    <string name="help_report_issue_body">發生了什麼事？\n\n你當時在聽什麼 (哪個應用程式、哪種聲音)？\n\n你原本預期會是什麼結果？</string>
 
     <string name="help_about_title">關於</string>
     <string name="help_about_version">版本 %1$s</string>

@@ -66,12 +66,21 @@ class VisualizerEngine(
         private const val MAX_FRAME_STEP = 4f
 
         /** 오버레이 최대 프레임. 120Hz 화면에서 GPU/배터리를 아낀다. 0 이면 vsync 그대로. */
-        const val MAX_FPS = 60
+        const val FULL_FPS = 60
+
+        /**
+         * 배터리 설정을 켰을 때의 프레임 수 ([SettingsManager.reducedFrameRate]).
+         *
+         * 같은 기기에서 재니 한 코어 기준 22.9% -> 17.2% 로 줄었다. 절반이 안 되는 이유는
+         * AI·캡처처럼 프레임 수와 무관한 비용이 섞여 있기 때문이다. 대신 그만큼 덜 부드럽다.
+         */
+        const val REDUCED_FPS = 30
         /** 이 시간 동안 아무것도 안 보이면 저빈도 폴링(idle)으로 전환 */
         private const val IDLE_AFTER_NS = 1_000_000_000L
+        /** 대기 중 확인 간격. 조용하고 보관한 소리도 없을 때는 이 간격 대신 소리 신호를 기다린다([canSleepUntilLoud]). */
         const val IDLE_POLL_MS = 33L
-        /** maxVolume < 0.01 이면 비활성으로 본다 */
-        private const val WAKE_THRESHOLD = 0.01f
+        /** maxVolume < 0.01 이면 비활성으로 본다. 대기 중인 오버레이를 깨우는 소리 신호([OverlayWake])도 같은 값을 쓴다. */
+        const val WAKE_THRESHOLD = 0.01f
         private const val MIN_VISIBLE_ALPHA = 0.002f
 
         /**
@@ -135,6 +144,23 @@ class VisualizerEngine(
     private var frameAccNanos = 0L
     var isIdle = false
         private set
+
+    /**
+     * 직전 [pollWake] 가 조용했고 보관한 소리도 없었는지.
+     * 깨어나는 길은 조용하지 않은 [pollWake] 뿐이라, 대기로 다시 내려온 직후에는 늘 false 다. 그래서 내려오기 직전에
+     * 보관한 소리가 있어도 한 번은 확인하고 잠든다.
+     */
+    private var quietAtLastPoll = false
+
+    /**
+     * 대기 중 다음 확인을 소리가 날 때까지 미뤄도 되는지(#170). 직전 [pollWake] 가 조용했고 보관한 소리도 없을 때만 true.
+     *
+     * 표시를 꺼 둔 종류의 소리가 계속 나는 동안에는 false 다. 그때 소리 신호로 깨우면 버퍼마다(약 12ms) 깨어나
+     * 33ms 확인보다 오히려 잦아진다. 늦게 올 위협음 판정을 위해 소리를 보관하는 동안에도 false 다. 보관 시간은
+     * 확인 횟수로 흐르고(한 번 = 한 칸), 판정이 오면 소리가 끝났어도 깨어나야 하기 때문이다.
+     */
+    val canSleepUntilLoud: Boolean
+        get() = isIdle && quietAtLastPoll
 
     // ---------------- 화면 크기 ----------------
     private var w = 0f
@@ -212,9 +238,10 @@ class VisualizerEngine(
      * @return 이번 프레임에 다시 그려야 하면 true
      */
     fun tick(frameTimeNanos: Long): Boolean {
-        // 프레임 캡: vsync 간격을 누적해서 1/MAX_FPS 마다 한 번만 처리 (90Hz → 2/3, 120Hz → 1/2)
-        if (MAX_FPS > 0) {
-            val interval = 1_000_000_000L / MAX_FPS - 200_000L
+        // 프레임 캡: vsync 간격을 누적해서 1/maxFps 마다 한 번만 처리 (90Hz → 2/3, 120Hz → 1/2)
+        val maxFps = inputs.framesPerSecond()
+        if (maxFps > 0) {
+            val interval = 1_000_000_000L / maxFps - 200_000L
             if (lastVsyncNanos != 0L) {
                 frameAccNanos += frameTimeNanos - lastVsyncNanos
                 lastVsyncNanos = frameTimeNanos
@@ -385,8 +412,10 @@ class VisualizerEngine(
         inputs.readPeaks(peaks)
         advanceHold(HOLD_SLOT_FRAMES) // 폴링 한 번 = 보관 한 칸
         val loud = peaks[0] > WAKE_THRESHOLD || peaks[1] > WAKE_THRESHOLD
-        // 조용하고 보관한 소리도 없으면 설정·라벨을 읽을 필요가 없다. 대기 중 폴링은 대부분 여기서 끝난다.
-        if (!loud && holdLiveSlots == 0) return
+        // 조용하고 보관한 소리도 없으면 설정·라벨을 읽을 필요가 없다. 대기 중 폴링은 대부분 여기서 끝나고,
+        // 다음 확인은 소리가 날 때까지 미룰 수 있다.
+        quietAtLastPoll = !loud && holdLiveSlots == 0
+        if (quietAtLastPoll) return
         val s = inputs.settingsFor(inputs.currentMode())
         if (!canDraw(s)) return
         val coarse = inputs.coarseLabel()

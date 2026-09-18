@@ -50,8 +50,8 @@
     "gunshot": {
       "gunshot_score": 0.5047634243965149,
       "gunshot_evidence": 0.0,
-      "accepted": true,
-      "reason": "game_mix_or_strong_danger score=0.5048 evidence=0.0000 adopt=True",
+      "accepted": false,
+      "reason": "game_mix_or_strong_danger score=0.5048 evidence=0.0000 adopt=False",
       "has_gunshot_cue": false,
       "has_strong_danger_cue": true,
       "pre": {
@@ -89,9 +89,9 @@
       },
       "post": {
         "coarse": "danger",
-        "display": "Gunshot, gunfire",
-        "confidence": 0.5047634243965149,
-        "yamnet_class_index": 421
+        "display": "Alarm",
+        "confidence": 0.12252969294786453,
+        "yamnet_class_index": 382
       }
     },
     "alarm": {

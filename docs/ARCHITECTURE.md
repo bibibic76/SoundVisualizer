@@ -19,13 +19,13 @@ graph TD
 
 | 단계 | 코드 | 언어 |
 |---|---|---|
-| 홈·설정·도움말 화면 | `MainActivity`, `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
+| 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors`·`UiFonts` (화면), `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
-| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내) | Kotlin |
+| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
 | 분류 결과 연결 | `AiClassification` | Kotlin |
-| 오버레이 | `OverlayService`, `VisualizerOverlay`, `VisualizerEngine`, `VisualizerInputs`, `VisualMode` | Kotlin (Compose Canvas) |
+| 오버레이 | `OverlayService`, `VisualizerOverlay`, `VisualizerEngine`, `VisualizerInputs`, `VisualMode`, `SoundWakeSignal` (쉬는 동안 소리로 깨우기) | Kotlin (Compose Canvas) |
 | 진동 | `feedback/` | Kotlin |
 
 ---
@@ -52,6 +52,19 @@ graph TD
 - 투명 화면은 `taskAffinity=""`로 앱과 다른 작업에 뜹니다. 그래서 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고, 닫히면 보던 게임·영상으로 돌아갑니다.
 - 타일은 알림창이 열려 있는 동안 `SettingsManager.isServiceRunning`을 구독해 켜짐·꺼짐을 표시합니다. 추가·제거될 때는 `SettingsManager.tileAdded`에 기록해 홈 화면의 "빠른 설정에 추가" 버튼을 숨기거나 보입니다.
 - 홈의 "빠른 설정에 추가"는 시스템의 추가 창(`StatusBarManager.requestAddTileService`)을 띄웁니다. 이미 있으면(`TILE_ALREADY_ADDED`) 추가된 것으로 기록하고, 추가되지 않은 결과(`TILE_NOT_ADDED`, 요청 실패)는 직접 추가하는 방법을 토스트로 알립니다. 사용자가 이 창에서 세 번 거절하면 시스템이 그다음부터는 창 없이 바로 거절을 돌려주는데, 그대로 두면 버튼을 눌러도 아무 일도 일어나지 않기 때문입니다.
+
+**실행 중 알림** (`AudioCaptureService.createNotification`)
+
+- 접힌 알림에는 상태 문구와 **중지** 버튼(`ACTION_STOP`)이 있고, 제목 옆에 지금 표현 모드 이름을 둡니다(`setSubText`). 접힌 상태에서는 아래 칩이 보이지 않기 때문입니다.
+- 펼치면 상태 한 줄 아래에 **모드 칩 네 개**가 나옵니다(`res/layout/notification_modes.xml`, `DecoratedCustomViewStyle`). 알림 기본 버튼(`addAction`)은 보통 세 개까지만 보여서 모드 넷과 중지가 들어가지 않습니다. 본문만 직접 그리고 머리말과 중지 버튼은 시스템이 그립니다.
+- **버튼은 서비스가 아니라 `NotificationActionReceiver`로 보냅니다**(`PendingIntent.getBroadcast`). 서비스로 보내면 서비스가 떠 있지 않을 때 시스템이 새로 만들고, `onCreate`가 화면 녹화 동의 없이 `mediaProjection` 포그라운드를 시작하다 `SecurityException`으로 죽습니다(Android 14 이상, 그 아래는 캡처 없는 빈 서비스가 남음). 받는 쪽은 떠 있는 서비스(`instance`)가 있을 때만 전하고, 없으면 서비스보다 오래 남은 알림으로 보고 그 알림만 지웁니다. 리시버와 서비스의 `onCreate`·`onDestroy`는 모두 메인 스레드라 그 사이에 끼어들지 않습니다. 누른 사람이 기다리므로 포그라운드 방송(`FLAG_RECEIVER_FOREGROUND`)으로 보냅니다. 인텐트를 명령(`Stop`·`SetMode`·`Ignore`)으로 바꾸는 규칙은 `NotificationCommand`로 떼어 JVM에서 검사하고(`NotificationCommandTest`, 리시버가 매니페스트에 `exported=false`로 선언됐는지 포함), 서비스 없이 눌렀을 때 서비스가 뜨지 않고 알림이 지워지는지는 계측 테스트(`NotificationActionReceiverInstrumentedTest`)가 봅니다.
+- 이전 버전(v1.4.0 이하)은 버튼을 서비스로 보냈습니다. 그때 올라간 알림이 남아 있다가 눌려 서비스에 동작 이름이 있는 인텐트가 오면, 시작 요청이 아니므로 캡처를 열지 않고 그 때문에 새로 떴으면 조용히 내립니다. 다만 Android 14 이상에서는 `onCreate`에서 이미 죽으므로 막을 수 없습니다.
+- 칩은 `ACTION_SET_MODE`(모드 순서 번호)를 보냅니다. 캡처와 AI는 건드리지 않고 설정만 바꾸며, 오버레이는 프레임마다 모드를 읽으므로 바로 바뀝니다. 서비스는 `SettingsManager.visualMode`를 지켜보다가 어디서 바뀌든(설정 화면이든 칩이든) 알림을 고쳐 답니다. 모르는 번호가 오면 무시합니다(`VisualMode.fromOrdinal`).
+- **Android 12 이상**은 칩이 라디오 버튼(`layout-v31`)이라, 고른 칩 표시를 알림을 그리는 쪽이 바로 옮깁니다. 알림을 다시 올려서 옮기면 시스템이 다시 그리는 데 약 0.5초가 걸려 눌리지 않은 것처럼 보입니다. 한 칩이 켜지면 **꺼진 칩도 함께** 알려 오므로 `RemoteViews.EXTRA_CHECKED`가 켜짐인 것만 받습니다. 받지 않으면 방금 끈 모드가 뒤늦게 덮어써 원래 모드로 돌아갑니다. 이 값을 채울 수 있게 칩의 PendingIntent는 `FLAG_MUTABLE`이지만, 받을 곳을 지정한 인텐트라 바뀔 수 있는 것은 그 값뿐입니다.
+- **Android 11 이하**는 칩 배경과 글자색을 직접 넣고, 알림을 다시 올릴 때 표시가 옮겨갑니다.
+- 칩마다 PendingIntent 요청 번호를 다르게 둡니다(`REQUEST_MODE_BASE + 순서 번호`). 같으면 하나로 합쳐져 네 칩이 모두 같은 모드를 켭니다. 칩 자리 수가 모드 수와 같은지는 `VisualModeOrdinalTest`가 봅니다.
+- 켜진 칩은 색만으로 알리지 않고 화면 읽어주기에 "선택됨"을 덧붙입니다(`notification_mode_selected`).
+- 칩 색은 알림 배경(기기·테마마다 다름)과 상관없이 읽히도록 칩을 진한 색으로 채우고 글자를 밝게 둡니다. 고른 칩은 앱의 강조색입니다.
 
 **종료**: 아래 경우 모두 캡처·오버레이·AI·진동을 함께 내립니다. 멈춘 이유(`StopReason`)에 따라 사용자에게 알릴지가 갈립니다.
 
@@ -86,6 +99,11 @@ graph TD
 
 - **API**: `AudioPlaybackCaptureConfiguration`으로 미디어·게임·알 수 없음 용도의 소리를 받습니다. 캡처를 막아둔 앱의 소리는 받을 수 없습니다(Android 정책).
 - **형식**: 스테레오 float PCM. 샘플레이트는 기기 출력 레이트를 우선 쓰고, 안 되면 48kHz → 44.1kHz 순으로 시도합니다. 출력과 다른 레이트를 요청하면 캡처 경로에 리샘플러가 끼어 지연이 늘기 때문입니다.
+  - **2채널보다 많이 받을 수 없습니다.** 그래서 앞뒤(서라운드)는 구분하지 못합니다(도움말 `help_note_direction`). Galaxy S25+(Android 16)에서 확인했습니다(#136).
+    - 오디오 정책에는 원격 서브믹스가 4채널(앞 좌우 + 뒤 좌우, 입력 `0x3000c`)까지 적혀 있습니다.
+    - 그러나 이 경로로 4채널·5.1·채널 번호 4개를 요청하면 `AudioRecord.Builder` 안에서 거절됩니다. `AudioPolicy.createAudioRecordSink` → `AudioFormat.inChannelMaskFromOutChannelMask` 가 1·2채널만 받고, `IllegalArgumentException("Unsupported channel configuration for input.")` 을 던집니다. 요청이 오디오 서버까지 가지 않습니다.
+    - 정책을 직접 등록하는 API(`AudioManager.registerAudioPolicy`)는 시스템 권한이 필요해 우회할 공개 경로가 없습니다. 재생하는 앱이 5.1 로 내더라도 우리가 받는 것은 2채널로 섞인 소리입니다.
+    - 2채널에서 위상으로 뒤쪽 성분을 추정하는 방법(매트릭스 디코딩)은 넓게 퍼지는 울림도 "뒤" 로 읽혀, 방향을 틀리게 보여 줄 위험이 커서 쓰지 않습니다.
 - **캡처 스레드** `SV-AudioCapture` (`THREAD_PRIORITY_URGENT_AUDIO`)가 한 번에 1024 float(512프레임)씩 읽고, 읽을 때마다 두 곳으로 넘깁니다.
   1. **시각화용**: `AudioRecord`가 채운 direct `ByteBuffer`를 `AudioEngine.pushAudioBuffer`로 넘깁니다. JNI가 버퍼 주소를 그대로 읽으므로 복사와 할당이 없습니다.
   2. **AI용**: 재사용하는 `FloatArray`에 복사해 `AiAudioBuffer`에 넣습니다. 여기서 좌우를 평균해 모노로 합칩니다. 추론은 캡처 스레드에서 하지 않습니다.
@@ -154,13 +172,22 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 코루틴(`Dispatchers.Default`)이 분석 한 번을 마치고 **250ms 쉰 뒤** 다음 분석을 합니다. 한 번의 분석은 다음 순서입니다.
 
 1. **입력 자르기**: 링버퍼에서 최근 약 0.975초(16kHz 기준 15,600샘플)를 가져옵니다.
-2. **16kHz 변환**: 캡처 레이트의 소리를 16kHz로 바꿉니다. (`CaptureAudioMath`)
+2. **16kHz 변환**: 캡처 레이트의 소리를 16kHz로 줄입니다. 그냥 솎아 내면 8kHz 위의 소리가 아래로 접혀 들어오므로(에일리어싱) **96탭 Kaiser 창 sinc 저역통과 FIR**(차단 7.8kHz, β 8.6)을 거칩니다. 계수 표는 캡처 레이트마다 한 번만 만들고(44.1kHz는 위상 160개, 48kHz는 1개), 원본 위치와 위상은 정수로 계산해 15,600샘플 동안 어긋나지 않습니다. 16kHz 입력은 그대로 통과합니다. AI가 받는 캡처 레이트는 16·44.1·48kHz뿐이라(`AiCaptureSampleRatePolicy`) 그보다 높은 레이트에서 필터가 모자라는 일은 없습니다. (`CaptureAudioMath`)
 3. **Log-mel 스펙트로그램**: Kotlin으로 계산합니다. (`AudioPreprocessor`: 25ms 창, 10ms 간격, 64개 멜 대역, 96프레임 → `[1, 1, 96, 64]`)
 4. **YAMNet 추론**: 521개 소리 클래스의 확률을 냅니다. (`YamnetInference`, 연산 스레드 1개로 제한해 캡처·렌더와 CPU를 다투지 않게 함)
 5. **3종 분류**: 상위 클래스들을 투표해 환경음(`ambient`)·대화음(`speech`)·위협음(`danger`)으로 묶습니다. (`YamnetCoarseClassifier`, `YamnetThreeClassMapper`)
 6. **Gunshot Booster**: 521개 확률을 입력으로 받는 작은 모델이 총소리 점수를 내고, 위협음으로 올릴지 정합니다. (`GunshotBoosterInference`, `GunshotBoosterDecision`)
 7. **후처리**: 확신도 기준과 히스테리시스를 적용해 라벨이 매번 흔들리지 않게 합니다. 위협음은 다른 종류보다 빨리 전환됩니다. 확신도가 기준에 못 미치면 **이전 라벨을 유지**합니다. (`AiPostProcessor`)
 8. 결과를 `AtomicReference`에 저장합니다. 읽는 쪽은 락 없이 가져갑니다.
+
+기본 경로는 계속 `AudioPreprocessor`와 Gunshot Booster를 사용합니다. 개발자 모드를 켠 동안에만
+설정에서 pinned Qualcomm source frontend와 Booster 우회를 고를 수 있습니다(#160). 파이프라인은
+틱 시작 때 설정 한 벌을 읽고 frontend 하나만 실행하며, Booster를 끄면 ONNX 점수 계산을 건너뜁니다.
+조합을 바꾼 첫 틱에는 이전 조합의 candidate/confirmed 이력이 섞이지 않도록 후처리 상태를 비웁니다.
+전처리기는 파이프라인 초기화 때 두 개를 만들지 않고 첫 tick에서 선택된 하나만 만듭니다. 선택이
+바뀌면 이전 인스턴스 참조를 버리고 새 선택만 유지해 두 구현의 작업 버퍼를 함께 보관하지 않습니다.
+개발자 모드를 끄면 저장해 둔 선택과 상관없이 다음 틱부터 기본 경로로 돌아갑니다. 이 진단 선택은
+mapper·임계값·히스테리시스·Booster 모델을 바꾸지 않습니다.
 
 ### 결과 전달 (`AiClassification`)
 
@@ -177,6 +204,10 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - `tools/ai_reference/`: 전처리·추론의 Python 기준 구현과 골든 데이터 생성 스크립트
 - 유닛 테스트(`app/src/test/.../ai/`): 전처리 골든 비교, 분류 매핑, Booster 판정, 후처리
 - 계측 테스트(`app/src/androidTest/.../ai/`): 실제 ONNX 모델 추론 비교 (기기 필요)
+- 골든 픽스처(`app/src/test/resources/ai_reference/`)는 고리 셋의 가운데입니다. **Kotlin ↔ 커밋된 픽스처**는 위의 테스트가 보고, **픽스처를 만든 Python 기준 구현 ↔ 실제 TensorFlow·torch_audioset**은 `AI frontend reference parity` 워크플로(`verify_tensorflow_logmel_parity.py`, `verify_torchaudio_logmel_parity.py`)가 봅니다. 픽스처만 다시 만들어 올려도 두 번째 검사가 돌아야 하므로 — 안 돌면 골든 테스트가 그 새 픽스처에 맞춰 통과합니다 — 그 워크플로의 `paths` 에는 `tools/ai_reference/` 와 함께 픽스처 폴더도 들어 있습니다(#152).
+- 리샘플러는 Python 기준 구현과 44.1·48kHz 모두 오차 1e-5 안으로 맞는지(`CaptureAudioPathTest`), 통과대역과 저지대역 요건을 채우는지 봅니다. 이 비교에 쓰는 짧은 픽스처는 라이선스 오디오 없이 `export_resample_parity_golden.py`로 다시 만들 수 있습니다. 실제 소리로 끝까지 도는 e2e 골든은 원본 오디오의 출처·라이선스·SHA-256을 `realtime_e2e_sources.json`에 적어 두고, 오디오 파일 자체는 커밋하지 않습니다.
+
+**진단 로그** (`debuggable` 빌드만): 분석 결과를 2초에 한 번 `AI_RESULT` 로그로 풀어 남깁니다. 실제 사용한 frontend와 Booster 설정·사용 가능 여부, 입력 형식(레이트·채널), 16kHz 신호의 RMS·피크·평균, log-mel의 최솟값·최댓값·평균·표준편차, YAMNet top-5, 종류별 점수, Booster 전후의 종류·이름·확신도, 총소리 점수·근거·채택 사유, 후처리의 임계값·확정 상태·연속 횟수입니다. 캡처를 시작할 때는 요청한 형식과 실제로 열린 형식을 한 줄 남깁니다. 배포판(릴리스 APK)에는 남지 않으므로, 배포판을 쓰는 기기에서 볼 때는 개발자 모드(4장)를 씁니다. 개발자 모드가 읽는 `AiClassificationResult`에도 frontend·Booster 설정, top-5·총소리 근거·판정 이유·경보 신호 승격 여부가 실려 있습니다(#131, #160).
 
 ---
 
@@ -189,6 +220,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 | `VisualizerEngine` | 피크를 8방향 깊이·도형으로 바꾸고 캔버스에 그리는 엔진 |
 | `VisualizerInputs` | 엔진이 읽는 바깥 입력 인터페이스와 실제 연결(`LiveVisualizerInputs`) |
 | `VisualMode` | 네 가지 표현 모드 (파도·패드·원형·외곽선) |
+| `AiDebugOverlay` / `AiDebugText` | 개발자 모드에서 창 왼쪽 위에 띄우는 AI 분류 결과 |
 
 ### 창 (`OverlayService`)
 
@@ -203,17 +235,44 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - `withFrameNanos`로 화면 프레임마다 `VisualizerEngine.tick`을 부르고, 다시 그릴 필요가 있을 때만 그리기를 무효화합니다. 리컴포지션은 일어나지 않습니다.
 - 그리기는 Compose `Canvas`의 `nativeCanvas`(`android.graphics.Canvas`)에 `Path`·`Paint`·`Shader`로 합니다. OpenGL은 쓰지 않습니다.
 - 모든 버퍼·`Path`·`Paint`를 미리 만들어 두어 **프레임당 힙 할당이 없습니다.**
-- 120Hz 화면에서도 **최대 60fps**로 제한합니다.
-- 화면이 꺼져 캡처를 쉬는 동안(`SettingsManager.isCapturePaused`)에는 쉬기(idle) 상태의 33ms 확인도 멈추고 켜질 때까지 기다립니다. 화면이 꺼져도 이 루프는 저절로 멈추지 않기 때문입니다. 소리가 나던 중에 쉬기 시작해도 캡처 서비스가 소리 크기를 지우므로, 엔진이 1초 남짓 뒤 쉬기로 내려와 거기서 멈춥니다.
+- 120Hz 화면에서도 **최대 60fps**로 제한합니다. 설정의 **그래픽 덜 자주 그리기**를 켜면 **30fps**입니다. 엔진은 이 값을 `VisualizerInputs.framesPerSecond()`로 프레임마다 읽으므로 실행 중에 바꿔도 바로 적용됩니다.
+  - 실기기(Galaxy S21 Ultra, 음악 재생 60초)에서 스레드별로 잰 앱 CPU는 한 코어 기준 합계 22.9%였고, 그중 약 21%가 그리기(GPU 명령 생성·렌더링·경로 래스터화·그리기 계산)였습니다. AI 추론은 약 1%, 캡처는 0.2%입니다. 30fps로 바꾸면 17.2%(25% 절감)입니다. 프레임 수와 상관없는 비용이 섞여 있어 절반이 되지는 않습니다.
+  - 소리가 없을 때 켜 둔 비용도 쟀습니다. Galaxy S25+, 릴리스 빌드, 홈 화면에서 1분씩 재서 꺼 둔 상태와 비교했고, 수치는 한 코어 기준입니다.
+    - 늘어난 양은 약 5~6%입니다. 앱이 3.0~3.2%, 화면 합성이 약 1%, 오디오 서버·HAL 이 약 1.6% 입니다.
+    - 앱 안에서는 메인 스레드(33ms 쉬기 확인과 0.5초 받지 못하는 소리 확인)가 1.2%, 캡처 스레드가 1.0%, 코루틴 타이머가 0.7% 입니다.
+    - 대부분은 소리를 받는 한 드는 비용입니다. 쉬는 동안 오버레이 창을 숨기거나 확인 간격을 늘려도 줄일 수 있는 양은 1% 안팎이라 그때는 손대지 않았습니다.
+    - 위 수치는 아래의 소리 신호로 바꾸기 전입니다(#170). 뒤에 스레드별 **깨어남 횟수**까지 세어 보니, 쉬는 동안의 33ms 확인이 한 번에 스레드를 네다섯 번 깨우고 있었습니다. Compose 루프 안의 `delay` 는 코루틴 타이머 스레드를 거치고, 돌아올 때 Compose 디스패처가 핸들러 메시지와 vsync 콜백을 둘 다 요청합니다. 그리는 것이 없는데도 초당 30번 vsync 를 요청한 셈입니다. 위의 "코루틴 타이머 0.7%" 가 이것입니다.
+  - 늦게 온 위협음을 위한 1초 보관 버퍼(아래 8번)는 경과 시간으로 정규화한 프레임 수로 칸을 넘기므로 30fps에서도 1초 그대로입니다.
+- 쉬는 동안 조용하면 **캡처 스레드가 소리를 알려 줄 때까지 잠듭니다**(`SoundWakeSignal`, #170). 캡처 스레드는 버퍼를 넘길 때마다 원자 변수를 읽고, 오버레이가 쉬는 중이면 소리 크기를 한 번 더 읽어 깨울지 정합니다. 할당은 없습니다. 33ms 주기를 기다리지 않으므로 소리에 반응하는 시점도 빨라집니다.
+  - 표시를 꺼 둔 종류의 소리가 계속 나거나, 늦게 올 위협음 판정을 위해 소리를 보관하는 동안(아래 8번)에는 지금처럼 33ms 마다 확인합니다(`VisualizerEngine.canSleepUntilLoud`). 그때 소리 신호로 깨우면 버퍼마다(약 12ms) 깨어나 오히려 잦아집니다. 이 확인은 Compose 디스패처 대신 메인 스레드 핸들러(`Dispatchers.Main`)에서 기다려, 확인 한 번에 한 번만 깨어납니다.
+  - 확인하기 **직전부터** 들어온 버퍼만 셉니다. 마지막 소리 크기만 보고 깨우면, 캡처가 멈춰 그 값이 크게 남았을 때 오버레이가 잠들지 못하고 메인 스레드에서 쉬지 않고 돕니다.
+  - 릴리스 빌드, 개발자 모드 꺼짐, 홈 화면에서 60초씩 잰 앱 전체 값입니다. 폰은 소리를 낼 수 없어 조용할 때만 쟀고, 숨긴 소리는 에뮬레이터 안의 톤 재생기로 냈습니다.
+
+    | | 바꾸기 전 | 바꾼 뒤 |
+    |---|---:|---:|
+    | **Galaxy S25+** 조용할 때 CPU (한 코어 기준) | 3.07~3.25% | **1.37~1.40%** |
+    | Galaxy S25+ 조용할 때 초당 깨어남 | 328~343 (메인 145, 타이머 120, 캡처 55) | **82~83** (메인 4, 타이머 9, 캡처 53) |
+    | Pixel 7 에뮬레이터(Android 17) 조용할 때 CPU | 1.6% | 0.55% |
+    | 에뮬레이터 조용할 때 초당 깨어남 | 196 (메인 75, 타이머 60, 캡처 47) | 77 (메인 4, 타이머 8, 캡처 47) |
+    | 에뮬레이터 숨긴 소리가 날 때 초당 깨어남 | 210 (메인 83, 타이머 60) | 108 (메인 32, 타이머 8) |
+
+    S25+ 에서는 앱의 대기 비용이 절반 넘게(약 1.8%p) 줄었고, 남은 것은 대부분 소리를 받는 캡처 스레드입니다. 숨긴 소리가 날 때의 CPU 는 소리가 있으면 도는 AI 추론이 대부분이라 덜 줄었습니다(에뮬레이터 2.20초 → 1.78초).
+- 화면이 꺼져 캡처를 쉬는 동안(`SettingsManager.isCapturePaused`)에는 쉬기(idle) 상태의 확인도 멈추고 켜질 때까지 기다립니다. 화면이 꺼져도 이 루프는 저절로 멈추지 않기 때문입니다. 소리가 나던 중에 쉬기 시작해도 캡처 서비스가 소리 크기를 지우므로, 엔진이 1초 남짓 뒤 쉬기로 내려와 거기서 멈춥니다.
 
 ### 개발자 모드 (`AiDebugOverlay`, `AiDebugText`)
 
-설정 탭 맨 아래의 **개발자 모드**(기본 꺼짐)를 켜면 오버레이 왼쪽 위에 AI 분류 결과가 세 줄로 뜹니다. 팀이 영상·게임을 틀어 놓고 **보면서 분류가 맞는지 채점하는** 도구입니다. 배포판에서는 `AI_RESULT` 로그가 남지 않으므로(`debuggable` 빌드 전용), 기기에서 무슨 일이 일어나는지 볼 방법이 이것뿐입니다.
+설정 탭 맨 아래의 **개발자 모드**(기본 꺼짐)를 켜면 오버레이 왼쪽 위에 AI 분류 결과가 뜹니다. 팀이 영상·게임을 틀어 놓고 **보면서 분류가 맞는지 채점하는** 도구입니다. 배포판에서는 `AI_RESULT` 로그가 남지 않으므로(`debuggable` 빌드 전용), 기기에서 무슨 일이 일어나는지 볼 방법이 이것뿐입니다.
 
 ```text
-DANGER ●  Gunshot, gunfire                    0.41
-thr N   pre ambient   bst Y 0.83   prev -     age 0.2s
-lvl 0.14   shown Y    65ms (12/48/3)
+DANGER ● Alarm 0.12
+thr Y   pre ambient   bst disabled   prev N   age 0.2s
+why game_mix_or_strong_danger   ev 0.00   cue Y
+lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
+1 Air horn, truck horn       0.12
+2 Sound effect               0.10
+3 Buzzer                     0.09
+4 Alarm                      0.09
+5 Vehicle horn, car horn, h… 0.08
 ```
 
 라벨은 **번역하지 않고 모델이 말한 그대로(영어 YAMNet 클래스명)** 보여줍니다. 정확도를 채점하려면 모델이 실제로 뭐라고 했는지를 봐야 하기 때문입니다. 확신도가 낮을 때도 숨기지 않습니다.
@@ -222,21 +281,26 @@ lvl 0.14   shown Y    65ms (12/48/3)
 
 | 표시 | 없으면 생기는 오독 |
 |---|---|
+| `path`·`bst disabled/unavailable` | 어느 frontend와 Booster 조건으로 나온 결과인지, Booster를 일부러 끈 것인지 모델을 못 불러온 것인지 구분할 수 없습니다 |
 | `thr` (`meetsThreshold`) | 임계값을 못 넘는 동안 확정값이 **전부 얼어붙습니다**. 이게 없으면 "AI가 못 잡는다"와 "임계값을 못 넘는다"를 구분할 수 없습니다 |
 | `age` (결과가 나온 뒤 흐른 시간) | 무음이면 추론을 건너뛰고 마지막 결과를 그대로 들고 있습니다. 나이가 자라는 것이 "지금 추론이 돌지 않는다"는 신호입니다 |
 | `pre`·`bst` (Booster 전 종류, 채택 여부·점수) | Booster가 채택되면 종류뿐 아니라 **이름까지 총소리 클래스명으로 갈아치웁니다**. 이게 없으면 모델이 하지 않은 말을 모델 탓으로 채점합니다 |
+| `why`·`ev` (판정 이유의 이름, 총소리 근거) | 어느 분기를 탔는지와, 총소리로 부를 근거(top-5 안 총기 라벨 확률)가 있었는지. 이유 문자열 뒤의 점수·근거는 `bst`·`ev`와 겹쳐 이름만 씁니다 |
+| `cue` (`dangerCuePromoted`) | 부스터와 별개로 경보·사이렌·폭발 같은 신호로 위험에 올린 경우입니다. `bst N`인데 위험인 까닭을 설명합니다 |
+| top-5 (순위·이름·확률) | 모델이 1위만이 아니라 무엇을 함께 들었는지. 1위가 경보가 아니어도 4위의 `Alarm`으로 위험이 될 수 있습니다. 한 줄에 하나씩, 긴 이름은 26자에서 줄여 확률이 한 열에 서게 합니다 |
 | `prev` (`useBoosterDangerPreview`) | 히스테리시스를 우회한 한 틱짜리 프리뷰. "빨갛게 번쩍했는데 확정 라벨은 danger가 아니다"의 유일한 설명입니다 |
 | `lvl`·`shown` | 진동 게이트 값과 그 종류의 표시 설정. "왜 진동이 안 울렸나", "왜 아무것도 안 그려지나"를 AI 탓으로 돌리지 않게 합니다 |
 | 소요시간 | 실제 주기는 `totalMs + 250ms`입니다(스케줄러가 틱 **뒤에** 쉽니다). "AI가 늦다"가 사실은 "이 기기가 느리다"인 경우를 가릅니다 |
 
 - `confidence`는 **라벨이 확정된 순간의 값**(`confirmedConfidence`)이라 몇 초 전 값일 수 있습니다. 현재 프레임의 확신도는 결과에 실려 있지 않고 `meetsThreshold` 불린으로만 나옵니다.
-- **top-5 목록은 보여줄 수 없습니다.** 분류기가 만들지만 `AiClassificationResult`에 싣지 않고, 더 자세한 진단은 테스트 전용 경로로만 나옵니다. 꺼내려면 `ai/` 변경이 필요합니다.
 - 그리기는 **오버레이 창 안의 형제 Compose `Text`**입니다. 엔진의 무할당 그리기 경로는 건드리지 않습니다. 다만 **상태 읽기를 `AiDebugOverlay` 안에 가둬야** 합니다. 바깥에서 읽으면 오버레이 전체가 초당 4회 리컴포지션되고 `Canvas`의 그리기 람다가 매번 새로 만들어집니다.
 - 갱신은 **100ms 폴링**입니다. 추론이 250ms 주기라 같은 주기로 읽으면 지터 때문에 같은 결과를 두 번 읽고 **다음 결과 하나를 통째로 건너뜁니다.** 총성 한 발이 만드는 250ms짜리 danger 틱 하나가 정확히 이 도구가 잡아야 할 사건입니다(진동 알림이 100ms인 것과 같은 이유). 화면이 꺼져 쉬는 동안에는 폴링도 멈춥니다.
 - 글자를 넣어도 **터치 통과는 깨지지 않습니다.** 그 성질은 창 플래그(`FLAG_NOT_TOUCHABLE`)에 걸려 있습니다. 같은 이유로 이 표시를 별도 창으로 띄우면 안 됩니다. 불투명한 두 번째 오버레이 창은 그 영역의 "신뢰할 수 없는 터치 차단"을 다시 부릅니다.
 - Android 12 이상에서는 창 알파(약 0.8)가 곱해지므로 판은 **완전히 불투명한** 검정으로 둡니다. 안쪽에 반투명을 쓰면 알파가 두 번 곱해져 흐려집니다.
 - 화면 읽어주기는 이 표시를 건너뜁니다(`clearAndSetSemantics`). 개발용 글자라 정작 이 앱 사용자에게는 소음입니다.
-- 줄 만들기는 `AiDebugText`라는 순수 로직으로 빼 기기 없이 검사합니다(`AiDebugTextTest`). NaN 점수, 확정 이름이 빈 경우, 뒤로 간 시계, 그리고 앱 언어 때문에 숫자가 아랍 숫자로 나오는 것까지 고정합니다.
+- 줄 만들기는 `AiDebugText`라는 순수 로직으로 빼 기기 없이 검사합니다(`AiDebugTextTest`). NaN 점수, 확정 이름이 빈 경우, 뒤로 간 시계, 긴 top-5 이름, 그리고 앱 언어 때문에 숫자가 아랍 숫자로 나오는 것까지 고정합니다.
+- **한 줄은 58자까지입니다**(`AiDebugText.HUD_MAX_COLUMNS`). 폭 411dp 폰을 글꼴 크기 기본값으로 쓸 때 글자 영역이 383dp 이고, 고정폭 글꼴 11sp 는 글자당 6.6dp 입니다. 넘으면 줄이 두 줄로 꺾여 읽기 어려워집니다. 그래서 어느 전처리를 썼는지(`path`)는 detail 줄이 아니라 그 전처리 시간이 있는 줄 끝에 두고, 100초가 넘은 결과의 나이는 `123s`·`17m` 처럼 짧게 씁니다(#165). `AiDebugTextTest` 가 가장 긴 경우(부스터 모델 없음, 가장 긴 판정 이유와 클래스 이름, 느린 기기의 소요시간)로 모든 줄을 재어 봅니다.
+- 글꼴은 **앱에 넣은 고정폭 글꼴**(`AppMonospace`, `UiFonts.kt`)입니다. 시스템의 `FontFamily.Monospace` 를 쓰면 삼성 One UI 가 비례폭으로 덮어써서, 값이 바뀔 때 자리가 흔들리고 top-5 확률이 한 열에 서지 않습니다. Galaxy S25+ 에서 `lvl 0.00` 의 글자 간격이 11.5~19px 로 들쭉날쭉했고, 같은 코드가 Pixel(AOSP) 에서는 17px 로 고르게 나왔습니다(#162). 넣은 글꼴은 AOSP 의 `DroidSansMono.ttf` 를 고치지 않은 것이고, 도움말의 라이선스 고지와 제보용 기기 정보도 같은 글꼴을 씁니다. `AppMonospaceFontTest` 가 이 글꼴이 정말 고정폭인지, HUD 가 찍을 수 있는 글자(YAMNet 클래스 이름 521개, 말줄임표 포함)가 모두 들어 있는지 확인합니다. 빠진 글자는 그 글자만 시스템 글꼴로 그려져 그 줄이 다시 비례폭이 됩니다.
 
 ### 한 프레임의 계산 (`VisualizerEngine.tick`)
 
@@ -246,7 +310,7 @@ lvl 0.14   shown Y    65ms (12/48/3)
 4. **깊이**: **크기** 100%가 화면 중앙 한계선에 닿도록 방향별 깊이(px)를 정합니다.
 5. **색·진하기·광원**: AI 라벨에 맞는 색으로 **즉시** 바꾸고(위협음은 서서히 물드는 것보다 바로 뜨는 편이 낫습니다), 그 종류의 표시가 꺼져 있으면 그리지 않습니다. 기본색은 환경음 흰색, 대화음 노란색, 위협음 빨간색입니다.
 6. **도형**: 모드에 따라 파도·외곽선(화면 둘레를 따라가는 곡선), 패드(가장자리 막대), 원형(모서리 파문)을 계산합니다.
-7. **쉬기(idle)**: 1초 넘게 아무것도 안 보이고, 조용하거나 지금 설정으로는 그릴 수 없으면(표시 꺼짐, 진하기·크기 0) 프레임 루프를 멈추고 33ms 간격 확인으로 내려갑니다. 소리가 나고 그릴 수 있게 되면 다시 프레임 루프로 돌아옵니다.
+7. **쉬기(idle)**: 1초 넘게 아무것도 안 보이고, 조용하거나 지금 설정으로는 그릴 수 없으면(표시 꺼짐, 진하기·크기 0) 프레임 루프를 멈추고 쉽니다. 조용하면 캡처 스레드가 소리를 알려 줄 때까지 잠들고, 표시를 꺼 둔 소리가 나거나 소리를 보관하는 중이면 33ms 간격으로 확인합니다. 소리가 나고 그릴 수 있게 되면 다시 프레임 루프로 돌아옵니다.
 8. **늦게 온 위협음 판정**: AI 판정은 0.25초 주기에 추론 시간까지 더해 소리보다 늦게 옵니다. 그래서 위협음만 보이게 해 두면 총소리 같은 짧은 소리는 먼저 숨긴 라벨(환경음 등)로 들어와 그려지지 않고, 판정이 올 때는 잔향만 남습니다. 이를 막으려고 표시가 꺼진 라벨 때문에 그리지 못한 피크를 약 1초(33ms 칸 30개, 고정 크기 링 버퍼) 보관합니다. 쉬는 중이든 프레임 루프 중이든 같습니다.
    - 라벨이 **위협음**으로 바뀌어 표시 대상이 되면 보관한 소리로 전체 크기와 방향을 바로 잡습니다. 쉬는 중이면 소리가 이미 끝났어도 깨어납니다. 이후에는 평소처럼 **민감도** 속도로 줄어들고, 한 번 쓴 피크는 비워서 같은 소리로 두 번 번쩍이지 않습니다.
    - 시작 크기는 그 종류를 **제때 표시했다면 그렸을 크기**입니다. 보관한 칸을 오래된 것부터 평소 스무딩(민감도)에 다시 흘려 가장 크게 도달한 값을 쓰고, 방향은 가장 큰 피크를 따릅니다. 피크를 그대로 전체 크기로 쓰면 소리가 1초 넘게 이어질 때의 크기라서, 짧은 총성마다 **크기** 한도까지 뛰고 같은 소리가 직전 라벨에 따라 열 배 넘게 다르게 그려집니다.
@@ -296,7 +360,9 @@ lvl 0.14   shown Y    65ms (12/48/3)
 - 실행 상태(`isServiceRunning`), AI 사용 가능 여부(`aiAvailable`), 화면 꺼짐으로 쉬는 중(`isCapturePaused`), 소리를 받을 수 없는 중(`isCaptureBlocked`)은 캡처 서비스가 알려주는 값이라 저장하지 않습니다.
 - 마지막으로 뜻하지 않게 꺼진 이유(`lastUnexpectedStop`)는 캡처 서비스가 알려주지만, 프로세스가 끝난 뒤 앱을 열어도 홈에서 보이도록 이름으로 저장합니다. 모르는 이름(항목을 바꾼 뒤)이면 안내가 없는 것으로 봅니다. 읽기·쓰기(`loadLastUnexpectedStop`·`putLastUnexpectedStop`)는 `StopNoticeSettingsTest`가 확인합니다.
 - "화면이 꺼지면 일시정지"의 기본값은 `PAUSE_WHEN_SCREEN_OFF_DEFAULT` 한 곳에만 둡니다. 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 모르고 지나갑니다(`ScreenOffPauseTest`).
-- 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다.
+- 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다. frontend·Booster A/B 선택은 저장하지만 개발자 모드가 꺼져 있으면 `AiDiagnosticConfig.DEFAULT`만 파이프라인에 넘깁니다. `AiDiagnosticSettingTest`가 기본값·저장 복원·이 안전 복귀를 지킵니다.
+- "그래픽 덜 자주 그리기"(`reducedFrameRate`, 4장)의 기본값은 `REDUCED_FRAME_RATE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 소리를 눈으로 보는 앱이라 부드러운 쪽이 기본이고, 오래 켜 두는 사람이 고릅니다. 저장·복원과 엔진의 프레임 수까지 이어지는 배선은 `ReducedFrameRateTest`가 봅니다.
+- 테스트는 `SettingsManager.load(SharedPreferences)`에 메모리 가짜 프리퍼런스를 넣어 값을 세웁니다(`init(context)`는 "처음 한 번만" 규칙을 지키고 이 함수를 부릅니다). 이 객체는 싱글턴이라 값을 바꾼 테스트는 `@After`에서 기본값으로 되돌립니다.
 
 ---
 
@@ -304,7 +370,7 @@ lvl 0.14   shown Y    65ms (12/48/3)
 
 | 스레드 | 우선순위 | 하는 일 |
 |---|---|---|
-| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 500ms 간격 받을 수 없는 소리 확인, 꺼짐 알림 |
+| 메인 | 기본 | 설정 화면, 오버레이 프레임 계산과 그리기, 화면 켜짐·꺼짐 수신과 캡처 쉬기·다시 켜기, 500ms 간격 받을 수 없는 소리 확인, 꺼짐 알림, 실행 중 알림 버튼 받기 |
 | `SV-AudioCapture` | `URGENT_AUDIO` | `AudioRecord` 읽기, 피크 전달, AI 링버퍼 복사 |
 | `SV-AiInit` | `BACKGROUND` | 모델 복사·세션 생성 (시작 시 한 번) |
 | AI 코루틴 | `Dispatchers.Default` | 250ms 간격 분석 |
@@ -372,10 +438,23 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 
 화면은 Compose가 그리지만, 앱을 켜서 첫 화면을 그리기 전과 액티비티가 다시 만들어지는 동안에는 창 테마(`res/values/themes.xml`의 `Theme.SoundVisualizer`)의 배경이 보입니다. 이 색이 앱 배경과 다르면 앱을 켤 때마다 다른 색이 번쩍입니다.
 
-- 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경과 상태 표시줄을 `@color/app_background`(#2A2C31)로 칠합니다.
+- 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경·상태 표시줄·내비게이션 바를 `@color/app_background`(#2A2C31)로 칠합니다. 바 색은 첫 화면이 뜨기 전의 시작 창에서만 쓰입니다(Android 14 이하). 첫 화면이 뜨면 아래처럼 바가 투명해집니다.
 - Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`). 아이콘은 런처 아이콘을 그대로 씁니다.
-- `app_background`는 Compose의 `BgColor`(`MainActivity.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
-- 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 이 테마를 쓰지 않고 매니페스트에서 투명 테마(`Theme.Translucent.NoTitleBar`)를 따로 지정합니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
+- `app_background`는 Compose의 `BgColor`(`UiColors.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
+- **화면은 시스템 바 밑까지 그립니다(edge-to-edge, #138).**
+  - `MainActivity`가 `enableEdgeToEdge`로 바를 투명하게 합니다.
+  - `LauncherApp`은 탭과 내용을 `safeDrawingPadding`으로 상태 표시줄·내비게이션 바·카메라 구멍에서 비켜 놓습니다. 비켜 놓은 자리에는 바깥 `Surface`가 칠한 앱 배경색이 보입니다.
+  - Android 15 이상은 targetSdk 35부터 이 방식을 강제하고, 36부터는 끌 수도 없습니다. 옛 버전(10~14)도 같은 모양이 되게 직접 켭니다.
+  - 앱 화면은 폰의 라이트·다크 모드와 상관없이 늘 어두우므로, 바의 아이콘은 밝게 고정합니다(`SystemBarStyle.dark`).
+  - Compose 테마(`SoundVisualizerTheme`)는 창을 건드리지 않습니다. 같은 테마를 쓰는 타일의 투명 화면에 앱 화면의 바 설정이 따라가면 안 되고, 창의 `statusBarColor`는 Android 15 이상에서 효과도 없기 때문입니다.
+  - 탭 이름이 바에 가리지 않는지는 `LauncherInsetsInstrumentedTest`가 기기에서 확인합니다. 상태 표시줄이 24dp인 기기(Android 10 에뮬레이터 등)에서는 여백을 빼도 겹치지 않아 통과하므로, 최신 기기에서 돌려야 의미가 있습니다.
+- 빠른 설정 타일이 여는 `tile/StartVisualizerActivity`는 앱 화면 테마 대신 전용 투명 테마(`Theme.SoundVisualizer.Translucent`)를 씁니다. 보던 앱 위에 권한 창만 띄워야 하기 때문입니다.
+  - **예전 테마의 문제:** 예전에는 플랫폼의 `Theme.Translucent.NoTitleBar`를 썼습니다. 이 옛 테마는 시스템 바 배경을 그리지 않아, 권한 안내 창이 떠 있는 동안 위아래 바가 검게 칠해졌습니다.
+  - **지금 테마:** Material 테마에 바 색을 투명으로 둬서 보던 앱이 비칩니다(#142). 나머지 항목은 옛 투명 테마가 하던 일(투명 배경, 창 전환 애니메이션 없음)을 그대로 옮긴 것입니다.
+  - **`backgroundDimEnabled`를 두지 않는 이유:** 안내 창(Compose 대화 상자)이 이 값을 물려받아, 끄면 창 뒤가 어두워지지 않습니다.
+  - **Android 10 에뮬레이터에서는 여전히 바가 검게 보입니다.** 뒤를 어둡게 하는 떠 있는 창(대화 상자)이 맨 위에 있으면 시스템이 바를 칠하기 때문이고, 바꾸기 전과 같습니다.
+  - **확인한 기기:** API 37 에뮬레이터와 Galaxy S25+(Android 16)에서는 안내 창 뒤로 보던 화면이 어둡게 비칩니다. Android 11~14 는 확인하지 못했습니다.
+  - **테스트:** 매니페스트가 이 테마를 가리키는지, 그 테마가 Material 기반에 바까지 투명한지는 `AppWindowThemeTest`가 봅니다.
 
 ---
 
@@ -389,3 +468,16 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 - **터치 크기**: 색상 동그라미(32dp)와 색상 선택 창의 프리셋(30dp)은 보이는 크기를 그대로 두고 누를 수 있는 칸만 48dp로 키웁니다. 프리셋 여덟 개는 창 너비에 48dp씩 들어가지 않아 네 개씩 두 줄로 나눕니다.
 - **펼침 상태**: 펼치기 카드(`SettingsExpander`)의 상태는 `rememberSaveable`로 들고 있습니다. `remember`로 두면 목록 밖으로 스크롤된 카드의 상태가 사라져, 돌아왔을 때 펼쳐 둔 카드가 접혀 있습니다.
 - **큰 글꼴·가로 화면**: 홈 탭은 세로 스크롤을 열고 최소 높이를 화면 높이로 잡아, 짧을 때는 가운데 정렬로 두고 길어지면 밀어 볼 수 있게 합니다. 홈 제목처럼 큰 글자는 줄 간격(`lineHeight`)을 지정해 두 줄이 될 때 서로 붙지 않게 합니다.
+
+---
+
+## 11. 앱 안 제보 (`help/ReportLink`)
+
+도움말 탭의 **제보하기** 카드는 버그와 소리 오분류를 겪은 사람이 그 자리에서 알리는 창구입니다.
+
+- **붙는 정보는 네 줄뿐입니다.** 앱 버전, Android 버전(API), 기기 제조사와 모델, 화면 언어. 누르기 전에 카드에 그대로 보여 줍니다. 값은 `ReportLink.environment`의 인자로만 들어가 다른 정보가 섞일 수 없고, 오디오는 보내지 않습니다. 이름표(`App version:` 등)는 번역하지 않아 어떤 언어로 온 제보든 같은 모양으로 읽힙니다.
+- **GitHub에 제보하기**: 제목과 본문(사용자가 답할 질문 세 개 + 기기 정보)을 채운 새 이슈 주소를 브라우저로 엽니다. GitHub 계정이 필요하다는 것을 카드 설명에 적어 둡니다.
+- **메일로 제보하기**: `ACTION_SENDTO` + `mailto:`로 메일 앱만 고릅니다. **Gmail은 인텐트로 따로 넘긴 제목·본문을 무시하고 주소만 읽어서**(기기에서 확인) 제목·본문을 주소에 넣고, 인텐트 쪽에도 담아 둡니다. mailto 쿼리에서는 `+`가 공백으로 풀리지 않으므로 공백을 `%20`으로 바꿉니다(`ReportLink.mailtoUri`). 받는 주소(`help_report_email`)는 번역하지 않습니다.
+- **기기 정보 복사**: 브라우저나 메일 앱이 없을 때의 대안입니다. Android 13부터는 시스템이 복사 안내를 직접 띄우므로 그 아래 버전에서만 토스트를 띄웁니다.
+- 앱은 주소만 넘기고 여는 것은 브라우저·메일 앱이라 **인터넷 권한이 없습니다.** 열 앱이 없으면(`ActivityNotFoundException`) 죽지 않고 토스트로 안내합니다.
+- 주소 만들기(인코딩, 본문 합치기, 빈 값 처리)는 `ReportLinkTest`가 기기 없이 검사합니다.

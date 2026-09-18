@@ -1,11 +1,17 @@
 package com.example.soundvisualizer.help
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,12 +39,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AppMonospace
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
@@ -83,7 +92,7 @@ fun HelpTab() {
                 TitledItem(R.string.mode_pad, R.string.help_mode_pad_desc)
                 TitledItem(R.string.mode_outline, R.string.help_mode_outline_desc)
                 TitledItem(R.string.mode_circle, R.string.help_mode_circle_desc)
-                Paragraphs(R.string.help_modes_note)
+                Paragraphs(R.string.help_modes_note, R.string.help_modes_notification)
             }
         }
         item {
@@ -115,8 +124,17 @@ fun HelpTab() {
                 TitledItem(R.string.help_faq_no_graphic_q, R.string.help_faq_no_graphic_a)
                 TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_a)
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)
-                TitledItem(R.string.help_faq_battery_q, R.string.help_faq_battery_a)
+                TitledItem(
+                    R.string.help_faq_battery_q,
+                    R.string.help_faq_battery_a,
+                    R.string.help_faq_battery_less_drawing
+                )
                 TitledItem(R.string.help_faq_language_q, R.string.help_faq_language_a)
+            }
+        }
+        item {
+            SettingsExpander(stringResource(R.string.help_report_title)) {
+                ReportSection()
             }
         }
         item {
@@ -147,6 +165,107 @@ fun HelpTab() {
         LicenseDialog(onDismiss = { showLicenses = false })
     }
 }
+
+/**
+ * 제보 카드. 앱·기기 정보를 채운 새 이슈를 브라우저에서 열고, 열 수 없는 기기를 위해 같은 정보를 복사한다.
+ *
+ * 인터넷 권한 없이 동작한다. 링크를 여는 것은 브라우저이고, 앱은 주소만 넘긴다.
+ */
+@Composable
+private fun ReportSection() {
+    val context = LocalContext.current
+    val environment = remember(context) { deviceEnvironment(context) }
+    val issueTitle = stringResource(R.string.help_report_issue_title)
+    val issueBody = stringResource(R.string.help_report_issue_body)
+    val copied = stringResource(R.string.help_report_copied)
+    val noBrowser = stringResource(R.string.help_report_no_browser)
+    val noMail = stringResource(R.string.help_report_no_mail)
+    val reportEmail = stringResource(R.string.help_report_email)
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            stringResource(R.string.help_report_desc),
+            fontSize = BodySize, lineHeight = BodyLineHeight, color = PrimaryTextColor
+        )
+        Text(
+            environment,
+            fontSize = 13.sp, lineHeight = 19.sp, fontFamily = AppMonospace, color = SecondaryTextColor
+        )
+        OutlinedButton(
+            onClick = {
+                val url = ReportLink.issueUrl(issueTitle, issueBody, environment)
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(context, noBrowser, Toast.LENGTH_LONG).show()
+                }
+            },
+            border = BorderStroke(1.dp, AccentColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_button),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                // ACTION_SENDTO + mailto: 는 메일 앱만 고른다. 제목·본문은 주소에 넣는다.
+                // Gmail 은 따로 넘긴 추가 정보를 무시하므로, 읽지 않는 앱을 위해 양쪽에 담는다.
+                val uri = ReportLink.mailtoUri(reportEmail, issueTitle, issueBody, environment)
+                val intent = Intent(Intent.ACTION_SENDTO, uri.toUri()).apply {
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf(reportEmail))
+                    putExtra(Intent.EXTRA_SUBJECT, issueTitle)
+                    putExtra(Intent.EXTRA_TEXT, ReportLink.body(issueBody, environment))
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(context, noMail, Toast.LENGTH_LONG).show()
+                }
+            },
+            border = BorderStroke(1.dp, AccentColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_mail),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor
+            )
+        }
+        OutlinedButton(
+            onClick = {
+                val clipboard = context.getSystemService(ClipboardManager::class.java)
+                clipboard?.setPrimaryClip(ClipData.newPlainText(issueTitle, environment))
+                // Android 13 부터는 시스템이 복사됐다는 화면을 직접 띄운다. 겹쳐 보이지 않게 그 아래에서만 알린다.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    Toast.makeText(context, copied, Toast.LENGTH_SHORT).show()
+                }
+            },
+            border = BorderStroke(1.dp, SecondaryTextColor),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+        ) {
+            Text(
+                stringResource(R.string.help_report_copy),
+                fontSize = 15.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = SecondaryTextColor
+            )
+        }
+    }
+}
+
+/** 제보에 붙일 앱·기기 정보. 여기서 넘기는 값이 전부라 다른 정보가 섞이지 않는다. */
+private fun deviceEnvironment(context: Context): String = ReportLink.environment(
+    appVersion = versionName(context),
+    androidRelease = Build.VERSION.RELEASE.orEmpty(),
+    sdkInt = Build.VERSION.SDK_INT,
+    manufacturer = Build.MANUFACTURER.orEmpty(),
+    model = Build.MODEL.orEmpty(),
+    language = context.resources.configuration.locales[0].toLanguageTag()
+)
 
 @Composable
 private fun Paragraphs(@StringRes vararg texts: Int) {
@@ -181,16 +300,23 @@ private fun Bullets(@StringRes vararg items: Int) {
     }
 }
 
-/** 굵은 제목 한 줄과 설명. 권한, 모드, 자주 묻는 질문에 쓴다. */
+/**
+ * 굵은 제목 한 줄과 설명. 권한, 모드, 자주 묻는 질문에 쓴다.
+ *
+ * 설명을 여러 문단으로 받는다. 답을 보탤 때 기존 문자열을 고치면 16개 언어 번역이 옛 내용으로 남으므로,
+ * 새 문단을 따로 만들어 붙인다.
+ */
 @Composable
-private fun TitledItem(@StringRes title: Int, @StringRes description: Int) {
+private fun TitledItem(@StringRes title: Int, @StringRes vararg descriptions: Int) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(stringResource(title), fontSize = BodySize, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
-        Text(
-            stringResource(description),
-            fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        descriptions.forEach { res ->
+            Text(
+                stringResource(res),
+                fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
     }
 }
 
@@ -211,12 +337,21 @@ private fun LicenseDialog(onDismiss: () -> Unit) {
         containerColor = CardColor,
         title = { Text(stringResource(R.string.help_licenses_title), color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
         text = {
-            // 고지 파일은 고정폭 글꼴 기준으로 줄을 맞춰 두었다.
-            Text(
-                text,
-                fontSize = 11.sp, lineHeight = 15.sp, fontFamily = FontFamily.Monospace, color = SecondaryTextColor,
-                modifier = Modifier.verticalScroll(rememberScrollState())
-            )
+            // 고지 파일은 고정폭 글꼴 기준으로 줄을 맞춰 두었다. 삼성 폰은 시스템 monospace 를 비례폭으로 그려서
+            // 구분선과 들여쓰기가 어긋나므로 앱에 넣은 글꼴을 쓴다(#162).
+            // 80칸짜리 구분선은 이 창에서 두세 줄로 꺾이므로 창에 들어가는 칸 수로 줄여 한 줄로 그린다(#167).
+            // 칸 수는 실제 글꼴로 '=' 100개의 폭을 재서 한 글자 폭을 구해 창 폭으로 나눈다.
+            val style = TextStyle(fontSize = 11.sp, lineHeight = 15.sp, fontFamily = AppMonospace, color = SecondaryTextColor)
+            val measurer = rememberTextMeasurer()
+            BoxWithConstraints {
+                val hundredWidth = remember(measurer, style) { measurer.measure("=".repeat(100), style).size.width }
+                val columns = if (hundredWidth > 0) (constraints.maxWidth * 100L / hundredWidth).toInt() else 0
+                Text(
+                    licenseDisplayText(text, columns),
+                    style = style,
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.help_close), color = AccentColor) }

@@ -38,13 +38,14 @@
             타일에서 켤 때 권한 팝업과 화면 녹화 동의만 띄우는 투명 화면.
             taskAffinity 를 비워 앱과 다른 작업으로 띄운다. 앱이 백그라운드에 있어도 앱 화면이 올라오지 않고,
             닫히면 보던 앱(게임 등)으로 돌아간다. noHistory 는 동의 창이 위에 뜨는 순간 닫혀 결과를 못 받으므로 쓰지 않는다.
+            테마는 시스템 바까지 투명한 전용 테마다(themes.xml, #142).
         -->
         <activity
             android:name=".tile.StartVisualizerActivity"
             android:excludeFromRecents="true"
             android:exported="false"
             android:taskAffinity=""
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+            android:theme="@style/Theme.SoundVisualizer.Translucent" />
 
         <service
             android:name=".tile.VisualizerTileService"
@@ -68,6 +69,14 @@
 
         <service
             android:name=".OverlayService"
+            android:exported="false" />
+
+        <!--
+            실행 중 알림의 버튼을 받는다. 서비스로 바로 보내면 서비스가 없을 때 동의 없이 새로 뜨려다 죽는다.
+            알림의 PendingIntent 는 우리 앱 이름으로 보내지므로 밖으로 열지 않아도 닿는다.
+        -->
+        <receiver
+            android:name=".NotificationActionReceiver"
             android:exported="false" />
     </application>
 

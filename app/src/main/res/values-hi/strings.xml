@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">स्क्रीन बंद होने पर रोकें</string>
     <string name="setting_pause_screen_off_desc">स्क्रीन बंद रहने पर बैटरी बचाने के लिए आवाज़ कैप्चर करना, आवाज़ का प्रकार पहचानना और वाइब्रेशन रोक देता है, और स्क्रीन चालू करने पर सब फिर से शुरू हो जाता है। स्क्रीन बंद रहने पर भी वाइब्रेशन चाहिए, तो इसे बंद कर दें।</string>
+    <string name="setting_reduced_frame_rate">ग्राफ़िक्स कम बार बनाएं</string>
+    <string name="setting_reduced_frame_rate_desc">ग्राफ़िक्स को हर सेकंड 60 के बजाय 30 बार दोबारा बनाता है। ऐप को लंबे समय तक चालू छोड़ने पर इससे बैटरी बचती है, लेकिन हलचल उतनी सहज नहीं दिखती। आवाज़ को अब भी पहले जितनी ही बार कैप्चर किया जाता है।</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">माहौल की आवाज़ें दिखाएं</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">ऑडियो कैप्चर</string>
     <string name="notification_text">आवाज़ें स्क्रीन पर दिखाई जा रही हैं।</string>
     <string name="notification_stop">रोकें</string>
+    <string name="notification_mode_selected">%1$s, चुना गया</string>
     <string name="notification_text_ai_unavailable">आवाज़ें स्क्रीन पर दिखाई जा रही हैं। आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए वाइब्रेशन बंद है।</string>
     <string name="notification_text_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो, या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">लहर की सिर्फ़ पतली बाहरी रेखा बनाता है, इसलिए गेम की स्क्रीन कम ढकती है।</string>
     <string name="help_mode_circle_desc">स्क्रीन के बीच में बना घेरा उस ओर फूलता है, जिस ओर से आवाज़ आती है।</string>
     <string name="help_modes_note">“साइज़” और “गहरापन” जैसी सेटिंग हर मोड के लिए अलग से सेव होती हैं। इन्हें “सेटिंग” टैब में बदला जा सकता है।</string>
+    <string name="help_modes_notification">चालू रहने के दौरान दिखने वाली सूचना को बड़ा करके, ऐप खोले बिना ही मोड बदला जा सकता है।</string>
 
     <string name="help_sound_title">आवाज़ के प्रकार और वाइब्रेशन</string>
     <string name="help_sound_kinds">AI फ़ोन में चल रही आवाज़ों को तीन प्रकारों में बांटता है: माहौल की आवाज़ें, बातचीत और खतरे की आवाज़ें। डिफ़ॉल्ट रूप से माहौल की आवाज़ें सफ़ेद, बातचीत पीले और खतरे की आवाज़ें लाल रंग में दिखती हैं। “सेटिंग” टैब में हर प्रकार का रंग बदला जा सकता है और यह भी चुना जा सकता है कि उसे दिखाना है या नहीं।</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">किसी दूसरी जगह बनाए गए APK का सिग्नेचर अलग होता है, इसलिए वह मौजूदा ऐप के ऊपर इंस्टॉल नहीं हो सकता। पहले मौजूदा ऐप को अनइंस्टॉल करें, फिर नया वर्शन इंस्टॉल करें। ऐसा करने पर आपकी सेटिंग रीसेट हो जाएंगी।</string>
     <string name="help_faq_battery_q">क्या यह ज़्यादा बैटरी खर्च करता है?</string>
     <string name="help_faq_battery_a">यह सिर्फ़ आवाज़ होने पर ग्राफ़िक्स बनाता है और आवाज़ न होने पर स्टैंडबाय में चला जाता है। फिर भी, यह लगातार आवाज़ कैप्चर करता रहता है, इसलिए हमारा सुझाव है कि इस्तेमाल न करते समय इसे बंद रखें।</string>
+    <string name="help_faq_battery_less_drawing">आवाज़ चलते समय सबसे ज़्यादा बैटरी ग्राफ़िक्स बनाने में खर्च होती है। “सेटिंग” टैब के “बैटरी” में “ग्राफ़िक्स कम बार बनाएं” चालू करने पर बैटरी कम खर्च होती है, हालांकि हलचल उतनी सहज नहीं दिखती।</string>
     <string name="help_faq_language_q">ऐप की भाषा कैसे बदलें?</string>
     <string name="help_faq_language_a">“सेटिंग” टैब में सबसे ऊपर “भाषा” पर टैप करें और कोई भाषा चुनें। “सिस्टम डिफ़ॉल्ट” चुनने पर ऐप आपके फ़ोन की भाषा में दिखेगा। Android 13 और उसके बाद के वर्शन पर, फ़ोन की सेटिंग में “ऐप्लिकेशन की भाषाएं” से भी भाषा बदली जा सकती है।</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">समस्या की रिपोर्ट करें</string>
+    <string name="help_report_desc">किसी गड़बड़ी (बग) के बारे में बताएं, या ऐसी आवाज़ के बारे में जिसका प्रकार गलत दिखाया गया हो। आपके ब्राउज़र में GitHub खुलेगा, जिसमें ऐप और डिवाइस की जानकारी पहले से भरी होगी, इसलिए GitHub खाता ज़रूरी है। खाता न हो, तो इसके बजाय हमें ईमेल भेजें। आपके फ़ोन से कोई भी ऑडियो कभी नहीं भेजा जाता।</string>
+    <string name="help_report_button">GitHub पर रिपोर्ट करें</string>
+    <string name="help_report_mail">ईमेल से रिपोर्ट करें</string>
+    <string name="help_report_no_mail">भेजने के लिए कोई ईमेल ऐप नहीं है। डिवाइस की जानकारी कॉपी करें और किसी दूसरे तरीके से भेजें।</string>
+    <string name="help_report_copy">डिवाइस की जानकारी कॉपी करें</string>
+    <string name="help_report_copied">डिवाइस की जानकारी कॉपी हो गई।</string>
+    <string name="help_report_no_browser">लिंक खोलने के लिए कोई ब्राउज़र नहीं है। इसके बजाय डिवाइस की जानकारी कॉपी करके हमें भेजें।</string>
+    <string name="help_report_issue_title">ऐप से भेजी गई रिपोर्ट</string>
+    <string name="help_report_issue_body">क्या हुआ?\n\nआप क्या सुन रहे थे (कौन-सा ऐप, किस तरह की आवाज़)?\n\nइसके बजाय आपको क्या होने की उम्मीद थी?</string>
 
     <string name="help_about_title">ऐप के बारे में</string>
     <string name="help_about_version">वर्शन %1$s</string>

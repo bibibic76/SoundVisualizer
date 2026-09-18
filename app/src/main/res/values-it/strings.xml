@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pausa a schermo spento</string>
     <string name="setting_pause_screen_off_desc">A schermo spento interrompe l\'acquisizione dell\'audio, il riconoscimento dei tipi di suono e la vibrazione per risparmiare batteria, e riprende quando riaccendi lo schermo. Disattiva questa opzione per continuare a ricevere gli avvisi con vibrazione a schermo spento.</string>
+    <string name="setting_reduced_frame_rate">Disegna la grafica meno spesso</string>
+    <string name="setting_reduced_frame_rate_desc">Ridisegna la grafica 30 volte al secondo invece di 60. Risparmia batteria quando lasci l\'app attiva a lungo, ma il movimento è meno fluido. L\'audio continua a essere acquisito altrettanto spesso.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Mostra suoni ambientali</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Acquisizione audio</string>
     <string name="notification_text">Visualizzazione del suono in corso.</string>
     <string name="notification_stop">Interrompi</string>
+    <string name="notification_mode_selected">%1$s, selezionato</string>
     <string name="notification_text_ai_unavailable">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi gli avvisi con vibrazione sono disattivati.</string>
     <string name="notification_text_capture_blocked">Questa app non riceve nessun suono. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio, oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">Disegna solo un sottile contorno dell\'onda, così copre meno il gioco.</string>
     <string name="help_mode_circle_desc">Un anello al centro dello schermo si gonfia in direzione del suono.</string>
     <string name="help_modes_note">Opzioni come Dimensione e Opacità vengono salvate separatamente per ogni modalità e si possono modificare nella scheda Impostazioni.</string>
+    <string name="help_modes_notification">Mentre la visualizzazione è attiva, puoi espandere la notifica in corso per cambiare modalità senza aprire l\'app.</string>
 
     <string name="help_sound_title">Tipi di suono e vibrazione</string>
     <string name="help_sound_kinds">L\'IA classifica l\'audio in suoni ambientali, voci e suoni di pericolo. Per impostazione predefinita, i suoni ambientali sono bianchi, le voci gialle e i suoni di pericolo rossi. Nella scheda Impostazioni puoi cambiare il colore di ogni tipo e scegliere se mostrarlo.</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">Un APK compilato altrove ha una firma diversa e non può essere installato sopra l\'app esistente. Disinstalla prima l\'app esistente, poi installa quella nuova. In questo modo le tue impostazioni vengono azzerate.</string>
     <string name="help_faq_battery_q">Consuma molta batteria?</string>
     <string name="help_faq_battery_a">L\'app disegna solo quando c\'è un suono e resta inattiva quando c\'è silenzio. Dato che continua ad acquisire l\'audio, però, ti consigliamo di disattivarla quando non la usi.</string>
+    <string name="help_faq_battery_less_drawing">Quando c\'è un suono, è il disegno della grafica a consumare più energia. Se attivi “Disegna la grafica meno spesso” in Batteria, nella scheda Impostazioni, l\'app consuma meno, ma il movimento è meno fluido.</string>
     <string name="help_faq_language_q">Come cambio la lingua dell\'app?</string>
     <string name="help_faq_language_a">Tocca “Lingua” in cima alla scheda Impostazioni e scegline una. “Predefinita di sistema” segue la lingua del telefono. Su Android 13 e versioni successive puoi cambiarla anche in “Lingue delle app” nelle impostazioni del telefono.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Segnala un problema</string>
+    <string name="help_report_desc">Segnalaci un bug o un suono mostrato con il tipo di suono sbagliato. GitHub si apre nel browser con i dati dell\'app e del dispositivo già inseriti, quindi serve un account GitHub. Se non ce l\'hai, inviaci invece un\'email. Non viene mai inviato alcun audio.</string>
+    <string name="help_report_button">Segnala su GitHub</string>
+    <string name="help_report_mail">Segnala via email</string>
+    <string name="help_report_no_mail">Nessuna app di posta per l\'invio. Copia i dati del dispositivo e inviali in un altro modo.</string>
+    <string name="help_report_copy">Copia i dati del dispositivo</string>
+    <string name="help_report_copied">Dati del dispositivo copiati.</string>
+    <string name="help_report_no_browser">Nessun browser per aprire il link. Copia i dati del dispositivo e inviaceli in un altro modo.</string>
+    <string name="help_report_issue_title">Segnalazione dall\'app</string>
+    <string name="help_report_issue_body">Che cosa è successo?\n\nChe cosa stavi ascoltando (app, tipo di suono)?\n\nChe cosa ti aspettavi invece?</string>
 
     <string name="help_about_title">Informazioni</string>
     <string name="help_about_version">Versione %1$s</string>

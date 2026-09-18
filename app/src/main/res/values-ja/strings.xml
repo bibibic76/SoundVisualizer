@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">画面オフ中は一時停止</string>
     <string name="setting_pause_screen_off_desc">画面が消えている間は音の取得・音の種類の判別・振動を止めてバッテリーを節約し、画面をつけると再開します。画面が消えている間も振動でお知らせしてほしい場合は、オフにしてください。</string>
+    <string name="setting_reduced_frame_rate">グラフィックの描画回数を減らす</string>
+    <string name="setting_reduced_frame_rate_desc">グラフィックを1秒間に60回ではなく30回描き直します。アプリを長時間動かし続けるときにバッテリーを節約できますが、動きのなめらかさは下がります。音を取得する間隔は変わりません。</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">環境音を表示</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">音声キャプチャ</string>
     <string name="notification_text">音を可視化しています。</string>
     <string name="notification_stop">停止</string>
+    <string name="notification_mode_selected">%1$s、選択済み</string>
     <string name="notification_text_ai_unavailable">音を可視化しています。音の種類を判別できないため、振動のお知らせはオフです。</string>
     <string name="notification_text_capture_blocked">音を受け取れていません。再生中のアプリが音の共有を許可していないか、そのアプリの音がオフになっている可能性があります。</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">波の輪郭線だけを細く描くので、ゲーム画面が隠れにくくなります。</string>
     <string name="help_mode_circle_desc">画面中央のリングが、音のする方向へふくらみます。</string>
     <string name="help_modes_note">「サイズ」や「濃さ」などの設定はモードごとに保存され、「設定」タブで変更できます。</string>
+    <string name="help_modes_notification">オンの間は、実行中の通知を展開すると、アプリを開かずにモードを切り替えられます。</string>
 
     <string name="help_sound_title">音の種類と振動</string>
     <string name="help_sound_kinds">聞こえてくる音を、AI が環境音・話し声・危険音に分類します。初期設定の色は、環境音が白、話し声が黄色、危険音が赤です。種類ごとの色と表示の有無は「設定」タブで変更できます。</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">別の環境でビルドされた APK は署名が異なるため、既存のアプリに上書きインストールできません。既存のアプリをアンインストールしてからインストールしてください。この場合、設定はリセットされます。</string>
     <string name="help_faq_battery_q">バッテリーを多く消費しますか？</string>
     <string name="help_faq_battery_a">音が鳴っているときだけ描画し、静かなときは待機状態になります。ただし、音を取得し続けるため、使わないときはオフにすることをおすすめします。</string>
+    <string name="help_faq_battery_less_drawing">音が鳴っているときは、グラフィックの描画に最も多くの電力を使います。「設定」タブの「バッテリー」で「グラフィックの描画回数を減らす」をオンにすると、動きのなめらかさは下がりますが、消費電力が少なくなります。</string>
     <string name="help_faq_language_q">アプリの言語はどうやって変更しますか？</string>
     <string name="help_faq_language_a">「設定」タブの一番上にある「言語」をタップし、使用する言語を選びます。「システムのデフォルト」を選ぶと、スマートフォンの言語に合わせて表示されます。Android 13 以降では、スマートフォンの設定の「アプリの言語」からも変更できます。</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">問題を報告</string>
+    <string name="help_report_desc">バグを見つけたときや、音が間違った種類として表示されたときは、お知らせください。ブラウザで GitHub が開き、アプリとデバイスの情報があらかじめ入力されます。GitHub のアカウントが必要なため、アカウントがない場合はメールで送ってください。音声は一切送信されません。</string>
+    <string name="help_report_button">GitHub で報告</string>
+    <string name="help_report_mail">メールで報告</string>
+    <string name="help_report_no_mail">メールを送信できるアプリがありません。デバイス情報をコピーして、別の方法で送ってください。</string>
+    <string name="help_report_copy">デバイス情報をコピー</string>
+    <string name="help_report_copied">デバイス情報をコピーしました。</string>
+    <string name="help_report_no_browser">リンクを開くブラウザがありません。代わりに、デバイス情報をコピーして送ってください。</string>
+    <string name="help_report_issue_title">アプリからの報告</string>
+    <string name="help_report_issue_body">何が起きましたか？\n\n何を聞いていましたか？（アプリ、音の種類）\n\n本来はどうなることを期待していましたか？</string>
 
     <string name="help_about_title">このアプリについて</string>
     <string name="help_about_version">バージョン %1$s</string>

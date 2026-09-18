@@ -72,6 +72,18 @@ Licensed under the Apache License, Version 2.0.
 https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt
 
 ================================================================================
+5. Droid Sans Mono 글꼴
+================================================================================
+app/src/main/res/font/droid_sans_mono.ttf
+개발자 모드 표시, 라이선스 고지, 제보용 기기 정보를 고정폭으로 보여 주는 데 씁니다.
+Android Open Source Project 의 frameworks/base/data/fonts/DroidSansMono.ttf 를
+고치지 않고 그대로 넣었습니다.
+
+Digitized data copyright © 2007, Google Corporation.
+Licensed under the Apache License, Version 2.0.
+https://www.apache.org/licenses/LICENSE-2.0
+
+================================================================================
 
 테스트에만 쓰이는 의존성(JUnit, Espresso, org.json 등)은 APK 에 포함되지 않으므로
 위 목록에서 제외했습니다.

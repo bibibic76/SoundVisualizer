@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause bei ausgeschaltetem Bildschirm</string>
     <string name="setting_pause_screen_off_desc">Solange der Bildschirm aus ist, werden Audioerfassung, Erkennung der Geräuscharten und Vibration angehalten, um Akku zu sparen; sobald Sie den Bildschirm einschalten, geht es weiter. Schalten Sie dies aus, um auch bei ausgeschaltetem Bildschirm Vibrationswarnungen zu erhalten.</string>
+    <string name="setting_reduced_frame_rate">Grafiken seltener zeichnen</string>
+    <string name="setting_reduced_frame_rate_desc">Zeichnet die Grafiken 30-mal statt 60-mal pro Sekunde neu. Das spart Akku, wenn Sie die App lange laufen lassen, dafür sind die Bewegungen weniger flüssig. Der Ton wird weiterhin genauso oft erfasst.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Umgebungsgeräusche zeigen</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Audioerfassung</string>
     <string name="notification_text">Geräusche werden visualisiert.</string>
     <string name="notification_stop">Stopp</string>
+    <string name="notification_mode_selected">%1$s, ausgewählt</string>
     <string name="notification_text_ai_unavailable">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher sind Vibrationswarnungen aus.</string>
     <string name="notification_text_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu, oder in dieser App ist der Ton ausgeschaltet.</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">Zeichnet nur eine dünne Kontur der Welle und verdeckt so weniger von Ihrem Spiel.</string>
     <string name="help_mode_circle_desc">Ein Ring in der Bildschirmmitte dehnt sich in Richtung des Geräuschs aus.</string>
     <string name="help_modes_note">Einstellungen wie „Größe“ und „Deckkraft“ werden für jeden Modus separat gespeichert und lassen sich im Tab „Einstellungen“ ändern.</string>
+    <string name="help_modes_notification">Solange die Tonvisualisierung eingeschaltet ist, können Sie die Benachrichtigung während der Ausführung aufklappen und dort den Modus wechseln, ohne die App zu öffnen.</string>
 
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">Eine anderswo erstellte APK hat eine andere Signatur und kann daher nicht als Update für die vorhandene App installiert werden. Deinstallieren Sie zuerst die vorhandene App und installieren Sie dann die neue Version. Dabei werden Ihre Einstellungen zurückgesetzt.</string>
     <string name="help_faq_battery_q">Verbraucht die App viel Akku?</string>
     <string name="help_faq_battery_a">Die App stellt nur dann Grafiken dar, wenn Ton wiedergegeben wird, und ruht bei Stille. Da sie aber laufend Ton erfasst, empfehlen wir, sie auszuschalten, wenn Sie sie nicht verwenden.</string>
+    <string name="help_faq_battery_less_drawing">Während Ton wiedergegeben wird, verbraucht das Zeichnen der Grafiken den meisten Strom. Wenn Sie im Tab „Einstellungen“ unter „Akku“ die Option „Grafiken seltener zeichnen“ einschalten, verbraucht die App weniger Strom, dafür sind die Bewegungen weniger flüssig.</string>
     <string name="help_faq_language_q">Wie ändere ich die App-Sprache?</string>
     <string name="help_faq_language_a">Tippen Sie oben im Tab „Einstellungen“ auf „Sprache“ und wählen Sie eine Sprache aus. „Systemstandard“ übernimmt die Sprache Ihres Smartphones. Ab Android 13 können Sie die Sprache auch in den Einstellungen Ihres Smartphones unter „App-Sprachen“ ändern.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Problem melden</string>
+    <string name="help_report_desc">Melden Sie uns einen Fehler oder ein Geräusch, das als falsche Geräuschart angezeigt wurde. GitHub öffnet sich in Ihrem Browser mit bereits eingetragenen App- und Geräteinformationen. Dafür benötigen Sie ein GitHub-Konto. Wenn Sie keines haben, schicken Sie uns stattdessen eine E-Mail. Es werden niemals Audiodaten gesendet.</string>
+    <string name="help_report_button">Auf GitHub melden</string>
+    <string name="help_report_mail">Per E-Mail melden</string>
+    <string name="help_report_no_mail">Keine E-Mail-App zum Senden vorhanden. Kopieren Sie die Geräteinformationen und senden Sie sie auf anderem Weg.</string>
+    <string name="help_report_copy">Geräteinformationen kopieren</string>
+    <string name="help_report_copied">Geräteinformationen kopiert.</string>
+    <string name="help_report_no_browser">Kein Browser zum Öffnen des Links vorhanden. Kopieren Sie stattdessen die Geräteinformationen und senden Sie sie uns.</string>
+    <string name="help_report_issue_title">Meldung aus der App</string>
+    <string name="help_report_issue_body">Was ist passiert?\n\nWas haben Sie gerade gehört (App, Art des Geräuschs)?\n\nWas hätten Sie stattdessen erwartet?</string>
 
     <string name="help_about_title">Über diese App</string>
     <string name="help_about_version">Version %1$s</string>

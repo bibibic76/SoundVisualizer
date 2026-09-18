@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Ekran kapalıyken duraklat</string>
     <string name="setting_pause_screen_off_desc">Ekran kapalıyken pilden tasarruf etmek için ses yakalamayı, ses türü algılamayı ve titreşimi durdurur; ekranı açtığınızda kaldığı yerden devam eder. Ekran kapalıyken de titreşim uyarısı almak için bunu kapatın.</string>
+    <string name="setting_reduced_frame_rate">Grafikleri daha seyrek çiz</string>
+    <string name="setting_reduced_frame_rate_desc">Grafikleri saniyede 60 yerine 30 kez çizer. Uygulamayı uzun süre açık bıraktığınızda pilden tasarruf sağlar, ancak hareket daha az akıcı olur. Ses ise yine aynı sıklıkta yakalanır.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Ortam seslerini göster</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Ses yakalama</string>
     <string name="notification_text">Ses görselleştiriliyor.</string>
     <string name="notification_stop">Durdur</string>
+    <string name="notification_mode_selected">%1$s, seçili</string>
     <string name="notification_text_ai_unavailable">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için titreşim uyarıları kapalı.</string>
     <string name="notification_text_capture_blocked">Görselleştirmeye ses ulaşmıyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir veya o uygulamanın kendi sesi kapalı olabilir.</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">Dalganın yalnızca ince dış çizgisini çizer; böylece oyun ekranınızı daha az örter.</string>
     <string name="help_mode_circle_desc">Ekranın ortasındaki halka, sesin geldiği yöne doğru genişler.</string>
     <string name="help_modes_note">“Boyut” ve “Opaklık” gibi ayarlar her mod için ayrı kaydedilir ve “Ayarlar” sekmesinden değiştirilebilir.</string>
+    <string name="help_modes_notification">Görselleştirme çalışırken gösterilen bildirimi genişleterek, uygulamayı açmadan modu değiştirebilirsiniz.</string>
 
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">Başka bir yerde derlenen APK farklı bir imzaya sahip olduğundan mevcut uygulamanın üzerine yüklenemez. Önce mevcut uygulamayı kaldırın, ardından yeni sürümü yükleyin. Bu işlem ayarlarınızı sıfırlar.</string>
     <string name="help_faq_battery_q">Çok pil harcıyor mu?</string>
     <string name="help_faq_battery_a">Yalnızca ses varken çizim yapar, ses olmadığında bekleme moduna geçer. Yine de sesi sürekli yakaladığı için kullanmadığınızda kapatmanızı öneririz.</string>
+    <string name="help_faq_battery_less_drawing">Ses varken pilin en çok harcandığı iş grafikleri çizmektir. “Ayarlar” sekmesindeki “Pil” bölümünde yer alan “Grafikleri daha seyrek çiz” seçeneğini açarsanız daha az pil harcanır, ancak hareket daha az akıcı olur.</string>
     <string name="help_faq_language_q">Uygulama dilini nasıl değiştiririm?</string>
     <string name="help_faq_language_a">“Ayarlar” sekmesinin en üstündeki “Dil” seçeneğine dokunup bir dil seçin. “Sistem varsayılanı” telefonunuzun dilini kullanır. Android 13 ve sonraki sürümlerde telefonunuzun ayarlarındaki “Uygulama dilleri” bölümünden de değiştirebilirsiniz.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Sorun bildir</string>
+    <string name="help_report_desc">Bir hatayı ya da yanlış türde gösterilen bir sesi bize bildirin. Tarayıcınızda GitHub açılır ve uygulama ile cihaz bilgileri önceden doldurulur; bu yüzden bir GitHub hesabı gerekir. Hesabınız yoksa bize e-posta gönderin. Ses hiçbir zaman gönderilmez.</string>
+    <string name="help_report_button">GitHub\'da bildir</string>
+    <string name="help_report_mail">E-postayla bildir</string>
+    <string name="help_report_no_mail">E-posta gönderebilecek bir uygulama yok. Cihaz bilgilerini kopyalayıp başka bir yolla gönderin.</string>
+    <string name="help_report_copy">Cihaz bilgilerini kopyala</string>
+    <string name="help_report_copied">Cihaz bilgileri kopyalandı.</string>
+    <string name="help_report_no_browser">Bağlantıyı açabilecek bir tarayıcı yok. Cihaz bilgilerini kopyalayıp bize başka bir yolla gönderin.</string>
+    <string name="help_report_issue_title">Uygulamadan gönderilen rapor</string>
+    <string name="help_report_issue_body">Ne oldu?\n\nNe dinliyordunuz (uygulama, ses türü)?\n\nBunun yerine ne olmasını bekliyordunuz?</string>
 
     <string name="help_about_title">Hakkında</string>
     <string name="help_about_version">Sürüm %1$s</string>

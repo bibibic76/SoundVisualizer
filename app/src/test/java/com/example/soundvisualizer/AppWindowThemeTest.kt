@@ -3,6 +3,7 @@ package com.example.soundvisualizer
 import androidx.compose.ui.graphics.toArgb
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.w3c.dom.Element
 import java.io.File
@@ -29,7 +30,7 @@ class AppWindowThemeTest {
         val colors = parseElements("values/colors.xml", "color")
         val value = colors[APP_BACKGROUND] ?: throw AssertionError("values/colors.xml 에 $APP_BACKGROUND 가 없습니다")
         assertEquals(
-            "values/colors.xml 의 $APP_BACKGROUND 를 MainActivity.kt 의 BgColor 와 같게 맞추세요",
+            "values/colors.xml 의 $APP_BACKGROUND 를 UiColors.kt 의 BgColor 와 같게 맞추세요",
             BgColor.toArgb(),
             parseColor(value)
         )
@@ -44,6 +45,7 @@ class AppWindowThemeTest {
         )
         assertEquals("창 배경", COLOR_REF, theme.items["android:windowBackground"])
         assertEquals("상태 표시줄", COLOR_REF, theme.items["android:statusBarColor"])
+        assertEquals("내비게이션 바", COLOR_REF, theme.items["android:navigationBarColor"])
     }
 
     @Test
@@ -56,6 +58,41 @@ class AppWindowThemeTest {
             COLOR_REF,
             theme.items["android:windowSplashScreenBackground"]
         )
+    }
+
+    @Test
+    fun `타일의 투명 화면은 시스템 바까지 투명하게 그린다`() {
+        // 옛 플랫폼 투명 테마(Theme.Translucent.NoTitleBar)는 바 배경을 그리지 않아, 권한 안내 창이 떠 있는 동안
+        // 보던 게임 위에 위아래 바만 검게 칠해졌다(#142).
+        val themeRef = activityTheme(TILE_ACTIVITY)
+        assertTrue(
+            "$TILE_ACTIVITY 는 themes.xml 의 전용 투명 테마를 씁니다: $themeRef",
+            themeRef.startsWith("@style/")
+        )
+        val theme = resolve(themeRef.removePrefix("@style/"), listOf("values-v31", "values"))
+        assertTrue(
+            "바 배경을 창이 그리는 Material 테마를 부모로 둡니다: ${theme.platformParent}",
+            theme.platformParent.removePrefix("@").startsWith("android:Theme.Material")
+        )
+        assertEquals("투명 창", "true", theme.items["android:windowIsTranslucent"])
+        assertEquals("창 배경", TRANSPARENT, theme.items["android:windowBackground"])
+        assertEquals("상태 표시줄", TRANSPARENT, theme.items["android:statusBarColor"])
+        assertEquals("내비게이션 바", TRANSPARENT, theme.items["android:navigationBarColor"])
+    }
+
+    /** 매니페스트에서 [name] 액티비티에 지정한 android:theme 값. */
+    private fun activityTheme(name: String): String {
+        val manifest = parseRoot(File("src/main/AndroidManifest.xml"))
+        val activities = manifest.getElementsByTagName("activity")
+        for (i in 0 until activities.length) {
+            val element = activities.item(i) as Element
+            if (element.getAttributeNS(ANDROID_NS, "name") == name) {
+                return element.getAttributeNS(ANDROID_NS, "theme").ifEmpty {
+                    throw AssertionError("매니페스트의 $name 에 android:theme 이 없습니다")
+                }
+            }
+        }
+        throw AssertionError("매니페스트에 $name 액티비티가 없습니다")
     }
 
     /**
@@ -121,6 +158,9 @@ class AppWindowThemeTest {
         const val APP_BACKGROUND = "app_background"
         const val COLOR_REF = "@color/$APP_BACKGROUND"
         const val MAX_PARENT_DEPTH = 10
+        const val TILE_ACTIVITY = ".tile.StartVisualizerActivity"
+        const val TRANSPARENT = "@android:color/transparent"
+        const val ANDROID_NS = "http://schemas.android.com/apk/res/android"
 
         /** #RRGGBB 나 #AARRGGBB 를 ARGB 정수로 바꾼다. */
         fun parseColor(value: String): Int {

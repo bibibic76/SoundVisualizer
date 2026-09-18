@@ -1,0 +1,62 @@
+name: AI frontend reference parity
+
+on:
+  workflow_dispatch:
+  pull_request:
+    # 전처리 정확성은 고리 세 개로 이어져 있다.
+    #   Kotlin ↔ 커밋된 fixture(app/src/test/resources) ↔ 실제 TensorFlow·torch_audioset
+    # 첫 고리는 app 의 golden 테스트가, 마지막 고리는 이 워크플로가 본다. 그래서 fixture 만 다시
+    # 생성해 올려도 이 검사가 돌아야 한다. 안 돌면 golden 테스트가 그 새 fixture 에 맞춰 통과하므로,
+    # 상류와 어긋난 값이 초록불을 받고 들어온다 (#152).
+    paths:
+      - "tools/ai_reference/**"
+      - "app/src/test/resources/ai_reference/**"
+      - ".github/workflows/ai-frontend-parity.yml"
+
+concurrency:
+  group: ai-frontend-parity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tensorflow-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/ai_reference/requirements-parity-tensorflow.txt
+      - name: TensorFlow 및 reference 의존성 설치
+        run: python -m pip install -r tools/ai_reference/requirements-parity-tensorflow.txt
+      - name: dataset window policy 테스트
+        run: python tools/ai_reference/test_compare_logmel_dataset.py
+      - name: TensorFlow log-mel 수치 parity 확인
+        run: >-
+          python tools/ai_reference/verify_tensorflow_logmel_parity.py
+          --repo "$GITHUB_WORKSPACE"
+
+  torchaudio-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/ai_reference/requirements-parity-torchaudio.txt
+      - name: Torch CPU 및 reference 의존성 설치
+        run: python -m pip install -r tools/ai_reference/requirements-parity-torchaudio.txt
+      - name: CPU 모델 기록
+        run: lscpu | sed -n 's/^Model name:[[:space:]]*//p'
+      - name: torchaudio parity 판정 규칙 테스트
+        run: python tools/ai_reference/test_verify_torchaudio_logmel_parity.py
+      - name: torchaudio log-mel 수치 parity 확인
+        run: >-
+          python tools/ai_reference/verify_torchaudio_logmel_parity.py
+          --repo "$GITHUB_WORKSPACE"

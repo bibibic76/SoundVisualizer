@@ -3,6 +3,8 @@ package com.example.soundvisualizer
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.example.soundvisualizer.ai.AiDiagnosticConfig
+import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,8 +53,22 @@ object SettingsManager {
      */
     internal const val DEVELOPER_MODE_DEFAULT = false
 
+    /** Developer A/B controls must not change the production path on a new install. */
+    internal val AI_DIAGNOSTIC_CONFIG_DEFAULT = AiDiagnosticConfig.DEFAULT
+
+    /**
+     * "그래픽 덜 자주 그리기"의 기본값. 꺼 두는 쪽이 부드럽다.
+     *
+     * 소리를 눈으로 보는 앱이라 반응이 끊기면 값어치가 떨어진다. 그래서 아끼는 쪽을 기본으로 밀지 않고,
+     * 오래 켜 두는 사람이 고르게 둔다. [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
+     */
+    internal const val REDUCED_FRAME_RATE_DEFAULT = false
+
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
+    private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
+    private const val KEY_AI_BOOSTER_ENABLED = "ai_booster_enabled"
+    private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
@@ -110,6 +126,14 @@ object SettingsManager {
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
     val developerMode: StateFlow<Boolean> = _developerMode
+
+    // Developer-only A/B choice. Kept as one value so an inference tick can read a coherent snapshot.
+    private val _aiDiagnosticConfig = MutableStateFlow(AI_DIAGNOSTIC_CONFIG_DEFAULT)
+    val aiDiagnosticConfig: StateFlow<AiDiagnosticConfig> = _aiDiagnosticConfig
+
+    // 켜면 오버레이를 초당 30번만 그린다. 덜 부드러운 대신 배터리를 아낀다. (VisualizerEngine.framesPerSecond)
+    private val _reducedFrameRate = MutableStateFlow(REDUCED_FRAME_RATE_DEFAULT)
+    val reducedFrameRate: StateFlow<Boolean> = _reducedFrameRate
 
     /**
      * 이번 실행에서 소리 종류 구분(AI)을 쓸 수 있는지. 캡처 서비스가 알려주며 저장하지 않는다.
@@ -190,6 +214,8 @@ object SettingsManager {
         _tileAdded.value = prefs.getBoolean("tile_added", false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
+        _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
+        _reducedFrameRate.value = loadReducedFrameRate(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
@@ -213,6 +239,23 @@ object SettingsManager {
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_DEVELOPER_MODE, DEVELOPER_MODE_DEFAULT)
+
+    /** Unknown enum names fall back to the unchanged production frontend. */
+    internal fun loadAiDiagnosticConfig(source: SharedPreferences): AiDiagnosticConfig =
+        AiDiagnosticConfig(
+            frontendMode = enumByName(
+                source.getString(KEY_AI_FRONTEND_MODE, null),
+                AI_DIAGNOSTIC_CONFIG_DEFAULT.frontendMode
+            ),
+            boosterEnabled = source.getBoolean(
+                KEY_AI_BOOSTER_ENABLED,
+                AI_DIAGNOSTIC_CONFIG_DEFAULT.boosterEnabled
+            )
+        )
+
+    /** 저장된 적이 없으면 [REDUCED_FRAME_RATE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadReducedFrameRate(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_REDUCED_FRAME_RATE, REDUCED_FRAME_RATE_DEFAULT)
 
     /**
      * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
@@ -372,11 +415,31 @@ object SettingsManager {
         prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
     }
 
+    /** 오버레이가 프레임마다 읽으므로 켜고 끄면 실행 중에도 바로 적용된다. */
+    fun setReducedFrameRate(enabled: Boolean) {
+        _reducedFrameRate.value = enabled
+        prefs.edit { putBoolean(KEY_REDUCED_FRAME_RATE, enabled) }
+    }
+
     /** 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라진다. */
     fun setDeveloperMode(enabled: Boolean) {
         _developerMode.value = enabled
         prefs.edit { putBoolean(KEY_DEVELOPER_MODE, enabled) }
     }
+
+    fun setAiFrontendMode(mode: AiFrontendMode) {
+        _aiDiagnosticConfig.value = _aiDiagnosticConfig.value.copy(frontendMode = mode)
+        prefs.edit { putString(KEY_AI_FRONTEND_MODE, mode.name) }
+    }
+
+    fun setAiBoosterEnabled(enabled: Boolean) {
+        _aiDiagnosticConfig.value = _aiDiagnosticConfig.value.copy(boosterEnabled = enabled)
+        prefs.edit { putBoolean(KEY_AI_BOOSTER_ENABLED, enabled) }
+    }
+
+    /** Hidden A/B choices must never affect the runtime after developer mode is turned off. */
+    fun activeAiDiagnosticConfig(): AiDiagnosticConfig =
+        if (_developerMode.value) _aiDiagnosticConfig.value else AI_DIAGNOSTIC_CONFIG_DEFAULT
 
     /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
     fun setAiAvailable(available: Boolean) {

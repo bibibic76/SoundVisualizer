@@ -22,6 +22,9 @@ obj/
 # app
 app/build/
 
+# Licensed source audio used only to regenerate derived AI test fixtures.
+/data/preprocessed/
+
 .agents/
 .fake
 # Kotlin compiler session files

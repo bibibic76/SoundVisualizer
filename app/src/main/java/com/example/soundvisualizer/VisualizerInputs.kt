@@ -16,6 +16,14 @@ interface VisualizerInputs {
     fun coarseLabel(): String
     fun colorFor(label: String): Int
     fun isShown(label: String): Boolean
+
+    /**
+     * 1초에 그릴 프레임 수. 0 이면 화면 주사율 그대로.
+     *
+     * 프레임마다 읽으므로 설정에서 바꾸면 실행 중에도 바로 적용된다.
+     * 기본값을 둬서 테스트의 가짜 구현이 이 값을 신경 쓰지 않아도 되게 한다.
+     */
+    fun framesPerSecond(): Int = VisualizerEngine.FULL_FPS
 }
 
 /** 실제 구동 배선. */
@@ -44,4 +52,7 @@ object LiveVisualizerInputs : VisualizerInputs {
         AiClassification.SPEECH -> SettingsManager.showSpeech.value
         else -> SettingsManager.showAmbient.value
     }
+
+    override fun framesPerSecond(): Int =
+        if (SettingsManager.reducedFrameRate.value) VisualizerEngine.REDUCED_FPS else VisualizerEngine.FULL_FPS
 }

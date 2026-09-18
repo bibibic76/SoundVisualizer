@@ -1,20 +1,25 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.example.soundvisualizer"
-    compileSdk = 36
+    // 어떤 API 로 컴파일할지만 정한다. 최신 androidx(core 1.19, Compose 1.12)가 37 이상을 요구한다.
+    // 앱의 동작 규칙은 targetSdk, 설치할 수 있는 폰은 minSdk 가 정한다.
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.soundvisualizer"
         // AudioPlaybackCapture(내부 오디오 캡처)는 Android 10(API 29) 이상에서만 동작한다.
         minSdk = 29
-        targetSdk = 34
-        versionCode = 6
-        versionName = "1.4.0"
+        // 새 Android 의 동작 규칙(화면을 시스템 바 밑까지 그리기 등)에 맞췄다는 표시다. 설치할 수 있는 폰은 minSdk 가 정한다.
+        // 올릴 때는 그 버전의 동작 변경을 옛 버전(Android 10)과 최신 기기에서 함께 확인한다(#138).
+        // 37(Android 17)에서 이 앱에 걸리는 변경은 백그라운드 액티비티 시작(BAL) 조이기뿐이었다. 타일·알림 본문·
+        // "다시 켜기" 로 여는 경로가 모두 BAL_ALLOW_NON_APP_VISIBLE_WINDOW 로 허용되는 것을 Android 17 에서 봤다(#155).
+        targetSdk = 37
+        versionCode = 7
+        versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -81,12 +86,10 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+    // Kotlin 의 바이트코드 버전도 여기(targetCompatibility)를 따른다. AGP 9 부터 kotlinOptions 블록이 없다.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -137,42 +140,72 @@ android {
     }
 
     lint {
-        // 이미 있던 문제는 기준선에 기록해 두고, 새로 생긴 문제만 잡는다.
-        // 기준선에 있는 문제를 고쳤으면 lint-baseline.xml 을 지우고 lintDebug 를 한 번 돌려 다시 만든다.
-        baseline = file("lint-baseline.xml")
+        // 기준선(lint-baseline.xml)은 쓰지 않는다. 덮고 있던 것이 두 건뿐이었고 둘 다 "아직 못 고친 문제"가
+        // 아니라 우리가 내린 결정이었다(#154). 결정은 결정이 있는 자리에 적는다 — ONNX Runtime 고정은
+        // 아래 의존성 줄의 //noinspection 에, targetSdk 를 올리는 일은 이슈 #155 에 있다.
+        // 특히 OldTargetApi 는 메시지에 버전 숫자가 없어서, 한 번 기준선에 넣으면 안드로이드가 몇 번 더
+        // 올라가도 같은 메시지로 계속 덮인다. targetSdk 가 34 에 머문 것을 아무도 몰랐던 #138 이 그 경로다.
         // 오류만 빌드를 실패시킨다. 경고는 CI 실행 화면에 개수와 위치로만 보인다.
         abortOnError = true
         warningsAsErrors = false
         // 영어·한국어 말고 다른 언어는 번역이 늦어도 영어로 보이므로 경고로만 둔다.
         // 영어(values)와 한국어(values-ko)가 빠짐없는지는 StringResourcesTest 가 막는다.
         warning += "MissingTranslation"
-        xmlReport = true
-        htmlReport = true
+        // XML·HTML 보고서(build/reports/lint-results-debug.*)는 AGP 9 부터 설정 없이 늘 만들어진다. CI 가 그 파일을 읽는다.
     }
 }
 
+// 유닛 테스트 몇 개는 프로젝트 파일을 직접 읽는다. 매니페스트(NotificationCommandTest, AppWindowThemeTest),
+// res(StringResourcesTest, AppWindowThemeTest), assets(LicenseAssetsTest, AiLabelContractTest 등),
+// 저장소 루트의 NOTICE·LICENSE(LicenseAssetsTest)다.
+// Gradle 은 이 파일들을 테스트의 입력으로 모르기 때문에, 그 파일만 고치면 "이미 최신"으로 건너뛰어
+// 옛 결과가 통과처럼 보인다(#146). res 는 문구를 새로 추가할 때만 R 클래스가 바뀌어 다시 돌았다.
+// 그래서 읽는 파일을 입력으로 직접 알려 준다.
+tasks.withType<Test>().configureEach {
+    inputs.file(layout.projectDirectory.file("src/main/AndroidManifest.xml"))
+        .withPropertyName("appManifest")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(layout.projectDirectory.dir("src/main/res"))
+        .withPropertyName("appResources")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(layout.projectDirectory.dir("src/main/assets"))
+        .withPropertyName("appAssets")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(
+        rootProject.layout.projectDirectory.file("NOTICE"),
+        rootProject.layout.projectDirectory.file("LICENSE")
+    )
+        .withPropertyName("repositoryNotices")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 dependencies {
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    // 펼치기·들어가기 화살표(Icons.Default·Icons.AutoMirrored). material3 1.4 부터 따라오지 않아 직접 적는다.
+    implementation("androidx.compose.material:material-icons-core")
 
     // ONNX Runtime Android — loads yamnet.onnx with its yamnet.data external weights as-is
+    // 버전을 올리면 추론 결과가 달라질 수 있어 AI 담당이 정한다(#140). 그래서 lint 의 업데이트 알림도
+    // 여기서만 끈다. 다른 의존성의 알림은 살아 있어야 하므로 검사 자체를 끄지는 않는다(#154).
+    //noinspection NewerVersionAvailable
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
 
     testImplementation("junit:junit:4.13.2")
     // Real org.json for JVM unit tests (the Android stub is not mocked by default)
-    testImplementation("org.json:json:20240303")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    testImplementation("org.json:json:20260814")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:rules:1.7.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

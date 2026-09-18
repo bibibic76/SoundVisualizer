@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pauza przy wyłączonym ekranie</string>
     <string name="setting_pause_screen_off_desc">Gdy ekran jest wyłączony, aplikacja przestaje przechwytywać dźwięk, rozpoznawać jego rodzaj i wibrować, aby oszczędzać baterię, a po włączeniu ekranu wraca do pracy. Wyłącz tę opcję, aby otrzymywać wibracje także przy wyłączonym ekranie.</string>
+    <string name="setting_reduced_frame_rate">Rzadziej rysuj grafikę</string>
+    <string name="setting_reduced_frame_rate_desc">Rysuje grafikę 30 razy na sekundę zamiast 60. Pozwala oszczędzać baterię, gdy zostawiasz aplikację włączoną na długo, ale ruch jest mniej płynny. Dźwięk jest nadal przechwytywany równie często.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Pokaż dźwięki otoczenia</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Przechwytywanie dźwięku</string>
     <string name="notification_text">Trwa wizualizacja dźwięku.</string>
     <string name="notification_stop">Zatrzymaj</string>
+    <string name="notification_mode_selected">%1$s, wybrano</string>
     <string name="notification_text_ai_unavailable">Trwa wizualizacja dźwięku. Rozpoznawanie rodzaju dźwięku nie działa, więc wibracje są wyłączone.</string>
     <string name="notification_text_capture_blocked">Do wizualizacji nie dociera żaden dźwięk. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie lub dźwięk może być w niej wyciszony.</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">Rysuje tylko cienki kontur fali, więc mniej zasłania grę.</string>
     <string name="help_mode_circle_desc">Pierścień na środku ekranu wybrzusza się w stronę, z której dochodzi dźwięk.</string>
     <string name="help_modes_note">Ustawienia takie jak „Rozmiar” i „Krycie” są zapisywane osobno dla każdego trybu. Możesz je zmienić na karcie „Ustawienia”.</string>
+    <string name="help_modes_notification">Gdy wizualizacja jest włączona, możesz rozwinąć powiadomienie o działaniu aplikacji i zmienić tryb, nie otwierając aplikacji.</string>
 
     <string name="help_sound_title">Rodzaje dźwięków i wibracje</string>
     <string name="help_sound_kinds">AI dzieli to, co słychać, na dźwięki otoczenia, mowę i dźwięki zagrożenia. Domyślnie dźwięki otoczenia są oznaczane na biało, mowa na żółto, a dźwięki zagrożenia na czerwono. Na karcie „Ustawienia” możesz zmienić kolor każdego rodzaju i to, czy jest pokazywany.</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">Plik APK zbudowany w innym miejscu ma inny podpis, więc nie może zastąpić zainstalowanej aplikacji. Najpierw odinstaluj obecną aplikację, a potem zainstaluj nową wersję. Spowoduje to zresetowanie ustawień.</string>
     <string name="help_faq_battery_q">Czy aplikacja mocno zużywa baterię?</string>
     <string name="help_faq_battery_a">Aplikacja rysuje grafikę tylko wtedy, gdy słychać dźwięk, a w ciszy przechodzi w stan spoczynku. Ponieważ jednak cały czas przechwytuje dźwięk, zalecamy ją wyłączać, gdy z niej nie korzystasz.</string>
+    <string name="help_faq_battery_less_drawing">Gdy słychać dźwięk, najwięcej energii zużywa rysowanie grafiki. Jeśli włączysz „Rzadziej rysuj grafikę” w sekcji „Bateria” na karcie „Ustawienia”, aplikacja będzie zużywać mniej energii, ale ruch będzie mniej płynny.</string>
     <string name="help_faq_language_q">Jak zmienić język aplikacji?</string>
     <string name="help_faq_language_a">Naciśnij „Język” u góry karty „Ustawienia” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Zgłoś problem</string>
+    <string name="help_report_desc">Daj nam znać o błędzie albo o dźwięku, który został pokazany jako dźwięk niewłaściwego rodzaju. GitHub otworzy się w przeglądarce z automatycznie uzupełnionymi informacjami o aplikacji i urządzeniu, dlatego potrzebne jest konto na GitHubie. Jeśli nie masz konta, wyślij nam e-mail. Żaden dźwięk nie jest nigdy wysyłany.</string>
+    <string name="help_report_button">Zgłoś na GitHubie</string>
+    <string name="help_report_mail">Zgłoś przez e-mail</string>
+    <string name="help_report_no_mail">Brak aplikacji do wysyłania e-maili. Skopiuj dane urządzenia i wyślij je w inny sposób.</string>
+    <string name="help_report_copy">Skopiuj dane urządzenia</string>
+    <string name="help_report_copied">Skopiowano dane urządzenia.</string>
+    <string name="help_report_no_browser">Brak przeglądarki, która mogłaby otworzyć link. Skopiuj dane urządzenia i wyślij je nam w inny sposób.</string>
+    <string name="help_report_issue_title">Zgłoszenie z aplikacji</string>
+    <string name="help_report_issue_body">Co się stało?\n\nCo było wtedy odtwarzane (aplikacja, rodzaj dźwięku)?\n\nCo powinno się wydarzyć zamiast tego?</string>
 
     <string name="help_about_title">O aplikacji</string>
     <string name="help_about_version">Wersja %1$s</string>

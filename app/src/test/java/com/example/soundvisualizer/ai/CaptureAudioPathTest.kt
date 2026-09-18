@@ -5,17 +5,21 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
- * JVM: capture downmix + linear resample + ring snapshot (no ORT).
+ * JVM: capture downmix + anti-aliased resample + ring snapshot (no ORT).
  */
 class CaptureAudioPathTest {
 
     @Test
     fun captureSamplesForWindow_44100() {
         assertEquals(42998, CaptureAudioMath.captureSamplesForOneYamnetWindow(44100))
+        assertEquals(46800, CaptureAudioMath.captureSamplesForOneYamnetWindow(48000))
     }
 
     @Test
@@ -79,12 +83,93 @@ class CaptureAudioPathTest {
             CaptureAudioMath.resampleMonoFloatTo16kCustom(capture, need, 44100, mono16)
 
             assertEquals(expectedMono16.size, mono16.size)
-            assertTrue("$name mono16k maxAbs", maxAbs(mono16, expectedMono16) < 1e-5)
+            assertTrue("$name mono16k maxAbs", maxAbs(mono16, expectedMono16) < 1e-5f)
 
             val logMel = AudioPreprocessor().computeLogMelSpectrogram(mono16)
             assertEquals(expectedLogMel.size, logMel.size)
-            assertTrue("$name logmel maxAbs", maxAbs(logMel, expectedLogMel) < 1e-4)
+            assertTrue("$name logmel maxAbs", maxAbs(logMel, expectedLogMel) < 1e-4f)
         }
+    }
+
+    @Test
+    fun compactParityFixtures_matchPythonFirAt44100And48000() {
+        for (sampleRate in listOf(44100, 48000)) {
+            val source = loadResource("ai_reference/resample_parity_${sampleRate}_capture.bin")
+            val expected = loadResource("ai_reference/resample_parity_${sampleRate}_mono16k.bin")
+            val actual = FloatArray(expected.size)
+
+            CaptureAudioMath.resampleMonoFloatTo16kCustom(
+                source,
+                source.size,
+                sampleRate,
+                actual,
+                expected.size
+            )
+
+            assertTrue("$sampleRate FIR parity maxAbs", maxAbs(actual, expected) < 1e-5f)
+        }
+    }
+
+    @Test
+    fun antiAliasedResample_meetsFrequencyAcceptanceAt44100And48000() {
+        for (sampleRate in listOf(44100, 48000)) {
+            assertGainAtLeast(sampleRate, 7000.0, -1.5)
+            assertGainAtLeast(sampleRate, 7500.0, -3.0)
+            assertGainAtMost(sampleRate, 8500.0, -20.0)
+            assertGainAtMost(sampleRate, 9000.0, -45.0)
+            assertGainAtMost(sampleRate, 10000.0, -45.0)
+            assertGainAtMost(sampleRate, 15000.0, -60.0)
+        }
+    }
+
+    @Test
+    fun resample16k_passthroughIsBitExact() {
+        val source = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES) { index ->
+            Float.fromBits(index * 7919)
+        }
+        val destination = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
+
+        CaptureAudioMath.resampleMonoFloatTo16kCustom(
+            source,
+            source.size,
+            CaptureAudioMath.TARGET_SAMPLE_RATE,
+            destination
+        )
+
+        assertTrue(source.contentEquals(destination))
+    }
+
+    @Test
+    fun antiAliasedResample_keepsYamnetWindowLengthAt44100And48000() {
+        for (sampleRate in listOf(44100, 48000)) {
+            val sourceLength = CaptureAudioMath.captureSamplesForOneYamnetWindow(sampleRate)
+            val source = FloatArray(sourceLength) { 1f }
+            val destination = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
+
+            CaptureAudioMath.resampleMonoFloatTo16kCustom(source, source.size, sampleRate, destination)
+
+            assertTrue("$sampleRate output must stay finite", destination.all { it.isFinite() })
+            assertTrue(
+                "$sampleRate edge response must stay bounded",
+                destination.all { it in 0.5f..1.2f }
+            )
+            for (index in 16 until destination.size - 16) {
+                assertEquals("$sampleRate interior[$index]", 1f, destination[index], 1e-3f)
+            }
+            assertTrue("$sampleRate final sample must be populated", destination.last() != 0f)
+        }
+    }
+
+    @Test
+    fun antiAliasedResample_zeroExtendsAtSourceWindowEdges() {
+        val source = FloatArray(512) { 1f }
+        val destination = FloatArray(64)
+
+        CaptureAudioMath.resampleMonoFloatTo16kCustom(source, source.size, 48000, destination, 64)
+
+        assertTrue(destination.all { it.isFinite() })
+        assertTrue("left edge must use a partial FIR sum", destination[0] > 0f && destination[0] < 1f)
+        assertEquals("interior must include the full FIR support", 1f, destination[32], 1e-5f)
     }
 
     private fun loadResource(path: String): FloatArray {
@@ -95,8 +180,65 @@ class CaptureAudioPathTest {
     }
 
     private fun maxAbs(a: FloatArray, b: FloatArray): Float {
-        var m = 0f
-        for (i in a.indices) m = max(m, abs(a[i] - b[i]))
-        return m
+        var maximum = 0f
+        for (index in a.indices) maximum = max(maximum, kotlin.math.abs(a[index] - b[index]))
+        return maximum
+    }
+
+    private fun assertGainAtLeast(sampleRate: Int, frequencyHz: Double, minimumDb: Double) {
+        val gain = toneGainDb(sampleRate, frequencyHz)
+        assertTrue(
+            "$sampleRate Hz, $frequencyHz Hz gain $gain dB must be >= $minimumDb dB",
+            gain >= minimumDb
+        )
+    }
+
+    private fun assertGainAtMost(sampleRate: Int, frequencyHz: Double, maximumDb: Double) {
+        val gain = toneGainDb(sampleRate, frequencyHz)
+        assertTrue(
+            "$sampleRate Hz, $frequencyHz Hz gain $gain dB must be <= $maximumDb dB",
+            gain <= maximumDb
+        )
+    }
+
+    private fun toneGainDb(sampleRate: Int, inputFrequencyHz: Double): Double {
+        val destinationLength = 4096
+        val sourceLength = ceil(
+            destinationLength * sampleRate.toDouble() / CaptureAudioMath.TARGET_SAMPLE_RATE
+        ).toInt() + 96
+        val source = FloatArray(sourceLength) { index ->
+            cos(2.0 * Math.PI * inputFrequencyHz * index / sampleRate).toFloat()
+        }
+        val destination = FloatArray(destinationLength)
+        CaptureAudioMath.resampleMonoFloatTo16kCustom(
+            source,
+            source.size,
+            sampleRate,
+            destination,
+            destinationLength
+        )
+
+        var aliasFrequency = inputFrequencyHz % CaptureAudioMath.TARGET_SAMPLE_RATE
+        if (aliasFrequency > CaptureAudioMath.TARGET_SAMPLE_RATE / 2.0) {
+            aliasFrequency = CaptureAudioMath.TARGET_SAMPLE_RATE - aliasFrequency
+        }
+        var yc = 0.0
+        var ys = 0.0
+        var cc = 0.0
+        var ss = 0.0
+        for (index in 128 until destinationLength - 128) {
+            val phase = 2.0 * Math.PI * aliasFrequency * index / CaptureAudioMath.TARGET_SAMPLE_RATE
+            val cosine = cos(phase)
+            val sine = sin(phase)
+            val value = destination[index].toDouble()
+            yc += value * cosine
+            ys += value * sine
+            cc += cosine * cosine
+            ss += sine * sine
+        }
+        val cosineCoefficient = yc / cc
+        val sineCoefficient = if (ss < 1e-12) 0.0 else ys / ss
+        val amplitude = sqrt(cosineCoefficient * cosineCoefficient + sineCoefficient * sineCoefficient)
+        return 20.0 * kotlin.math.log10(max(amplitude, 1e-300))
     }
 }

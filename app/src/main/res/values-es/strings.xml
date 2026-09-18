@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pausar con la pantalla apagada</string>
     <string name="setting_pause_screen_off_desc">Con la pantalla apagada, deja de capturar el sonido, de detectar tipos de sonido y de vibrar para ahorrar batería, y se reanuda al encender la pantalla. Desactívalo para seguir recibiendo avisos por vibración con la pantalla apagada.</string>
+    <string name="setting_reduced_frame_rate">Dibujar los gráficos con menos frecuencia</string>
+    <string name="setting_reduced_frame_rate_desc">Vuelve a dibujar los gráficos 30 veces por segundo en lugar de 60. Ahorra batería si dejas la app en marcha durante mucho tiempo, pero el movimiento se ve menos fluido. El sonido se sigue capturando tan a menudo como antes.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Mostrar sonido ambiente</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Captura de audio</string>
     <string name="notification_text">Visualizando el sonido.</string>
     <string name="notification_stop">Detener</string>
+    <string name="notification_mode_selected">%1$s, seleccionado</string>
     <string name="notification_text_ai_unavailable">Visualizando el sonido. La detección del tipo de sonido no funciona, así que los avisos por vibración están desactivados.</string>
     <string name="notification_text_capture_blocked">No llega ningún sonido al visor. Puede que la app que reproduce el sonido no permita compartirlo o que su propio sonido esté silenciado.</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">Dibuja solo un contorno fino de la onda, así que tapa menos la pantalla del juego.</string>
     <string name="help_mode_circle_desc">Un anillo en el centro de la pantalla se expande hacia el lado del que viene el sonido.</string>
     <string name="help_modes_note">Opciones como Tamaño y Opacidad se guardan por separado para cada modo y puedes cambiarlas en la pestaña Ajustes.</string>
+    <string name="help_modes_notification">Mientras el visor esté encendido, puedes desplegar la notificación en curso para cambiar de modo sin abrir la app.</string>
 
     <string name="help_sound_title">Tipos de sonido y vibración</string>
     <string name="help_sound_kinds">La IA clasifica el audio en sonido ambiente, voz y peligro. De forma predeterminada, el sonido ambiente se muestra en blanco, la voz en amarillo y el peligro en rojo. En la pestaña Ajustes puedes cambiar el color de cada tipo y elegir si se muestra o no.</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">Un APK compilado en otro lugar tiene una firma distinta y no se puede instalar sobre la app actual. Primero desinstala la app actual y luego instala la nueva. Esto restablecerá tus ajustes.</string>
     <string name="help_faq_battery_q">¿Consume mucha batería?</string>
     <string name="help_faq_battery_a">Solo dibuja mientras hay sonido y pasa a reposo cuando hay silencio. Aun así, como captura el sonido de forma continua, te recomendamos apagarlo cuando no lo uses.</string>
+    <string name="help_faq_battery_less_drawing">Mientras hay sonido, lo que más batería gasta es dibujar los gráficos. Si activas “Dibujar los gráficos con menos frecuencia” en Batería, en la pestaña Ajustes, la app gasta menos, aunque el movimiento se ve menos fluido.</string>
     <string name="help_faq_language_q">¿Cómo cambio el idioma de la app?</string>
     <string name="help_faq_language_a">Toca “Idioma” en la parte superior de la pestaña Ajustes y elige uno. Con “Idioma del sistema”, la app usa el idioma de tu teléfono. En Android 13 y versiones posteriores, también puedes cambiarlo en “Idiomas de las apps”, dentro de los ajustes de tu teléfono.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Informar de un problema</string>
+    <string name="help_report_desc">Avísanos de un error o de un sonido que se mostró con el tipo de sonido equivocado. GitHub se abre en tu navegador con los datos de la app y del dispositivo ya completados, así que necesitas una cuenta de GitHub. Si no tienes una, envíanos un correo electrónico en su lugar. Nunca se envía ningún audio.</string>
+    <string name="help_report_button">Informar en GitHub</string>
+    <string name="help_report_mail">Informar por correo</string>
+    <string name="help_report_no_mail">No hay ninguna app de correo para enviar el informe. Copia los datos del dispositivo y envíalos de otra forma.</string>
+    <string name="help_report_copy">Copiar datos del dispositivo</string>
+    <string name="help_report_copied">Datos del dispositivo copiados.</string>
+    <string name="help_report_no_browser">No hay ningún navegador para abrir el enlace. Copia los datos del dispositivo y envíanoslos de otra forma.</string>
+    <string name="help_report_issue_title">Informe desde la app</string>
+    <string name="help_report_issue_body">¿Qué pasó?\n\n¿Qué estabas escuchando (app, tipo de sonido)?\n\n¿Qué esperabas que pasara en su lugar?</string>
 
     <string name="help_about_title">Acerca de</string>
     <string name="help_about_version">Versión %1$s</string>

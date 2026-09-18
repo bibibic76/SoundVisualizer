@@ -11,7 +11,9 @@ import java.util.Locale
  * @param label 모델이 말한 이름 (raw YAMNet 클래스명)
  * @param confidence 확신도 두 자리
  * @param detail 임계값·부스터·프리뷰·나이
+ * @param verdict 부스터 판정 이유·총소리 근거·경보 신호 승격 여부
  * @param timing 소리 크기·표시 여부·단계별 소요시간
+ * @param top5 모델이 가장 높게 본 이름들. 한 줄에 하나씩 순위·이름·확률
  */
 data class AiDebugLines(
     val colorLabel: String?,
@@ -19,7 +21,9 @@ data class AiDebugLines(
     val label: String,
     val confidence: String,
     val detail: String,
-    val timing: String
+    val verdict: String,
+    val timing: String,
+    val top5: List<String>
 )
 
 /**
@@ -42,6 +46,23 @@ object AiDebugText {
     /** 분류는 돌지만 첫 결과가 아직 없는 상태. 캡처 직후와 화면을 다시 켠 직후가 여기다. */
     const val COARSE_WAITING = "WAIT"
 
+    /**
+     * top-5 이름 칸의 폭(글자 수). 고정폭 글꼴 11sp 에서 순위·확률까지 한 줄이 폰 폭 안에 들어간다.
+     * 더 긴 이름("Vehicle horn, car horn, honking" 등)은 줄여서 끝에 [ELLIPSIS] 를 붙인다.
+     */
+    const val TOP5_NAME_WIDTH = 26
+
+    const val ELLIPSIS = "…"
+
+    /**
+     * HUD 한 줄에 들어가는 글자 수. 이보다 길면 줄이 두 줄로 꺾인다(#165).
+     *
+     * 폭 411dp 폰(Pixel 7, Galaxy S25+)을 글꼴 크기 기본값으로 쓸 때를 기준으로 잡았다.
+     * 글자 영역은 411dp 에서 판의 왼쪽 여백 12dp 와 안쪽 여백 좌우 8dp 를 뺀 383dp 이고,
+     * 앱에 넣은 고정폭 글꼴은 모든 글자 폭이 0.6em(1229/2048) 이라 11sp 에서 6.6dp 다. 383 / 6.6 = 58.
+     */
+    const val HUD_MAX_COLUMNS = 58
+
     fun format(
         result: AiClassificationResult?,
         nowMs: Long,
@@ -60,7 +81,9 @@ object AiDebugText {
                 label = if (aiAvailable) "no result yet" else "model load failed",
                 confidence = NONE,
                 detail = NONE,
-                timing = levelText
+                verdict = NONE,
+                timing = levelText,
+                top5 = emptyList()
             )
         }
 
@@ -71,21 +94,46 @@ object AiDebugText {
             label = result.display.ifEmpty { "(none)" },
             confidence = twoDecimals(result.confidence),
             detail = detailOf(result, nowMs),
-            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}"
+            verdict = verdictOf(result),
+            // 어느 전처리를 썼는지(path)는 그 전처리 시간(괄호 안 첫 값) 옆에 둔다. detail 줄에 두면
+            // 58자를 넘어 두 줄로 꺾였다(#165).
+            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}   " +
+                "path ${result.frontendMode.diagnosticName}",
+            top5 = result.top5.take(5).mapIndexed { i, hit ->
+                "${i + 1} ${fitName(hit.name)} ${twoDecimals(hit.probability)}"
+            }
         )
     }
 
     private fun detailOf(result: AiClassificationResult, nowMs: Long): String {
         // 부스터가 채택되면 종류뿐 아니라 이름까지 총소리 클래스명으로 갈아치운다. 그래서 pre(부스터 전
         // 종류)와 bst(채택 여부·점수)가 없으면, 모델이 하지 않은 말을 모델 탓으로 채점하게 된다.
-        val booster = if (result.boosterAvailable) {
-            "bst ${yesNo(result.boosterAccepted)} ${twoDecimals(result.gunshotScore)}"
-        } else {
-            "bst off"
+        val booster = when {
+            !result.boosterEnabled -> "bst disabled"
+            result.boosterAvailable -> "bst ${yesNo(result.boosterAccepted)} ${twoDecimals(result.gunshotScore)}"
+            else -> "bst unavailable"
         }
-        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   " +
-            "$booster   prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
+        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   $booster   " +
+            "prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
     }
+
+    /**
+     * 위험으로 올린 까닭. 부스터 채택(`bst`)과 경보 신호 승격(`cue`)은 서로 다른 길이라 따로 보여준다.
+     *
+     * 판정 이유 문자열은 뒤에 점수·근거를 다시 붙여 오므로 이름(첫 낱말)만 쓴다. 근거는 `ev` 로 따로 둔다.
+     */
+    private fun verdictOf(result: AiClassificationResult): String {
+        val reason = result.boosterReason.substringBefore(' ').ifEmpty { NONE }
+        return "why $reason   ev ${twoDecimals(result.gunshotEvidence)}   cue ${yesNo(result.dangerCuePromoted)}"
+    }
+
+    /** 고정폭 칸에 맞춘 이름. 짧으면 공백으로 채워 확률이 한 줄에 세로로 맞는다. */
+    private fun fitName(name: String): String =
+        if (name.length > TOP5_NAME_WIDTH) {
+            name.take(TOP5_NAME_WIDTH - ELLIPSIS.length) + ELLIPSIS
+        } else {
+            name.padEnd(TOP5_NAME_WIDTH)
+        }
 
     private fun timingOf(result: AiClassificationResult): String =
         "${wholeMillis(result.totalMs)}ms " +
@@ -96,10 +144,17 @@ object AiDebugText {
      * 이 값이 계속 자라는 것이 "지금 추론이 돌지 않는다" 는 신호다.
      *
      * 벽시계로 찍힌 시각이라 시계가 뒤로 조정되면 음수가 될 수 있다. 그때는 0 으로 본다.
+     *
+     * 오래될수록 짧게 쓴다. 100초가 넘으면 소수점은 뜻이 없고, 그대로 두면 `123.4s` 처럼 길어져
+     * detail 줄이 [HUD_MAX_COLUMNS] 를 넘는다(#165). 값 자리는 늘 5글자 이하다.
      */
     private fun ageText(timestampMs: Long, nowMs: Long): String {
         val elapsed = (nowMs - timestampMs).coerceAtLeast(0L)
-        return "${String.format(Locale.US, "%.1f", elapsed / 1000.0)}s"
+        return when {
+            elapsed < 99_950L -> "${String.format(Locale.US, "%.1f", elapsed / 1000.0)}s"   // 0.0s ~ 99.9s
+            elapsed < 999_500L -> "${(elapsed + 500L) / 1000L}s"                           // 100s ~ 999s
+            else -> "${(elapsed + 30_000L) / 60_000L}m"                                     // 17m ~
+        }
     }
 
     /** 앱이 기본 로캘을 고른 언어로 바꾸므로 서식을 [Locale.US] 로 못박는다. 아랍어에서 아랍 숫자가 된다. */

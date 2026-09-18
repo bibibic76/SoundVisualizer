@@ -81,6 +81,8 @@
     <!-- Battery -->
     <string name="setting_pause_screen_off">Jeda saat layar mati</string>
     <string name="setting_pause_screen_off_desc">Saat layar mati, aplikasi berhenti menangkap suara, mendeteksi jenis suara, dan bergetar untuk menghemat baterai, lalu lanjut lagi begitu layar dinyalakan. Matikan opsi ini jika Anda tetap ingin menerima peringatan getar saat layar mati.</string>
+    <string name="setting_reduced_frame_rate">Menggambar grafik lebih jarang</string>
+    <string name="setting_reduced_frame_rate_desc">Grafik digambar ulang 30 kali per detik, bukan 60 kali. Ini menghemat baterai saat aplikasi dibiarkan berjalan lama, tetapi gerakannya menjadi kurang mulus. Suara tetap ditangkap sesering biasanya.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Tampilkan suara latar</string>
@@ -132,6 +134,7 @@
     <string name="notification_channel_name">Penangkapan audio</string>
     <string name="notification_text">Memvisualisasikan suara.</string>
     <string name="notification_stop">Hentikan</string>
+    <string name="notification_mode_selected">%1$s, dipilih</string>
     <string name="notification_text_ai_unavailable">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga peringatan getar dimatikan.</string>
     <string name="notification_text_capture_blocked">Aplikasi ini tidak menerima suara apa pun. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan, atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
 
@@ -180,6 +183,7 @@
     <string name="help_mode_outline_desc">Hanya menggambar garis tipis di sepanjang kontur ombak, sehingga tidak banyak menutupi layar game Anda.</string>
     <string name="help_mode_circle_desc">Cincin di tengah layar mengembang ke arah datangnya suara.</string>
     <string name="help_modes_note">Setelan seperti Ukuran dan Opasitas disimpan terpisah untuk setiap mode dan dapat diubah di tab Setelan.</string>
+    <string name="help_modes_notification">Selama aplikasi berjalan, Anda dapat meluaskan notifikasinya untuk mengganti mode tanpa membuka aplikasi.</string>
 
     <string name="help_sound_title">Jenis suara dan getaran</string>
     <string name="help_sound_kinds">AI mengelompokkan suara yang terdengar menjadi suara latar, percakapan, dan suara bahaya. Secara default, suara latar berwarna putih, percakapan kuning, dan suara bahaya merah. Di tab Setelan, Anda dapat mengubah warna setiap jenis dan memilih apakah jenis tersebut ditampilkan.</string>
@@ -206,8 +210,21 @@
     <string name="help_faq_install_a">APK yang dibuat di tempat lain memiliki tanda tangan yang berbeda, sehingga tidak dapat diinstal di atas aplikasi yang sudah ada. Uninstal aplikasi yang ada terlebih dahulu, lalu instal. Setelan Anda akan direset.</string>
     <string name="help_faq_battery_q">Apakah aplikasi ini boros baterai?</string>
     <string name="help_faq_battery_a">Aplikasi hanya menggambar saat ada suara dan beralih ke mode siaga saat hening. Namun, karena aplikasi terus menangkap suara, sebaiknya matikan saat tidak digunakan.</string>
+    <string name="help_faq_battery_less_drawing">Saat ada suara, daya paling banyak terpakai untuk menggambar grafik. Jika Anda menyalakan “Menggambar grafik lebih jarang” di bagian Baterai pada tab Setelan, daya yang terpakai lebih sedikit, tetapi gerakannya menjadi kurang mulus.</string>
     <string name="help_faq_language_q">Bagaimana cara mengubah bahasa aplikasi?</string>
     <string name="help_faq_language_a">Ketuk “Bahasa” di bagian atas tab Setelan, lalu pilih bahasa. “Default sistem” mengikuti bahasa ponsel Anda. Di Android 13 dan versi lebih baru, Anda juga dapat mengubahnya di “Bahasa aplikasi” pada setelan ponsel.</string>
+
+    <!-- Help: report -->
+    <string name="help_report_title">Laporkan masalah</string>
+    <string name="help_report_desc">Beri tahu kami tentang bug, atau suara yang ditampilkan sebagai jenis suara yang salah. GitHub akan terbuka di browser Anda dengan detail aplikasi dan perangkat yang sudah terisi, jadi Anda memerlukan akun GitHub. Jika tidak punya akun, kirim email kepada kami saja. Audio tidak pernah dikirim ke mana pun.</string>
+    <string name="help_report_button">Laporkan di GitHub</string>
+    <string name="help_report_mail">Laporkan melalui email</string>
+    <string name="help_report_no_mail">Tidak ada aplikasi email untuk mengirim. Salin detail perangkat, lalu kirimkan dengan cara lain.</string>
+    <string name="help_report_copy">Salin detail perangkat</string>
+    <string name="help_report_copied">Detail perangkat disalin.</string>
+    <string name="help_report_no_browser">Tidak ada browser untuk membuka tautan. Sebagai gantinya, salin detail perangkat dan kirimkan kepada kami.</string>
+    <string name="help_report_issue_title">Laporan dari aplikasi</string>
+    <string name="help_report_issue_body">Apa yang terjadi?\n\nApa yang sedang Anda dengarkan (aplikasi apa, jenis suara apa)?\n\nMenurut Anda, apa yang seharusnya terjadi?</string>
 
     <string name="help_about_title">Tentang</string>
     <string name="help_about_version">Versi %1$s</string>
