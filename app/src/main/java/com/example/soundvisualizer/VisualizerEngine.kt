@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RadialGradient
 import android.graphics.Shader
+import androidx.core.graphics.withClip
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -1010,17 +1011,11 @@ class VisualizerEngine(
             return
         }
         fillPaint.alpha = alphaByte(alpha)
-        for (k in 0 until 4) {
-            val saved = canvas.save()
-            when (k) {
-                0 -> canvas.clipRect(0f, 0f, w, t)          // 위 (모서리 포함)
-                1 -> canvas.clipRect(0f, h - t, w, h)       // 아래 (모서리 포함)
-                2 -> canvas.clipRect(0f, t, t, h - t)       // 왼쪽
-                else -> canvas.clipRect(w - t, t, w, h - t) // 오른쪽
-            }
-            canvas.drawPath(path, fillPaint)
-            canvas.restoreToCount(saved)
-        }
+        // withClip 은 인라인이라 프레임마다 할당하지 않는다.
+        canvas.withClip(0f, 0f, w, t) { drawPath(path, fillPaint) }          // 위 (모서리 포함)
+        canvas.withClip(0f, h - t, w, h) { drawPath(path, fillPaint) }       // 아래 (모서리 포함)
+        canvas.withClip(0f, t, t, h - t) { drawPath(path, fillPaint) }       // 왼쪽
+        canvas.withClip(w - t, t, w, h - t) { drawPath(path, fillPaint) }    // 오른쪽
     }
 
     /** 발광(켜져 있으면)과 본 도형을 자르지 않고 그린다. [fillPaint] 의 색·셰이더·모양은 부르는 쪽이 정해 둔다. */
