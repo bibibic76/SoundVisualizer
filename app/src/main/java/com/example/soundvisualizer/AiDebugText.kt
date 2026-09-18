@@ -54,6 +54,15 @@ object AiDebugText {
 
     const val ELLIPSIS = "…"
 
+    /**
+     * HUD 한 줄에 들어가는 글자 수. 이보다 길면 줄이 두 줄로 꺾인다(#165).
+     *
+     * 폭 411dp 폰(Pixel 7, Galaxy S25+)을 글꼴 크기 기본값으로 쓸 때를 기준으로 잡았다.
+     * 글자 영역은 411dp 에서 판의 왼쪽 여백 12dp 와 안쪽 여백 좌우 8dp 를 뺀 383dp 이고,
+     * 앱에 넣은 고정폭 글꼴은 모든 글자 폭이 0.6em(1229/2048) 이라 11sp 에서 6.6dp 다. 383 / 6.6 = 58.
+     */
+    const val HUD_MAX_COLUMNS = 58
+
     fun format(
         result: AiClassificationResult?,
         nowMs: Long,
@@ -86,7 +95,10 @@ object AiDebugText {
             confidence = twoDecimals(result.confidence),
             detail = detailOf(result, nowMs),
             verdict = verdictOf(result),
-            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}",
+            // 어느 전처리를 썼는지(path)는 그 전처리 시간(괄호 안 첫 값) 옆에 둔다. detail 줄에 두면
+            // 58자를 넘어 두 줄로 꺾였다(#165).
+            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}   " +
+                "path ${result.frontendMode.diagnosticName}",
             top5 = result.top5.take(5).mapIndexed { i, hit ->
                 "${i + 1} ${fitName(hit.name)} ${twoDecimals(hit.probability)}"
             }
@@ -101,8 +113,7 @@ object AiDebugText {
             result.boosterAvailable -> "bst ${yesNo(result.boosterAccepted)} ${twoDecimals(result.gunshotScore)}"
             else -> "bst unavailable"
         }
-        return "path ${result.frontendMode.diagnosticName}   thr ${yesNo(result.meetsThreshold)}   " +
-            "pre ${result.preBoosterCoarse}   $booster   " +
+        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   $booster   " +
             "prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
     }
 
@@ -133,10 +144,17 @@ object AiDebugText {
      * 이 값이 계속 자라는 것이 "지금 추론이 돌지 않는다" 는 신호다.
      *
      * 벽시계로 찍힌 시각이라 시계가 뒤로 조정되면 음수가 될 수 있다. 그때는 0 으로 본다.
+     *
+     * 오래될수록 짧게 쓴다. 100초가 넘으면 소수점은 뜻이 없고, 그대로 두면 `123.4s` 처럼 길어져
+     * detail 줄이 [HUD_MAX_COLUMNS] 를 넘는다(#165). 값 자리는 늘 5글자 이하다.
      */
     private fun ageText(timestampMs: Long, nowMs: Long): String {
         val elapsed = (nowMs - timestampMs).coerceAtLeast(0L)
-        return "${String.format(Locale.US, "%.1f", elapsed / 1000.0)}s"
+        return when {
+            elapsed < 99_950L -> "${String.format(Locale.US, "%.1f", elapsed / 1000.0)}s"   // 0.0s ~ 99.9s
+            elapsed < 999_500L -> "${(elapsed + 500L) / 1000L}s"                           // 100s ~ 999s
+            else -> "${(elapsed + 30_000L) / 60_000L}m"                                     // 17m ~
+        }
     }
 
     /** 앱이 기본 로캘을 고른 언어로 바꾸므로 서식을 [Locale.US] 로 못박는다. 아랍어에서 아랍 숫자가 된다. */
