@@ -251,7 +251,7 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 | `SettingsManager` | 모드별 설정 저장 |
 | `MainActivity` | 앱 화면의 액티비티 (권한을 켜고 돌아오면 이어서 켜기: `PendingStart`) |
 | `LauncherApp` / `HomeTab` / `SettingsTab` | 탭 틀, 홈 화면, 설정 화면 |
-| `ColorPickerDialog` / `UiControls` / `UiColors` | 색 고르기 창, 공용 컨트롤(스위치·슬라이더·펼침 줄), 화면 색 상수 |
+| `ColorPickerDialog` / `UiControls` / `UiColors` / `UiFonts` | 색 고르기 창, 공용 컨트롤(스위치·슬라이더·펼침 줄), 화면 색 상수, 앱에 넣은 고정폭 글꼴 |
 | `help/` | 도움말 탭, 앱 안 제보(`ReportLink`: GitHub 이슈·메일 주소와 기기 정보 네 줄), 앱에 넣은 오픈소스 고지(`assets/licenses`, 저장소의 `NOTICE`·`LICENSE` 복사본) |
 | `language/` | 앱 언어 (지원 언어 목록, 안드로이드 버전별 언어 적용, 설정 탭의 언어 카드). 문구는 `res/values`(영어, 기본)와 `res/values-xx` |
 | `VisualizerController` | 시각화 켜기·끄기 공용 코드 (앱 버튼과 빠른 설정 타일이 함께 씀) |

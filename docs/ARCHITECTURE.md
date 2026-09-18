@@ -19,7 +19,7 @@ graph TD
 
 | 단계 | 코드 | 언어 |
 |---|---|---|
-| 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors` (화면), `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
+| 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors`·`UiFonts` (화면), `SettingsManager`, `help/`, `language/` (앱 언어) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
 | 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
@@ -284,6 +284,7 @@ lvl 0.14   shown Y   65ms (12/48/3)
 - Android 12 이상에서는 창 알파(약 0.8)가 곱해지므로 판은 **완전히 불투명한** 검정으로 둡니다. 안쪽에 반투명을 쓰면 알파가 두 번 곱해져 흐려집니다.
 - 화면 읽어주기는 이 표시를 건너뜁니다(`clearAndSetSemantics`). 개발용 글자라 정작 이 앱 사용자에게는 소음입니다.
 - 줄 만들기는 `AiDebugText`라는 순수 로직으로 빼 기기 없이 검사합니다(`AiDebugTextTest`). NaN 점수, 확정 이름이 빈 경우, 뒤로 간 시계, 긴 top-5 이름, 그리고 앱 언어 때문에 숫자가 아랍 숫자로 나오는 것까지 고정합니다.
+- 글꼴은 **앱에 넣은 고정폭 글꼴**(`AppMonospace`, `UiFonts.kt`)입니다. 시스템의 `FontFamily.Monospace` 를 쓰면 삼성 One UI 가 비례폭으로 덮어써서, 값이 바뀔 때 자리가 흔들리고 top-5 확률이 한 열에 서지 않습니다. Galaxy S25+ 에서 `lvl 0.00` 의 글자 간격이 11.5~19px 로 들쭉날쭉했고, 같은 코드가 Pixel(AOSP) 에서는 17px 로 고르게 나왔습니다(#162). 넣은 글꼴은 AOSP 의 `DroidSansMono.ttf` 를 고치지 않은 것이고, 도움말의 라이선스 고지와 제보용 기기 정보도 같은 글꼴을 씁니다. `AppMonospaceFontTest` 가 이 글꼴이 정말 고정폭인지, HUD 가 찍을 수 있는 글자(YAMNet 클래스 이름 521개, 말줄임표 포함)가 모두 들어 있는지 확인합니다. 빠진 글자는 그 글자만 시스템 글꼴로 그려져 그 줄이 다시 비례폭이 됩니다.
 
 ### 한 프레임의 계산 (`VisualizerEngine.tick`)
 
