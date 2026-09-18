@@ -151,6 +151,30 @@ android {
     }
 }
 
+// 유닛 테스트 몇 개는 프로젝트 파일을 직접 읽는다. 매니페스트(NotificationCommandTest, AppWindowThemeTest),
+// res(StringResourcesTest, AppWindowThemeTest), assets(LicenseAssetsTest, AiLabelContractTest 등),
+// 저장소 루트의 NOTICE·LICENSE(LicenseAssetsTest)다.
+// Gradle 은 이 파일들을 테스트의 입력으로 모르기 때문에, 그 파일만 고치면 "이미 최신"으로 건너뛰어
+// 옛 결과가 통과처럼 보인다(#146). res 는 문구를 새로 추가할 때만 R 클래스가 바뀌어 다시 돌았다.
+// 그래서 읽는 파일을 입력으로 직접 알려 준다.
+tasks.withType<Test>().configureEach {
+    inputs.file(layout.projectDirectory.file("src/main/AndroidManifest.xml"))
+        .withPropertyName("appManifest")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(layout.projectDirectory.dir("src/main/res"))
+        .withPropertyName("appResources")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(layout.projectDirectory.dir("src/main/assets"))
+        .withPropertyName("appAssets")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(
+        rootProject.layout.projectDirectory.file("NOTICE"),
+        rootProject.layout.projectDirectory.file("LICENSE")
+    )
+        .withPropertyName("repositoryNotices")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 dependencies {
     implementation("androidx.core:core-ktx:1.19.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
