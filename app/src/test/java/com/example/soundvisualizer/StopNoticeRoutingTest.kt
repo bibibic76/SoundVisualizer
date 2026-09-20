@@ -67,4 +67,14 @@ class StopNoticeRoutingTest {
         assertFalse(restored.shouldShowOnHome(3))
         assertTrue(restored.shouldShowOnHome(4))
     }
+
+    @Test
+    fun `프로세스가 다시 떠도 새 안내는 홈으로 옮긴다`() {
+        // 화면 상태에서 되살린 "이미 옮긴 번호" 와, 저장해 둔 번호에서 이어 세는 새 안내 번호.
+        // 번호를 매기는 쪽이 0 부터 다시 세면 둘이 겹쳐(1 == 1) 새 안내를 건너뛴다(#176).
+        val restored = StopNoticeRouting(routedSeq = 1)
+
+        assertTrue("이어 센 번호인데 건너뛰었다", restored.shouldShowOnHome(2))
+        assertFalse("같은 안내를 두 번 옮겼다", restored.shouldShowOnHome(2))
+    }
 }

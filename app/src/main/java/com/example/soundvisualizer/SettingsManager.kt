@@ -70,6 +70,7 @@ object SettingsManager {
     private const val KEY_AI_BOOSTER_ENABLED = "ai_booster_enabled"
     private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
+    private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
@@ -173,8 +174,10 @@ object SettingsManager {
     /**
      * 안내를 새로 저장할 때마다 1 씩 오르는 번호. 같은 이유로 또 꺼져도 다른 안내로 구분된다.
      *
-     * 홈 탭으로 한 번만 옮기는 판단([StopNoticeRouting])에 쓴다. 저장하지 않으므로 프로세스가 다시 뜨면 0 부터
-     * 시작하는데, 그때는 화면 상태도 함께 사라져 남아 있던 안내를 한 번 더 보여줄 뿐이다.
+     * 홈 탭으로 한 번만 옮기는 판단([StopNoticeRouting])에 쓴다. **이유와 함께 저장한다.** 액티비티는 이미 옮긴
+     * 번호를 `onSaveInstanceState` 에 담아 프로세스가 죽어도 되살리는데, 이 번호만 0 부터 다시 세면 되살아난
+     * 번호와 새 안내의 번호가 겹쳐 새 안내를 이미 본 것으로 친다. 그러면 설정·도움말 탭에 있던 사용자는
+     * 안내를 한 번도 못 본다(#176).
      */
     private val _lastUnexpectedStopSeq = MutableStateFlow(0)
     val lastUnexpectedStopSeq: StateFlow<Int> = _lastUnexpectedStopSeq
@@ -217,6 +220,7 @@ object SettingsManager {
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
         _reducedFrameRate.value = loadReducedFrameRate(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
+        _lastUnexpectedStopSeq.value = loadLastUnexpectedStopSeq(prefs)
 
         // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
         hapticFlows.forEach { (label, flow) ->
@@ -268,6 +272,15 @@ object SettingsManager {
     /** [loadLastUnexpectedStop] 와 같은 키로 적는다. [reason] 이 null 이면 키를 지운다. */
     internal fun putLastUnexpectedStop(editor: SharedPreferences.Editor, reason: StopReason?) {
         if (reason == null) editor.remove(KEY_LAST_UNEXPECTED_STOP) else editor.putString(KEY_LAST_UNEXPECTED_STOP, reason.name)
+    }
+
+    /** 안내 번호. 저장된 적이 없으면 0 이다. */
+    internal fun loadLastUnexpectedStopSeq(source: SharedPreferences): Int =
+        source.getInt(KEY_LAST_UNEXPECTED_STOP_SEQ, 0)
+
+    /** 안내 번호를 이유와 같은 묶음으로 저장한다. 지울 때도 번호는 남겨, 다음 안내가 지난 번호를 다시 쓰지 않게 한다. */
+    internal fun putLastUnexpectedStopSeq(editor: SharedPreferences.Editor, seq: Int) {
+        editor.putInt(KEY_LAST_UNEXPECTED_STOP_SEQ, seq)
     }
 
     fun setVisualMode(mode: VisualMode) {
@@ -456,8 +469,12 @@ object SettingsManager {
 
     /** [reason] 이 null 이면 지운다. */
     fun setLastUnexpectedStop(reason: StopReason?) {
-        if (reason != null) _lastUnexpectedStopSeq.value++
+        val seq = if (reason != null) _lastUnexpectedStopSeq.value + 1 else _lastUnexpectedStopSeq.value
+        _lastUnexpectedStopSeq.value = seq
         _lastUnexpectedStop.value = reason
-        prefs.edit { putLastUnexpectedStop(this, reason) }
+        prefs.edit {
+            putLastUnexpectedStop(this, reason)
+            putLastUnexpectedStopSeq(this, seq)
+        }
     }
 }
