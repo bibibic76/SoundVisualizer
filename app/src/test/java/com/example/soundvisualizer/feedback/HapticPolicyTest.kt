@@ -109,6 +109,28 @@ class HapticPolicyTest {
     }
 
     @Test
+    fun `쿨다운에 막힌 사건은 쿨다운이 끝나고 소리가 이어지면 울린다`() {
+        // 총소리 한 발 뒤 1.5초 만에 시작된 경보음. 예전에는 이 사건을 들고 있지 않아 영영 울리지 않았다(#174).
+        val policy = HapticPolicy()
+        val cfg = config()
+        policy.feed(0, 200, DANGER, LOUD, cfg)          // 0ms 에 울림
+        policy.feed(300, 900, DANGER, QUIET, cfg)       // 사건 끝
+        val fired = policy.feed(1500, 3000, DANGER, LOUD, cfg)  // 쿨다운 안에서 시작해 계속 나는 소리
+        assertEquals("쿨다운이 끝나는 2000ms 에 한 번 울려야 한다", listOf(2000L), fired.map { it.first })
+    }
+
+    @Test
+    fun `쿨다운 안에서 시작해 쿨다운 전에 끝난 사건은 울리지 않는다`() {
+        val policy = HapticPolicy()
+        val cfg = config()
+        policy.feed(0, 200, DANGER, LOUD, cfg)
+        policy.feed(300, 900, DANGER, QUIET, cfg)
+        policy.feed(1000, 1200, DANGER, LOUD, cfg)      // 쿨다운 안에서 잠깐
+        val after = policy.feed(1300, 3000, DANGER, QUIET, cfg)
+        assertTrue("이미 끝난 소리에 뒤늦게 울렸다: $after", after.isEmpty())
+    }
+
+    @Test
     fun `쿨다운이 지난 뒤 다시 시작된 사건은 울린다`() {
         val policy = HapticPolicy()
         val cfg = config()
