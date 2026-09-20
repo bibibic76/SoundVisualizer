@@ -26,8 +26,8 @@ static std::atomic<float> peakRight{0.0f};
 static std::atomic<int> pushCount{0};
 
 // 가장 최근 버퍼의 좌우 중 큰 피크. readPeaks() 와 달리 읽어도 초기화하지 않는다.
-// 오버레이가 readPeaks() 로 누적값을 가져가며 0 으로 되돌리므로, 다른 소비자(진동 알림)는
-// 이 값을 읽는다. 버퍼마다 덮어쓰기만 하므로 읽는 순서를 따질 필요가 없다.
+// 개발자 모드 HUD 가 "지금 소리 크기" 로 보여 주는 값이다. 여러 곳에서 읽어도 서로 빼앗지 않는다.
+// 구간을 훑어야 하는 쪽(진동 알림, 보호된 소리 안내)은 이 값이 아니라 아래 누적값을 쓴다.
 static std::atomic<float> lastLevel{0.0f};
 
 // 보호된 소리 안내(BlockedCaptureNotice)가 쓰는 세 번째 누적값. 피크와 버퍼 수를 함께 센다.
@@ -42,6 +42,13 @@ static std::atomic<float> lastLevel{0.0f};
 // 값은 한 소비자(메인 스레드의 확인 틱)만 읽는다. 버퍼당 늘어나는 비용은 원자 연산 두 번뿐이다.
 static std::atomic<float> checkPeak{0.0f};
 static std::atomic<int> checkCount{0};
+
+// 진동 알림(HapticNotifier)이 쓰는 네 번째 누적값. 0.1초마다 읽고 0 으로 되돌린다.
+//
+// 여기도 lastLevel 로는 안 된다. 0.1초에 한 번 가장 최근 버퍼(11.6ms)만 보면 시간의 12% 남짓만 보는 셈이라,
+// 총소리 한 발처럼 30~60ms 만 큰 소리는 확인과 확인 사이에 들어왔다 사라진다. 그러면 화면에는 그려지는데
+// (오버레이는 구간 최대값을 읽는다) 진동은 오지 않는다. 폰이 주머니에 있으면 진동이 유일한 알림이다.
+static std::atomic<float> hapticPeak{0.0f};
 
 static inline void atomicMax(std::atomic<float> &target, float value) {
   float cur = target.load(std::memory_order_relaxed);
@@ -84,6 +91,7 @@ Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
   atomicMax(peakLeft, l);
   atomicMax(peakRight, r);
   atomicMax(checkPeak, peak);
+  atomicMax(hapticPeak, peak);
   // 두 카운터 모두 피크 뒤에 release 로 올린다 (읽는 쪽의 acquire 와 짝을 이룬다).
   pushCount.fetch_add(1, std::memory_order_release);
   checkCount.fetch_add(1, std::memory_order_release);
@@ -129,6 +137,12 @@ Java_com_example_soundvisualizer_AudioEngine_takePeakSinceLastCheck(JNIEnv *env,
   env->SetFloatArrayRegion(out, 0, 2, values);
 }
 
+// 마지막 호출 이후의 최대 피크 (0..1). 읽은 뒤 0 으로 되돌린다. 진동 알림 전용이라 다른 소비자와 값을 빼앗지 않는다.
+extern "C" JNIEXPORT jfloat JNICALL
+Java_com_example_soundvisualizer_AudioEngine_takeHapticPeak(JNIEnv *env, jobject thiz) {
+  return hapticPeak.exchange(0.0f, std::memory_order_acq_rel);
+}
+
 // 누적값을 0 으로 돌린다. 캡처 시작 시점과 종료 시점에 각각 호출한다.
 // (시작 때 호출하면 네이티브 라이브러리 적재 실패도 캡처 스레드가 아니라 여기서 드러난다.)
 extern "C" JNIEXPORT void JNICALL
@@ -139,5 +153,6 @@ Java_com_example_soundvisualizer_AudioEngine_reset(JNIEnv *env, jobject thiz) {
   lastLevel.store(0.0f, std::memory_order_relaxed);
   checkPeak.store(0.0f, std::memory_order_relaxed);
   checkCount.store(0, std::memory_order_relaxed);
+  hapticPeak.store(0.0f, std::memory_order_relaxed);
   LOGD("Audio engine reset.");
 }

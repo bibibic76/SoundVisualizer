@@ -28,9 +28,21 @@ object AudioEngine {
 
     /**
      * 가장 최근 버퍼의 좌우 중 큰 피크 (0..1).
-     * [readPeaks] 와 달리 읽어도 초기화하지 않아서, 오버레이 말고 다른 곳(진동 알림)도 함께 읽을 수 있다.
+     * [readPeaks] 와 달리 읽어도 초기화하지 않아서, 여러 곳에서 함께 읽을 수 있다. 개발자 모드 HUD 가 쓴다.
+     * 버퍼 하나(11.6ms)만 담고 있으므로 "그사이 소리가 났는가" 를 물으려면 [takeHapticPeak] 나
+     * [takePeakSinceLastCheck] 처럼 구간을 모으는 값을 써야 한다.
      */
     external fun currentLevel(): Float
+
+    /**
+     * 마지막 호출 이후의 최대 피크 (0..1). 읽으면 0 으로 되돌린다. 진동 알림([com.example.soundvisualizer.feedback.HapticNotifier]) 전용이다.
+     *
+     * 진동은 0.1초마다 판단하는데 [currentLevel] 로 보면 그 구간의 12% 남짓만 들여다보게 된다. 총소리 한 발처럼
+     * 30~60ms 만 큰 소리는 확인과 확인 사이에 들어왔다 사라져, 화면에는 그려지는데 진동만 빠진다(#174).
+     * 다른 누적값과 따로 두는 이유는 [takePeakSinceLastCheck] 의 설명과 같다. 먼저 읽는 쪽이 0 으로 되돌리기 때문이다.
+     * 호출당 할당이 없다.
+     */
+    external fun takeHapticPeak(): Float
 
     /**
      * [out] (크기 2 이상) 에 `[마지막 호출 이후의 최대 피크, 그사이 도착한 버퍼 수]` 를 채우고 0 으로 되돌린다.

@@ -1,5 +1,6 @@
 package com.example.soundvisualizer
 
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -52,8 +53,55 @@ class StopNoticeSettingsTest {
         assertNull(SettingsManager.loadLastUnexpectedStop(prefs))
     }
 
+    // ---------------------------------------------------------------
+    // 안내 번호 (#176)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `안내 번호도 저장하고 그대로 읽는다`() {
+        // 액티비티는 "이미 홈으로 옮긴 번호" 를 화면 상태에 담아 프로세스가 죽어도 되살린다.
+        // 번호를 매기는 쪽만 0 부터 다시 세면 두 번호가 겹쳐, 새 안내를 이미 본 것으로 치고 넘어간다.
+        val prefs = MemoryPrefs()
+        assertEquals("저장된 적이 없으면 0", 0, SettingsManager.loadLastUnexpectedStopSeq(prefs))
+
+        SettingsManager.putLastUnexpectedStopSeq(prefs.edit(), 3)
+        assertEquals(3, prefs.getInt(SEQ_KEY, -1))
+        assertEquals(3, SettingsManager.loadLastUnexpectedStopSeq(prefs))
+    }
+
+    @Test
+    fun `안내를 지워도 번호는 남는다`() {
+        // 지우면서 번호까지 0 으로 돌리면 다음 안내가 지난 번호를 다시 써서 같은 문제가 난다.
+        val prefs = MemoryPrefs()
+        SettingsManager.putLastUnexpectedStopSeq(prefs.edit(), 5)
+        SettingsManager.putLastUnexpectedStop(prefs.edit(), null)
+
+        assertEquals(5, SettingsManager.loadLastUnexpectedStopSeq(prefs))
+    }
+
+    @Test
+    fun `프로세스가 다시 떠도 번호를 이어서 센다`() {
+        // 저장해 둔 번호에서 이어 세지 않으면, 화면 상태에서 되살린 "이미 옮긴 번호" 와 겹쳐 새 안내를 건너뛴다.
+        val prefs = MemoryPrefs()
+        SettingsManager.putLastUnexpectedStopSeq(prefs.edit(), 4)
+        SettingsManager.load(prefs)
+        assertEquals("저장해 둔 번호를 읽지 않았다", 4, SettingsManager.lastUnexpectedStopSeq.value)
+
+        SettingsManager.setLastUnexpectedStop(StopReason.ProjectionStopped)
+
+        assertEquals(5, SettingsManager.lastUnexpectedStopSeq.value)
+        assertEquals("번호를 저장하지 않으면 다음 프로세스가 다시 0 부터 센다", 5, SettingsManager.loadLastUnexpectedStopSeq(prefs))
+    }
+
+    @After
+    fun restoreSingleton() {
+        // SettingsManager 는 싱글턴이라 테스트끼리 상태를 공유한다 (ScreenOffPauseTest 와 같은 이유).
+        SettingsManager.load(MemoryPrefs())
+    }
+
     private companion object {
         /** 저장 키를 바꾸면 업데이트한 사용자의 안내가 사라진다. */
         const val KEY = "last_unexpected_stop"
+        const val SEQ_KEY = "last_unexpected_stop_seq"
     }
 }

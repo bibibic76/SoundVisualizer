@@ -379,6 +379,43 @@ class VisualizerEngineTest {
     }
 
     // ---------------------------------------------------------------
+    // 가장자리 띠로 잘라 그리기 (#172): 잘라 낸 곳에 그릴 것이 없어야 한다
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `파도 곡선은 잘라 그릴 가장자리 띠 밖으로 나가지 않는다`() {
+        // 크기와 좌우 소리를 바꿔 가며, 그릴 때와 같은 곡선을 점 사이까지 촘촘히 짚는다.
+        // 띠를 좁게 잡으면 파도 안쪽이나 둥근 모서리가 잘려 보인다.
+        val rnd = java.util.Random(172)
+        var checked = 0
+        for (intensity in listOf(10f, 50f, 100f)) {
+            // 앞의 셋은 정해 둔 소리다: 양쪽 최대(모든 채널이 가장 깊이 들어와 둥근 모서리가 가장 깊다), 왼쪽만, 오른쪽만.
+            // 나머지는 무작위다.
+            repeat(23) { trial ->
+                val fake = FakeInputs(settings = ModeSettings(intensity = intensity, sensitivity = 100f))
+                val engine = newEngine(fake)
+                var t = FRAME_60
+                val frames = if (trial < 3) 300 else 30 + rnd.nextInt(90)
+                repeat(frames) {
+                    fake.left = when (trial) { 0, 1 -> 1f; 2 -> 0f; else -> rnd.nextFloat() }
+                    fake.right = when (trial) { 0, 2 -> 1f; 1 -> 0f; else -> rnd.nextFloat() }
+                    engine.tick(t)
+                    t += FRAME_60
+                }
+                val (band, margin, curve) = engine.debugWaveBand(samplesPerSegment = 16)
+                    .let { Triple(it[0], it[1], it[2]) }
+                if (curve > 0f) checked++
+                // 안티앨리어싱으로 번지는 1px 까지 띠 안에 있어야 한다.
+                assertTrue(
+                    "크기 $intensity: 곡선이 ${curve}px 들어왔는데 띠는 ${band}px + 여유 ${margin}px",
+                    curve + 1f <= band + margin
+                )
+            }
+        }
+        assertTrue("파도가 한 번도 그려지지 않아 확인한 것이 없다", checked > 50)
+    }
+
+    // ---------------------------------------------------------------
     // 대기 중 소리 신호로 잠들어도 되는지 (#170)
     // ---------------------------------------------------------------
 

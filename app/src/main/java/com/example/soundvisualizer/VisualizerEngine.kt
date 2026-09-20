@@ -7,8 +7,10 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RadialGradient
 import android.graphics.Shader
+import androidx.core.graphics.withClip
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
@@ -82,6 +84,9 @@ class VisualizerEngine(
         /** maxVolume < 0.01 이면 비활성으로 본다. 대기 중인 오버레이를 깨우는 소리 신호([OverlayWake])도 같은 값을 쓴다. */
         const val WAKE_THRESHOLD = 0.01f
         private const val MIN_VISIBLE_ALPHA = 0.002f
+
+        /** 가장자리 띠로 잘라 그릴 때 곡선 넘침·안티앨리어싱을 위해 더 두는 폭(dp). */
+        private const val EDGE_BAND_MARGIN_DP = 8f
 
         /**
          * 표시가 꺼진 라벨이라 그리지 못한 피크를 보관하는 칸 수와 칸 하나의 길이(60fps 프레임 단위).
@@ -179,6 +184,8 @@ class VisualizerEngine(
     private val channelPos = FloatArray(CH)
     private val waveX = FloatArray(WAVE_N)
     private val waveY = FloatArray(WAVE_N)
+    /** [waveSegment] 의 결과: 시작점, 제어점 둘, 끝점 (x, y 순). */
+    private val seg = FloatArray(8)
     private val centerDists = FloatArray(CH)
     private val padOuterX = FloatArray(PAD_N + 1)
     private val padOuterY = FloatArray(PAD_N + 1)
@@ -389,6 +396,28 @@ class VisualizerEngine(
         val depths: List<Float>,
         val idle: Boolean
     )
+
+    /**
+     * 테스트용: 지금 상태로 파도 점을 만들고 `[잘라 그릴 띠, 띠의 여유, 실제 곡선이 가장 깊이 들어온 거리]` 를 돌려준다.
+     * 곡선은 그릴 때와 같은 [waveSegment] 로 점 사이마다 [samplesPerSegment] 번 짚는다.
+     */
+    internal fun debugWaveBand(samplesPerSegment: Int): FloatArray {
+        buildWavePoints()
+        var curve = 0f
+        for (i in 0 until WAVE_N) {
+            waveSegment(i)
+            for (k in 0..samplesPerSegment) {
+                val t = k.toFloat() / samplesPerSegment
+                val u = 1f - t
+                val a = u * u * u; val b = 3f * u * u * t; val c = 3f * u * t * t; val d = t * t * t
+                val x = a * seg[0] + b * seg[2] + c * seg[4] + d * seg[6]
+                val y = a * seg[1] + b * seg[3] + c * seg[5] + d * seg[7]
+                val e = edgeDistance(x, y)
+                if (e > curve) curve = e
+            }
+        }
+        return floatArrayOf(waveBand(), EDGE_BAND_MARGIN_DP * density, curve)
+    }
 
     internal fun debugState(): DebugState = DebugState(
         visible = visible,
@@ -656,18 +685,8 @@ class VisualizerEngine(
 
             path.moveTo(waveX[0], waveY[0])
             for (i in 0 until n) {
-                val i0 = (i + n - 1) % n
-                val i2 = (i + 1) % n
-                val i3 = (i + 2) % n
-                val p0x = waveX[i0]; val p0y = waveY[i0]
-                val p1x = waveX[i]; val p1y = waveY[i]
-                val p2x = waveX[i2]; val p2y = waveY[i2]
-                val p3x = waveX[i3]; val p3y = waveY[i3]
-                path.cubicTo(
-                    p1x + (p2x - p0x) / 6f, p1y + (p2y - p0y) / 6f,
-                    p2x - (p3x - p1x) / 6f, p2y - (p3y - p1y) / 6f,
-                    p2x, p2y
-                )
+                waveSegment(i)
+                path.cubicTo(seg[2], seg[3], seg[4], seg[5], seg[6], seg[7])
             }
             path.close()
         } else {
@@ -699,10 +718,40 @@ class VisualizerEngine(
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = OUTLINE_STROKE_DP * density
         }
-        if (glowAlpha > 0f) drawGlow(canvas, shader, paint.style, paint.strokeWidth)
-        paint.alpha = alphaByte(alpha)
-        canvas.drawPath(path, paint)
+        paintEdgeBand(canvas, waveBand(), shader, paint.style, paint.strokeWidth)
     }
+
+    /**
+     * 파도 점 [i] 에서 다음 점까지의 3차 곡선을 [seg] 에 채운다: 시작점, 제어점 둘, 끝점.
+     * 점들을 지나는 Catmull-Rom 곡선이다. 외곽선은 같은 곡선을 거꾸로 그린다.
+     */
+    private fun waveSegment(i: Int) {
+        val n = WAVE_N
+        val i0 = (i + n - 1) % n
+        val i2 = (i + 1) % n
+        val i3 = (i + 2) % n
+        val p0x = waveX[i0]; val p0y = waveY[i0]
+        val p1x = waveX[i]; val p1y = waveY[i]
+        val p2x = waveX[i2]; val p2y = waveY[i2]
+        val p3x = waveX[i3]; val p3y = waveY[i3]
+        seg[0] = p1x; seg[1] = p1y
+        seg[2] = p1x + (p2x - p0x) / 6f; seg[3] = p1y + (p2y - p0y) / 6f
+        seg[4] = p2x - (p3x - p1x) / 6f; seg[5] = p2y - (p3y - p1y) / 6f
+        seg[6] = p2x; seg[7] = p2y
+    }
+
+    /** 파도 점이 가장자리에서 가장 깊이 들어온 거리(px). 점 사이 곡선의 넘침은 [EDGE_BAND_MARGIN_DP] 가 덮는다. */
+    private fun waveBand(): Float {
+        var t = 0f
+        for (i in 0 until WAVE_N) {
+            val d = edgeDistance(waveX[i], waveY[i])
+            if (d > t) t = d
+        }
+        return t
+    }
+
+    /** 가장 가까운 화면 가장자리까지의 거리. */
+    private fun edgeDistance(x: Float, y: Float): Float = min(min(x, w - x), min(y, h - y))
 
     private fun buildWavePoints() {
         val p = 2f * (w + h)
@@ -889,7 +938,9 @@ class VisualizerEngine(
             path.close()
         }
         if (!any) return
-        drawSolid(canvas)
+        var band = 0f
+        for (c in 0 until CH) if (padThickness[c] > band) band = padThickness[c]
+        drawSolid(canvas, band)
     }
 
     // ---------------- Circle ----------------
@@ -924,19 +975,54 @@ class VisualizerEngine(
         }
         path.close()
 
-        drawSolid(canvas)
+        // 원형은 화면 가운데라 가장자리 띠와 상관없다.
+        drawSolid(canvas, band = -1f)
     }
 
     // ---------------- 공통 페인팅 ----------------
 
-    private fun drawSolid(canvas: NativeCanvas) {
+    /** 단색으로 채운다. [band] 가 0 이상이면 그 폭의 가장자리 띠로 잘라 그린다([paintEdgeBand]). */
+    private fun drawSolid(canvas: NativeCanvas, band: Float) {
         val paint = fillPaint
         paint.shader = null
         paint.style = Paint.Style.FILL
         paint.color = (0xFF shl 24) or colorRgb
-        if (glowAlpha > 0f) drawGlow(canvas, null, Paint.Style.FILL, 0f)
-        paint.alpha = alphaByte(alpha)
-        canvas.drawPath(path, paint)
+        if (band < 0f) paintPath(canvas, null, Paint.Style.FILL, 0f)
+        else paintEdgeBand(canvas, band, null, Paint.Style.FILL, 0f)
+    }
+
+    /**
+     * [path] 를 그린다. 도형이 가장자리에서 [band] 안쪽에만 있으면 가장자리 띠 네 개로 잘라 그린다(#172).
+     *
+     * 파도·외곽선·패드는 가장자리 띠만 칠하지만 경로의 범위는 화면 전체다. 그대로 그리면 안티앨리어싱
+     * 마스크를 매 프레임 화면 전체 크기로 만든다. 잘라 그리면 마스크가 띠 크기로 줄고, 그려지는 화면은 같다.
+     * Galaxy S25+ 에서 한 코어 기준 파도 68% → 41~45%, 외곽선 89% → 46~47%, 패드 68% → 24~26% 였다.
+     * 띠는 겹치지 않게 나눈다. 겹치면 그 자리만 두 번 칠해져 진해진다.
+     *
+     * **발광이 켜져 있으면 자르지 않는다.** 같은 기기에서 파도·외곽선은 발광까지 잘라도(88.5% → 96.7%),
+     * 발광만 통째로 그리고 본 도형을 잘라도(→ 104.6%) 오히려 무거워졌다. 자르지 않으면 발광에서 만든 경로
+     * 마스크를 본 도형이 다시 쓰는데, 자르면 그러지 못하는 것으로 보인다.
+     */
+    private fun paintEdgeBand(canvas: NativeCanvas, band: Float, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
+        // 띠가 만나는 경계를 픽셀에 맞춰, 경계 줄이 두 띠에 모두 들거나 어느 쪽에도 들지 않는 일이 없게 한다.
+        val t = ceil(band + EDGE_BAND_MARGIN_DP * density + strokeWidth)
+        if (glowAlpha > 0f || t * 2f >= min(w, h)) {
+            paintPath(canvas, shader, style, strokeWidth)
+            return
+        }
+        fillPaint.alpha = alphaByte(alpha)
+        // withClip 은 인라인이라 프레임마다 할당하지 않는다.
+        canvas.withClip(0f, 0f, w, t) { drawPath(path, fillPaint) }          // 위 (모서리 포함)
+        canvas.withClip(0f, h - t, w, h) { drawPath(path, fillPaint) }       // 아래 (모서리 포함)
+        canvas.withClip(0f, t, t, h - t) { drawPath(path, fillPaint) }       // 왼쪽
+        canvas.withClip(w - t, t, w, h - t) { drawPath(path, fillPaint) }    // 오른쪽
+    }
+
+    /** 발광(켜져 있으면)과 본 도형을 자르지 않고 그린다. [fillPaint] 의 색·셰이더·모양은 부르는 쪽이 정해 둔다. */
+    private fun paintPath(canvas: NativeCanvas, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
+        if (glowAlpha > 0f) drawGlow(canvas, shader, style, strokeWidth)
+        fillPaint.alpha = alphaByte(alpha)
+        canvas.drawPath(path, fillPaint)
     }
 
     /** 광원: 같은 도형을 블러 마스크로 한 번 더 깔아 아우라를 만든다. */
