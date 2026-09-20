@@ -41,10 +41,13 @@ class HapticPolicy(
     private var activeLabel: String? = null
     private val lastFireMs = HashMap<String, Long>()
 
+    /** 쿨다운에 막혀 아직 울리지 못한 사건. 쿨다운이 끝났을 때 소리가 이어지고 있으면 그때 울린다(#174). */
+    private var waitingForCooldown = false
+
     /**
      * @param nowMs 단조 증가하는 시각 (elapsedRealtime)
      * @param label 가장 최근 분류 라벨. 분류 결과가 아직 없으면 null
-     * @param level 가장 최근 오디오 버퍼의 최대 진폭 (0..1)
+     * @param level 지난 틱 이후 구간 전체의 최대 진폭 (0..1). 가장 최근 버퍼만 보면 짧은 소리를 놓친다(#174).
      * @param config 라벨별 표시·진동 설정
      * @return 지금 울려야 하면 그 진동, 아니면 null
      */
@@ -60,14 +63,23 @@ class HapticPolicy(
         val cfg = if (soundPresent && label != null) config(label) else null
         if (label == null || cfg == null || !cfg.shown || !cfg.haptic.enabled) {
             activeLabel = null
+            waitingForCooldown = false
             return null
         }
 
         val lastFire = lastFireMs[label]
+        val cooledDown = lastFire == null || nowMs - lastFire >= cooldownMs
         val fire = if (label != activeLabel) {
             // 새 사건: 소리가 새로 났거나 다른 종류로 바뀌었다.
             activeLabel = label
-            lastFire == null || nowMs - lastFire >= cooldownMs
+            // 쿨다운에 막혔으면 사건을 들고 있는다. 막힌 채로 잊으면 그 사건은 영영 울리지 않는다.
+            // 총소리 한 발 뒤 1.5초 만에 시작된 경보음이 계속 울리는 동안에도 진동이 없었다(#174).
+            waitingForCooldown = !cooledDown
+            cooledDown
+        } else if (waitingForCooldown) {
+            // 들고 있던 사건: 쿨다운이 끝났고 소리가 아직 나는 중이면 한 번 울린다.
+            if (cooledDown) waitingForCooldown = false
+            cooledDown
         } else {
             cfg.haptic.pattern == HapticPattern.Repeat &&
                 lastFire != null && nowMs - lastFire >= repeatIntervalMs
@@ -82,6 +94,7 @@ class HapticPolicy(
     fun reset() {
         lastLoudMs = Long.MIN_VALUE
         activeLabel = null
+        waitingForCooldown = false
         lastFireMs.clear()
     }
 }

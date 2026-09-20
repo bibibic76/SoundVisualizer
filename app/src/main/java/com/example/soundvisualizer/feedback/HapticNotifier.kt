@@ -15,6 +15,9 @@ import com.example.soundvisualizer.SettingsManager
  * AI 파이프라인에 콜백을 넣지 않고 결과를 읽어 가는 방식이라 ai/ 코드를 건드리지 않는다.
  * 결과가 0.25초마다 나오므로 0.1초 주기면 결과를 놓치지 않는다.
  *
+ * 소리 크기는 [AudioEngine.takeHapticPeak] 로 **지난 틱 이후 구간 전체의 최대값**을 읽는다. 가장 최근 버퍼만
+ * 보면 시간의 12% 남짓만 들여다보게 되어, 총소리 한 발처럼 짧은 소리가 확인과 확인 사이에 들어왔다 사라진다(#174).
+ *
  * 한 인스턴스는 한 번만 시작하고 한 번만 멈춘다.
  *
  * @param labelSource 가장 최근 분류 라벨. 결과가 아직 없으면 null
@@ -53,7 +56,7 @@ class HapticNotifier(
             val decision = policy.onTick(
                 nowMs = SystemClock.elapsedRealtime(),
                 label = labelSource(),
-                level = AudioEngine.currentLevel(),
+                level = AudioEngine.takeHapticPeak(),
                 config = configFor
             )
             // stop() 과 경합하면 마지막 한 번이 울릴 수 있으니 울리기 직전에 한 번 더 본다.
