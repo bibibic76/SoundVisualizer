@@ -2,6 +2,7 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import androidx.core.content.edit
 import com.example.soundvisualizer.ai.AiDiagnosticConfig
 import com.example.soundvisualizer.ai.AiFrontendMode
@@ -71,6 +72,10 @@ object SettingsManager {
     private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
     private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
+    private const val KEY_TILE_ADDED = "tile_added"
+
+    /** 이 설정을 쓴 기기 표시. 백업으로 옮겨 온 값인지 가리는 데만 쓴다. */
+    private const val KEY_DEVICE_TAG = "device_tag"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
@@ -185,7 +190,33 @@ object SettingsManager {
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
-        load(context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))
+        load(context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), Build.FINGERPRINT)
+    }
+
+    /**
+     * 백업으로 다른 기기에서 옮겨 온 값 중 **그 기기에만 뜻이 있는 것**을 비운다(#181).
+     *
+     * 자동 백업은 프리퍼런스 파일을 통째로 옮기고, 백업 규칙은 파일 단위라 키 하나만 뺄 수 없다. 그대로 두면
+     * 새 폰에서 앱을 처음 열었을 때 "꺼졌습니다" 안내가 뜬다. 그 기기에서는 켠 적도 없는데, 소리를 못 듣는
+     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다.
+     *
+     * 색·진동·모드 같은 사용자 설정은 새 기기로 옮겨 가는 게 맞으므로 건드리지 않는다.
+     * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 기기의 값이 사라진다.
+     *
+     * @param deviceTag 지금 기기 표시([Build.FINGERPRINT]). null 이면 확인하지 않는다(테스트가 예전 동작을 그대로 볼 때).
+     */
+    private fun dropOtherDeviceValues(source: SharedPreferences, deviceTag: String?) {
+        if (deviceTag == null) return
+        val saved = source.getString(KEY_DEVICE_TAG, null)
+        if (saved == deviceTag) return
+        source.edit {
+            if (saved != null) {
+                remove(KEY_LAST_UNEXPECTED_STOP)
+                remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
+                remove(KEY_TILE_ADDED)
+            }
+            putString(KEY_DEVICE_TAG, deviceTag)
+        }
     }
 
     /**
@@ -194,8 +225,9 @@ object SettingsManager {
      *
      * [init] 의 "최초 한 번만" 규칙은 여기 없다. 테스트는 값을 달리 세운 가짜 프리퍼런스로 여러 번 부른다.
      */
-    internal fun load(source: SharedPreferences) {
+    internal fun load(source: SharedPreferences, deviceTag: String? = null) {
         prefs = source
+        dropOtherDeviceValues(source, deviceTag)
 
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
@@ -214,7 +246,7 @@ object SettingsManager {
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
 
-        _tileAdded.value = prefs.getBoolean("tile_added", false)
+        _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
@@ -420,7 +452,7 @@ object SettingsManager {
 
     fun setTileAdded(added: Boolean) {
         _tileAdded.value = added
-        prefs.edit { putBoolean("tile_added", added) }
+        prefs.edit { putBoolean(KEY_TILE_ADDED, added) }
     }
 
     fun setPauseWhenScreenOff(enabled: Boolean) {
