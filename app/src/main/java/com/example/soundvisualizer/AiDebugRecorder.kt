@@ -126,6 +126,9 @@ object AiDebugRecorder {
         running = false
         worker?.shutdown()
         worker = null
+        // [currentFile] 은 "지금 쓰고 있는 파일" 이다. 멈춘 뒤에도 남겨 두면 끈 상태와 켠 상태를
+        // 가릴 수 없다. 쓰는 스레드는 자기 파일을 지역 변수로 들고 있으므로 비워도 마무리는 된다.
+        currentFile = null
     }
 
     /**
