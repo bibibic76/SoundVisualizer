@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import kotlin.math.roundToInt
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +62,14 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
     val picked = android.graphics.Color.HSVToColor(floatArrayOf(hue, sat, bright))
     val hueColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f)))
 
+    // 화면 읽어주기용 설명. 값은 백분율로 읽어 준다 — 0~1 소수는 귀로 듣기 어렵다.
+    val squareDescription = stringResource(
+        R.string.color_picker_square_desc,
+        (sat * 100).roundToInt(),
+        (bright * 100).roundToInt()
+    )
+    val hueDescription = stringResource(R.string.color_picker_hue_desc, hue.roundToInt())
+
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = CardColor,
@@ -76,16 +85,28 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                         // 누름과 끌기를 한 핸들러에서 처리한다. detectTapGestures 와
                         // detectDragGestures 를 각각 pointerInput 으로 걸면 down 이벤트를
                         // 앞쪽이 소비해서 끌기가 씹힌다.
+                        //
+                        // 이벤트를 소비하는 것이 중요하다. 소비하지 않으면 터치 기울기를 넘긴 순간
+                        // 부모의 verticalScroll 이 손짓을 가져가, 위아래로 끌 때 밝기가 아니라 창이
+                        // 밀린다(#202). 밝기는 위아래 끌기로만 고를 수 있어서 그러면 어두운 색을
+                        // 만들 방법이 없어진다.
                         .pointerInput(Unit) {
                             awaitEachGesture {
                                 val down = awaitFirstDown()
+                                down.consume()
                                 sat = (down.position.x / size.width).coerceIn(0f, 1f)
                                 bright = 1f - (down.position.y / size.height).coerceIn(0f, 1f)
                                 drag(down.id) { change ->
+                                    change.consume()
                                     sat = (change.position.x / size.width).coerceIn(0f, 1f)
                                     bright = 1f - (change.position.y / size.height).coerceIn(0f, 1f)
                                 }
                             }
+                        }
+                        // 화면 읽어주기로는 끌기를 흉내낼 수 없다. 최소한 무엇이고 지금 값이 얼마인지는
+                        // 읽히게 둔다. 색 자체를 고르는 길은 아래의 미리 담긴 색 8개다(#202).
+                        .semantics {
+                            contentDescription = squareDescription
                         }
                 ) {
                     drawRect(Brush.horizontalGradient(listOf(Color.White, hueColor)))
@@ -103,14 +124,21 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
                         .fillMaxWidth()
                         .height(28.dp)
                         .clip(RoundedCornerShape(14.dp))
+                        // 사각형과 같은 이유로 소비한다. 좌우 끌기라도 대각선으로 움직이면
+                        // 부모 스크롤이 가져간다(#202).
                         .pointerInput(Unit) {
                             awaitEachGesture {
                                 val down = awaitFirstDown()
+                                down.consume()
                                 hue = (down.position.x / size.width).coerceIn(0f, 1f) * 360f
                                 drag(down.id) { change ->
+                                    change.consume()
                                     hue = (change.position.x / size.width).coerceIn(0f, 1f) * 360f
                                 }
                             }
+                        }
+                        .semantics {
+                            contentDescription = hueDescription
                         }
                 ) {
                     val stops = (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }
