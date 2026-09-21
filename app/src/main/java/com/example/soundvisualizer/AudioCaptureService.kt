@@ -274,6 +274,16 @@ class AudioCaptureService : Service() {
         super.attachBaseContext(AppLanguage.wrap(newBase))
     }
 
+    /**
+     * 사용자에게 보이는 문구를 꺼내는 컨텍스트(#187).
+     *
+     * Android 12 이하는 [attachBaseContext] 에서 한 번만 언어가 입혀지므로, 시각화를 켜 둔 채 언어를 바꾸면
+     * 서비스는 계속 떠난 언어로 문구를 꺼낸다. 실행 중 알림과 꺼짐 알림이 그 언어로 남는다.
+     * 그래서 언어가 바뀌면([AppLanguage.changes]) 다시 만든다. 13 이상은 신호가 오지 않아 이 값이 그대로다.
+     */
+    @Volatile
+    private var uiContext: Context = this
+
     override fun onCreate() {
         super.onCreate()
         SettingsManager.init(applicationContext)
@@ -303,6 +313,7 @@ class AudioCaptureService : Service() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
         observeVisualMode()
+        observeAppLanguage()
 
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
         registerScreenReceiver()
@@ -839,7 +850,7 @@ class AudioCaptureService : Service() {
         cancelAiResume()
         if (stopLatch.claimAlert(reason)) {
             stopHapticsBeforeAlert()
-            StopAlert.show(this, reason)
+            StopAlert.show(uiContext, reason)
         }
         stopService(Intent(this, OverlayService::class.java))
         SettingsManager.setServiceRunning(false)
@@ -916,7 +927,7 @@ class AudioCaptureService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            getString(R.string.notification_channel_name),
+            uiContext.getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_LOW
         )
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -940,6 +951,16 @@ class AudioCaptureService : Service() {
      *
      * 지금 값은 이미 알림에 들어 있으므로 첫 값은 흘린다.
      */
+    /** 언어가 바뀌면 문구용 컨텍스트를 다시 만들고 실행 중 알림을 새 언어로 올린다(#187). 지금 언어는 이미 반영돼 있으니 첫 값은 흘린다. */
+    private fun observeAppLanguage() {
+        serviceScope.launch {
+            AppLanguage.changes.drop(1).collect {
+                uiContext = AppLanguage.wrap(applicationContext)
+                refreshOngoingNotification()
+            }
+        }
+    }
+
     private fun observeVisualMode() {
         serviceScope.launch {
             SettingsManager.visualMode.drop(1).collect { refreshOngoingNotification() }
@@ -973,7 +994,7 @@ class AudioCaptureService : Service() {
         // 알림창만 보고도 왜 화면에 아무것도 없는지 알 수 있게 한다.
         // 받는 소리가 아예 없으면 분류할 소리도 없으므로, 둘 다 해당할 때는 받지 못한다는 쪽만 말한다.
         // AI 안내는 그때 숨겨도 소리가 다시 들어오면 나온다.
-        val text = getString(
+        val text = uiContext.getString(
             when {
                 SettingsManager.isCaptureBlocked.value -> R.string.notification_text_capture_blocked
                 !SettingsManager.aiAvailable.value -> R.string.notification_text_ai_unavailable
@@ -981,17 +1002,17 @@ class AudioCaptureService : Service() {
             }
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.notification_title))
+            .setContentTitle(uiContext.getString(R.string.notification_title))
             .setContentText(text)
             // 접은 알림은 시스템이 그리므로 위 setContentText 가 그대로 보인다.
             // 펼치면 아래 본문이 그 자리를 대신하면서 모드 칩이 함께 나온다.
             .setCustomBigContentView(buildModeChooser(text))
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             // 접힌 상태에서는 칩이 보이지 않으므로, 펼치지 않고도 지금 모드를 알 수 있게 제목 옆에 이름을 둔다.
-            .setSubText(getString(SettingsManager.visualMode.value.labelRes))
+            .setSubText(uiContext.getString(SettingsManager.visualMode.value.labelRes))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
-            .addAction(0, getString(R.string.notification_stop), stopIntent)
+            .addAction(0, uiContext.getString(R.string.notification_stop), stopIntent)
             .setOngoing(true)
             .setSilent(true)
             .build()
@@ -1014,14 +1035,14 @@ class AudioCaptureService : Service() {
         val current = SettingsManager.visualMode.value
         for ((index, mode) in VisualMode.values().withIndex()) {
             val chip = MODE_CHIP_IDS[index]
-            val label = getString(mode.labelRes)
+            val label = uiContext.getString(mode.labelRes)
             val selected = mode == current
             val chipIntent = notificationActionIntent(NotificationCommand.ACTION_SET_MODE)
                 .putExtra(NotificationCommand.EXTRA_MODE_ORDINAL, mode.ordinal)
             views.setTextViewText(chip, label)
             views.setContentDescription(
                 chip,
-                if (selected) getString(R.string.notification_mode_selected, label) else label
+                if (selected) uiContext.getString(R.string.notification_mode_selected, label) else label
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // 색은 state_checked 로 정해져 있으므로 켜짐만 알려 주면 된다.

@@ -9,6 +9,8 @@ import android.content.res.Resources
 import android.os.Build
 import android.os.LocaleList
 import androidx.core.content.edit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 앱 언어 설정. 고른 언어가 없으면(null) 폰 언어를 따르고, 지원하지 않는 폰 언어면 영어(values)로 보인다.
@@ -25,6 +27,17 @@ object AppLanguage {
 
     private const val PREFS_NAME = "AppLanguagePrefs"
     private const val KEY_TAG = "tag"
+
+    /**
+     * Android 12 이하에서 언어를 바꿀 때마다 오르는 번호(#187).
+     *
+     * 12 이하는 컴포넌트가 만들어질 때 [wrap] 으로 한 번만 언어를 입히므로, 이미 떠 있는 서비스는 계속 예전
+     * 언어로 문구를 꺼낸다. 시각화를 켜 둔 채 언어를 바꾸면 실행 중 알림과 꺼짐 알림이 떠난 언어로 남는다.
+     * 그래서 바뀔 때마다 여기서 알리고, 서비스가 문구용 컨텍스트를 다시 만든다.
+     * 13 이상은 시스템이 앱 전체에 적용하므로 이 값은 오르지 않는다.
+     */
+    private val _changes = MutableStateFlow(0)
+    val changes: StateFlow<Int> = _changes
 
     /** 사용자가 고른 언어 태그. 폰 언어를 따르면 null. */
     fun selectedTag(context: Context): String? =
@@ -45,6 +58,7 @@ object AppLanguage {
             activity.getSystemService(LocaleManager::class.java).applicationLocales = localesOf(tag)
         } else {
             prefs(activity).edit { if (tag == null) remove(KEY_TAG) else putString(KEY_TAG, tag) }
+            _changes.value++   // 돌고 있는 서비스가 문구를 다시 꺼내게 한다
             activity.recreate()
         }
     }

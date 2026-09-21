@@ -427,6 +427,7 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 | 폰 설정의 앱 언어 | 같은 값이라 어느 쪽에서 바꿔도 맞음 | 없음 |
 
 - Android 12 이하에서 `wrap`을 거는 곳: `MainActivity`, `tile/StartVisualizerActivity`, `AudioCaptureService`(알림), `OverlayService`, `tile/VisualizerTileService`(타일 이름). 이 버전에서는 `applicationContext`의 언어가 바뀌지 않으므로, 토스트 문구는 액티비티에서 꺼내 넘깁니다.
+- **이미 떠 있는 서비스는 `attachBaseContext`만으로 부족합니다**(#187). `wrap`은 컴포넌트가 만들어질 때 한 번만 걸리므로, 시각화를 켜 둔 채 언어를 바꾸면 실행 중 알림과 꺼짐 알림이 떠난 언어로 남습니다. 그래서 12 이하에서 언어가 바뀌면 `AppLanguage.changes`로 알리고, `AudioCaptureService`가 문구용 컨텍스트(`uiContext`)를 다시 만들어 알림을 새로 올립니다. Android 10 에뮬레이터에서 바꾸기 전에는 영어로 남고 고친 뒤에는 바로 한국어로 바뀌는 것을 확인했습니다.
 - 같은 버전에서 기본 로캘(`LocaleList.setDefault`)도 고른 언어로 맞춥니다. Compose 글자가 기본 로캘로 글꼴(간체·번체·일본어 한자 모양)과 줄바꿈을 고르기 때문입니다.
 - 언어 설정 파일은 `SettingsManager`와 따로 둡니다. `attachBaseContext`가 `SettingsManager.init`보다 먼저 불리기 때문입니다. 폰을 13 이상으로 올리면 앱을 처음 열 때 이 값을 시스템 설정으로 옮깁니다(`migrateLegacyChoice`).
 - 언어를 바꿔 액티비티가 다시 만들어져도 `MainActivity`가 보던 탭을 저장해 두어 설정 탭에 남습니다.
