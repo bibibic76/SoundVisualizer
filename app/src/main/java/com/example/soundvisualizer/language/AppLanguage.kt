@@ -56,11 +56,31 @@ object AppLanguage {
         if (tag == selectedTag(activity)) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity.getSystemService(LocaleManager::class.java).applicationLocales = localesOf(tag)
+            // 13 이상도 신호를 올린다. 시스템은 액티비티만 다시 만들고, 이미 올라가 있는 실행 중
+            // 알림은 그대로 둔다. 그러면 켜 둔 사용자에게 옛 언어 문구가 남는다(#206).
+            _changes.value++
         } else {
             prefs(activity).edit { if (tag == null) remove(KEY_TAG) else putString(KEY_TAG, tag) }
             _changes.value++   // 돌고 있는 서비스가 문구를 다시 꺼내게 한다
             activity.recreate()
         }
+    }
+
+    /**
+     * 고른 언어로 문구를 꺼내는 컨텍스트. **알림처럼 액티비티 밖에서 문구를 꺼내는 곳**이 쓴다(#206).
+     *
+     * 13 이상에서는 시스템이 앱 로캘을 적용하지만, 서비스 컨텍스트의 설정이 언제 갱신되는지는 보장되지
+     * 않는다. 바꾼 직후에 알림을 다시 만들면 옛 문구가 나올 수 있다. 그래서 고른 언어로 컨텍스트를
+     * 직접 만든다. 고른 것이 없으면(폰 언어를 따름) 그대로 돌려준다.
+     *
+     * [wrap] 과 달리 기본 로캘([LocaleList.setDefault])은 건드리지 않는다. 13 이상에서 그것을 손대면
+     * 시스템이 관리하는 값과 어긋난다.
+     */
+    fun localizedContext(base: Context): Context {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return wrap(base)
+        val tag = selectedTag(base) ?: return base
+        val config = Configuration(base.resources.configuration).apply { setLocales(localesOf(tag)) }
+        return base.createConfigurationContext(config)
     }
 
     /**
