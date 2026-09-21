@@ -74,6 +74,15 @@ class AiDebugRecorderInstrumentedTest {
     /** 파일은 첫 줄이 올 때 만들어지므로(#199), 아직 없을 수 있다. */
     private fun text(file: File): String = if (file.exists()) file.readText() else ""
 
+    /**
+     * 켠 회차가 쓸 파일. 경로 해석을 쓰는 스레드가 하므로(#208) 곧바로는 null 이다.
+     * 메인 스레드에서 디스크를 만지지 않으려고 그렇게 두었다.
+     */
+    private fun startedFile(): File {
+        waitFor("켠 회차의 파일이 정해짐") { AiDebugRecorder.currentFile != null }
+        return AiDebugRecorder.currentFile!!
+    }
+
     @Before
     fun clean() {
         AiDebugRecorder.stop()
@@ -92,9 +101,9 @@ class AiDebugRecorderInstrumentedTest {
     @Test
     fun 켜면_파일이_생기고_넘긴_줄이_바로_들어간다() {
         AiDebugRecorder.start(context)
-        val file = AiDebugRecorder.currentFile
+        val file = startedFile()
         assertNotNull("파일을 열지 못했다", file)
-        assertTrue("이름이 ai-<날짜-시각>.csv 가 아니다: ${file!!.name}",
+        assertTrue("이름이 ai-<날짜-시각>.csv 가 아니다: ${file.name}",
             Regex("""ai-\d{8}-\d{6}\.csv""").matches(file.name))
 
         AiDebugRecorder.offer(result(2_000L), nowMs = 2_050L, level = 0.42f, shown = true)
@@ -120,7 +129,7 @@ class AiDebugRecorderInstrumentedTest {
     @Test
     fun 같은_결과를_두_번_넘겨도_한_줄만_남는다() {
         AiDebugRecorder.start(context)
-        val file = AiDebugRecorder.currentFile!!
+        val file = startedFile()
         val same = result(3_000L)
         AiDebugRecorder.offer(same, nowMs = 3_000L, level = 0.1f, shown = true)
         AiDebugRecorder.offer(same, nowMs = 3_100L, level = 0.1f, shown = true)
@@ -134,7 +143,7 @@ class AiDebugRecorderInstrumentedTest {
     @Test
     fun 끄면_닫히고_다시_켜면_새_파일에_쓴다() {
         AiDebugRecorder.start(context)
-        val first = AiDebugRecorder.currentFile!!
+        val first = startedFile()
         AiDebugRecorder.offer(result(4_000L), nowMs = 4_000L, level = 0.2f, shown = true)
         waitFor("첫 파일에 줄이 들어감") { text(first).contains(AiDebugCsv.HEADER) }
         AiDebugRecorder.stop()
@@ -143,7 +152,7 @@ class AiDebugRecorderInstrumentedTest {
         // 누르는 간격이라 겹치지 않지만, 테스트에서는 초가 넘어가기를 기다려 두 파일을 구분한다.
         Thread.sleep(1_100)
         AiDebugRecorder.start(context)
-        val second = AiDebugRecorder.currentFile!!
+        val second = startedFile()
         assertTrue("다시 켰는데 같은 파일에 이어 쓴다", first.name != second.name)
 
         AiDebugRecorder.offer(result(5_000L), nowMs = 5_000L, level = 0.3f, shown = false)
@@ -161,7 +170,7 @@ class AiDebugRecorderInstrumentedTest {
         repeat(5) {
             AiDebugRecorder.start(context)
             // 끄면 currentFile 이 비므로, 끄기 전에 붙잡아 둔다.
-            AiDebugRecorder.currentFile?.let(opened::add)
+            opened += startedFile()
             AiDebugRecorder.offer(result(6_000L + it), nowMs = 6_000L + it, level = 0.1f, shown = true)
             AiDebugRecorder.stop()
         }
@@ -175,6 +184,33 @@ class AiDebugRecorderInstrumentedTest {
         // 쌓이지 않는지를 보는 것이라, 잠깐 기다려 모두 사라지는지로 본다.
         waitFor("기록 스레드가 모두 끝남") {
             Thread.getAllStackTraces().keys.none { it.name == "ai-debug-record" && it.isAlive }
+        }
+    }
+
+    @Test
+    fun 껐다_곧바로_켜면_줄이_새_파일에만_들어간다() {
+        // stop() 은 쓰는 스레드가 끝나기를 기다리지 않는다(메인 스레드를 잡을 수 없다). 그래서 옛
+        // 스레드가 큐를 기다리는 동안 다시 켜면 두 스레드가 한 큐를 나눠 먹을 수 있었다(#208).
+        AiDebugRecorder.start(context)
+        val first = startedFile()
+        AiDebugRecorder.offer(result(7_000L), nowMs = 7_000L, level = 0.1f, shown = true)
+        waitFor("첫 파일에 한 줄") { text(first).trim().lines().size == 2 }
+
+        AiDebugRecorder.stop()
+        // 기다리지 않고 곧바로 켠다. 파일 이름이 갈리도록 초를 넘긴다.
+        Thread.sleep(1_100)
+        AiDebugRecorder.start(context)
+        val second = startedFile()
+        assertTrue("같은 파일을 다시 열었다", first.name != second.name)
+
+        repeat(6) { AiDebugRecorder.offer(result(8_000L + it), nowMs = 8_000L + it, level = 0.2f, shown = true) }
+        waitFor("새 파일에 여섯 줄") { text(second).trim().lines().size == 7 }
+
+        Thread.sleep(400)
+        assertEquals("새 회차의 줄이 옛 파일로 새어 들어갔다", 2, text(first).trim().lines().size)
+        assertEquals(7, text(second).trim().lines().size)
+        waitFor("쓰는 스레드가 하나만 남음") {
+            Thread.getAllStackTraces().keys.count { it.name == "ai-debug-record" && it.isAlive } <= 1
         }
     }
 
