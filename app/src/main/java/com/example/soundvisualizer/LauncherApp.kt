@@ -43,8 +43,12 @@ fun LauncherApp(
     }
     // 밀어서 넘긴 결과를 액티비티에 돌려준다. 화면 회전과 복귀 때 보던 탭이 유지되는 것은
     // 액티비티가 들고 있는 값이 맡는다.
+    //
+    // **멈춘 뒤의 탭**만 돌려준다. 지나가는 탭까지 돌려주면, 위 효과가 2번에서 0번으로 밀어 주는 동안
+    // 1번을 지나는 순간 액티비티 값이 1 이 되고, 그 값으로 효과가 다시 만들어지면서 돌던 애니메이션이
+    // 취소된다. 꺼짐 안내로 홈까지 가야 하는데 가운데 설정 탭에 멈춘다(#185).
     LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { onSelectTab(it) }
+        snapshotFlow { pagerState.settledPage }.collect { onSelectTab(it) }
     }
 
     // 액티비티가 화면을 시스템 바 밑까지 그리므로, 탭과 내용은 상태 표시줄·내비게이션 바·카메라 구멍을 비켜 놓는다.
