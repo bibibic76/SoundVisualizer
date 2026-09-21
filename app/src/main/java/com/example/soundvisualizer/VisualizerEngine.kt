@@ -88,6 +88,9 @@ class VisualizerEngine(
         /** 가장자리 띠로 잘라 그릴 때 곡선 넘침·안티앨리어싱을 위해 더 두는 폭(dp). */
         private const val EDGE_BAND_MARGIN_DP = 8f
 
+        /** 발광 블러가 번지는 폭 = 블러 반경의 이 배수. 블러의 시그마는 반경의 약 0.58배라 3배면 5시그마를 넘는다. */
+        private const val GLOW_SPREAD = 3f
+
         /**
          * 표시가 꺼진 라벨이라 그리지 못한 피크를 보관하는 칸 수와 칸 하나의 길이(60fps 프레임 단위).
          * 칸 하나 = 대기 폴링 한 번(33ms ≈ 2프레임)이라 30칸이면 약 1초다.
@@ -999,23 +1002,32 @@ class VisualizerEngine(
      * Galaxy S25+ 에서 한 코어 기준 파도 68% → 41~45%, 외곽선 89% → 46~47%, 패드 68% → 24~26% 였다.
      * 띠는 겹치지 않게 나눈다. 겹치면 그 자리만 두 번 칠해져 진해진다.
      *
-     * **발광이 켜져 있으면 자르지 않는다.** 같은 기기에서 파도·외곽선은 발광까지 잘라도(88.5% → 96.7%),
-     * 발광만 통째로 그리고 본 도형을 잘라도(→ 104.6%) 오히려 무거워졌다. 자르지 않으면 발광에서 만든 경로
-     * 마스크를 본 도형이 다시 쓰는데, 자르면 그러지 못하는 것으로 보인다.
+     * 발광이 켜져 있으면 블러가 번지는 폭([GLOW_SPREAD])까지 띠에 더하고, 발광도 띠 안에서 그린다.
+     * 도형이 띠 안에 있으니 발광이 번지는 곳까지 띠에 들고, 띠는 겹치지 않게 화면을 나누므로 그림은 같다.
+     * 같은 기기에서 발광을 켠 채 두 방식을 번갈아 재어 파도 90% → 52%, 패드 88% → 31%, 외곽선 88% → 60% 였다(#189).
+     * #172 에서는 발광이면 자르지 않는 쪽이 낫다고 보았는데, 그때 측정이 회차마다 벤치가 앞에서 밀려나
+     * 그린 프레임 수가 달라진 것을 걸러 내지 않은 탓이었다. 회차를 프레임 수로 판정하고 다시 재니 뒤집혔다.
      */
     private fun paintEdgeBand(canvas: NativeCanvas, band: Float, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
         // 띠가 만나는 경계를 픽셀에 맞춰, 경계 줄이 두 띠에 모두 들거나 어느 쪽에도 들지 않는 일이 없게 한다.
-        val t = ceil(band + EDGE_BAND_MARGIN_DP * density + strokeWidth)
-        if (glowAlpha > 0f || t * 2f >= min(w, h)) {
+        val glow = glowAlpha > 0f
+        val t = ceil(band + EDGE_BAND_MARGIN_DP * density + strokeWidth + if (glow) glowRadiusPx * GLOW_SPREAD else 0f)
+        if (t * 2f >= min(w, h)) {
             paintPath(canvas, shader, style, strokeWidth)
             return
         }
         fillPaint.alpha = alphaByte(alpha)
         // withClip 은 인라인이라 프레임마다 할당하지 않는다.
-        canvas.withClip(0f, 0f, w, t) { drawPath(path, fillPaint) }          // 위 (모서리 포함)
-        canvas.withClip(0f, h - t, w, h) { drawPath(path, fillPaint) }       // 아래 (모서리 포함)
-        canvas.withClip(0f, t, t, h - t) { drawPath(path, fillPaint) }       // 왼쪽
-        canvas.withClip(w - t, t, w, h - t) { drawPath(path, fillPaint) }    // 오른쪽
+        canvas.withClip(0f, 0f, w, t) { paintInBand(this, glow, shader, style, strokeWidth) }          // 위 (모서리 포함)
+        canvas.withClip(0f, h - t, w, h) { paintInBand(this, glow, shader, style, strokeWidth) }       // 아래 (모서리 포함)
+        canvas.withClip(0f, t, t, h - t) { paintInBand(this, glow, shader, style, strokeWidth) }       // 왼쪽
+        canvas.withClip(w - t, t, w, h - t) { paintInBand(this, glow, shader, style, strokeWidth) }    // 오른쪽
+    }
+
+    /** 띠 하나에 발광(켜져 있으면)과 본 도형을 그린다. 자른 범위 밖은 어차피 그려지지 않는다. */
+    private fun paintInBand(canvas: NativeCanvas, glow: Boolean, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
+        if (glow) drawGlow(canvas, shader, style, strokeWidth)
+        canvas.drawPath(path, fillPaint)
     }
 
     /** 발광(켜져 있으면)과 본 도형을 자르지 않고 그린다. [fillPaint] 의 색·셰이더·모양은 부르는 쪽이 정해 둔다. */
