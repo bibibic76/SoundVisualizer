@@ -31,7 +31,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import java.util.Locale
 
 /**
@@ -50,7 +51,11 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
 
     // 가로 화면에서는 창 높이가 모자라 색상 막대·프리셋·색 코드가 잘린다. 색 사각형을 줄여 다 들어가게 한다(#183).
     // 사각형은 손짓을 직접 받으므로, 밀어서 보게 하는 것만으로는 부족하다.
-    val shortWindow = LocalConfiguration.current.screenHeightDp < 500
+    // 높이는 Configuration.screenHeightDp 가 아니라 실제 창 크기로 잰다. 앞쪽은 targetSdk 에 따라 인셋을 넣는
+    // 방식이 달라지고 dp 로 반올림돼, 쓸 수 있는 창 높이와 어긋날 수 있다(#191). 창 크기가 아직 0 으로 오는
+    // 첫 컴포지션에는 줄이지 않는다. 줄여 놓고 다시 늘리면 사각형이 한 번 튄다.
+    val windowHeight = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() }
+    val shortWindow = windowHeight > 0.dp && windowHeight < 500.dp
     val squareHeight = if (shortWindow) 120.dp else 180.dp
 
     val picked = android.graphics.Color.HSVToColor(floatArrayOf(hue, sat, bright))
