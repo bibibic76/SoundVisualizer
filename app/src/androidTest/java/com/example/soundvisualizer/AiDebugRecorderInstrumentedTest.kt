@@ -71,6 +71,9 @@ class AiDebugRecorderInstrumentedTest {
 
     private fun files(): List<File> = logDir.listFiles()?.sortedBy { it.name } ?: emptyList()
 
+    /** 파일은 첫 줄이 올 때 만들어지므로(#199), 아직 없을 수 있다. */
+    private fun text(file: File): String = if (file.exists()) file.readText() else ""
+
     @Before
     fun clean() {
         AiDebugRecorder.stop()
@@ -97,11 +100,21 @@ class AiDebugRecorderInstrumentedTest {
         AiDebugRecorder.offer(result(2_000L), nowMs = 2_050L, level = 0.42f, shown = true)
         // 줄마다 밀어 넣으므로, 끄지 않고도 파일에서 보여야 한다. 모아 두면 돌아가는 중에 받은 파일에
         // 최근 몇 초가 비어 그 구간을 "결과가 없었다" 로 읽게 된다.
-        waitFor("넘긴 줄이 파일에 나타남") { file.readText().lines().size >= 2 }
+        waitFor("넘긴 줄이 파일에 나타남") { text(file).lines().size >= 2 }
 
-        val lines = file.readText().trim().lines()
+        val lines = text(file).trim().lines()
         assertEquals(AiDebugCsv.HEADER, lines[0])
         assertEquals(AiDebugCsv.row(result(2_000L), 2_050L, 0.42f, true), lines[1])
+    }
+
+    @Test
+    fun 켰다_바로_끄면_빈_파일이_남지_않는다() {
+        // 파일 열기는 쓰는 스레드가 한다(#199). 그래서 줄이 한 번도 오지 않으면 파일도 만들어지지 않는다.
+        // 켜 보고 바로 끈 사용자의 기기에 빈 파일이 쌓이지 않는 편이 낫다.
+        AiDebugRecorder.start(context)
+        AiDebugRecorder.stop()
+        Thread.sleep(500)   // 쓰는 스레드가 나갈 시간
+        assertTrue("줄이 없는데 파일이 생겼다: ${files().map { it.name }}", files().isEmpty())
     }
 
     @Test
@@ -112,10 +125,10 @@ class AiDebugRecorderInstrumentedTest {
         AiDebugRecorder.offer(same, nowMs = 3_000L, level = 0.1f, shown = true)
         AiDebugRecorder.offer(same, nowMs = 3_100L, level = 0.1f, shown = true)
         AiDebugRecorder.offer(result(3_250L), nowMs = 3_250L, level = 0.1f, shown = true)
-        waitFor("세 번 넘긴 것이 두 줄로 남음") { file.readText().trim().lines().size == 3 }
+        waitFor("세 번 넘긴 것이 두 줄로 남음") { text(file).trim().lines().size == 3 }
 
         Thread.sleep(300)   // 혹시 늦게 한 줄 더 들어오는지 본다
-        assertEquals(3, file.readText().trim().lines().size)
+        assertEquals(3, text(file).trim().lines().size)
     }
 
     @Test
@@ -123,7 +136,7 @@ class AiDebugRecorderInstrumentedTest {
         AiDebugRecorder.start(context)
         val first = AiDebugRecorder.currentFile!!
         AiDebugRecorder.offer(result(4_000L), nowMs = 4_000L, level = 0.2f, shown = true)
-        waitFor("첫 파일에 줄이 들어감") { first.readText().contains(AiDebugCsv.HEADER) }
+        waitFor("첫 파일에 줄이 들어감") { text(first).contains(AiDebugCsv.HEADER) }
         AiDebugRecorder.stop()
 
         // 파일 이름은 초 단위라, 같은 초에 다시 켜면 같은 이름이 된다. 실제 사용에서는 사람이 스위치를
@@ -134,11 +147,11 @@ class AiDebugRecorderInstrumentedTest {
         assertTrue("다시 켰는데 같은 파일에 이어 쓴다", first.name != second.name)
 
         AiDebugRecorder.offer(result(5_000L), nowMs = 5_000L, level = 0.3f, shown = false)
-        waitFor("새 파일에 줄이 들어감") { second.readText().trim().lines().size >= 2 }
+        waitFor("새 파일에 줄이 들어감") { text(second).trim().lines().size >= 2 }
 
         // 앞 파일은 그대로 남아 있어야 한다. 회차마다 파일이 갈려야 채점이 섞이지 않는다.
         assertEquals(2, files().size)
-        assertEquals(2, first.readText().trim().lines().size)
+        assertEquals(2, text(first).trim().lines().size)
     }
 
     @Test
@@ -157,7 +170,7 @@ class AiDebugRecorderInstrumentedTest {
         // 같은 초 안에 다섯 번이면 파일 이름이 겹쳐 한 파일에 덮어써진다. 개수가 아니라 "쓰다 터지지
         // 않았는지" 와 "마지막 파일이 제대로 닫혔는지" 를 본다.
         val last = opened.last()
-        waitFor("마지막 파일이 쓰이고 닫힘") { last.exists() && last.readText().contains(AiDebugCsv.HEADER) }
+        waitFor("마지막 파일이 쓰이고 닫힘") { text(last).contains(AiDebugCsv.HEADER) }
         // 스레드는 큐를 비우고 나가므로 곧바로는 아직 살아 있을 수 있다(큐 대기 시간 200ms).
         // 쌓이지 않는지를 보는 것이라, 잠깐 기다려 모두 사라지는지로 본다.
         waitFor("기록 스레드가 모두 끝남") {

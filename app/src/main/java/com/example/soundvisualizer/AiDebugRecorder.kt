@@ -66,37 +66,50 @@ object AiDebugRecorder {
     /**
      * 기록을 시작한다. 이미 돌고 있으면 아무것도 하지 않는다(설정을 두 번 켜도 파일이 갈리지 않게).
      *
-     * 파일을 만들지 못하면 시작하지 않고 로그만 남긴다. 기록이 안 되는 것이 앱이 죽는 것보다 낫다.
+     * **여기서는 디스크를 만지지 않는다.** 파일 이름만 정하고, 폴더 만들기와 파일 열기는 쓰는 스레드가
+     * 한다(#199). 부르는 곳이 오버레이의 메인 스레드라, 여기서 파일을 열면 그 프레임이 밀린다.
+     * 그래서 줄이 한 번도 오지 않으면 파일도 만들어지지 않는다 — 빈 파일이 남지 않는 편이 낫다.
+     *
+     * 파일을 열지 못하면 쓰는 스레드가 로그를 남기고 [currentFile] 을 비운다. 기록이 안 되는 것이
+     * 앱이 죽는 것보다 낫다.
      */
     @Synchronized
     fun start(context: Context) {
         if (running) return
-        val file = createFile(context) ?: return
-        val writer = try {
-            file.bufferedWriter()
-        } catch (e: IOException) {
-            Log.e(TAG, "기록 파일을 열지 못했다: ${file.absolutePath}", e)
-            return
-        }
+        val file = plannedFile(context)
         queue.clear()
         dropped = 0
         currentFile = file
         running = true
-        val log = AiDebugLogWriter(writer)
         worker = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "ai-debug-record").apply { isDaemon = true }
         }.also { executor ->
             executor.execute {
+                // 파일은 **첫 줄이 올 때** 만든다. 켜 보고 바로 끈 기기에 빈 파일이 남지 않는다.
+                var writer: java.io.Writer? = null
+                var log: AiDebugLogWriter? = null
                 try {
                     while (running || queue.isNotEmpty()) {
                         // 끌 때 이 스레드가 큐에서 영원히 기다리지 않도록 시간 제한을 둔다.
                         val row = queue.poll(200, TimeUnit.MILLISECONDS) ?: continue
+                        if (writer == null) {
+                            writer = openWriter(file) ?: run {
+                                // 열지 못했으면 켠 것처럼 보이지 않게 상태를 내린다.
+                                currentFile = null
+                                running = false
+                                return@execute
+                            }
+                            log = AiDebugLogWriter(writer)
+                        }
                         // 줄마다 디스크에 밀어 넣는다. 모아 두면 돌아가는 중에 adb pull 로 받은 파일에
-                        // 최근 몇 초가 비어, 그 구간을 "결과가 없었다" 로 읽게 된다. 초당 네 번 쓰는 비용은
-                        // 60fps 로 그리는 것 옆에서 없는 셈이다.
-                        if (log.write(row.result, row.nowMs, row.level, row.shown)) writer.flush()
-                        if (log.stopped) {
-                            Log.w(TAG, "기록 상한에 닿아 멈춘다: ${log.rows}줄, ${file.name}")
+                        // 최근 몇 초가 비어, 그 구간을 "결과가 없었다" 로 읽게 된다. 초당 네 번 쓰는
+                        // 비용은 60fps 로 그리는 것 옆에서 없는 셈이다.
+                        if (log!!.write(row.result, row.nowMs, row.level, row.shown)) writer.flush()
+                        if (log!!.stopped) {
+                            // 상태를 사실에 맞춘다. 내리지 않으면 오버레이가 아무도 비우지 않는 큐에
+                            // 계속 줄을 넣는다.
+                            running = false
+                            Log.w(TAG, "기록 상한에 닿아 멈춘다: ${log!!.rows}줄, ${file.name}")
                             break
                         }
                     }
@@ -106,13 +119,14 @@ object AiDebugRecorder {
                     Log.e(TAG, "기록을 쓰다 실패했다", e)
                 } finally {
                     try {
-                        writer.flush()
-                        writer.close()
+                        writer?.flush()
+                        writer?.close()
                     } catch (e: IOException) {
                         Log.e(TAG, "기록 파일을 닫다 실패했다", e)
                     }
-                    // 껐다 바로 켜면 currentFile 은 벌써 새 파일이다. 이 스레드가 쓴 파일 이름을 그대로 남긴다.
-                    Log.i(TAG, "기록 끝: ${log.rows}줄, 버린 줄 $dropped, ${file.name}")
+                    // 껐다 바로 켜면 currentFile 은 벌써 새 파일이다. 이 스레드가 쓴 것을 그대로 남긴다.
+                    val what = if (writer == null) "파일을 만들지 않았다" else "${log?.rows ?: 0}줄, ${file.name}"
+                    Log.i(TAG, "기록 끝: $what, 버린 줄 $dropped")
                 }
             }
         }
@@ -146,16 +160,30 @@ object AiDebugRecorder {
         }
     }
 
-    private fun createFile(context: Context): File? {
-        // 앱 전용 외부 폴더라 adb pull 로 바로 받을 수 있다. 없는 기기(외부 저장소가 빠진 경우)에서는
-        // 내부 폴더로 물러난다 — 그때는 run-as 로 꺼내야 한다.
+    /**
+     * 쓸 파일의 자리만 정한다. 디스크는 만지지 않으므로 메인 스레드에서 불러도 된다.
+     *
+     * 앱 전용 외부 폴더라 adb pull 로 바로 받을 수 있다. 없는 기기(외부 저장소가 빠진 경우)에서는
+     * 내부 폴더로 물러난다 — 그때는 run-as 로 꺼내야 한다.
+     */
+    private fun plannedFile(context: Context): File {
         val base = context.getExternalFilesDir(null) ?: context.filesDir
-        val dir = File(base, DIR_NAME)
-        if (!dir.isDirectory && !dir.mkdirs()) {
+        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
+        return File(File(base, DIR_NAME), "ai-$stamp.csv")
+    }
+
+    /** 폴더를 만들고 파일을 연다. 쓰는 스레드에서만 부른다. */
+    private fun openWriter(file: File): java.io.Writer? {
+        val dir = file.parentFile
+        if (dir != null && !dir.isDirectory && !dir.mkdirs()) {
             Log.e(TAG, "기록 폴더를 만들지 못했다: ${dir.absolutePath}")
             return null
         }
-        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-        return File(dir, "ai-$stamp.csv")
+        return try {
+            file.bufferedWriter()
+        } catch (e: IOException) {
+            Log.e(TAG, "기록 파일을 열지 못했다: ${file.absolutePath}", e)
+            null
+        }
     }
 }
