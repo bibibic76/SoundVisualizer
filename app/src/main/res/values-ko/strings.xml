@@ -118,6 +118,8 @@
 
     <!-- 색상 선택 -->
     <string name="color_picker_title">색상 선택</string>
+    <string name="color_picker_square_desc">색 사각형: 진하기 %1$d%%, 밝기 %2$d%%. 끌어서 바꿉니다. 화면 읽어주기로는 아래의 미리 담긴 색이 고르기 쉽습니다.</string>
+    <string name="color_picker_hue_desc">색조 막대: %1$d도. 좌우로 끌어서 바꿉니다.</string>
     <string name="color_picker_presets">자주 쓰는 색</string>
     <string name="cd_preset_white">흰색</string>
     <string name="cd_preset_red">빨간색</string>

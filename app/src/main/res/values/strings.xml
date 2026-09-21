@@ -127,6 +127,8 @@
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
+    <string name="color_picker_square_desc" tools:ignore="MissingTranslation">Colour field: saturation %1$d%%, brightness %2$d%%. Drag to change; the common colours below are easier with a screen reader.</string>
+    <string name="color_picker_hue_desc" tools:ignore="MissingTranslation">Hue slider: %1$d°. Drag left or right to change.</string>
     <string name="color_picker_presets">Common colors</string>
     <!-- 화면 읽어주기용 프리셋 색 이름. 색을 보지 못해도 무슨 색인지 알 수 있어야 한다. -->
     <string name="cd_preset_white">White</string>
