@@ -54,6 +54,8 @@ object SettingsManager {
      */
     internal const val DEVELOPER_MODE_DEFAULT = false
 
+    internal const val DEVELOPER_RECORD_DEFAULT = false
+
     /** Developer A/B controls must not change the production path on a new install. */
     internal val AI_DIAGNOSTIC_CONFIG_DEFAULT = AiDiagnosticConfig.DEFAULT
 
@@ -67,6 +69,7 @@ object SettingsManager {
 
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
+    private const val KEY_DEVELOPER_RECORD = "developer_record"
     private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
     private const val KEY_AI_BOOSTER_ENABLED = "ai_booster_enabled"
     private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
@@ -132,6 +135,11 @@ object SettingsManager {
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
     val developerMode: StateFlow<Boolean> = _developerMode
+
+    private val _developerRecord = MutableStateFlow(DEVELOPER_RECORD_DEFAULT)
+
+    /** 개발자 모드에서 AI 판정을 파일로 남길지 (#193). 개발자 모드를 꺼도 값은 남는다. */
+    val developerRecord: StateFlow<Boolean> = _developerRecord
 
     // Developer-only A/B choice. Kept as one value so an inference tick can read a coherent snapshot.
     private val _aiDiagnosticConfig = MutableStateFlow(AI_DIAGNOSTIC_CONFIG_DEFAULT)
@@ -249,6 +257,7 @@ object SettingsManager {
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
+        _developerRecord.value = loadDeveloperRecord(prefs)
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
         _reducedFrameRate.value = loadReducedFrameRate(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
@@ -275,6 +284,10 @@ object SettingsManager {
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_DEVELOPER_MODE, DEVELOPER_MODE_DEFAULT)
+
+    /** 저장된 적이 없으면 [DEVELOPER_RECORD_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadDeveloperRecord(source: android.content.SharedPreferences): Boolean =
+        source.getBoolean(KEY_DEVELOPER_RECORD, DEVELOPER_RECORD_DEFAULT)
 
     /** Unknown enum names fall back to the unchanged production frontend. */
     internal fun loadAiDiagnosticConfig(source: SharedPreferences): AiDiagnosticConfig =
@@ -470,6 +483,12 @@ object SettingsManager {
     fun setDeveloperMode(enabled: Boolean) {
         _developerMode.value = enabled
         prefs.edit { putBoolean(KEY_DEVELOPER_MODE, enabled) }
+    }
+
+    /** 기록 스위치. 켜고 끄면 오버레이가 파일을 새로 열거나 닫는다 (#193). */
+    fun setDeveloperRecord(enabled: Boolean) {
+        _developerRecord.value = enabled
+        prefs.edit { putBoolean(KEY_DEVELOPER_RECORD, enabled) }
     }
 
     fun setAiFrontendMode(mode: AiFrontendMode) {

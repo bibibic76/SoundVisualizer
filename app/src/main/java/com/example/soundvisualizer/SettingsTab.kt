@@ -241,6 +241,14 @@ fun SettingsTab() {
                         SettingsManager.setDeveloperMode(it)
                     }
                     DependentSettings(developerMode) {
+                        val record by SettingsManager.developerRecord.collectAsState()
+                        ModernSwitch(
+                            stringResource(R.string.setting_developer_record),
+                            stringResource(R.string.setting_developer_record_desc),
+                            record
+                        ) {
+                            SettingsManager.setDeveloperRecord(it)
+                        }
                         val diagnosticConfig by SettingsManager.aiDiagnosticConfig.collectAsState()
                         ModernSwitch(
                             stringResource(R.string.setting_ai_qualcomm_frontend),
