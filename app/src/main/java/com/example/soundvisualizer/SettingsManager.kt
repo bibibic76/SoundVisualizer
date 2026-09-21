@@ -2,6 +2,8 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.provider.Settings
 import androidx.core.content.edit
 import com.example.soundvisualizer.ai.AiDiagnosticConfig
 import com.example.soundvisualizer.ai.AiFrontendMode
@@ -53,6 +55,8 @@ object SettingsManager {
      */
     internal const val DEVELOPER_MODE_DEFAULT = false
 
+    internal const val DEVELOPER_RECORD_DEFAULT = false
+
     /** Developer A/B controls must not change the production path on a new install. */
     internal val AI_DIAGNOSTIC_CONFIG_DEFAULT = AiDiagnosticConfig.DEFAULT
 
@@ -66,11 +70,16 @@ object SettingsManager {
 
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
+    private const val KEY_DEVELOPER_RECORD = "developer_record"
     private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
     private const val KEY_AI_BOOSTER_ENABLED = "ai_booster_enabled"
     private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
     private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
+    private const val KEY_TILE_ADDED = "tile_added"
+
+    /** 이 설정을 쓴 기기 표시. 백업으로 옮겨 온 값인지 가리는 데만 쓴다. */
+    private const val KEY_DEVICE_TAG = "device_tag"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
@@ -127,6 +136,11 @@ object SettingsManager {
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
     val developerMode: StateFlow<Boolean> = _developerMode
+
+    private val _developerRecord = MutableStateFlow(DEVELOPER_RECORD_DEFAULT)
+
+    /** 개발자 모드에서 AI 판정을 파일로 남길지 (#193). 개발자 모드를 꺼도 값은 남는다. */
+    val developerRecord: StateFlow<Boolean> = _developerRecord
 
     // Developer-only A/B choice. Kept as one value so an inference tick can read a coherent snapshot.
     private val _aiDiagnosticConfig = MutableStateFlow(AI_DIAGNOSTIC_CONFIG_DEFAULT)
@@ -185,7 +199,53 @@ object SettingsManager {
     /** 액티비티/서비스 어디서든 호출 가능. 최초 한 번만 프리퍼런스를 읽는다. */
     fun init(context: Context) {
         if (::prefs.isInitialized) return
-        load(context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))
+        val app = context.applicationContext
+        load(app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), deviceTagOf(app))
+    }
+
+    /**
+     * 이 기기를 가리키는 표시. 백업으로 옮겨 온 값을 가려내는 데만 쓴다([dropOtherDeviceValues]).
+     *
+     * [Settings.Secure.ANDROID_ID] 를 쓴다. 기기마다 다르고, **OS 업데이트로는 바뀌지 않는다.**
+     * 처음에는 [Build.FINGERPRINT] 를 썼는데 그것은 OS 빌드가 바뀌면 달라져서, 업데이트를 받은 같은 폰을
+     * "다른 기기" 로 보고 꺼짐 안내와 타일 표시를 지웠다(#204). 공장 초기화하면 바뀌는데, 그때는 그 기기에서
+     * 켠 적이 없다는 판단이 맞다. 권한은 필요 없다.
+     *
+     * 못 읽는 드문 경우에는 예전처럼 [Build.FINGERPRINT] 로 물러난다.
+     */
+    // Lint 의 HardwareIds 경고를 여기서만 끈다. 이 값을 밖으로 내보내지 않는다 — 앱 안의
+    // 프리퍼런스에 넣어 두고 "저장된 표시와 지금 표시가 같은가" 만 비교한다. 광고·분석·추적에 쓰지
+    // 않고, 서버로 보내지도 않는다. 기록 파일(#193)에도 들어가지 않는다.
+    @android.annotation.SuppressLint("HardwareIds")
+    internal fun deviceTagOf(context: Context): String =
+        Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+            ?.takeIf { it.isNotBlank() }
+            ?: Build.FINGERPRINT
+
+    /**
+     * 백업으로 다른 기기에서 옮겨 온 값 중 **그 기기에만 뜻이 있는 것**을 비운다(#181).
+     *
+     * 자동 백업은 프리퍼런스 파일을 통째로 옮기고, 백업 규칙은 파일 단위라 키 하나만 뺄 수 없다. 그대로 두면
+     * 새 폰에서 앱을 처음 열었을 때 "꺼졌습니다" 안내가 뜬다. 그 기기에서는 켠 적도 없는데, 소리를 못 듣는
+     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다.
+     *
+     * 색·진동·모드 같은 사용자 설정은 새 기기로 옮겨 가는 게 맞으므로 건드리지 않는다.
+     * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 기기의 값이 사라진다.
+     *
+     * @param deviceTag 지금 기기 표시([deviceTagOf]). null 이면 확인하지 않는다(테스트가 예전 동작을 그대로 볼 때).
+     */
+    private fun dropOtherDeviceValues(source: SharedPreferences, deviceTag: String?) {
+        if (deviceTag == null) return
+        val saved = source.getString(KEY_DEVICE_TAG, null)
+        if (saved == deviceTag) return
+        source.edit {
+            if (saved != null) {
+                remove(KEY_LAST_UNEXPECTED_STOP)
+                remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
+                remove(KEY_TILE_ADDED)
+            }
+            putString(KEY_DEVICE_TAG, deviceTag)
+        }
     }
 
     /**
@@ -194,8 +254,9 @@ object SettingsManager {
      *
      * [init] 의 "최초 한 번만" 규칙은 여기 없다. 테스트는 값을 달리 세운 가짜 프리퍼런스로 여러 번 부른다.
      */
-    internal fun load(source: SharedPreferences) {
+    internal fun load(source: SharedPreferences, deviceTag: String? = null) {
         prefs = source
+        dropOtherDeviceValues(source, deviceTag)
 
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
@@ -214,9 +275,10 @@ object SettingsManager {
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
 
-        _tileAdded.value = prefs.getBoolean("tile_added", false)
+        _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
+        _developerRecord.value = loadDeveloperRecord(prefs)
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
         _reducedFrameRate.value = loadReducedFrameRate(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
@@ -243,6 +305,10 @@ object SettingsManager {
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_DEVELOPER_MODE, DEVELOPER_MODE_DEFAULT)
+
+    /** 저장된 적이 없으면 [DEVELOPER_RECORD_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadDeveloperRecord(source: android.content.SharedPreferences): Boolean =
+        source.getBoolean(KEY_DEVELOPER_RECORD, DEVELOPER_RECORD_DEFAULT)
 
     /** Unknown enum names fall back to the unchanged production frontend. */
     internal fun loadAiDiagnosticConfig(source: SharedPreferences): AiDiagnosticConfig =
@@ -420,7 +486,7 @@ object SettingsManager {
 
     fun setTileAdded(added: Boolean) {
         _tileAdded.value = added
-        prefs.edit { putBoolean("tile_added", added) }
+        prefs.edit { putBoolean(KEY_TILE_ADDED, added) }
     }
 
     fun setPauseWhenScreenOff(enabled: Boolean) {
@@ -438,6 +504,12 @@ object SettingsManager {
     fun setDeveloperMode(enabled: Boolean) {
         _developerMode.value = enabled
         prefs.edit { putBoolean(KEY_DEVELOPER_MODE, enabled) }
+    }
+
+    /** 기록 스위치. 켜고 끄면 오버레이가 파일을 새로 열거나 닫는다 (#193). */
+    fun setDeveloperRecord(enabled: Boolean) {
+        _developerRecord.value = enabled
+        prefs.edit { putBoolean(KEY_DEVELOPER_RECORD, enabled) }
     }
 
     fun setAiFrontendMode(mode: AiFrontendMode) {

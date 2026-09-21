@@ -9,6 +9,8 @@ import android.content.res.Resources
 import android.os.Build
 import android.os.LocaleList
 import androidx.core.content.edit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 앱 언어 설정. 고른 언어가 없으면(null) 폰 언어를 따르고, 지원하지 않는 폰 언어면 영어(values)로 보인다.
@@ -25,6 +27,17 @@ object AppLanguage {
 
     private const val PREFS_NAME = "AppLanguagePrefs"
     private const val KEY_TAG = "tag"
+
+    /**
+     * Android 12 이하에서 언어를 바꿀 때마다 오르는 번호(#187).
+     *
+     * 12 이하는 컴포넌트가 만들어질 때 [wrap] 으로 한 번만 언어를 입히므로, 이미 떠 있는 서비스는 계속 예전
+     * 언어로 문구를 꺼낸다. 시각화를 켜 둔 채 언어를 바꾸면 실행 중 알림과 꺼짐 알림이 떠난 언어로 남는다.
+     * 그래서 바뀔 때마다 여기서 알리고, 서비스가 문구용 컨텍스트를 다시 만든다.
+     * 13 이상은 시스템이 앱 전체에 적용하므로 이 값은 오르지 않는다.
+     */
+    private val _changes = MutableStateFlow(0)
+    val changes: StateFlow<Int> = _changes
 
     /** 사용자가 고른 언어 태그. 폰 언어를 따르면 null. */
     fun selectedTag(context: Context): String? =
@@ -43,10 +56,31 @@ object AppLanguage {
         if (tag == selectedTag(activity)) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity.getSystemService(LocaleManager::class.java).applicationLocales = localesOf(tag)
+            // 13 이상도 신호를 올린다. 시스템은 액티비티만 다시 만들고, 이미 올라가 있는 실행 중
+            // 알림은 그대로 둔다. 그러면 켜 둔 사용자에게 옛 언어 문구가 남는다(#206).
+            _changes.value++
         } else {
             prefs(activity).edit { if (tag == null) remove(KEY_TAG) else putString(KEY_TAG, tag) }
+            _changes.value++   // 돌고 있는 서비스가 문구를 다시 꺼내게 한다
             activity.recreate()
         }
+    }
+
+    /**
+     * 고른 언어로 문구를 꺼내는 컨텍스트. **알림처럼 액티비티 밖에서 문구를 꺼내는 곳**이 쓴다(#206).
+     *
+     * 13 이상에서는 시스템이 앱 로캘을 적용하지만, 서비스 컨텍스트의 설정이 언제 갱신되는지는 보장되지
+     * 않는다. 바꾼 직후에 알림을 다시 만들면 옛 문구가 나올 수 있다. 그래서 고른 언어로 컨텍스트를
+     * 직접 만든다. 고른 것이 없으면(폰 언어를 따름) 그대로 돌려준다.
+     *
+     * [wrap] 과 달리 기본 로캘([LocaleList.setDefault])은 건드리지 않는다. 13 이상에서 그것을 손대면
+     * 시스템이 관리하는 값과 어긋난다.
+     */
+    fun localizedContext(base: Context): Context {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return wrap(base)
+        val tag = selectedTag(base) ?: return base
+        val config = Configuration(base.resources.configuration).apply { setLocales(localesOf(tag)) }
+        return base.createConfigurationContext(config)
     }
 
     /**

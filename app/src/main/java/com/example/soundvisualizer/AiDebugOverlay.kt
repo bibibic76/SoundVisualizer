@@ -16,9 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +62,15 @@ fun AiDebugOverlay() {
 
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
 
+    // 기록 스위치. 켜면 파일을 열고, 끄거나 오버레이가 사라지면 닫는다. 개발자 모드를 끄면 이 함수가
+    // 위에서 돌아가므로 DisposableEffect 의 정리가 돌아 파일이 닫힌다.
+    val record by SettingsManager.developerRecord.collectAsState()
+    val context = LocalContext.current
+    DisposableEffect(record) {
+        if (record) AiDebugRecorder.start(context)
+        onDispose { AiDebugRecorder.stop() }
+    }
+
     // 추론 결과는 250ms 주기로만 바뀐다. produceState 의 상태는 구조적 동등성을 쓰고
     // AiClassificationResult 는 data class 이므로, 같은 결과가 계속 돌아오는 동안 대입이 no-op 이라
     // 리컴포지션이 일어나지 않는다. 대기 중에 저절로 조용해지는 셈이다.
@@ -74,13 +85,19 @@ fun AiDebugOverlay() {
             if (capturePaused.value) capturePaused.first { !it }
 
             val result = AiClassification.latest()
+            val nowMs = System.currentTimeMillis()
+            val level = AudioEngine.currentLevel()
+            val shown = result?.let { LiveVisualizerInputs.isShown(it.coarse) } ?: false
+            // 기록은 큐에 넣기만 하므로 메인 스레드를 붙잡지 않는다. 같은 결과를 두세 번 보는 것은
+            // AiDebugLogWriter 가 timestampMs 로 걸러 낸다.
+            if (result != null) AiDebugRecorder.offer(result, nowMs, level, shown)
             value = AiDebugText.format(
                 result = result,
-                nowMs = System.currentTimeMillis(),
-                level = AudioEngine.currentLevel(),
+                nowMs = nowMs,
+                level = level,
                 // 그 종류 표시를 꺼 뒀으면 오버레이가 아무것도 그리지 않는다. 이걸 같이 보여주지 않으면
                 // 설정 상태를 "AI 가 못 잡았다" 로 오독한다.
-                shown = result?.let { LiveVisualizerInputs.isShown(it.coarse) } ?: false,
+                shown = shown,
                 aiAvailable = aiAvailable
             )
             delay(DEBUG_POLL_MS)

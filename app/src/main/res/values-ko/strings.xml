@@ -86,6 +86,8 @@
     <string name="setting_reduced_frame_rate_desc">그래픽을 1초에 60번 대신 30번 그립니다. 오래 켜 둘 때 배터리를 아끼는 대신 움직임이 덜 부드럽습니다. 소리를 받는 간격은 그대로입니다.</string>
     <string name="setting_developer_mode">개발자 모드</string>
     <string name="setting_developer_mode_desc">AI가 무슨 소리로 들었는지, 얼마나 확신했는지, 얼마나 걸렸는지를 오버레이 왼쪽 위에 띄웁니다. 만든 사람들이 분류가 맞는지 확인하려고 쓰는 기능입니다. 내용은 영어로 나오고, 평소에 쓰라고 만든 것이 아닙니다.</string>
+    <string name="setting_developer_record">결과를 파일로 기록</string>
+    <string name="setting_developer_record_desc">AI가 내놓은 결과를 매번 앱 폴더의 CSV 파일에 남깁니다. 가장 높게 본 소리 이름들과 확신도, 걸린 시간이 함께 적혀서 무슨 소리로 들었는지 나중에 되짚어 볼 수 있습니다. 파일이 커질 수 있으니 다 보고 나면 꺼 주세요.</string>
     <string name="setting_ai_qualcomm_frontend">Qualcomm YAMNet 전처리</string>
     <string name="setting_ai_qualcomm_frontend_desc">현재 앱 전처리 대신 고정된 Qualcomm 소스 전처리 계약을 사용합니다. 다음 AI 결과부터 선택이 적용되는 진단용 설정입니다.</string>
     <string name="setting_ai_booster">Gunshot Booster</string>
@@ -116,6 +118,8 @@
 
     <!-- 색상 선택 -->
     <string name="color_picker_title">색상 선택</string>
+    <string name="color_picker_square_desc">색 사각형: 진하기 %1$d%%, 밝기 %2$d%%. 끌어서 바꿉니다. 화면 읽어주기로는 아래의 미리 담긴 색이 고르기 쉽습니다.</string>
+    <string name="color_picker_hue_desc">색조 막대: %1$d도. 좌우로 끌어서 바꿉니다.</string>
     <string name="color_picker_presets">자주 쓰는 색</string>
     <string name="cd_preset_white">흰색</string>
     <string name="cd_preset_red">빨간색</string>
