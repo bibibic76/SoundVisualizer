@@ -7,52 +7,6 @@ package com.example.soundvisualizer.ai
  */
 object YamnetThreeClassMapper {
 
-    fun translateToKorean(displayName: String?): String {
-        if (displayName.isNullOrEmpty()) return "알 수 없음"
-        val s = displayName.lowercase()
-
-        if ("gunshot" in s || "gunfire" in s) return "총소리"
-        if ("machine gun" in s) return "기관총"
-        if ("explosion" in s || "폭발" in s) return "폭발음"
-        if ("artillery" in s || "fusillade" in s || "cap gun" in s) return "총소리"
-
-        if ("footstep" in s || "footsteps" in s) return "발소리"
-        if ("siren" in s || "civil defense" in s) return "사이렌"
-        if ("horn" in s) return "경적"
-        if ("car" in s || "truck" in s || "bus" in s || "motorcycle" in s) return "자동차"
-        if ("helicopter" in s) return "헬리콥터"
-        if ("engine" in s || "idling" in s || "accelerating" in s) return "엔진소리"
-        if ("alarm" in s || "smoke detector" in s) return "사이렌"
-        if ("police car" in s || "ambulance" in s || "fire engine" in s || "fire truck" in s) {
-            return "사이렌"
-        }
-
-        if (
-            "speech" in s || "conversation" in s || "narration" in s ||
-            "speaking" in s || "babbling" in s
-        ) {
-            return "사람 목소리"
-        }
-        if (
-            "shout" in s || "screaming" in s || "yell" in s ||
-            "laughter" in s || "crying" in s || "sobbing" in s
-        ) {
-            return "사람 소리"
-        }
-        if ("music" in s) return "음악"
-        if ("wind" in s || "rustling leaves" in s) return "바람 소리"
-        if ("rain" in s || "water" in s || "ocean" in s || "waves" in s) return "비/물 소리"
-        if (
-            "animal" in s || "dog" in s || "cat" in s ||
-            "bird" in s || "bark" in s || "meow" in s
-        ) {
-            return "동물 소리"
-        }
-        if ("door" in s || "knock" in s || "slam" in s) return "문 소리"
-
-        return displayName
-    }
-
     fun isGenericSoundEffectLabel(displayName: String?): Boolean {
         if (displayName.isNullOrEmpty()) return false
         return "sound effect" in displayName.lowercase()
