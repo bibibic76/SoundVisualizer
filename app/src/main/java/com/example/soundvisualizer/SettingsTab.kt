@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,32 @@ import com.example.soundvisualizer.language.LanguageSettingCard
 @Composable
 fun SettingsTab() {
     val currentMode by SettingsManager.visualMode.collectAsState()
+
+    // 색 고르기 창은 목록 **밖**에 둔다. 줄 안에 두면 그 줄이 화면 밖으로 밀릴 때(회전 뒤 스크롤 위치가
+    // 달라지는 경우 등) 목록이 그 줄을 버리면서 창까지 사라진다. 화면이 다시 만들어져도 남도록 저장한다(#183).
+    var editingColor by rememberSaveable { mutableStateOf<String?>(null) }
+    val ambientColor by SettingsManager.colorAmbient.collectAsState()
+    val speechColor by SettingsManager.colorSpeech.collectAsState()
+    val dangerColor by SettingsManager.colorDanger.collectAsState()
+    if (editingColor != null) {
+        val label = editingColor
+        ColorPickerDialog(
+            initial = when (label) {
+                AiClassification.DANGER -> dangerColor
+                AiClassification.SPEECH -> speechColor
+                else -> ambientColor
+            },
+            onDismiss = { editingColor = null },
+            onConfirm = { picked ->
+                when (label) {
+                    AiClassification.DANGER -> SettingsManager.updateAISettings(colorDanger = picked)
+                    AiClassification.SPEECH -> SettingsManager.updateAISettings(colorSpeech = picked)
+                    else -> SettingsManager.updateAISettings(colorAmbient = picked)
+                }
+                editingColor = null
+            }
+        )
+    }
 
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
@@ -142,21 +169,21 @@ fun SettingsTab() {
                     val colorAmbient by SettingsManager.colorAmbient.collectAsState()
                     ColorSettingRow(stringResource(R.string.ai_show_ambient), stringResource(R.string.cd_color_ambient), showAmbient, colorAmbient,
                         onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
-                        onColorChange = { SettingsManager.updateAISettings(colorAmbient = it) })
+                        onPickColor = { editingColor = AiClassification.AMBIENT })
                     HapticSettingRow(AiClassification.AMBIENT, showAmbient)
 
                     val showSpeech by SettingsManager.showSpeech.collectAsState()
                     val colorSpeech by SettingsManager.colorSpeech.collectAsState()
                     ColorSettingRow(stringResource(R.string.ai_show_speech), stringResource(R.string.cd_color_speech), showSpeech, colorSpeech,
                         onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
-                        onColorChange = { SettingsManager.updateAISettings(colorSpeech = it) })
+                        onPickColor = { editingColor = AiClassification.SPEECH })
                     HapticSettingRow(AiClassification.SPEECH, showSpeech)
 
                     val showDanger by SettingsManager.showDanger.collectAsState()
                     val colorDanger by SettingsManager.colorDanger.collectAsState()
                     ColorSettingRow(stringResource(R.string.ai_show_danger), stringResource(R.string.cd_color_danger), showDanger, colorDanger,
                         onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
-                        onColorChange = { SettingsManager.updateAISettings(colorDanger = it) })
+                        onPickColor = { editingColor = AiClassification.DANGER })
                     HapticSettingRow(AiClassification.DANGER, showDanger)
                 }
             }
@@ -346,6 +373,7 @@ fun ModeSettingsSection(settings: ModeSettings, isCircle: Boolean = false, updat
  *
  * @param label 스위치 이름 ("환경음 표시" 등)
  * @param colorLabel 색상 버튼 이름. 화면 읽어주기가 "색상 선택" 으로만 읽으면 어느 종류의 색인지 알 수 없다.
+ * @param onPickColor 색 고르기 창을 여는 쪽에 알린다. 창은 목록 밖(화면 쪽)에서 띄운다(#183).
  */
 @Composable
 fun ColorSettingRow(
@@ -354,21 +382,8 @@ fun ColorSettingRow(
     checked: Boolean,
     color: Int,
     onCheckedChange: (Boolean) -> Unit,
-    onColorChange: (Int) -> Unit
+    onPickColor: () -> Unit
 ) {
-    var showColorDialog by remember { mutableStateOf(false) }
-
-    if (showColorDialog) {
-        ColorPickerDialog(
-            initial = color,
-            onDismiss = { showColorDialog = false },
-            onConfirm = {
-                onColorChange(it)
-                showColorDialog = false
-            }
-        )
-    }
-
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
         // 이름과 스위치를 한 덩어리로 묶어야 화면 읽어주기가 "환경음 표시, 스위치, 켜짐" 으로 읽는다.
         // 색상 버튼은 이 덩어리 밖에 둔다. 안에 넣으면 묶여 버려 따로 고를 수 없다.
@@ -406,7 +421,7 @@ fun ColorSettingRow(
                 .clip(CircleShape)
                 .clickable(
                     onClickLabel = stringResource(R.string.cd_pick_color),
-                    onClick = { showColorDialog = true }
+                    onClick = onPickColor
                 )
                 .semantics { contentDescription = colorLabel },
             contentAlignment = Alignment.Center
