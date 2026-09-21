@@ -279,7 +279,8 @@ class AudioCaptureService : Service() {
      *
      * Android 12 이하는 [attachBaseContext] 에서 한 번만 언어가 입혀지므로, 시각화를 켜 둔 채 언어를 바꾸면
      * 서비스는 계속 떠난 언어로 문구를 꺼낸다. 실행 중 알림과 꺼짐 알림이 그 언어로 남는다.
-     * 그래서 언어가 바뀌면([AppLanguage.changes]) 다시 만든다. 13 이상은 신호가 오지 않아 이 값이 그대로다.
+     * 그래서 언어가 바뀌면([AppLanguage.changes]) 다시 만든다. 13 이상도 같은 신호를 받는다 — 시스템은
+     * 액티비티만 다시 만들고 이미 올라간 알림은 그대로 두기 때문이다(#206).
      */
     @Volatile
     private var uiContext: Context = this
@@ -955,7 +956,10 @@ class AudioCaptureService : Service() {
     private fun observeAppLanguage() {
         serviceScope.launch {
             AppLanguage.changes.drop(1).collect {
-                uiContext = AppLanguage.wrap(applicationContext)
+                uiContext = AppLanguage.localizedContext(applicationContext)
+                // 채널 이름도 그 자리에서 바꾼다. 같은 ID 로 다시 만들면 이름이 갱신된다. 만들 때
+                // 한 번 정한 이름은 시스템 설정의 알림 항목에 옛 언어로 남는다(#206).
+                createNotificationChannel()
                 refreshOngoingNotification()
             }
         }
