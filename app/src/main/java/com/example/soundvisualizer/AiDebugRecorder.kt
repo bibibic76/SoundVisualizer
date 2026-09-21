@@ -37,8 +37,6 @@ object AiDebugRecorder {
      */
     private const val QUEUE_CAPACITY = 200
 
-    /** 몇 줄마다 디스크에 밀어 넣는지. 앱이 갑자기 죽어도 이만큼만 잃는다. */
-    private const val FLUSH_EVERY = 20
 
     private val queue = LinkedBlockingQueue<Row>(QUEUE_CAPACITY)
 
@@ -90,19 +88,15 @@ object AiDebugRecorder {
         }.also { executor ->
             executor.execute {
                 try {
-                    var sinceFlush = 0
                     while (running || queue.isNotEmpty()) {
                         // 끌 때 이 스레드가 큐에서 영원히 기다리지 않도록 시간 제한을 둔다.
                         val row = queue.poll(200, TimeUnit.MILLISECONDS) ?: continue
-                        if (log.write(row.result, row.nowMs, row.level, row.shown)) {
-                            sinceFlush++
-                            if (sinceFlush >= FLUSH_EVERY) {
-                                writer.flush()
-                                sinceFlush = 0
-                            }
-                        }
+                        // 줄마다 디스크에 밀어 넣는다. 모아 두면 돌아가는 중에 adb pull 로 받은 파일에
+                        // 최근 몇 초가 비어, 그 구간을 "결과가 없었다" 로 읽게 된다. 초당 네 번 쓰는 비용은
+                        // 60fps 로 그리는 것 옆에서 없는 셈이다.
+                        if (log.write(row.result, row.nowMs, row.level, row.shown)) writer.flush()
                         if (log.stopped) {
-                            Log.w(TAG, "기록 상한에 닿아 멈춘다: ${log.rows}줄, ${currentFile?.name}")
+                            Log.w(TAG, "기록 상한에 닿아 멈춘다: ${log.rows}줄, ${file.name}")
                             break
                         }
                     }
@@ -117,7 +111,8 @@ object AiDebugRecorder {
                     } catch (e: IOException) {
                         Log.e(TAG, "기록 파일을 닫다 실패했다", e)
                     }
-                    Log.i(TAG, "기록 끝: ${log.rows}줄, 버린 줄 $dropped, ${currentFile?.name}")
+                    // 껐다 바로 켜면 currentFile 은 벌써 새 파일이다. 이 스레드가 쓴 파일 이름을 그대로 남긴다.
+                    Log.i(TAG, "기록 끝: ${log.rows}줄, 버린 줄 $dropped, ${file.name}")
                 }
             }
         }
