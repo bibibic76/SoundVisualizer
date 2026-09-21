@@ -11,8 +11,11 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalConfiguration
 import java.util.Locale
 
 /**
@@ -39,9 +43,15 @@ import java.util.Locale
 @Composable
 fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> Unit) {
     val startHsv = remember(initial) { FloatArray(3).also { android.graphics.Color.colorToHSV(initial, it) } }
-    var hue by remember(initial) { mutableFloatStateOf(startHsv[0]) }
-    var sat by remember(initial) { mutableFloatStateOf(startHsv[1]) }
-    var bright by remember(initial) { mutableFloatStateOf(startHsv[2]) }
+    // 고르던 색은 화면이 다시 만들어져도 남아야 한다. 창만 살아남고 색이 처음으로 돌아가면 더 헷갈린다(#183).
+    var hue by rememberSaveable(initial) { mutableFloatStateOf(startHsv[0]) }
+    var sat by rememberSaveable(initial) { mutableFloatStateOf(startHsv[1]) }
+    var bright by rememberSaveable(initial) { mutableFloatStateOf(startHsv[2]) }
+
+    // 가로 화면에서는 창 높이가 모자라 색상 막대·프리셋·색 코드가 잘린다. 색 사각형을 줄여 다 들어가게 한다(#183).
+    // 사각형은 손짓을 직접 받으므로, 밀어서 보게 하는 것만으로는 부족하다.
+    val shortWindow = LocalConfiguration.current.screenHeightDp < 500
+    val squareHeight = if (shortWindow) 120.dp else 180.dp
 
     val picked = android.graphics.Color.HSVToColor(floatArrayOf(hue, sat, bright))
     val hueColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f)))
@@ -51,11 +61,12 @@ fun ColorPickerDialog(initial: Int, onDismiss: () -> Unit, onConfirm: (Int) -> U
         containerColor = CardColor,
         title = { Text(stringResource(R.string.color_picker_title), color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
         text = {
-            Column {
+            // 가로 화면에서는 창 높이가 모자라 색상 막대·프리셋·색 코드가 잘린다. 밀어서 볼 수 있게 한다(#183).
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Canvas(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .height(squareHeight)
                         .clip(RoundedCornerShape(12.dp))
                         // 누름과 끌기를 한 핸들러에서 처리한다. detectTapGestures 와
                         // detectDragGestures 를 각각 pointerInput 으로 걸면 down 이벤트를
