@@ -517,11 +517,11 @@ class AudioCaptureService : Service() {
      * 있었는데, 여기로 떼어 내면서 보이지 않게 됐다. 필요한 권한을 표시해 Lint 가 호출부의 확인을
      * 다시 짝지을 수 있게 한다.
      *
-     * @param source 로그에 남길 소스 이름
      * @param configure 소스를 정한다. 내부 소리는 재생 캡처 설정을, 마이크는 [MIC_SOURCE] 를 넣는다.
+     *   어느 소스인지는 onCreate 가 따로 남긴다(`capture source`). 아래 형식 로그는 AI 진단용이라 그대로 둔다.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun openAudioRecord(source: String, configure: AudioRecord.Builder.() -> Unit): AudioRecord? {
+    private fun openAudioRecord(configure: AudioRecord.Builder.() -> Unit): AudioRecord? {
         val reported = audioManager
             ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
             ?.toIntOrNull()
@@ -560,7 +560,7 @@ class AudioCaptureService : Service() {
             val fallback = if (rate == candidates.first()) "" else ", fell back from ${candidates.first()}"
             Log.i(
                 TAG,
-                "capture format source=$source requested[sr=$rate chMask=$CHANNEL_CONFIG encoding=$AUDIO_FORMAT] " +
+                "capture format requested[sr=$rate chMask=$CHANNEL_CONFIG encoding=$AUDIO_FORMAT] " +
                     "actual[sr=${record.sampleRate} ch=${record.channelCount} encoding=${record.audioFormat}] " +
                     "(device reported $reported, " +
                     "AI supported=${AiCaptureSampleRatePolicy.isSupportedForAi(rate)}$fallback)"
@@ -621,7 +621,7 @@ class AudioCaptureService : Service() {
         CAPTURED_USAGES.forEach { configBuilder.addMatchingUsage(it) }
         val config = configBuilder.build()
 
-        val record = openAudioRecord("playback") { setAudioPlaybackCaptureConfig(config) } ?: return false
+        val record = openAudioRecord { setAudioPlaybackCaptureConfig(config) } ?: return false
 
         audioRecord = record
         // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화에 실패해도 캡처는 계속한다.
@@ -643,7 +643,7 @@ class AudioCaptureService : Service() {
             Log.e(TAG, "RECORD_AUDIO not granted")
             return false
         }
-        val record = openAudioRecord("microphone") { setAudioSource(MIC_SOURCE) } ?: return false
+        val record = openAudioRecord { setAudioSource(MIC_SOURCE) } ?: return false
 
         audioRecord = record
         startAiPipelineAsync()
