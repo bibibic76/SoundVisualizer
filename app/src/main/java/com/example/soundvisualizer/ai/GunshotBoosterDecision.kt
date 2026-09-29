@@ -58,7 +58,7 @@ object GunshotBoosterDecision {
         val conf = pre.confidence
 
         val blockBooster =
-            isSpeechByKeywordVote(pre) ||
+            yamnetCoarse == "speech" ||
                 isSpeechLikeDisplay(display) ||
                 isSilenceLikeDisplay(display) ||
                 conf < 0.12f
@@ -153,7 +153,7 @@ object GunshotBoosterDecision {
         val hasGunshotCue = hasGunshotCueInTop5(topIdx, classNames, 5)
         val hasStrongDangerCue = hasStrongDangerCueInTop5(topIdx, classNames, 5, topProbs)
         val blockPromotion =
-            isSpeechByKeywordVote(pre) ||
+            pre.coarse == "speech" ||
                 isSpeechLikeDisplay(pre.displayName) ||
                 isSilenceLikeDisplay(pre.displayName) ||
                 pre.confidence < 0.12f
@@ -225,38 +225,6 @@ object GunshotBoosterDecision {
             "siren" in s || "alarm" in s
     }
 
-    /**
-     * 총소리·강한 위협음 키워드에 걸려도, 지금 종류가 위협음인 소리만 단서로 센다.
-     * 사용자가 분류 탭에서 위협음에서 뺀 소리로 Booster 나 강한 단서가 다시 위협음을 올리면 그 선택이 먹지 않는다.
-     * 아무것도 바꾸지 않았으면 키워드에 걸리는 소리는 모두 기본 종류가 위협음이라 판정이 전과 같다.
-     */
-    /**
-     * Booster 를 막는 "말소리 프레임" 판단. 사용자가 고른 종류가 아니라 키워드 규칙으로 다시 투표한다.
-     * 이 막음은 "말소리 위에서는 Booster 점수를 믿을 수 없다" 는 소리의 성질이라, 사용자가 음악·TV 를 대화음으로
-     * 옮겼다고 그 밑의 총소리·사이렌까지 못 올리면 안 된다. 사용자 선택이 없으면 [YamnetCoarseClassifier] 의
-     * 투표와 같은 소리·같은 합산 순서·같은 동점 규칙이라 결과가 전과 같다.
-     */
-    private fun isSpeechByKeywordVote(pre: YamnetCoarseClassifier.Result): Boolean {
-        var danger = 0f
-        var speech = 0f
-        var ambient = 0f
-        for (hit in pre.top5.take(YamnetCoarseClassifier.VOTE_K)) {
-            when (YamnetThreeClassMapper.defaultCoarse(hit.name)) {
-                "danger" -> danger += hit.probability
-                "speech" -> speech += hit.probability
-                else -> ambient += hit.probability
-            }
-        }
-        if (danger >= speech && danger >= ambient) return false
-        return speech >= ambient
-    }
-
-    private fun countsAsGunshotCue(name: String?): Boolean =
-        isGunshotKeyword(name) && YamnetThreeClassMapper.mapDisplayNameToCoarse(name) == "danger"
-
-    private fun countsAsStrongDangerCue(name: String?): Boolean =
-        isStrongDangerKeyword(name) && YamnetThreeClassMapper.mapDisplayNameToCoarse(name) == "danger"
-
     fun sumGunshotProbabilityFromTop5(
         topIndices: IntArray,
         topProbs: FloatArray,
@@ -268,7 +236,7 @@ object GunshotBoosterDecision {
         for (idx in 0 until limit) {
             val i = topIndices[idx]
             if (i < 0) continue
-            if (countsAsGunshotCue(classNames[i])) sum += topProbs[idx]
+            if (isGunshotKeyword(classNames[i])) sum += topProbs[idx]
         }
         return sum
     }
@@ -277,7 +245,7 @@ object GunshotBoosterDecision {
         val limit = minOf(5, k)
         for (idx in 0 until limit) {
             val i = topIndices[idx]
-            if (i >= 0 && countsAsGunshotCue(classNames[i])) return true
+            if (i >= 0 && isGunshotKeyword(classNames[i])) return true
         }
         return false
     }
@@ -292,7 +260,7 @@ object GunshotBoosterDecision {
         for (idx in 0 until limit) {
             val i = topIndices[idx]
             val probability = topProbs?.getOrNull(idx) ?: 1f
-            if (i >= 0 && countsAsStrongDangerCue(classNames[i]) && probability >= STRONG_DANGER_CUE_MIN_PROBABILITY) return true
+            if (i >= 0 && isStrongDangerKeyword(classNames[i]) && probability >= STRONG_DANGER_CUE_MIN_PROBABILITY) return true
         }
         return false
     }
@@ -307,7 +275,7 @@ object GunshotBoosterDecision {
         var bestP = 0f
         val n = minOf(probs.size, classNames.size)
         for (i in 0 until n) {
-            if (!countsAsGunshotCue(classNames[i])) continue
+            if (!isGunshotKeyword(classNames[i])) continue
             if (probs[i] > bestP) {
                 bestP = probs[i]
                 bestI = i
@@ -326,7 +294,7 @@ object GunshotBoosterDecision {
         for (i in 0 until minOf(5, topIndices.size)) {
             val index = topIndices[i]
             if (index < 0 || isGunshotKeyword(classNames[index])) continue
-            if (countsAsStrongDangerCue(classNames[index]) && topProbs[i] > bestP) {
+            if (isStrongDangerKeyword(classNames[index]) && topProbs[i] > bestP) {
                 bestI = index
                 bestP = topProbs[i]
             }

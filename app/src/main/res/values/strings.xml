@@ -5,7 +5,6 @@
     <!-- Tabs -->
     <string name="tab_home">Home</string>
     <string name="tab_settings">Settings</string>
-    <string name="tab_classify">Sounds</string>
     <string name="tab_help">Help</string>
 
     <!-- Home -->
@@ -109,29 +108,6 @@
     <string name="ai_show_danger">Show danger sounds</string>
     <string name="ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color. Try turning the visualizer off and on again.</string>
 
-    <!-- Sounds tab: which type each sound counts as -->
-    <string name="classify_title">Pick a type for each sound</string>
-    <string name="classify_desc">Here is every sound the AI can recognize and the type it counts as. Change a sound\'s type, and its color and vibration follow the new type right away.</string>
-    <string name="classify_danger_note">A sound you move out of Danger no longer gets danger colors or vibration. Similar sounds are separate rows (sirens have five), so change them all to move them all.</string>
-    <string name="classify_search_hint">Search sounds</string>
-    <string name="cd_classify_clear_search">Clear search</string>
-    <string name="classify_filter_all">All</string>
-    <string name="classify_filter_changed">Changed</string>
-    <string name="sound_type_ambient">Ambient</string>
-    <string name="sound_type_speech">Speech</string>
-    <string name="sound_type_danger">Danger</string>
-    <string name="classify_type_default">%1$s (default)</string>
-    <string name="classify_changed_from">Default: %1$s</string>
-    <string name="classify_changed_count">Changed: %1$d</string>
-    <string name="classify_reset_all">Reset all</string>
-    <string name="classify_reset_title">Reset all sounds?</string>
-    <string name="classify_reset_message">Every sound you changed goes back to its default type.</string>
-    <string name="classify_reset_confirm">Reset</string>
-    <string name="classify_reset_cancel">Cancel</string>
-    <string name="classify_empty">No matching sounds.</string>
-    <string name="cd_classify_sound">%1$s, type: %2$s</string>
-    <string name="cd_classify_sound_changed">%1$s, type: %2$s, default: %3$s</string>
-
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>
     <string name="haptic_requires_display">Vibration works only when this sound type is shown.</string>
@@ -234,7 +210,6 @@
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
-    <string name="help_sound_classify">In the Sounds tab, you can pick which type each sound counts as. For example, you can make a doorbell a danger sound, or stop footsteps from counting as danger.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a strength (Light, Medium, Strong) and pattern (Once, Twice, Long, Repeat) for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The same type won\'t vibrate again within 2 seconds, and “Repeat” vibrates every 1.5 seconds while the sound continues.</string>
