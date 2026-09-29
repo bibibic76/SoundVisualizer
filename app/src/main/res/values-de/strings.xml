@@ -9,6 +9,7 @@
     <string name="home_status_running">Status: Aktiv</string>
     <string name="home_status_idle">Status: Bereit</string>
     <string name="home_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an, daher kann nichts dargestellt werden. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu (bei geschützten Videos ist das so), oder in dieser App ist der Ton ausgeschaltet.</string>
+    <string name="home_ai_unavailable_loud">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und nur laute Geräusche lösen eine Vibration aus – mit der Vibrationseinstellung für Gefahrengeräusche. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
     <string name="home_stopped_dismiss">Hinweis ausblenden</string>
     <string name="home_start">Starten</string>
     <string name="home_stop">Beenden</string>
@@ -119,6 +120,8 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrieren</string>
     <string name="haptic_requires_display">Vibriert nur, wenn diese Geräuschart angezeigt wird.</string>
+    <string name="haptic_ai_unavailable_danger">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert jedes laute Geräusch mit dieser Einstellung, egal welcher Art. Statt „Folgt dem Ton“ wird dann „Zweimal“ verwendet.</string>
+    <string name="haptic_ai_unavailable_other">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert diese Art nicht. Laute Geräusche vibrieren mit der Einstellung für Gefahrengeräusche.</string>
     <string name="haptic_unsupported">Dieses Gerät unterstützt keine Vibration.</string>
     <string name="haptic_no_amplitude">Dieses Gerät kann die Vibrationsstärke nicht anpassen und vibriert daher mit der Standardstärke.</string>
     <string name="haptic_strength">Stärke</string>
@@ -129,8 +132,9 @@
     <string name="haptic_pattern_tap">Einmal</string>
     <string name="haptic_pattern_double">Zweimal</string>
     <string name="haptic_pattern_hold">Lang</string>
-    <string name="haptic_pattern_repeat">Wiederholt</string>
+    <string name="haptic_pattern_repeat">Folgt dem Ton</string>
     <string name="haptic_preview_hint">Tippen Sie auf eine Option, um die Vibration vorab zu spüren.</string>
+    <string name="haptic_pattern_follow_desc">„Folgt dem Ton“ vibriert, solange das Geräusch anhält, und verändert sich mit ihm. Die Vorschau simuliert ein typisches Geräusch dieser Art.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Farbe auswählen</string>
@@ -160,6 +164,7 @@
     <string name="notification_text">Geräusche werden visualisiert.</string>
     <string name="notification_stop">Stopp</string>
     <string name="notification_mode_selected">%1$s, ausgewählt</string>
+    <string name="notification_text_ai_unavailable_loud">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher vibrieren nur laute Geräusche.</string>
     <string name="notification_text_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu, oder in dieser App ist der Ton ausgeschaltet.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -212,8 +217,8 @@
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
     <string name="help_sound_danger">Wird ein Gefahrengeräusch (z. B. ein Schuss) erkannt, wechselt die Farbe sofort statt allmählich.</string>
-    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie eine Stärke (Leicht, Mittel, Stark) und ein Muster (Einmal, Zweimal, Lang, Wiederholt) wählen.</string>
-    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Bei derselben Art vibriert das Smartphone frühestens nach 2 Sekunden erneut. Bei „Wiederholt“ vibriert es alle 1,5 Sekunden, solange das Geräusch anhält.</string>
+    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie eine Stärke (Leicht, Mittel, Stark) und ein Muster (Einmal, Zweimal, Lang, Folgt dem Ton) wählen.</string>
+    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Bei „Einmal“, „Zweimal“ und „Lang“ vibriert das Smartphone für dieselbe Art frühestens nach 2 Sekunden erneut. „Folgt dem Ton“ vibriert, solange das Geräusch anhält, und bewegt sich mit ihm: Plötzliche Geräusche schlagen kräftig an, Pieptöne pulsieren in ihrem eigenen Rhythmus, Sprache pulsiert mit den Silben und eine Sirene wird mit ihrer Tonhöhe stärker und schwächer. Ein gleichbleibendes Geräusch geht in ein sanftes Summen mit einem leichten Tippen alle paar Sekunden über, hört aber erst auf, wenn das Geräusch aufhört.</string>
 
     <string name="help_notes_title">Gut zu wissen</string>
     <string name="help_note_direction">Links und rechts werden unterschieden, vorne und hinten jedoch nicht. Grafiken am oberen und unteren Bildschirmrand zeigen Geräusche, die auf beiden Seiten gleich stark zu hören sind, sowie den Raumeindruck.</string>
@@ -229,6 +234,7 @@
     <string name="help_faq_no_graphic_q">Ich sehe keine Grafiken.</string>
     <string name="help_faq_no_graphic_a">Prüfen Sie, ob die App, in der Sie gerade etwas abspielen, die Audioerfassung blockiert und ob in dieser App der Ton ausgeschaltet ist. Wenn längere Zeit kein Ton bei der Tonvisualisierung ankommt, weisen der Tab „Startseite“ und die Benachrichtigung während der Ausführung darauf hin. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist.</string>
     <string name="help_faq_no_vibration_q">Das Smartphone vibriert nicht.</string>
+    <string name="help_faq_no_vibration_answer">Prüfen Sie in den Einstellungen unter „Geräuscharten (KI)“, ob für die betreffende Art sowohl „… zeigen“ als auch „Vibrieren“ eingeschaltet sind. Bei ausgeschaltetem Bildschirm pausiert die App standardmäßig. Wenn Sie auch dann Vibrationen erhalten möchten, schalten Sie in den Einstellungen unter „Akku“ die Option „Pause bei ausgeschaltetem Bildschirm“ aus. Solange die Erkennung der Geräuscharten nicht funktioniert, vibrieren nur laute Geräusche – mit der Einstellung für Gefahrengeräusche. Wenn die Vibration in den Einstellungen Ihres Smartphones deaktiviert ist, vibriert es möglicherweise nicht.</string>
     <string name="help_faq_install_q">Eine neue Version lässt sich nicht installieren.</string>
     <string name="help_faq_install_a">Eine anderswo erstellte APK hat eine andere Signatur und kann daher nicht als Update für die vorhandene App installiert werden. Deinstallieren Sie zuerst die vorhandene App und installieren Sie dann die neue Version. Dabei werden Ihre Einstellungen zurückgesetzt.</string>
     <string name="help_faq_battery_q">Verbraucht die App viel Akku?</string>

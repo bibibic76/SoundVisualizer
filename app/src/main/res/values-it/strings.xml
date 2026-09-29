@@ -9,6 +9,7 @@
     <string name="home_status_running">Stato: in esecuzione</string>
     <string name="home_status_idle">Stato: pronto</string>
     <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
+    <string name="home_ai_unavailable_loud">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e vibrano solo i suoni forti, con l\'impostazione di vibrazione dei suoni di pericolo. Prova a disattivare e riattivare la visualizzazione.</string>
     <string name="home_stopped_dismiss">Chiudi avviso</string>
     <string name="home_start">Avvia</string>
     <string name="home_stop">Interrompi</string>
@@ -119,6 +120,8 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrazione</string>
     <string name="haptic_requires_display">La vibrazione funziona solo se questo tipo di suono viene mostrato.</string>
+    <string name="haptic_ai_unavailable_danger">Finché il riconoscimento del tipo di suono non funziona, qualsiasi suono forte vibra con questa impostazione, di qualunque tipo sia. Al posto di “Segui il suono” si usa “Due volte”.</string>
+    <string name="haptic_ai_unavailable_other">Finché il riconoscimento del tipo di suono non funziona, questo tipo non vibra. I suoni forti vibrano con l\'impostazione dei suoni di pericolo.</string>
     <string name="haptic_unsupported">Questo dispositivo non supporta la vibrazione.</string>
     <string name="haptic_no_amplitude">Questo dispositivo non può regolare l\'intensità della vibrazione, quindi vibra con l\'intensità predefinita.</string>
     <string name="haptic_strength">Intensità</string>
@@ -129,8 +132,9 @@
     <string name="haptic_pattern_tap">Una volta</string>
     <string name="haptic_pattern_double">Due volte</string>
     <string name="haptic_pattern_hold">Lunga</string>
-    <string name="haptic_pattern_repeat">Ripetuta</string>
+    <string name="haptic_pattern_repeat">Segui il suono</string>
     <string name="haptic_preview_hint">Tocca un\'opzione per provare la vibrazione.</string>
+    <string name="haptic_pattern_follow_desc">“Segui il suono” continua a vibrare finché il suono dura e cambia insieme a lui. L\'anteprima simula un suono tipico di questo tipo.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Scegli un colore</string>
@@ -160,6 +164,7 @@
     <string name="notification_text">Visualizzazione del suono in corso.</string>
     <string name="notification_stop">Interrompi</string>
     <string name="notification_mode_selected">%1$s, selezionato</string>
+    <string name="notification_text_ai_unavailable_loud">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi vibrano solo i suoni forti.</string>
     <string name="notification_text_capture_blocked">Questa app non riceve nessun suono. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio, oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -212,8 +217,8 @@
     <string name="help_sound_title">Tipi di suono e vibrazione</string>
     <string name="help_sound_kinds">L\'IA classifica l\'audio in suoni ambientali, voci e suoni di pericolo. Per impostazione predefinita, i suoni ambientali sono bianchi, le voci gialle e i suoni di pericolo rossi. Nella scheda Impostazioni puoi cambiare il colore di ogni tipo e scegliere se mostrarlo.</string>
     <string name="help_sound_danger">Quando viene rilevato un suono di pericolo (come uno sparo), il colore cambia all\'istante invece di sfumare gradualmente.</string>
-    <string name="help_sound_haptic">La vibrazione ti avvisa anche quando non guardi lo schermo. Inizialmente è attiva solo per i suoni di pericolo, e per ogni tipo puoi scegliere l\'intensità (Leggera, Media, Forte) e la sequenza (Una volta, Due volte, Lunga, Ripetuta).</string>
-    <string name="help_sound_haptic_rule">La vibrazione funziona solo per i tipi mostrati sullo schermo. Per lo stesso tipo non c\'è una nuova vibrazione entro 2 secondi, mentre con “Ripetuta” il telefono vibra ogni 1,5 secondi finché il suono dura.</string>
+    <string name="help_sound_haptic">La vibrazione ti avvisa anche quando non guardi lo schermo. Inizialmente è attiva solo per i suoni di pericolo, e per ogni tipo puoi scegliere l\'intensità (Leggera, Media, Forte) e la sequenza (Una volta, Due volte, Lunga, Segui il suono).</string>
+    <string name="help_sound_haptic_rule">La vibrazione funziona solo per i tipi mostrati sullo schermo. Con Una volta, Due volte e Lunga, per lo stesso tipo non c\'è una nuova vibrazione entro 2 secondi. “Segui il suono” continua a vibrare finché il suono dura e si muove con lui: i suoni improvvisi colpiscono forte, i bip pulsano con il loro ritmo, il parlato pulsa con le sillabe e una sirena si rafforza e si attenua seguendo il suo tono. Un suono che non cambia si attenua in un leggero ronzio con un piccolo tocco ogni pochi secondi, ma la vibrazione si ferma solo quando si ferma il suono.</string>
 
     <string name="help_notes_title">Buono a sapersi</string>
     <string name="help_note_direction">L\'app distingue la sinistra dalla destra, ma non il davanti dal dietro. La grafica in alto e in basso sullo schermo rappresenta i suoni che arrivano in modo simile da entrambi i lati e il senso di spazio.</string>
@@ -229,6 +234,7 @@
     <string name="help_faq_no_graphic_q">Non vedo nessuna grafica.</string>
     <string name="help_faq_no_graphic_a">Verifica se l\'app che sta riproducendo il suono blocca l\'acquisizione audio e se al suo interno l\'audio è disattivato. Se per un po\' non arriva nessun suono a questa app, te lo segnalano la scheda Home e la notifica in corso. Nella scheda Impostazioni controlla anche che l\'Opacità non sia troppo bassa e che la visualizzazione del tipo di suono in riproduzione non sia disattivata.</string>
     <string name="help_faq_no_vibration_q">Il telefono non vibra.</string>
+    <string name="help_faq_no_vibration_answer">In Impostazioni, in Tipi di suono (IA), controlla che per quel tipo siano attivi sia “Mostra” sia “Vibrazione”. A schermo spento l\'app va in pausa per impostazione predefinita: per ricevere gli avvisi con vibrazione anche allora, disattiva “Pausa a schermo spento” in Batteria nelle Impostazioni. Finché il riconoscimento del tipo di suono non funziona, vibrano solo i suoni forti, con l\'impostazione dei suoni di pericolo. Se la vibrazione è disattivata nelle impostazioni del telefono, potrebbe non funzionare.</string>
     <string name="help_faq_install_q">Non riesco a installare la nuova versione.</string>
     <string name="help_faq_install_a">Un APK compilato altrove ha una firma diversa e non può essere installato sopra l\'app esistente. Disinstalla prima l\'app esistente, poi installa quella nuova. In questo modo le tue impostazioni vengono azzerate.</string>
     <string name="help_faq_battery_q">Consuma molta batteria?</string>
