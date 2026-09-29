@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
     /** 실행에 필요한 권한을 받는다. 설정 화면으로 보내기 전에는 무엇을 해야 하는지 먼저 설명한다. */
     private val capturePermission = CapturePermissionFlow(
         this,
-        onGranted = ::launchProjectionRequest,
+        onGranted = ::startCapture,
         onOverlaySettings = { pendingStart.awaitPermission() }
     )
 
@@ -235,7 +235,12 @@ class MainActivity : ComponentActivity() {
         SettingsManager.flushModeSettings()
     }
 
-    private fun launchProjectionRequest() {
+    /** 권한을 받았다. 폰 안의 소리는 화면 녹화 동의를 받아 켜고, 외부 사운드 모드는 동의 없이 바로 켠다(#226). */
+    private fun startCapture() {
+        if (!VisualizerController.captureSource.needsProjectionConsent) {
+            VisualizerController.startMicrophone(this)
+            return
+        }
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
     }

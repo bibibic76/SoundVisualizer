@@ -60,6 +60,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val player = remember { HapticPlayer(context) }
     val settings by SettingsManager.hapticSettings(label).collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
+    val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
 
     val switchEnabled = shown && player.hasVibrator
 
@@ -83,11 +84,15 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     // 스위치는 켜진 그대로라 종류별 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 위협음 줄은 이 설정으로
     // 큰 소리가 울린다고, 다른 줄은 이 종류로는 울리지 않는다고 적는다. 설정값은 다음 실행을 위해 바꾸지 않는다.
     val aiNote = !aiAvailable && switchEnabled && settings.enabled
+    // 외부 사운드 모드에서는 폰이 자기 진동을 다시 들어 소리 따라가 끝나지 않으므로 두 번으로 울린다(#226).
+    // 고른 값은 바꾸지 않고, 고른 그대로 울지 않는다는 것만 알린다.
+    val followNote = externalSoundMode && switchEnabled && settings.enabled && settings.pattern == HapticPattern.Repeat
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
         !shown -> R.string.haptic_requires_display
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
         aiNote -> R.string.haptic_ai_unavailable_other
+        followNote -> R.string.haptic_follow_external
         else -> null
     }
 

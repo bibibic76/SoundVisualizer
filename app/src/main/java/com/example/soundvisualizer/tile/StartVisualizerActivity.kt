@@ -25,11 +25,12 @@ import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
  *
  * - 오버레이 권한은 시스템 설정 화면에서만 켤 수 있으므로 앱을 열어 안내한다.
  * - 마이크·알림 권한은 앱의 실행 버튼과 같은 흐름([CapturePermissionFlow])으로 받고 이어서 켠다.
+ * - 외부 사운드 모드면 화면 녹화 동의 없이 켜고 바로 닫힌다(#226).
  */
 class StartVisualizerActivity : ComponentActivity() {
 
     // 켜지 않고 끝나면(취소, 거부, 설정 화면으로 보냄) 이 화면도 닫는다.
-    private val capturePermission = CapturePermissionFlow(this, onGranted = ::requestProjection, onStopped = ::finish)
+    private val capturePermission = CapturePermissionFlow(this, onGranted = ::startCapture, onStopped = ::finish)
 
     private val projectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -71,7 +72,18 @@ class StartVisualizerActivity : ComponentActivity() {
         }
     }
 
-    private fun requestProjection() {
+    /**
+     * 권한을 받았다. 폰 안의 소리는 화면 녹화 동의를 받아 켜고, 외부 사운드 모드는 동의 없이 바로 켠다(#226).
+     *
+     * 바로 닫아도 된다. 마이크 포그라운드 서비스는 이 화면이 앞에 있을 때 띄웠으므로 앱이 사용자 앞에 있는 것으로
+     * 판정되고, 그 판정이 서비스가 도는 동안 이어진다.
+     */
+    private fun startCapture() {
+        if (!VisualizerController.captureSource.needsProjectionConsent) {
+            VisualizerController.startMicrophone(this)
+            finish()
+            return
+        }
         val manager = getSystemService(MediaProjectionManager::class.java)
         projectionLauncher.launch(manager.createScreenCaptureIntent())
     }

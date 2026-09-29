@@ -34,6 +34,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
     val captureBlocked by SettingsManager.isCaptureBlocked.collectAsState()
     val lastUnexpectedStop by SettingsManager.lastUnexpectedStop.collectAsState()
+    val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
 
     // 글자 크기나 화면 확대를 크게 쓰면 안내와 버튼이 화면보다 길어진다. Column 은 남은 높이만 나눠 주므로
     // 마지막 자식(실행·실행 종료 버튼, 타일 안내)이 눌려 사라진다. 스크롤을 열고 최소 높이를 화면 높이로 잡아
@@ -63,20 +64,34 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                     Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(if (isRunning) AccentColor else SecondaryTextColor))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        stringResource(if (isRunning) R.string.home_status_running else R.string.home_status_idle),
+                        stringResource(
+                            when {
+                                !isRunning -> R.string.home_status_idle
+                                // 마이크로 듣는 중이면 상태에 적는다. 방 소리를 들어 확인할 수 없는 사람에게 필요하다(#226).
+                                externalSoundMode -> R.string.home_status_running_external
+                                else -> R.string.home_status_running
+                            }
+                        ),
                         fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
                     )
                 }
                 // 돌고 있는데도 화면에 아무 일이 없어 보이는 두 경우를 상태 바로 아래에 알린다.
                 // - 재생 중인데 아무것도 받지 못함: 소리 공유를 막은 앱이거나 그 앱이 음소거된 경우다. 청각장애
-                //   사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다.
+                //   사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다. 외부 사운드 모드에서는 마이크로
+                //   아무것도 들어오지 않는 경우다(통화 중, 다른 앱이 마이크를 씀, 마이크 차단).
                 // - AI 모델 실패: 위협음 색과 종류별 진동이 그대로인 줄 믿게 된다. 진동은 큰 소리에만 울린다.
                 // 둘 다 해당하면 받지 못한다는 쪽만 말한다. 받는 소리가 없으면 분류할 소리도 없어서 AI 안내는
                 // 그 순간 의미가 없고, 막힌 앱을 벗어나면 다시 나온다. 경고를 쌓아 두면 어느 것도 읽지 않는다.
                 // 글자는 상태 점 너비(12dp + 8dp)만큼 들여 상태 글자와 줄을 맞춘다.
                 if (isRunning && (captureBlocked || !aiAvailable)) {
                     Text(
-                        stringResource(if (captureBlocked) R.string.home_capture_blocked else R.string.home_ai_unavailable_loud),
+                        stringResource(
+                            when {
+                                !captureBlocked -> R.string.home_ai_unavailable_loud
+                                externalSoundMode -> R.string.home_mic_silenced
+                                else -> R.string.home_capture_blocked
+                            }
+                        ),
                         fontSize = 14.sp, color = WarningColor, lineHeight = 21.sp,
                         // 홈을 보는 중에 안내가 생길 수 있으므로 화면 읽어주기가 읽고 지나가게 한다.
                         modifier = Modifier.padding(start = 20.dp, top = 8.dp)
@@ -108,6 +123,25 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                         ) {
                             Text(stringResource(R.string.home_stopped_dismiss), color = SecondaryTextColor, fontWeight = FontWeight.Bold)
                         }
+                    }
+                }
+            }
+
+            // 외부 사운드 모드(#226). 켜기 전에 고르고, 실행 중에는 잠근다. 소스는 켤 때 정해져 돌고 있는 실행에는
+            // 적용되지 않으므로, 바꿀 수 있는 것처럼 두면 스위치와 실제로 듣는 곳이 어긋난다.
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardColor),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+            ) {
+                Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp)) {
+                    ModernSwitch(
+                        stringResource(R.string.home_external_mode),
+                        stringResource(if (isRunning) R.string.home_external_mode_locked else R.string.home_external_mode_desc),
+                        externalSoundMode,
+                        enabled = !isRunning
+                    ) {
+                        SettingsManager.setExternalSoundMode(it)
                     }
                 }
             }

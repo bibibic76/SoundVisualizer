@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -53,6 +54,7 @@ import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsExpander
+import com.example.soundvisualizer.SettingsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -81,7 +83,12 @@ fun HelpTab() {
         item {
             SettingsExpander(stringResource(R.string.help_permissions_title)) {
                 TitledItem(R.string.help_perm_overlay, R.string.help_perm_overlay_desc)
-                TitledItem(R.string.help_perm_mic, R.string.help_perm_mic_desc)
+                // 외부 사운드 모드를 켜면 이 권한으로 주변 소리를 듣는다. 그때는 "녹음하지 않는다" 고 말하지 않는다(#226).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                TitledItem(
+                    R.string.help_perm_mic,
+                    if (externalSoundMode) R.string.help_perm_mic_desc_external else R.string.help_perm_mic_desc
+                )
                 TitledItem(R.string.help_perm_capture, R.string.help_perm_capture_desc)
                 TitledItem(R.string.help_perm_notification, R.string.help_perm_notification_desc)
             }

@@ -40,7 +40,16 @@ class HapticPolicy(
     }
 
     /** 한 종류에 대해 판단에 필요한 설정. */
-    data class ClassConfig(val shown: Boolean, val haptic: HapticSettings)
+    data class ClassConfig(val shown: Boolean, val haptic: HapticSettings) {
+        /**
+         * 소리 따라를 두 번으로 바꾼 설정. 마이크로 들을 때 쓴다(#226).
+         *
+         * 폰이 자기 진동을 마이크로 다시 들으면, 소리 따라는 그 진동을 이어지는 소리로 알고 세션을 끝내지 않는다.
+         * 한 번·두 번·길게는 소리가 시작될 때만 울리고 진동 소리는 그 사건 안에 묻히므로 되먹임이 생기지 않는다.
+         */
+        fun withoutFollow(): ClassConfig =
+            if (haptic.pattern == HapticPattern.Repeat) copy(haptic = haptic.copy(pattern = HapticPattern.DoubleTap)) else this
+    }
 
     /** 이번 틱에 울릴 한 번·두 번·길게. */
     data class Decision(val pattern: HapticPattern, val strength: HapticStrength)

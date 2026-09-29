@@ -32,6 +32,7 @@ internal object NativeHapticInput : HapticInput {
  * @param input 소리 특징. 실제로는 네이티브 누적값이고, 미리보기는 흉내 낸 소리를 넣는다.
  * @param configFor 라벨별 표시·진동 설정.
  * @param gated 실제 진동 알림이면 true. 설정 화면의 미리보기가 진동기를 잡고 있는 동안에는 보내지 않는다.
+ * @param allowFollow 소리 따라를 그대로 쓸지. 마이크로 들을 때는 거짓이라 두 번으로 울린다([HapticPolicy.ClassConfig.withoutFollow]).
  * @param unlabeledAlerts 라벨이 끝내 오지 않는 실행(AI 를 쓸 수 없음)인지. 참인 동안은 라벨 없이도 큰 소리에 울린다(#225).
  * @param labelSource 가장 최근 분류 라벨. 결과가 아직 없으면 null. 마지막 인자라 `HapticNotifier(context) { … }` 로 쓴다.
  */
@@ -40,6 +41,7 @@ class HapticNotifier(
     private val input: HapticInput = NativeHapticInput,
     private val configFor: (String) -> HapticPolicy.ClassConfig = LIVE_CONFIG,
     private val gated: Boolean = true,
+    allowFollow: Boolean = true,
     private val unlabeledAlerts: () -> Boolean = { false },
     private val labelSource: () -> String?
 ) {
@@ -61,6 +63,10 @@ class HapticNotifier(
 
     private val player = HapticPlayer(context)
     private val loop = HapticLoop(Build.VERSION.SDK_INT, player.hasAmplitudeControl)
+
+    /** 틱이 판단에 쓰는 설정. 소리 따라를 쓰지 않으면 두 번으로 바꿔 넘긴다. */
+    private val tickConfig: (String) -> HapticPolicy.ClassConfig =
+        if (allowFollow) configFor else { label -> configFor(label).withoutFollow() }
 
     // 소리 따라는 20ms 마다 모양을 정하므로 늦게 깨면 친 곳이 밀린다. 배경 우선순위는 렌더·AI 가 바쁠 때 흔들린다.
     private val thread = HandlerThread("SV-Haptic", Process.THREAD_PRIORITY_DISPLAY)
@@ -92,7 +98,7 @@ class HapticNotifier(
                 frame[HapticInput.RMS],
                 frame[HapticInput.TONE],
                 frame[HapticInput.BUFFERS].toInt(),
-                configFor,
+                tickConfig,
                 unlabeledAlerts()
             )
             if (plan != null) issue(plan, now)

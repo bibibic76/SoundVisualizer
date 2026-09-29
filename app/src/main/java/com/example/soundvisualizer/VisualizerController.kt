@@ -12,7 +12,8 @@ import androidx.annotation.MainThread
  * 시각화를 켜고 끄는 공용 진입점. 앱의 실행·실행 종료 버튼과 빠른 설정 타일이 같은 코드를 쓴다.
  *
  * 켜기는 두 단계다. 런타임 권한과 화면 녹화 동의는 액티비티에서만 받을 수 있으므로 호출하는 쪽이 받고,
- * 동의 결과를 [start] 에 넘기면 캡처와 오버레이 서비스를 띄운다.
+ * 동의 결과를 [start] 에 넘기면 캡처와 오버레이 서비스를 띄운다. 외부 사운드 모드는 동의가 필요 없어
+ * 권한만 받고 [startMicrophone] 을 부른다(#226). 어느 쪽인지는 [captureSource] 가 정한다.
  */
 object VisualizerController {
 
@@ -21,7 +22,7 @@ object VisualizerController {
     // POST_NOTIFICATIONS 는 문자열 상수라 구버전에서 참조해도 안전하고, sdkInt 로 걸러낸다. (Lint InlinedApi)
     /**
      * 켜기 전에 요청해야 하는 런타임 권한 중 아직 없는 것.
-     * RECORD_AUDIO 는 내부 오디오 캡처(AudioPlaybackCapture)에 필수이고,
+     * RECORD_AUDIO 는 내부 오디오 캡처(AudioPlaybackCapture)와 외부 사운드 모드(마이크) 모두에 필수이고,
      * POST_NOTIFICATIONS 는 실행 중 알림 표시용(Android 13+)이라 거부해도 켤 수 있다.
      */
     @SuppressLint("InlinedApi")
@@ -47,6 +48,9 @@ object VisualizerController {
     fun hasCapturePermission(context: Context): Boolean =
         context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
+    /** 지금 켜면 어디서 소리를 받을지. 켜기를 누를 때 한 번 읽고, 동의 창을 띄울지도 이것으로 정한다. */
+    val captureSource: CaptureSource get() = CaptureSource.of(SettingsManager.externalSoundMode.value)
+
     /** 화면 녹화 동의 결과로 캡처와 오버레이를 시작한다. 실행 상태는 서비스가 실제로 뜨면서 스스로 알린다. */
     @MainThread
     fun start(context: Context, resultCode: Int, data: Intent) {
@@ -54,8 +58,19 @@ object VisualizerController {
             putExtra(AudioCaptureService.EXTRA_RESULT_CODE, resultCode)
             putExtra(AudioCaptureService.EXTRA_RESULT_DATA, data)
         }
-        // 서비스는 이 표가 있어야 포그라운드를 시작한다. 없으면 사용자가 켜지 않은 것으로 보고 내린다. (CaptureStartToken)
-        AudioCaptureService.markStartRequested()
+        startServices(context, capture, CaptureSource.InternalPlayback)
+    }
+
+    /** 외부 사운드 모드: 화면 녹화 동의 없이 마이크로 받는 캡처와 오버레이를 시작한다(#226). */
+    @MainThread
+    fun startMicrophone(context: Context) {
+        startServices(context, Intent(context, AudioCaptureService::class.java), CaptureSource.Microphone)
+    }
+
+    private fun startServices(context: Context, capture: Intent, source: CaptureSource) {
+        // 서비스는 이 표가 있어야 포그라운드를 시작한다. 없으면 사용자가 켜지 않은 것으로 보고 내린다.
+        // 어느 소스로 받을지도 표에 실어 보낸다. 포그라운드 타입을 onCreate 에서 정해야 하기 때문이다. (CaptureStartToken)
+        AudioCaptureService.markStartRequested(source)
         context.startForegroundService(capture)
         context.startService(Intent(context, OverlayService::class.java))
     }

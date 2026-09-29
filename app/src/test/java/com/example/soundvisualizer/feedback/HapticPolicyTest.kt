@@ -418,6 +418,32 @@ class HapticPolicyTest {
         assertEquals(listOf(HapticPolicy.Decision(HapticPattern.Tap, HapticStrength.Medium)), fired.map { it.second })
     }
 
+    // ---------------------------------------------------------------
+    // 마이크로 들을 때 (#226)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `마이크로 들을 때는 소리 따라만 두 번으로 바꾸고 세기는 그대로 둔다`() {
+        val follow = HapticPolicy.ClassConfig(true, HapticSettings(true, HapticStrength.Weak, HapticPattern.Repeat))
+        assertEquals(HapticSettings(true, HapticStrength.Weak, HapticPattern.DoubleTap), follow.withoutFollow().haptic)
+
+        for (pattern in listOf(HapticPattern.Tap, HapticPattern.DoubleTap, HapticPattern.Hold)) {
+            val other = HapticPolicy.ClassConfig(true, HapticSettings(true, HapticStrength.Strong, pattern))
+            assertEquals(other, other.withoutFollow())
+        }
+    }
+
+    @Test
+    fun `소리 따라를 두 번으로 바꾸면 이어지는 소리에 세션을 열지 않고 한 번만 울린다`() {
+        // 폰이 자기 진동을 다시 들어도 사건은 하나로 이어질 뿐이라 다시 울리지 않는다.
+        val follow = config(pattern = HapticPattern.Repeat)
+        val policy = HapticPolicy()
+        val fired = policy.feed(0, 5000, DANGER, LOUD, { follow(it).withoutFollow() })
+
+        assertEquals(listOf(0L), fired.map { it.first })
+        assertNull(policy.follow)
+    }
+
     @Test
     fun `reset 하면 종류를 모를 때의 쿨다운도 지워진다`() {
         val policy = HapticPolicy()

@@ -159,8 +159,19 @@ fun ModernSlider(
     }
 }
 
+/**
+ * 이름·설명·스위치 한 줄.
+ *
+ * @param enabled 거짓이면 스위치를 잠그고 이름을 흐리게 그린다. 화면 읽어주기도 "사용 중지됨" 으로 읽는다.
+ */
 @Composable
-fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+fun ModernSwitch(
+    label: String,
+    desc: String,
+    checked: Boolean,
+    enabled: Boolean = true,
+    onCheckedChange: (Boolean) -> Unit
+) {
     Column(
         // 줄 전체를 누를 수 있게 하고 이름·설명·상태를 한 덩어리로 묶는다. 스위치만 누를 수 있으면
         // 화면 읽어주기가 이름 없이 "스위치, 켜짐" 으로 읽고, 손가락으로도 작은 스위치만 노려야 한다.
@@ -172,6 +183,7 @@ fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange:
                 // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 스위치가 움직이는 것으로 충분하다.
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
+                enabled = enabled,
                 role = Role.Switch,
                 onValueChange = {
                     onCheckedChange(it)
@@ -181,16 +193,25 @@ fun ModernSwitch(label: String, desc: String, checked: Boolean, onCheckedChange:
             )
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
+            Text(
+                label, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                color = if (enabled) PrimaryTextColor else SecondaryTextColor,
+                modifier = Modifier.weight(1f)
+            )
             Switch(
                 checked = checked,
                 // 누르는 것은 줄 전체가 받는다.
                 onCheckedChange = null,
+                enabled = enabled,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = AccentColor,
                     uncheckedThumbColor = SecondaryTextColor,
-                    uncheckedTrackColor = Color(0xFF333A44)
+                    uncheckedTrackColor = Color(0xFF333A44),
+                    disabledCheckedThumbColor = Color(0xFFB0B8C1),
+                    disabledCheckedTrackColor = Color(0xFF3A4351),
+                    disabledUncheckedThumbColor = Color(0xFF6B7684),
+                    disabledUncheckedTrackColor = Color(0xFF2A3038)
                 )
             )
         }

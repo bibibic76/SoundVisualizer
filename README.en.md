@@ -18,7 +18,7 @@ It draws where the sound on your phone is coming from, how loud it is and what k
 
 ## 🔍 How it works
 
-1. **It captures the sound playing inside your phone.** It doesn't listen to the room through the microphone. It receives the sound that apps and games play.
+1. **It captures the sound playing inside your phone.** It doesn't listen to the room through the microphone. It receives the sound that apps and games play. Turn on **External sound mode** on Home and it listens to the sounds around you through the microphone instead (see below).
 2. **It compares the loudness of the left and right channels** to work out direction and strength.
 3. **AI decides what kind of sound it is every 0.25 seconds**: ambient, speech or danger.
 4. **It draws the result along the edges of the screen.** The side the sound comes from reacts more strongly, and the color changes with the sound type.
@@ -59,6 +59,17 @@ Vibration lets you know a sound happened even when you're not looking at the scr
 - So rapid gunfire doesn't buzz nonstop, with Once, Twice and Long the same type won't vibrate again within 2 seconds.
 - **Follow** keeps vibrating while the sound lasts and moves with it: sudden sounds hit, beeps and speech pulse in their own rhythm, and a siren rises and falls with its pitch. A sound that goes on unchanged settles into a gentle hum with a light tap every few seconds, so your hand doesn't go numb. The preview in Settings lets you feel a typical sound of each type without any sound playing.
 - While Follow is vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
+
+### 🎤 External sound mode
+
+Turn on **External sound mode** on Home and start, and it listens to **the sounds around you through the microphone** instead of sound playing on your phone, showing them with the same graphics and vibration. You can notice sounds outside the phone, like a doorbell, a fire alarm or someone calling you.
+
+- It's off by default. When it's on, it starts without screen recording consent, and a microphone indicator shows in the status bar while it listens. The running notification title and the Home status also say **Surrounding sound**.
+- What it hears is only used to measure loudness and tell the type of sound. **It's never saved to a file or sent anywhere.**
+- It can't be changed while running. Stop the visualizer, change it, and it applies the next time you start.
+- It always draws sound in the center. The phone's two microphones sit at the top and bottom, so it can't tell whether a sound comes from the left or the right.
+- Because the phone hears its own vibration through the microphone, the **Follow** vibration pattern vibrates **Twice** in this mode.
+- If you're on a call, another app is using the microphone, or microphone access is turned off in Quick Settings, no sound comes in. Home and the running notification tell you when that happens.
 
 ### ⚙️ Settings for each mode
 
@@ -118,8 +129,8 @@ The first time you open the app, a **tutorial** shows up first. In five pages it
    | Permission | Why it's needed |
    |---|---|
    | **Display over other apps** | To show graphics on top of games and videos. |
-   | **Microphone (audio recording)** | To capture sound playing on your phone. The permission is called microphone, but **sounds around you are not recorded.** |
-   | **Screen recording / casting** | Android only lets apps capture your phone's sound through this permission. **Your screen itself is not captured.** |
+   | **Microphone (audio recording)** | To capture sound playing on your phone. The permission is called microphone, but unless External sound mode is on, **it doesn't listen to the sounds around you.** When it's on, it uses this permission to listen to them, and what it hears is never saved to a file or sent anywhere. |
+   | **Screen recording / casting** | Android only lets apps capture your phone's sound through this permission. **Your screen itself is not captured.** It isn't asked in External sound mode. |
    | **Notifications** (Android 13+) | To show the running notification and its Stop button, and to tell you when it turns off without you stopping it. The app still works if you deny it. If it then turns off, only the vibration tells you, and Home shows what turned off when you open the app. |
 
    If **Display over other apps** isn't allowed, the app tells you what to do before opening Settings. If that screen lists apps, find **SoundVisualizer** and turn its switch on, then come back — it goes on with the start you asked for.

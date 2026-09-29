@@ -49,6 +49,14 @@ object SettingsManager {
     internal const val PAUSE_WHEN_SCREEN_OFF_DEFAULT = true
 
     /**
+     * 홈의 "외부 사운드 모드" 기본값(#226). 꺼 두면 지금까지처럼 폰에서 재생되는 소리만 받는다.
+     *
+     * 켜면 마이크로 주변 소리를 듣는다. 사용자가 직접 골라야 하는 일이라 기본은 꺼짐이다.
+     * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
+     */
+    internal const val EXTERNAL_SOUND_MODE_DEFAULT = false
+
+    /**
      * 개발자 모드의 기본값. 팀이 AI 분류를 채점하는 도구라 사용자에게는 꺼져 있어야 한다.
      *
      * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
@@ -69,6 +77,7 @@ object SettingsManager {
     internal const val REDUCED_FRAME_RATE_DEFAULT = false
 
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
+    private const val KEY_EXTERNAL_SOUND_MODE = "external_sound_mode"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
     private const val KEY_DEVELOPER_RECORD = "developer_record"
     private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
@@ -142,6 +151,14 @@ object SettingsManager {
     // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
     private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
     val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
+
+    /**
+     * 마이크로 주변 소리를 들을지(#226). 켜기를 누를 때 읽어 그 실행의 소스를 정한다([CaptureSource]).
+     * 실행 중에는 홈이 스위치를 잠가, 돌고 있는 실행과 표시가 어긋나지 않게 한다.
+     * 사용자의 선택이라 기기 전용 값([dropOtherDeviceValues])이 아니다.
+     */
+    private val _externalSoundMode = MutableStateFlow(EXTERNAL_SOUND_MODE_DEFAULT)
+    val externalSoundMode: StateFlow<Boolean> = _externalSoundMode
 
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
@@ -291,6 +308,7 @@ object SettingsManager {
 
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
+        _externalSoundMode.value = loadExternalSoundMode(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
         _developerRecord.value = loadDeveloperRecord(prefs)
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
@@ -327,6 +345,10 @@ object SettingsManager {
     /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+
+    /** 저장된 적이 없으면 [EXTERNAL_SOUND_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadExternalSoundMode(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_EXTERNAL_SOUND_MODE, EXTERNAL_SOUND_MODE_DEFAULT)
 
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
@@ -523,6 +545,12 @@ object SettingsManager {
     fun setPauseWhenScreenOff(enabled: Boolean) {
         _pauseWhenScreenOff.value = enabled
         prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
+    }
+
+    /** 다음 실행부터 적용된다. 실행 중에는 홈이 스위치를 잠근다. */
+    fun setExternalSoundMode(enabled: Boolean) {
+        _externalSoundMode.value = enabled
+        prefs.edit { putBoolean(KEY_EXTERNAL_SOUND_MODE, enabled) }
     }
 
     /** 오버레이가 프레임마다 읽으므로 켜고 끄면 실행 중에도 바로 적용된다. */
