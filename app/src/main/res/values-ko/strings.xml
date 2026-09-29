@@ -2,7 +2,6 @@
     <!-- 탭 -->
     <string name="tab_home">홈</string>
     <string name="tab_settings">설정</string>
-    <string name="tab_classify">분류</string>
     <string name="tab_help">도움말</string>
 
     <!-- 홈 -->
@@ -99,27 +98,6 @@
     <string name="ai_show_speech">대화음 표시</string>
     <string name="ai_show_danger">위협음 표시</string>
     <string name="ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시됩니다. 껐다가 다시 켜 보세요.</string>
-    <string name="classify_title">소리마다 종류 고르기</string>
-    <string name="classify_desc">AI가 알아듣는 모든 소리와, 각 소리가 지금 어느 종류로 구분되는지를 보여 줍니다. 종류를 바꾸면 그 소리의 색과 진동이 바로 새 종류를 따릅니다.</string>
-    <string name="classify_danger_note">위협음에서 뺀 소리에는 위협음 색과 진동이 나오지 않습니다. 비슷한 소리는 여러 줄로 나뉘어 있어(사이렌은 5줄) 모두 빼려면 함께 바꿔야 합니다.</string>
-    <string name="classify_search_hint">소리 이름으로 찾기</string>
-    <string name="cd_classify_clear_search">검색어 지우기</string>
-    <string name="classify_filter_all">전체</string>
-    <string name="classify_filter_changed">바꾼 소리</string>
-    <string name="sound_type_ambient">환경음</string>
-    <string name="sound_type_speech">대화음</string>
-    <string name="sound_type_danger">위협음</string>
-    <string name="classify_type_default">%1$s (기본)</string>
-    <string name="classify_changed_from">기본: %1$s</string>
-    <string name="classify_changed_count">바꾼 소리: %1$d개</string>
-    <string name="classify_reset_all">모두 기본값으로</string>
-    <string name="classify_reset_title">모든 소리를 기본값으로 되돌릴까요?</string>
-    <string name="classify_reset_message">바꾼 소리가 모두 기본 종류로 돌아갑니다.</string>
-    <string name="classify_reset_confirm">되돌리기</string>
-    <string name="classify_reset_cancel">취소</string>
-    <string name="classify_empty">맞는 소리가 없습니다.</string>
-    <string name="cd_classify_sound">%1$s, 종류: %2$s</string>
-    <string name="cd_classify_sound_changed">%1$s, 종류: %2$s, 기본: %3$s</string>
 
     <!-- 진동 -->
     <string name="haptic_vibrate">진동</string>
@@ -220,7 +198,6 @@
 
     <string name="help_sound_title">소리 종류와 진동</string>
     <string name="help_sound_kinds">AI가 들리는 소리를 환경음·대화음·위협음으로 나눕니다. 기본색은 환경음 흰색, 대화음 노란색, 위협음 빨간색이고, 설정 탭에서 종류마다 색과 표시 여부를 바꿀 수 있습니다.</string>
-    <string name="help_sound_classify">분류 탭에서는 소리마다 어느 종류로 볼지 고를 수 있습니다. 예를 들어 초인종을 위협음으로 바꾸거나, 발소리를 위협음에서 뺄 수 있습니다.</string>
     <string name="help_sound_danger">위협음(총소리 등)이 감지되면 색이 서서히 바뀌지 않고 즉시 바뀝니다.</string>
     <string name="help_sound_haptic">화면을 보고 있지 않아도 진동으로 알려줍니다. 처음에는 위협음만 켜져 있고, 종류마다 세기(약·중·강)와 패턴(한 번·두 번·길게·계속 반복)을 고를 수 있습니다.</string>
     <string name="help_sound_haptic_rule">화면 표시가 켜진 종류만 진동합니다. 같은 종류는 2초 안에 다시 울리지 않고, ‘계속 반복’은 소리가 이어지는 동안 1.5초마다 울립니다.</string>

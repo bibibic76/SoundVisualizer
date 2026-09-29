@@ -243,10 +243,6 @@ class YamnetCoarseClassifier(
         var bestDangerProb = 0f
         val n = minOf(probs.size, classNames.size)
         for (i in 0 until n) {
-            // 기본으로도 위협음이고 지금도 위협음인 소리만 찾는다. 사용자가 뺀 소리는 찾지 않고, 사용자가 올린 소리는
-            // 여기 끼지 않는다. 끼면 제 작은 확률로 표시 이름을 차지해 Booster 의 낮은 확신도 막음(0.12)에 걸리고,
-            // 그대로 두었으면 강한 단서로 올라갔을 사이렌·경보를 가린다. 사용자 선택이 없으면 전과 같다.
-            if (YamnetThreeClassMapper.defaultCoarse(classNames[i]) != "danger") continue
             if (YamnetThreeClassMapper.mapDisplayNameToCoarse(classNames[i]) != "danger") continue
             if (probs[i] > bestDangerProb) {
                 bestDangerProb = probs[i]

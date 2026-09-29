@@ -34,7 +34,7 @@ class LauncherInsetsInstrumentedTest {
             WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
         ).top
 
-        for (tab in listOf(R.string.tab_home, R.string.tab_settings, R.string.tab_classify, R.string.tab_help)) {
+        for (tab in listOf(R.string.tab_home, R.string.tab_settings, R.string.tab_help)) {
             val name = activity.getString(tab)
             // 탭은 글자와 밑줄을 묶은 한 덩어리라, 그 덩어리의 위쪽 끝이 바 아래에 있어야 한다. 좌표는 창 기준 px 이다.
             val tabTop = rule.onNodeWithText(name).fetchSemanticsNode().boundsInWindow.top
