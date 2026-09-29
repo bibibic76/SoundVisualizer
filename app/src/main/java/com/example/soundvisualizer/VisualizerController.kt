@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.MainThread
 
 /**
  * 시각화를 켜고 끄는 공용 진입점. 앱의 실행·실행 종료 버튼과 빠른 설정 타일이 같은 코드를 쓴다.
@@ -47,11 +48,14 @@ object VisualizerController {
         context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
     /** 화면 녹화 동의 결과로 캡처와 오버레이를 시작한다. 실행 상태는 서비스가 실제로 뜨면서 스스로 알린다. */
+    @MainThread
     fun start(context: Context, resultCode: Int, data: Intent) {
         val capture = Intent(context, AudioCaptureService::class.java).apply {
             putExtra(AudioCaptureService.EXTRA_RESULT_CODE, resultCode)
             putExtra(AudioCaptureService.EXTRA_RESULT_DATA, data)
         }
+        // 서비스는 이 표가 있어야 포그라운드를 시작한다. 없으면 사용자가 켜지 않은 것으로 보고 내린다. (CaptureStartToken)
+        AudioCaptureService.markStartRequested()
         context.startForegroundService(capture)
         context.startService(Intent(context, OverlayService::class.java))
     }

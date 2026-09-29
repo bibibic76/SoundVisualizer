@@ -11,6 +11,7 @@ import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assume.assumeFalse
 import org.junit.Assume.assumeTrue
@@ -22,8 +23,8 @@ import org.junit.runner.RunWith
  * 캡처 서비스가 없을 때 실행 중 알림의 버튼이 눌려도 서비스를 새로 띄우지 않고, 남은 알림만 지우는지 본다.
  *
  * 서비스보다 오래 남은 알림은 손으로 만들기 어렵다. 그래서 같은 번호로 알림을 하나 올려 두고,
- * 알림 버튼이 보내는 것과 같은 브로드캐스트를 보낸다. 서비스를 띄우려 들면 Android 14 이상에서는
- * 화면 녹화 동의가 없어 이 프로세스가 죽으므로 테스트가 실패한다.
+ * 알림 버튼이 보내는 것과 같은 브로드캐스트를 보낸다. 리시버가 서비스를 띄우면 서비스는 사용자가 켠 것이 아니라서
+ * 아무것도 하지 않고 내려가므로([CaptureStartToken]), 떴는지는 [AudioCaptureService.unrequestedStartCount] 로 본다.
  */
 @RunWith(AndroidJUnit4::class)
 class NotificationActionReceiverInstrumentedTest {
@@ -71,6 +72,7 @@ class NotificationActionReceiverInstrumentedTest {
 
     private fun pressWithoutService(button: Intent) {
         postLeftoverNotification()
+        val unrequestedBefore = AudioCaptureService.unrequestedStartCount
         context.sendBroadcast(button)
 
         val deadline = SystemClock.uptimeMillis() + TIMEOUT_MS
@@ -81,6 +83,11 @@ class NotificationActionReceiverInstrumentedTest {
         // 리시버는 메인 스레드에서 돈다. 서비스가 떴다면 onCreate 도 그 뒤에 메인 스레드에서 돈다.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         assertFalse("버튼 때문에 캡처 서비스가 떴습니다", AudioCaptureService.isRunning)
+        assertEquals(
+            "버튼 때문에 캡처 서비스가 떴습니다",
+            unrequestedBefore,
+            AudioCaptureService.unrequestedStartCount
+        )
     }
 
     private fun postLeftoverNotification() {
