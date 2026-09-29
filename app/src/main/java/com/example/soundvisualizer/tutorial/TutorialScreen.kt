@@ -97,6 +97,9 @@ enum class TutorialPage(@StringRes val title: Int, @StringRes val body: Int?, va
  */
 private val COMPACT_HEIGHT = 480.dp
 
+/** 아래 한 줄에 버튼을 모두 모을 때 필요한 폭. 이보다 좁으면 낮은 화면이어도 위아래 두 줄로 둔다. */
+private val COMPACT_MIN_WIDTH = 600.dp
+
 /**
  * 처음 여는 사람에게 앱이 무엇을 하는지 보여 주는 화면. 홈의 ‘튜토리얼 보기’로 다시 열 수 있다.
  *
@@ -143,7 +146,8 @@ fun TutorialScreen(onClose: () -> Unit) {
             .safeDrawingPadding()
             .semantics { this.paneTitle = paneTitle }
     ) {
-        val compact = maxHeight < COMPACT_HEIGHT
+        // 한 줄에 모으려면 폭도 넉넉해야 한다. 좁은데 모으면 긴 번역과 큰 글꼴에서 ‘다음’ 버튼이 짓눌린다.
+        val compact = maxHeight < COMPACT_HEIGHT && maxWidth >= COMPACT_MIN_WIDTH
         // 버튼 이름·보이기는 손을 뗀 뒤의 쪽이 아니라 지금 보이는 쪽을 따른다.
         val current = pagerState.currentPage
         val isFirst = current == 0
@@ -296,8 +300,8 @@ private fun TutorialPageContent(page: TutorialPage, running: Boolean, titleFocus
                 }
             }
         } else {
-            // 그림은 쪽 높이의 절반쯤. 글자를 크게 쓰면 글에 자리를 더 준다.
-            val fraction = if (LocalDensity.current.fontScale >= 1.3f) 0.34f else 0.5f
+            // 그림은 쪽 높이의 절반쯤. 글자를 크게 쓰거나 글이 긴 마지막 쪽(네 단계와 권한 안내)이면 글에 자리를 더 준다.
+            val fraction = if (LocalDensity.current.fontScale >= 1.3f || page == TutorialPage.Start) 0.34f else 0.5f
             val illustrationHeight = (maxHeight * fraction).coerceIn(140.dp, 380.dp)
             ScrollingText(Modifier.fillMaxSize()) {
                 Column(

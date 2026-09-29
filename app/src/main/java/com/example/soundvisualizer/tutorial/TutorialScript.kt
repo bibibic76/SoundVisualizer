@@ -248,7 +248,7 @@ class TutorialDemoInputs(
 
     companion object {
         /**
-         * 그림의 모드 설정. 기본값([ModeSettings])에서 진하기와 반응만 올렸다. 폰 그림이 실제 화면보다 훨씬 작아서,
+         * 그림의 모드 설정. 기본값([ModeSettings])에서 크기·진하기·반응을 조금씩 올렸다. 폰 그림이 실제 화면보다 훨씬 작아서,
          * 기본값 그대로면 어두운 장면 위의 빨간 위협음이 흐리고 박자가 잘 읽히지 않는다.
          */
         fun demoSettings(): ModeSettings = ModeSettings(intensity = 55f, opacity = 80f, speed = 20f, sensitivity = 40f)

@@ -32,7 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +53,8 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
@@ -128,13 +132,16 @@ internal fun TutorialIllustration(
         val phoneWidth = min(min(maxWidth - markRoom * 2, maxHeight * PHONE_ASPECT), PHONE_MAX_WIDTH)
         if (phoneWidth > 0.dp) {
             val phoneHeight = phoneWidth / PHONE_ASPECT
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (markRoom > 0.dp) {
-                    VibrationMarks(scene, time, running, mirrored = false, Modifier.width(markRoom).height(phoneHeight))
-                }
-                DemoPhone(scene, time, running, phoneWidth, phoneHeight)
-                if (markRoom > 0.dp) {
-                    VibrationMarks(scene, time, running, mirrored = true, Modifier.width(markRoom).height(phoneHeight))
+            // 폰 그림의 왼쪽·오른쪽은 실제 방향이다(왼쪽 소리는 왼쪽). 아랍어처럼 오른쪽에서 쓰는 언어에서도 뒤집지 않는다.
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (markRoom > 0.dp) {
+                        VibrationMarks(scene, time, running, mirrored = false, Modifier.width(markRoom).height(phoneHeight))
+                    }
+                    DemoPhone(scene, time, running, phoneWidth, phoneHeight)
+                    if (markRoom > 0.dp) {
+                        VibrationMarks(scene, time, running, mirrored = true, Modifier.width(markRoom).height(phoneHeight))
+                    }
                 }
             }
         }
@@ -157,14 +164,22 @@ private fun DemoPhone(
     val inputs = remember(scene) { TutorialDemoInputs(scene, LiveVisualizerInputs::colorFor) }
     // 움직이기 시작할 때마다 새 엔진으로 처음부터 그린다. 멈춰 있던 동안의 상태가 남지 않는다.
     // 입력은 반드시 넘긴다. 빼면 기본값인 실제 소리가 그려진다.
-    val engine = remember(inputs, engineDensity, running) { VisualizerEngine(engineDensity, inputs) }
+    // 멈춰 둘 장면은 여기서 바로 만든다. 효과(LaunchedEffect)에서 만들면 첫 그리기가 효과보다 먼저라 빈 장면이 그려지고,
+    // 그 뒤로 다시 그리게 하는 것이 없어 애니메이션을 꺼 둔 사람에게는 폰 그림이 끝내 비어 있다.
+    val engine = remember(inputs, engineDensity, running, screenWidthPx, screenHeightPx) {
+        VisualizerEngine(engineDensity, inputs).also {
+            // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
+            it.setSurfaceSize(screenWidthPx, screenHeightPx)
+            if (!running) it.runTo(inputs, scene.stillAtSec)
+        }
+    }
+    // 엔진이 새로 계산할 때마다 올린다. 그리기가 이 값을 읽어, 시각(time)이 같은 값이어도 다시 그린다.
+    val frame = remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(engine, screenWidthPx, screenHeightPx) {
-        // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
-        engine.setSurfaceSize(screenWidthPx, screenHeightPx)
+    LaunchedEffect(engine) {
         if (!running) {
-            engine.runTo(inputs, scene.stillAtSec)
             time.floatValue = scene.stillAtSec
+            frame.intValue++
             return@LaunchedEffect
         }
         time.floatValue = 0f
@@ -183,6 +198,7 @@ private fun DemoPhone(
                     // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
                     if (engine.isIdle) engine.pollWake() else engine.tick(nanos)
                     time.floatValue = t
+                    frame.intValue++
                 }
             }
         }
@@ -254,7 +270,9 @@ private fun DemoPhone(
                                 )
                             }
                         }
-                        drawIntoCanvas { engine.draw(it.nativeCanvas, w, h, 0L) }
+                        // 값은 쓰지 않고, 읽어서 엔진이 새로 계산할 때마다 다시 그리게 한다(VisualizerOverlay 와 같은 방식).
+                        val serial = frame.intValue.toLong()
+                        drawIntoCanvas { engine.draw(it.nativeCanvas, w, h, serial) }
                     }
                 }
         )
@@ -298,7 +316,7 @@ private fun VibrationMarks(
 /**
  * 종류 쪽의 범례. 색만으로 전하지 않도록 종류 이름과 어떤 소리인지를 함께 적는다. 색은 사용자가 설정 탭에서 고른 색이다.
  *
- * 지금 그림에 나오는 종류는 굵은 글자와 바탕으로 밝힌다(색이 아닌 표시). 나머지도 흐리게 하지 않는다. 흐리게 하면
+ * 지금 그림에 나오는 종류는 둥근 바탕으로 밝힌다(색이 아닌 표시). 나머지도 흐리게 하지 않는다. 흐리게 하면
  * 글자 대비가 모자란다. 이 표시는 눈으로만 보는 것이라 화면 읽어주기에 알리지 않는다. 알리면 2초마다 다시 읽는다.
  */
 @Composable
@@ -332,15 +350,13 @@ private fun LegendRow(@StringRes name: Int, @StringRes examples: Int, color: Col
                 .background(color)
                 .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), CircleShape)
         )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            stringResource(name),
-            fontSize = 15.sp,
-            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-            color = PrimaryTextColor
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(stringResource(examples), fontSize = 14.sp, lineHeight = 20.sp, color = SecondaryTextColor)
+        Spacer(Modifier.width(12.dp))
+        // 이름 아래에 예를 둔다. 한 줄에 나란히 두면 큰 글꼴과 긴 이름(독일어 등)에서 예가 들어갈 폭이 거의 없다.
+        // 굵기는 바꾸지 않는다. 2초마다 글자 폭이 바뀌면 줄이 바뀌어 쪽 전체가 위아래로 흔들린다.
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(name), fontSize = 15.sp, lineHeight = 21.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
+            Text(stringResource(examples), fontSize = 14.sp, lineHeight = 20.sp, color = SecondaryTextColor)
+        }
     }
 }
 
