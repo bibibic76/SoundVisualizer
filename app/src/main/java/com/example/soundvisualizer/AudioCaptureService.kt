@@ -98,6 +98,12 @@ class AudioCaptureService : Service() {
      */
     private val stopLatch = StopLatch()
 
+    /**
+     * 사용자가 켜지 않았는데 떠서 onCreate 가 아무것도 시작하지 않은 인스턴스인지. ([CaptureStartToken])
+     * 곧 내려가므로 onStartCommand 와 onDestroy 도 아무것도 하지 않는다. 메인 스레드 전용.
+     */
+    private var unrequestedStart = false
+
     /** 화면이 꺼져 쉬는 중인지. 메인 스레드 전용. */
     private val screenPause = ScreenOffPause()
 
@@ -218,6 +224,23 @@ class AudioCaptureService : Service() {
             stopRequested = true
         }
 
+        /** 사용자가 켰는지 onCreate 가 가리는 표. 메인 스레드 전용. */
+        private val startToken = CaptureStartToken()
+
+        /**
+         * 사용자가 켜지 않았는데 떠서 onCreate 가 거른 횟수. 걸러진 인스턴스는 [isRunning] 을 세우지 않으므로,
+         * 서비스가 떴다 걸러졌는지는 계측 테스트가 이것으로 본다. 메인 스레드에서만 올린다.
+         */
+        @Volatile
+        internal var unrequestedStartCount: Int = 0
+            private set
+
+        /** 사용자가 켜기를 눌렀다고 서비스에 알린다. [VisualizerController.start] 가 서비스를 띄우기 바로 앞에서 부른다. */
+        @MainThread
+        fun markStartRequested() {
+            startToken.issue(SystemClock.elapsedRealtime())
+        }
+
         /**
          * 떠 있는 캡처 서비스. [stopForFailure] 가 서비스를 내리기 전에 알리도록 부른다.
          * onCreate 에서 넣고 onDestroy 에서 비우므로 서비스가 내려간 뒤까지 붙잡지 않는다. 메인 스레드 전용.
@@ -233,7 +256,8 @@ class AudioCaptureService : Service() {
          * stopService 로 내리면 이유를 넘길 수 없고, onDestroy 까지 기다리면 포그라운드에서 내려온 뒤라 진동이 막힌다.
          * 그래서 떠 있는 서비스에 직접 이유를 넘겨 알린 뒤 내리게 한다.
          * 이유를 인텐트에 실어 startService 로 보내지 않는 이유: 캡처 서비스가 이미 내려가는 중이면
-         * startService 가 새 인스턴스를 만들고, 동의 없이 mediaProjection 포그라운드 서비스를 띄우려다 죽는다.
+         * startService 가 새 인스턴스를 만든다. 그 인스턴스는 사용자가 켠 것이 아니라서 아무것도 하지 않고 내려가므로
+         * ([CaptureStartToken]) 이유가 전해지지 않는다.
          */
         @MainThread
         @SuppressLint("ImplicitSamInstance")
@@ -287,6 +311,16 @@ class AudioCaptureService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        // 사용자가 켜지 않았으면 아무것도 시작하지 않고 내린다. 아래에서 포그라운드부터 시작하면 Android 14 이상은
+        // 화면 녹화 동의가 없어 죽고, 그 아래는 캡처 없는 포그라운드 서비스가 떴다 내려간다. ([CaptureStartToken])
+        // 켜진 적이 없으니 꺼짐 알림도 없고, 실행 상태와 설정 값도 건드리지 않는다.
+        if (!startToken.consume(SystemClock.elapsedRealtime())) {
+            Log.w(TAG, "created without a start request; stopping")
+            unrequestedStart = true
+            unrequestedStartCount++
+            stopSelf()
+            return
+        }
         SettingsManager.init(applicationContext)
         instance = this
         // 지난 실행에서 눌린 끄기는 이번 실행과 상관없다.
@@ -469,13 +503,13 @@ class AudioCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // onCreate 가 거른 시작이다. 곧 onDestroy 가 온다.
+        if (unrequestedStart) return START_NOT_STICKY
         // 알림 버튼은 이제 NotificationActionReceiver 가 받는다. 시작 요청에는 동작 이름이 없으므로, 이름이 있으면
-        // 서비스로 보내던 옛 버전의 알림이 남아 있다가 눌린 것이다. 캡처를 열지 않고, 그 때문에 새로 떴으면 조용히 내린다.
+        // 서비스로 보내던 옛 버전의 알림이 남아 있다가 눌린 것이다. 떠 있는 실행은 그대로 두고 캡처도 열지 않는다.
+        // 그 버튼 때문에 새로 뜬 경우는 onCreate 가 이미 걸렀다.
         // 시작 요청으로 읽으면 동의 결과가 없어 "켜지 못했다" 고 잘못 알린다.
-        if (intent?.action != null) {
-            if (audioRecord == null) stopEverything(StopReason.UserRequested)
-            return START_NOT_STICKY
-        }
+        if (intent?.action != null) return START_NOT_STICKY
         // 내려가기 전에 다시 켜면 onCreate 없이 여기로 온다. 지난 끄기는 이번 실행과 상관없다.
         stopRequested = false
         if (intent != null && audioRecord == null) {
@@ -871,6 +905,11 @@ class AudioCaptureService : Service() {
     }
 
     override fun onDestroy() {
+        if (unrequestedStart) {
+            // onCreate 가 아무것도 시작하지 않았다. 떠 있는 실행이 없다는 상태도 그대로 둔다.
+            super.onDestroy()
+            return
+        }
         stopLatch.onDestroy()
         // 내려가는 중에 모드가 바뀌어도 알림을 다시 올리지 않는다.
         serviceScope.cancel()

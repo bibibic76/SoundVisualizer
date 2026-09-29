@@ -20,7 +20,7 @@ graph TD
 | 단계 | 코드 | 언어 |
 |---|---|---|
 | 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors`·`UiFonts` (화면), `SettingsManager`, `help/`, `language/` (앱 언어), `tutorial/` (처음 열 때의 튜토리얼) | Kotlin (Compose) |
-| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
+| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `CaptureStartToken` (사용자가 켠 시작만 받기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
 | 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
@@ -44,6 +44,9 @@ graph TD
    - 안내 창 상태는 액티비티의 저장 상태(`SavedStateRegistry`)에 두어 화면을 돌려도 남습니다. 창을 다시 그릴 뿐 권한 요청이나 동의 창을 다시 띄우지 않습니다.
 3. 화면 녹화 동의 창(`MediaProjection`)을 띄웁니다. 오디오 캡처에도 이 동의가 필요합니다.
 4. 동의하면 `AudioCaptureService`(포그라운드 서비스)와 `OverlayService`를 함께 시작합니다.
+   - 서비스를 띄우기 바로 앞에서 **시작 표**(`CaptureStartToken`)를 발급합니다. 서비스의 `onCreate`는 인텐트를 보기 전에 포그라운드를 시작해야 해서(Android 14 이상은 캡처를 열기 전에 포그라운드가 떠 있어야 함) 누가 띄웠는지 모릅니다. 그래서 표를 한 번 쓰고, 표가 없거나 10초보다 오래됐으면 사용자가 켠 것이 아니라고 보고 포그라운드도 캡처도 시작하지 않고 내립니다. 켜진 적이 없으니 꺼짐 알림도 없습니다.
+   - 표는 프로세스 메모리에만 둡니다. 프로세스가 새로 떠서 서비스를 만든 경우(옛 알림 버튼)에는 표가 있을 수 없습니다. 10초는 시스템이 `startForegroundService` 뒤에 포그라운드 시작을 기다려 주는 시간과 같습니다. 표를 받지 못한 서비스가 포그라운드 없이 내려가면 시스템이 앱을 죽이는데, `startForegroundService`로 띄우는 곳은 표를 발급한 직후뿐이라 그럴 일이 없습니다.
+   - 판단 규칙은 `CaptureStartTokenTest`가, 표 없이 띄운 서비스가 실제로 걸러져 내려가는지는 계측 테스트(`UnrequestedStartInstrumentedTest`)가 봅니다.
 
 **빠른 설정 타일에서 시작** (`tile/VisualizerTileService` → `tile/StartVisualizerActivity`)
 
@@ -57,8 +60,8 @@ graph TD
 
 - 접힌 알림에는 상태 문구와 **중지** 버튼(`ACTION_STOP`)이 있고, 제목 옆에 지금 표현 모드 이름을 둡니다(`setSubText`). 접힌 상태에서는 아래 칩이 보이지 않기 때문입니다.
 - 펼치면 상태 한 줄 아래에 **모드 칩 네 개**가 나옵니다(`res/layout/notification_modes.xml`, `DecoratedCustomViewStyle`). 알림 기본 버튼(`addAction`)은 보통 세 개까지만 보여서 모드 넷과 중지가 들어가지 않습니다. 본문만 직접 그리고 머리말과 중지 버튼은 시스템이 그립니다.
-- **버튼은 서비스가 아니라 `NotificationActionReceiver`로 보냅니다**(`PendingIntent.getBroadcast`). 서비스로 보내면 서비스가 떠 있지 않을 때 시스템이 새로 만들고, `onCreate`가 화면 녹화 동의 없이 `mediaProjection` 포그라운드를 시작하다 `SecurityException`으로 죽습니다(Android 14 이상, 그 아래는 캡처 없는 빈 서비스가 남음). 받는 쪽은 떠 있는 서비스(`instance`)가 있을 때만 전하고, 없으면 서비스보다 오래 남은 알림으로 보고 그 알림만 지웁니다. 리시버와 서비스의 `onCreate`·`onDestroy`는 모두 메인 스레드라 그 사이에 끼어들지 않습니다. 누른 사람이 기다리므로 포그라운드 방송(`FLAG_RECEIVER_FOREGROUND`)으로 보냅니다. 인텐트를 명령(`Stop`·`SetMode`·`Ignore`)으로 바꾸는 규칙은 `NotificationCommand`로 떼어 JVM에서 검사하고(`NotificationCommandTest`, 리시버가 매니페스트에 `exported=false`로 선언됐는지 포함), 서비스 없이 눌렀을 때 서비스가 뜨지 않고 알림이 지워지는지는 계측 테스트(`NotificationActionReceiverInstrumentedTest`)가 봅니다.
-- 이전 버전(v1.4.0 이하)은 버튼을 서비스로 보냈습니다. 그때 올라간 알림이 남아 있다가 눌려 서비스에 동작 이름이 있는 인텐트가 오면, 시작 요청이 아니므로 캡처를 열지 않고 그 때문에 새로 떴으면 조용히 내립니다. 다만 Android 14 이상에서는 `onCreate`에서 이미 죽으므로 막을 수 없습니다.
+- **버튼은 서비스가 아니라 `NotificationActionReceiver`로 보냅니다**(`PendingIntent.getBroadcast`). 서비스로 보내면 서비스가 떠 있지 않을 때 시스템이 새로 만듭니다. 그 서비스는 사용자가 켠 것이 아니라서 아무것도 하지 않고 내려가므로(1장 시작 표) 남은 알림을 지울 곳이 없습니다. 시작 표가 생기기 전에는 이 경우 `onCreate`가 화면 녹화 동의 없이 `mediaProjection` 포그라운드를 시작하다 `SecurityException`으로 죽었습니다(Android 14 이상). 받는 쪽은 떠 있는 서비스(`instance`)가 있을 때만 전하고, 없으면 서비스보다 오래 남은 알림으로 보고 그 알림만 지웁니다. 리시버와 서비스의 `onCreate`·`onDestroy`는 모두 메인 스레드라 그 사이에 끼어들지 않습니다. 누른 사람이 기다리므로 포그라운드 방송(`FLAG_RECEIVER_FOREGROUND`)으로 보냅니다. 인텐트를 명령(`Stop`·`SetMode`·`Ignore`)으로 바꾸는 규칙은 `NotificationCommand`로 떼어 JVM에서 검사하고(`NotificationCommandTest`, 리시버가 매니페스트에 `exported=false`로 선언됐는지 포함), 서비스 없이 눌렀을 때 서비스가 뜨지 않고 알림이 지워지는지는 계측 테스트(`NotificationActionReceiverInstrumentedTest`)가 봅니다. 걸러진 서비스는 실행 중으로 표시되지 않으므로, 떴는지는 걸러진 횟수(`AudioCaptureService.unrequestedStartCount`)로 봅니다.
+- 이전 버전(v1.4.0 이하)은 버튼을 서비스로 보냈습니다. 그때 올라간 알림이 남아 있다가 눌리면, 서비스가 떠 있지 않을 때는 새로 뜬 서비스가 시작 표가 없어 아무것도 하지 않고 내려갑니다(Android 14 이상에서도 죽지 않습니다). 떠 있을 때는 동작 이름이 있는 인텐트가 시작 요청이 아니므로 무시합니다. 시작 요청으로 읽으면 동의 결과가 없어 "켜지 못했다"고 잘못 알립니다.
 - 칩은 `ACTION_SET_MODE`(모드 순서 번호)를 보냅니다. 캡처와 AI는 건드리지 않고 설정만 바꾸며, 오버레이는 프레임마다 모드를 읽으므로 바로 바뀝니다. 서비스는 `SettingsManager.visualMode`를 지켜보다가 어디서 바뀌든(설정 화면이든 칩이든) 알림을 고쳐 답니다. 모르는 번호가 오면 무시합니다(`VisualMode.fromOrdinal`).
 - **Android 12 이상**은 칩이 라디오 버튼(`layout-v31`)이라, 고른 칩 표시를 알림을 그리는 쪽이 바로 옮깁니다. 알림을 다시 올려서 옮기면 시스템이 다시 그리는 데 약 0.5초가 걸려 눌리지 않은 것처럼 보입니다. 한 칩이 켜지면 **꺼진 칩도 함께** 알려 오므로 `RemoteViews.EXTRA_CHECKED`가 켜짐인 것만 받습니다. 받지 않으면 방금 끈 모드가 뒤늦게 덮어써 원래 모드로 돌아갑니다. 이 값을 채울 수 있게 칩의 PendingIntent는 `FLAG_MUTABLE`이지만, 받을 곳을 지정한 인텐트라 바뀔 수 있는 것은 그 값뿐입니다.
 - **Android 11 이하**는 칩 배경과 글자색을 직접 넣고, 알림을 다시 올릴 때 표시가 옮겨갑니다.
@@ -79,7 +82,7 @@ graph TD
 
 - 안드로이드는 화면 녹화(MediaProjection)를 한 번에 한 앱만 쓰게 하므로, 다른 앱이 시작하면 우리 것을 끝냅니다. 콜백으로는 이 경우와 사용자가 시스템 UI에서 끈 경우를 구분할 수 없어서 알림 문구는 누구 탓도 하지 않습니다.
 - 서비스는 `stopEverything(reason)`으로 멈추며 이유를 남기고, **처음 남긴 이유**로 한 번만 알립니다. 프로젝션이 끊기면 뒤따라 읽기 오류가 나는데, 먼저 난 쪽이 원인이기 때문입니다. 이 규칙(처음 이유만, 한 번만, 내려간 뒤에는 알리지 않음)은 안드로이드에 의존하지 않는 `StopLatch`에 모아 두어 JVM에서 검사합니다(`StopLatchTest`).
-- 오버레이가 실패하면 `AudioCaptureService.stopForFailure`가 떠 있는 캡처 서비스(`onCreate`에서 넣고 `onDestroy`에서 비우는 `instance`)의 `stopEverything`을 부릅니다. 이유를 실어 `startService`로 보내지 않는 것은, 캡처 서비스가 이미 내려가는 중이면 새 인스턴스가 동의 없이 뜨려다 죽기 때문입니다.
+- 오버레이가 실패하면 `AudioCaptureService.stopForFailure`가 떠 있는 캡처 서비스(`onCreate`에서 넣고 `onDestroy`에서 비우는 `instance`)의 `stopEverything`을 부릅니다. 이유를 실어 `startService`로 보내지 않는 것은, 캡처 서비스가 이미 내려가는 중이면 새 인스턴스가 만들어지는데 그 인스턴스는 사용자가 켠 것이 아니라서 아무것도 하지 않고 내려가 이유가 전해지지 않기 때문입니다.
 - 앱 버튼이나 타일은 `stopEverything`을 거치지 않고 `stopService`로 바로 내리므로 알리지 않습니다.
 
 **꺼짐 알림** (`StopAlertPlan`, `StopAlert`): 오버레이는 소리가 없으면 아무것도 그리지 않아서, 청각장애 사용자는 조용한 장면과 꺼진 상태를 구분할 수 없습니다. 그래서 사용자가 끈 경우가 아니면 알립니다.
