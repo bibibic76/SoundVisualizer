@@ -16,6 +16,33 @@
     <string name="home_add_tile">إضافة إلى الإعدادات السريعة</string>
     <string name="home_add_tile_desc">يمكنك تشغيله أو إيقافه من لوحة الإشعارات مباشرةً فوق اللعبة أو الفيديو.</string>
     <string name="home_add_tile_manual">اسحب لوحة الإشعارات للأسفل، وانقر على «تعديل» (رمز القلم)، ثم أضِف «الصوت المرئي» لتشغيله أو إيقافه مباشرةً فوق اللعبة أو الفيديو.</string>
+    <string name="home_tutorial">عرض البرنامج التعليمي</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">البرنامج التعليمي</string>
+    <string name="tutorial_skip">تخطي</string>
+    <string name="tutorial_back">الصفحة السابقة</string>
+    <string name="tutorial_next">التالي</string>
+    <string name="tutorial_done">حسنًا</string>
+    <string name="tutorial_page_status">الصفحة %1$d من %2$d</string>
+    <string name="tutorial_pause">إيقاف الرسوم المتحركة مؤقتًا</string>
+    <string name="tutorial_play">تشغيل الرسوم المتحركة</string>
+    <string name="tutorial_sound_title">شاهِد الصوت على شاشتك</string>
+    <string name="tutorial_sound_body">يُرسم صوت اللعبة أو الفيديو على حواف الشاشة. كلما ارتفع الصوت، رُسم بحجم أكبر. لا يُعرض إلا الصوت الذي يتم تشغيله على هاتفك. لا يلتقط التطبيق الأصوات من حولك.</string>
+    <string name="tutorial_direction_title">يميّز بين اليسار واليمين</string>
+    <string name="tutorial_direction_body">يُرسم الصوت القادم من اليسار أكبر على يسار الشاشة، والصوت القادم من اليمين أكبر على يمينها. لا يميّز التطبيق بين الأمام والخلف.</string>
+    <string name="tutorial_types_title">لكل نوع من الأصوات لونه الخاص</string>
+    <string name="tutorial_types_body">يصنّف الذكاء الاصطناعي الأصوات إلى ثلاثة أنواع، ويرسم كل نوع بلونه الخاص. يمكنك تغيير الألوان من علامة تبويب «الإعدادات».</string>
+    <string name="tutorial_type_ambient">الأصوات المحيطة</string>
+    <string name="tutorial_type_ambient_examples">الموسيقى والمطر وكل الأصوات الأخرى</string>
+    <string name="tutorial_type_speech">الكلام</string>
+    <string name="tutorial_type_speech_examples">أصوات الناس</string>
+    <string name="tutorial_type_danger">أصوات الخطر</string>
+    <string name="tutorial_type_danger_examples">طلقات نارية، انفجارات، وقع أقدام</string>
+    <string name="tutorial_vibration_title">يهتز هاتفك أيضًا عند أصوات الخطر</string>
+    <string name="tutorial_vibration_body">عندما يصدر صوت خطر في اللعبة أو الفيديو، يهتز هاتفك. ينبّهك الاهتزاز حتى عندما لا تنظر إلى الشاشة. في البداية يكون الاهتزاز مفعّلًا لأصوات الخطر فقط. يمكنك تفعيل الاهتزاز أو إيقافه لكل نوع من علامة تبويب «الإعدادات».</string>
+    <string name="tutorial_start_title">طريقة التشغيل والإيقاف</string>
+    <string name="tutorial_privacy_note">لا يُستخدم إذن الميكروفون وإذن تسجيل الشاشة إلا لالتقاط الصوت الذي يتم تشغيله على هاتفك. لا يتم تسجيل الأصوات من حولك ولا محتوى شاشتك.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">اسمح بإذن «الظهور فوق التطبيقات الأخرى»</string>

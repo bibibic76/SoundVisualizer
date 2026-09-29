@@ -16,6 +16,33 @@
     <string name="home_add_tile">Dodaj do Szybkich ustawień</string>
     <string name="home_add_tile_desc">Włączaj i wyłączaj wizualizację z panelu powiadomień, nie wychodząc z gry ani filmu.</string>
     <string name="home_add_tile_manual">Rozwiń panel powiadomień, naciśnij Edytuj (ołówek) i dodaj kafelek „Wizualizacja audio”. Możesz wtedy włączać i wyłączać wizualizację, nie wychodząc z gry ani filmu.</string>
+    <string name="home_tutorial">Zobacz samouczek</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Samouczek</string>
+    <string name="tutorial_skip">Pomiń</string>
+    <string name="tutorial_back">Poprzednia strona</string>
+    <string name="tutorial_next">Dalej</string>
+    <string name="tutorial_done">Rozumiem</string>
+    <string name="tutorial_page_status">Strona %1$d z %2$d</string>
+    <string name="tutorial_pause">Wstrzymaj animację</string>
+    <string name="tutorial_play">Odtwórz animację</string>
+    <string name="tutorial_sound_title">Zobacz dźwięk na ekranie</string>
+    <string name="tutorial_sound_body">Dźwięk z gry lub filmu jest rysowany wzdłuż krawędzi ekranu. Im głośniejszy dźwięk, tym większa grafika. Pokazywany jest tylko dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są wychwytywane.</string>
+    <string name="tutorial_direction_title">Odróżnia lewą stronę od prawej</string>
+    <string name="tutorial_direction_body">Dźwięk z lewej strony powiększa grafikę po lewej, a dźwięk z prawej – po prawej. Aplikacja nie odróżnia przodu od tyłu.</string>
+    <string name="tutorial_types_title">Każdy rodzaj dźwięku ma swój kolor</string>
+    <string name="tutorial_types_body">AI dzieli dźwięki na trzy rodzaje i rysuje każdy w innym kolorze. Kolory możesz zmienić na karcie „Ustawienia”.</string>
+    <string name="tutorial_type_ambient">Dźwięki otoczenia</string>
+    <string name="tutorial_type_ambient_examples">Muzyka, deszcz i cała reszta</string>
+    <string name="tutorial_type_speech">Mowa</string>
+    <string name="tutorial_type_speech_examples">Głosy ludzi</string>
+    <string name="tutorial_type_danger">Dźwięki zagrożenia</string>
+    <string name="tutorial_type_danger_examples">Strzały, wybuchy, kroki</string>
+    <string name="tutorial_vibration_title">Przy dźwiękach zagrożenia telefon też wibruje</string>
+    <string name="tutorial_vibration_body">Gdy w grze lub filmie pojawia się dźwięk zagrożenia, telefon wibruje. Poczujesz to, nawet gdy nie patrzysz na ekran. Domyślnie wibracje są włączone tylko dla dźwięków zagrożenia. Na karcie „Ustawienia” możesz włączyć lub wyłączyć wibracje dla każdego rodzaju.</string>
+    <string name="tutorial_start_title">Jak włączyć i wyłączyć</string>
+    <string name="tutorial_privacy_note">Uprawnienie do mikrofonu i zgoda na nagrywanie ekranu służą tylko do przechwytywania dźwięku odtwarzanego na telefonie. Dźwięki wokół Ciebie i obraz ekranu nie są nagrywane.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Zezwól na „Wyświetlanie nad innymi aplikacjami”</string>

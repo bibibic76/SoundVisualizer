@@ -16,6 +16,33 @@
     <string name="home_add_tile">Hızlı Ayarlar\'a ekle</string>
     <string name="home_add_tile_desc">Bildirim panelini aşağı çekerek oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
     <string name="home_add_tile_manual">Bildirim panelini aşağı çekin, Düzenle (kalem) simgesine dokunun ve “Ses görselleştirme” düğmesini ekleyin. Böylece oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
+    <string name="home_tutorial">Tanıtımı göster</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tanıtım</string>
+    <string name="tutorial_skip">Atla</string>
+    <string name="tutorial_back">Önceki sayfa</string>
+    <string name="tutorial_next">İleri</string>
+    <string name="tutorial_done">Anladım</string>
+    <string name="tutorial_page_status">Sayfa %1$d, toplam %2$d</string>
+    <string name="tutorial_pause">Animasyonu duraklat</string>
+    <string name="tutorial_play">Animasyonu oynat</string>
+    <string name="tutorial_sound_title">Sesleri ekranınızda görün</string>
+    <string name="tutorial_sound_body">Oyununuzun veya videonuzun sesi ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Yalnızca telefonunuzda çalan ses gösterilir. Uygulama çevrenizdeki sesleri dinlemez.</string>
+    <string name="tutorial_direction_title">Sağı ve solu ayırt eder</string>
+    <string name="tutorial_direction_body">Soldan gelen ses solda, sağdan gelen ses sağda daha büyük çizilir. Uygulama önü ve arkayı ayırt edemez.</string>
+    <string name="tutorial_types_title">Her ses türünün kendi rengi var</string>
+    <string name="tutorial_types_body">Yapay zeka, sesleri üç türe ayırır ve her türü farklı bir renkte çizer. Renkleri “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
+    <string name="tutorial_type_ambient">Ortam sesleri</string>
+    <string name="tutorial_type_ambient_examples">Müzik, yağmur ve diğer tüm sesler</string>
+    <string name="tutorial_type_speech">Konuşma</string>
+    <string name="tutorial_type_speech_examples">İnsan sesleri</string>
+    <string name="tutorial_type_danger">Tehlike sesleri</string>
+    <string name="tutorial_type_danger_examples">Silah sesi, patlama, ayak sesi</string>
+    <string name="tutorial_vibration_title">Tehlike sesleri titreşimle de bildirilir</string>
+    <string name="tutorial_vibration_body">Oyununuzda veya videonuzda bir tehlike sesi çaldığında telefonunuz titreşir. Ekrana bakmıyorken bile fark edersiniz. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Titreşimi her tür için “Ayarlar” sekmesinden açıp kapatabilirsiniz.</string>
+    <string name="tutorial_start_title">Nasıl açılıp kapatılır</string>
+    <string name="tutorial_privacy_note">Mikrofon izni ve ekran kaydı onayı yalnızca telefonunuzda çalan sesi yakalamak için kullanılır. Çevrenizdeki sesler ve ekranınız kaydedilmez.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">“Diğer uygulamaların üzerinde göster” iznini verin</string>

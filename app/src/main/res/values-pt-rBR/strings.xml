@@ -16,6 +16,33 @@
     <string name="home_add_tile">Pôr nas Configurações rápidas</string>
     <string name="home_add_tile_desc">Ligue ou desligue pelo painel de notificações, direto por cima do jogo ou vídeo.</string>
     <string name="home_add_tile_manual">Deslize o painel de notificações para baixo, toque em Editar (lápis) e adicione “Visualizar sons” para ligar ou desligar direto por cima do jogo ou vídeo.</string>
+    <string name="home_tutorial">Ver tutorial</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tutorial</string>
+    <string name="tutorial_skip">Pular</string>
+    <string name="tutorial_back">Página anterior</string>
+    <string name="tutorial_next">Próximo</string>
+    <string name="tutorial_done">Entendi</string>
+    <string name="tutorial_page_status">Página %1$d de %2$d</string>
+    <string name="tutorial_pause">Pausar animação</string>
+    <string name="tutorial_play">Reproduzir animação</string>
+    <string name="tutorial_sound_title">Veja o som na sua tela</string>
+    <string name="tutorial_sound_body">O som do seu jogo ou vídeo é desenhado nas bordas da tela. Quanto mais alto o som, maior o desenho. Só aparece o som que toca no seu celular. Os sons ao seu redor não são captados.</string>
+    <string name="tutorial_direction_title">Diferencia esquerda e direita</string>
+    <string name="tutorial_direction_body">Um som da esquerda é desenhado maior do lado esquerdo, e um som da direita, do lado direito. O app não diferencia frente e trás.</string>
+    <string name="tutorial_types_title">Cada tipo de som tem sua própria cor</string>
+    <string name="tutorial_types_body">A IA separa os sons em três tipos e desenha cada um com uma cor diferente. Você pode mudar as cores na aba Ajustes.</string>
+    <string name="tutorial_type_ambient">Sons ambientes</string>
+    <string name="tutorial_type_ambient_examples">Música, chuva e todo o resto</string>
+    <string name="tutorial_type_speech">Vozes</string>
+    <string name="tutorial_type_speech_examples">Pessoas falando</string>
+    <string name="tutorial_type_danger">Sons de perigo</string>
+    <string name="tutorial_type_danger_examples">Tiros, explosões, passos</string>
+    <string name="tutorial_vibration_title">Sons de perigo também vibram</string>
+    <string name="tutorial_vibration_body">Quando toca um som de perigo no seu jogo ou vídeo, o seu celular vibra. Você percebe mesmo quando não está olhando para a tela. Por padrão, só os sons de perigo vibram. Na aba Ajustes, você pode ativar ou desativar a vibração de cada tipo.</string>
+    <string name="tutorial_start_title">Como ligar e desligar</string>
+    <string name="tutorial_privacy_note">A permissão do microfone e a autorização de gravação de tela só são usadas para capturar o som que toca no seu celular. Os sons ao seu redor e a sua tela não são gravados.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Permita “Sobrepor a outros apps”</string>

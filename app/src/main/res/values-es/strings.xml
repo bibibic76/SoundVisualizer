@@ -16,6 +16,33 @@
     <string name="home_add_tile">Añadir a Ajustes rápidos</string>
     <string name="home_add_tile_desc">Enciéndelo o apágalo desde el panel de notificaciones, sin salir de tu juego o video.</string>
     <string name="home_add_tile_manual">Desliza hacia abajo el panel de notificaciones, toca Editar (lápiz) y añade “Visor de sonido” para encenderlo o apagarlo sin salir de tu juego o video.</string>
+    <string name="home_tutorial">Ver tutorial</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tutorial</string>
+    <string name="tutorial_skip">Omitir</string>
+    <string name="tutorial_back">Página anterior</string>
+    <string name="tutorial_next">Siguiente</string>
+    <string name="tutorial_done">Entendido</string>
+    <string name="tutorial_page_status">Página %1$d de %2$d</string>
+    <string name="tutorial_pause">Pausar animación</string>
+    <string name="tutorial_play">Reproducir animación</string>
+    <string name="tutorial_sound_title">Mira el sonido en tu pantalla</string>
+    <string name="tutorial_sound_body">El sonido de tu juego o video se dibuja en los bordes de la pantalla. Cuanto más fuerte es, más grande se dibuja. Solo se muestra el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se captan.</string>
+    <string name="tutorial_direction_title">Distingue la izquierda de la derecha</string>
+    <string name="tutorial_direction_body">Un sonido que viene de la izquierda se dibuja más grande a la izquierda, y uno que viene de la derecha, a la derecha. La app no distingue entre delante y detrás.</string>
+    <string name="tutorial_types_title">Cada tipo de sonido tiene su color</string>
+    <string name="tutorial_types_body">La IA clasifica los sonidos en tres tipos y dibuja cada uno con su propio color. Puedes cambiar los colores en la pestaña Ajustes.</string>
+    <string name="tutorial_type_ambient">Sonido ambiente</string>
+    <string name="tutorial_type_ambient_examples">Música, lluvia y todo lo demás</string>
+    <string name="tutorial_type_speech">Voz</string>
+    <string name="tutorial_type_speech_examples">Personas que hablan</string>
+    <string name="tutorial_type_danger">Peligro</string>
+    <string name="tutorial_type_danger_examples">Disparos, explosiones, pasos</string>
+    <string name="tutorial_vibration_title">Los sonidos de peligro también hacen vibrar el teléfono</string>
+    <string name="tutorial_vibration_body">Cuando hay un sonido de peligro en tu juego o video, tu teléfono vibra. Así lo notas aunque no estés mirando la pantalla. Al principio, la vibración solo está activada para los sonidos de peligro. En la pestaña Ajustes puedes activarla o desactivarla para cada tipo.</string>
+    <string name="tutorial_start_title">Cómo encenderlo y apagarlo</string>
+    <string name="tutorial_privacy_note">Los permisos de micrófono y de grabación de pantalla solo se usan para capturar el sonido que se reproduce en tu teléfono. Ni los sonidos de tu entorno ni tu pantalla se graban.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Permite “Mostrar sobre otras apps”</string>

@@ -16,6 +16,33 @@
     <string name="home_add_tile">クイック設定に追加</string>
     <string name="home_add_tile_desc">通知パネルから、ゲームや動画を表示したまますぐにオン/オフできます。</string>
     <string name="home_add_tile_manual">通知パネルを開いて編集（鉛筆アイコン）をタップし、「音の可視化」を追加すると、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="home_tutorial">チュートリアルを見る</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">チュートリアル</string>
+    <string name="tutorial_skip">スキップ</string>
+    <string name="tutorial_back">前のページ</string>
+    <string name="tutorial_next">次へ</string>
+    <string name="tutorial_done">OK</string>
+    <string name="tutorial_page_status">%2$dページ中%1$dページ目</string>
+    <string name="tutorial_pause">アニメーションを一時停止</string>
+    <string name="tutorial_play">アニメーションを再生</string>
+    <string name="tutorial_sound_title">音を画面で見られます</string>
+    <string name="tutorial_sound_body">ゲームや動画の音が、画面の端に沿って描かれます。音が大きいほど、大きく描かれます。表示するのは、スマートフォンで再生中の音だけです。周囲の音は拾いません。</string>
+    <string name="tutorial_direction_title">左右を区別できます</string>
+    <string name="tutorial_direction_body">左からの音は画面の左側が、右からの音は右側が大きく描かれます。前後は区別できません。</string>
+    <string name="tutorial_types_title">音の種類を色で区別します</string>
+    <string name="tutorial_types_body">AI が音を3種類に分類し、それぞれ違う色で描きます。色は「設定」タブで変更できます。</string>
+    <string name="tutorial_type_ambient">環境音</string>
+    <string name="tutorial_type_ambient_examples">音楽・雨音など、その他の音</string>
+    <string name="tutorial_type_speech">話し声</string>
+    <string name="tutorial_type_speech_examples">人の声</string>
+    <string name="tutorial_type_danger">危険音</string>
+    <string name="tutorial_type_danger_examples">銃声・爆発音・足音</string>
+    <string name="tutorial_vibration_title">危険音は振動でもお知らせします</string>
+    <string name="tutorial_vibration_body">ゲームや動画で危険音が鳴ると、スマートフォンが振動します。画面を見ていなくても気づけます。初期設定では危険音だけが振動します。振動は「設定」タブで種類ごとにオン/オフできます。</string>
+    <string name="tutorial_start_title">オン/オフの方法</string>
+    <string name="tutorial_privacy_note">「マイク」と「画面の録画」の権限は、スマートフォンで再生中の音を取得するためだけに使います。周囲の音は録音せず、画面も録画しません。</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">「他のアプリの上に重ねて表示」を許可してください</string>

@@ -5,10 +5,13 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExternalResource
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 /**
@@ -21,8 +24,30 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class LauncherInsetsInstrumentedTest {
 
+    /**
+     * 튜토리얼을 본 것으로 두고 연다. 새로 설치한 테스트 기기에서는 튜토리얼이 탭 화면 대신 뜨기 때문이다.
+     * 액티비티가 뜨기 전에 정해야 하므로 액티비티를 여는 규칙보다 바깥에 두고, 끝나면 원래 값으로 돌려 둔다.
+     */
+    private val tutorialSeen = object : ExternalResource() {
+        private var before = true
+
+        override fun before() {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                SettingsManager.init(InstrumentationRegistry.getInstrumentation().targetContext)
+                before = SettingsManager.tutorialSeen.value
+                SettingsManager.setTutorialSeen(true)
+            }
+        }
+
+        override fun after() {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync { SettingsManager.setTutorialSeen(before) }
+        }
+    }
+
+    private val rule = createAndroidComposeRule<MainActivity>()
+
     @get:Rule
-    val rule = createAndroidComposeRule<MainActivity>()
+    val rules: RuleChain = RuleChain.outerRule(tutorialSeen).around(rule)
 
     @Test
     fun tabNamesStartBelowStatusBarAndCutout() {

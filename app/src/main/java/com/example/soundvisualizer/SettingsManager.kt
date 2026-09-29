@@ -77,6 +77,7 @@ object SettingsManager {
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
     private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
     private const val KEY_TILE_ADDED = "tile_added"
+    private const val KEY_TUTORIAL_SEEN = "tutorial_seen"
 
     /** 이 설정을 쓴 기기 표시. 백업으로 옮겨 온 값인지 가리는 데만 쓴다. */
     private const val KEY_DEVICE_TAG = "device_tag"
@@ -128,6 +129,15 @@ object SettingsManager {
     // 빠른 설정 타일이 알림창에 추가돼 있는지. 타일 서비스가 추가·제거될 때 알려준다.
     private val _tileAdded = MutableStateFlow(false)
     val tileAdded: StateFlow<Boolean> = _tileAdded
+
+    /**
+     * 튜토리얼을 본 적이 있는지. 아직이면 앱을 열 때 튜토리얼부터 띄운다(MainActivity).
+     * 닫으면(끝까지 넘기거나 건너뛰면) true 가 되고, 그 뒤로는 홈의 ‘튜토리얼 보기’로만 연다.
+     *
+     * 보는 사람에 대한 값이라 기기 전용 값([dropOtherDeviceValues])이 아니다. 새 폰으로 옮겨 가도 다시 띄우지 않는다.
+     */
+    private val _tutorialSeen = MutableStateFlow(false)
+    val tutorialSeen: StateFlow<Boolean> = _tutorialSeen
 
     // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
     private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
@@ -256,6 +266,10 @@ object SettingsManager {
      */
     internal fun load(source: SharedPreferences, deviceTag: String? = null) {
         prefs = source
+        // 기기 표시를 적기 전에 정한다. 적고 나면 새로 설치한 앱도 "저장된 값이 있는" 상태가 된다.
+        val tutorialSeen = loadTutorialSeen(source)
+        if (!source.contains(KEY_TUTORIAL_SEEN)) source.edit { putBoolean(KEY_TUTORIAL_SEEN, tutorialSeen) }
+        _tutorialSeen.value = tutorialSeen
         dropOtherDeviceValues(source, deviceTag)
 
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
@@ -297,6 +311,18 @@ object SettingsManager {
 
     private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
         enumValues<T>().firstOrNull { it.name == name } ?: default
+
+    /**
+     * 튜토리얼을 본 적이 있는지. 저장된 적이 없으면 **이 기능 전부터 앱을 쓰던 사람인지**로 정한다.
+     *
+     * 다른 값이 하나라도 저장돼 있으면 이미 앱을 써 본 사람이라 본 것으로 치고, 아무것도 없으면(새로 설치) 안 본 것이다.
+     * [load] 는 이렇게 정한 값을 곧바로 저장한다. 저장하지 않으면 새로 설치한 앱도 첫 실행에 기기 표시가 적혀,
+     * 튜토리얼을 닫지 않고 나갔다 다시 열 때 본 것으로 잘못 친다.
+     * 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (TutorialSettingTest).
+     */
+    internal fun loadTutorialSeen(source: SharedPreferences): Boolean =
+        if (source.contains(KEY_TUTORIAL_SEEN)) source.getBoolean(KEY_TUTORIAL_SEEN, false)
+        else source.all.isNotEmpty()
 
     /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
@@ -487,6 +513,11 @@ object SettingsManager {
     fun setTileAdded(added: Boolean) {
         _tileAdded.value = added
         prefs.edit { putBoolean(KEY_TILE_ADDED, added) }
+    }
+
+    fun setTutorialSeen(seen: Boolean) {
+        _tutorialSeen.value = seen
+        prefs.edit { putBoolean(KEY_TUTORIAL_SEEN, seen) }
     }
 
     fun setPauseWhenScreenOff(enabled: Boolean) {

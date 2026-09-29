@@ -16,6 +16,33 @@
     <string name="home_add_tile">Ajouter aux Réglages rapides</string>
     <string name="home_add_tile_desc">Activez ou désactivez la visualisation depuis le volet des notifications, directement par-dessus votre jeu ou votre vidéo.</string>
     <string name="home_add_tile_manual">Déroulez le volet des notifications, appuyez sur Modifier (crayon) et ajoutez « Visualiseur audio » pour activer ou désactiver la visualisation directement par-dessus votre jeu ou votre vidéo.</string>
+    <string name="home_tutorial">Voir le tutoriel</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tutoriel</string>
+    <string name="tutorial_skip">Passer</string>
+    <string name="tutorial_back">Page précédente</string>
+    <string name="tutorial_next">Suivant</string>
+    <string name="tutorial_done">J\'ai compris</string>
+    <string name="tutorial_page_status">Page %1$d sur %2$d</string>
+    <string name="tutorial_pause">Mettre l\'animation en pause</string>
+    <string name="tutorial_play">Lire l\'animation</string>
+    <string name="tutorial_sound_title">Voir le son sur votre écran</string>
+    <string name="tutorial_sound_body">Le son de votre jeu ou de votre vidéo est dessiné le long des bords de l\'écran. Plus le son est fort, plus le dessin est grand. Seul le son diffusé sur votre téléphone est affiché. Les sons autour de vous ne sont pas captés.</string>
+    <string name="tutorial_direction_title">Distingue la gauche de la droite</string>
+    <string name="tutorial_direction_body">Un son venant de la gauche est dessiné plus grand à gauche, et un son venant de la droite, à droite. L\'application ne distingue pas l\'avant de l\'arrière.</string>
+    <string name="tutorial_types_title">Chaque type de son a sa couleur</string>
+    <string name="tutorial_types_body">L\'IA classe les sons en trois types et dessine chaque type d\'une couleur différente. Vous pouvez changer les couleurs dans l\'onglet Paramètres.</string>
+    <string name="tutorial_type_ambient">Ambiance</string>
+    <string name="tutorial_type_ambient_examples">Musique, pluie et tout le reste</string>
+    <string name="tutorial_type_speech">Voix</string>
+    <string name="tutorial_type_speech_examples">Personnes qui parlent</string>
+    <string name="tutorial_type_danger">Danger</string>
+    <string name="tutorial_type_danger_examples">Coups de feu, explosions, bruits de pas</string>
+    <string name="tutorial_vibration_title">Les sons de danger font aussi vibrer</string>
+    <string name="tutorial_vibration_body">Quand un son de danger retentit dans votre jeu ou votre vidéo, votre téléphone vibre. Vous le remarquez même si vous ne regardez pas l\'écran. Par défaut, seuls les sons de danger font vibrer. Dans l\'onglet Paramètres, vous pouvez activer ou désactiver la vibration pour chaque type.</string>
+    <string name="tutorial_start_title">Activer et désactiver la visualisation</string>
+    <string name="tutorial_privacy_note">Les autorisations « Micro » et « Enregistrement d\'écran » servent uniquement à capturer le son diffusé sur votre téléphone. Ni les sons autour de vous ni votre écran ne sont enregistrés.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Autoriser « Superposition sur d\'autres applis »</string>
