@@ -4,8 +4,19 @@ package com.example.soundvisualizer.ai
  * YAMNet 521 클래스 → 3분류 키워드 매핑.
  * 키워드 우선순위: danger > speech > ambient > 기본 ambient.
  * 임시 proxy 매핑은 제한된 라벨에만 적용한다.
+ * 사용자가 분류 탭에서 바꾼 소리는 [userOverrides] 가 키워드 규칙보다 먼저다.
  */
 object YamnetThreeClassMapper {
+
+    /**
+     * 사용자가 분류 탭에서 고른 종류. 키는 YAMNet display name, 값은 "ambient" / "speech" / "danger".
+     * 여기 없는 소리는 키워드 규칙([defaultCoarse])을 따른다. 비어 있으면 매핑은 키워드 규칙과 같다.
+     *
+     * 앱 설정(SettingsManager)이 바뀔 때마다 맵을 통째로 갈아 끼우고, 추론 스레드는 틱마다 읽기만 한다.
+     * 넣은 뒤에는 고치지 않는 맵이라 @Volatile 참조 하나로 충분하다. 값이 세 라벨 중 하나인지는 넣는 쪽이 지킨다.
+     */
+    @Volatile
+    var userOverrides: Map<String, String> = emptyMap()
 
     fun isGenericSoundEffectLabel(displayName: String?): Boolean {
         if (displayName.isNullOrEmpty()) return false
@@ -13,6 +24,13 @@ object YamnetThreeClassMapper {
     }
 
     fun mapDisplayNameToCoarse(displayName: String?): String {
+        if (displayName.isNullOrEmpty()) return "ambient"
+        userOverrides[displayName]?.let { return it }
+        return defaultCoarse(displayName)
+    }
+
+    /** 사용자 선택을 빼고 키워드 규칙만으로 정한 종류. 분류 탭이 "기본" 으로 보여 준다. */
+    fun defaultCoarse(displayName: String?): String {
         if (displayName.isNullOrEmpty()) return "ambient"
         val s = displayName.lowercase()
         if (matchesDanger(s)) return "danger"

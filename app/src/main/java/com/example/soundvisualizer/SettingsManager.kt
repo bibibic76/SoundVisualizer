@@ -7,9 +7,12 @@ import android.provider.Settings
 import androidx.core.content.edit
 import com.example.soundvisualizer.ai.AiDiagnosticConfig
 import com.example.soundvisualizer.ai.AiFrontendMode
+import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  * 표현 모드 하나의 설정.
@@ -77,6 +80,10 @@ object SettingsManager {
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
     private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
     private const val KEY_TILE_ADDED = "tile_added"
+    private const val KEY_SOUND_TYPES = "sound_types"
+
+    /** 분류 탭에서 고를 수 있는 종류. 화면·진동이 알아듣는 라벨과 같다. */
+    private val SOUND_TYPE_LABELS = setOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
 
     /** 이 설정을 쓴 기기 표시. 백업으로 옮겨 온 값인지 가리는 데만 쓴다. */
     private const val KEY_DEVICE_TAG = "device_tag"
@@ -116,6 +123,16 @@ object SettingsManager {
     val showDanger: StateFlow<Boolean> = _showDanger
     private val _colorDanger = MutableStateFlow(DEFAULT_COLOR_DANGER)
     val colorDanger: StateFlow<Int> = _colorDanger
+
+    /**
+     * 분류 탭에서 사용자가 바꾼 소리 종류. 키는 YAMNet 소리 이름(assets/ai/yamnet_class_map.csv 의 display_name),
+     * 값은 [AiClassification] 라벨. 기본 종류와 같은 것은 두지 않으므로, 여기 있으면 바꾼 소리다.
+     *
+     * 바뀔 때마다 [YamnetThreeClassMapper.userOverrides] 에도 넣어, 실행 중인 분류가 다음 판정부터 따른다.
+     * 캡처 서비스와 화면이 한 프로세스에서 돌아서 이것으로 충분하다.
+     */
+    private val _soundTypes = MutableStateFlow<Map<String, String>>(emptyMap())
+    val soundTypes: StateFlow<Map<String, String>> = _soundTypes
 
     // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
     private val hapticFlows: Map<String, MutableStateFlow<HapticSettings>> =
@@ -190,7 +207,7 @@ object SettingsManager {
      *
      * 홈 탭으로 한 번만 옮기는 판단([StopNoticeRouting])에 쓴다. **이유와 함께 저장한다.** 액티비티는 이미 옮긴
      * 번호를 `onSaveInstanceState` 에 담아 프로세스가 죽어도 되살리는데, 이 번호만 0 부터 다시 세면 되살아난
-     * 번호와 새 안내의 번호가 겹쳐 새 안내를 이미 본 것으로 친다. 그러면 설정·도움말 탭에 있던 사용자는
+     * 번호와 새 안내의 번호가 겹쳐 새 안내를 이미 본 것으로 친다. 그러면 설정·분류·도움말 탭에 있던 사용자는
      * 안내를 한 번도 못 본다(#176).
      */
     private val _lastUnexpectedStopSeq = MutableStateFlow(0)
@@ -274,6 +291,7 @@ object SettingsManager {
 
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
+        applySoundTypes(loadSoundTypes(prefs))
 
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
@@ -326,6 +344,33 @@ object SettingsManager {
     /** 저장된 적이 없으면 [REDUCED_FRAME_RATE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadReducedFrameRate(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_REDUCED_FRAME_RATE, REDUCED_FRAME_RATE_DEFAULT)
+
+    /**
+     * 분류 탭에서 바꾼 소리 종류. 소리 이름을 키로 한 JSON 객체 하나로 저장한다.
+     *
+     * 세 라벨이 아닌 값과 지금 기본 종류와 같은 값은 버리고, 읽을 수 없는 저장값은 바꾼 것이 없는 것으로 본다.
+     * 기본 종류는 AI 쪽 규칙이 바뀌면 달라질 수 있는데, 그때 사용자가 고른 것과 같아진 소리는 "바꾼 소리" 로
+     * 남아 있을 까닭이 없다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (SoundTypeSettingsTest).
+     */
+    internal fun loadSoundTypes(source: SharedPreferences): Map<String, String> {
+        val saved = source.getString(KEY_SOUND_TYPES, null) ?: return emptyMap()
+        val json = try {
+            JSONObject(saved)
+        } catch (_: JSONException) {
+            return emptyMap()
+        }
+        val types = LinkedHashMap<String, String>()
+        for (name in json.keys()) {
+            val label = json.optString(name)
+            if (label in SOUND_TYPE_LABELS && label != YamnetThreeClassMapper.defaultCoarse(name)) types[name] = label
+        }
+        return types
+    }
+
+    /** [loadSoundTypes] 와 같은 키로 적는다. 비어 있으면 키를 지운다. */
+    internal fun putSoundTypes(editor: SharedPreferences.Editor, types: Map<String, String>) {
+        if (types.isEmpty()) editor.remove(KEY_SOUND_TYPES) else editor.putString(KEY_SOUND_TYPES, JSONObject(types).toString())
+    }
 
     /**
      * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
@@ -478,6 +523,31 @@ object SettingsManager {
             putString("haptic_${label}_strength", settings.strength.name)
             putString("haptic_${label}_pattern", settings.pattern.name)
         }
+    }
+
+    /**
+     * [name] 소리를 [label] 종류로 본다. 기본 종류를 고르면 바꾼 것을 지운다. 세 라벨이 아니면 무시한다.
+     * 화면(메인 스레드)에서 부른다. 실행 중이면 다음 판정부터 따른다.
+     */
+    fun setSoundType(name: String, label: String) {
+        if (label !in SOUND_TYPE_LABELS) return
+        val current = _soundTypes.value
+        val updated = if (label == YamnetThreeClassMapper.defaultCoarse(name)) current - name else current + (name to label)
+        if (updated == current) return
+        applySoundTypes(updated)
+        prefs.edit { putSoundTypes(this, updated) }
+    }
+
+    /** 바꾼 소리를 모두 기본 종류로 되돌린다. */
+    fun resetSoundTypes() {
+        applySoundTypes(emptyMap())
+        prefs.edit { putSoundTypes(this, emptyMap()) }
+    }
+
+    /** 화면이 보는 흐름과 분류기가 읽는 표를 함께 바꾼다. 맵은 넣은 뒤 고치지 않는다. */
+    private fun applySoundTypes(types: Map<String, String>) {
+        _soundTypes.value = types
+        YamnetThreeClassMapper.userOverrides = types
     }
 
     fun setServiceRunning(isRunning: Boolean) {

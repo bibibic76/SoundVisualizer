@@ -46,7 +46,7 @@ class StringResourcesTest {
     @Test
     fun `모든 strings_xml 이 올바른 XML 이다`() {
         val broken = stringDirs.mapNotNull { dir ->
-            runCatching { parse(dir) }.exceptionOrNull()?.let { "$dir/strings.xml: ${it.message}" }
+            runCatching { parse(dir) }.exceptionOrNull()?.let { "$dir (strings.xml, sound_names.xml): ${it.message}" }
         }
         assertTrue("XML 을 읽지 못했습니다:\n${broken.joinToString("\n")}", broken.isEmpty())
     }
@@ -136,27 +136,38 @@ class StringResourcesTest {
         assertTrue("strings.xml 이 없는 지원 언어 폴더: $missing", missing.isEmpty())
     }
 
+    /**
+     * 한 폴더의 문구. strings.xml 과, 있으면 분류 탭의 소리 이름(sound_names.xml)을 함께 읽어
+     * 소리 이름도 같은 규칙(한국어 누락, 없는 키, 따옴표 이스케이프)으로 검사한다.
+     */
     private fun parse(dir: String): StringFile {
         val factory = DocumentBuilderFactory.newInstance().apply {
             isNamespaceAware = true
             setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
         }
-        val root = factory.newDocumentBuilder().parse(File(resDir, "$dir/strings.xml")).documentElement
-        assertEquals("$dir/strings.xml 의 최상위 태그", "resources", root.tagName)
-        val nodes = root.getElementsByTagName("string")
         val strings = LinkedHashMap<String, StringEntry>()
-        for (i in 0 until nodes.length) {
-            val element = nodes.item(i) as Element
-            val name = element.getAttribute("name")
-            assertTrue("$dir: name 이 없는 string 이 있습니다", name.isNotEmpty())
-            assertTrue("$dir: $name 이 두 번 있습니다", name !in strings)
-            strings[name] = StringEntry(element.textContent, element.getAttribute("translatable") != "false")
+        for (fileName in STRING_FILES) {
+            val file = File(resDir, "$dir/$fileName")
+            if (!file.isFile) continue
+            val root = factory.newDocumentBuilder().parse(file).documentElement
+            assertEquals("$dir/$fileName 의 최상위 태그", "resources", root.tagName)
+            val nodes = root.getElementsByTagName("string")
+            for (i in 0 until nodes.length) {
+                val element = nodes.item(i) as Element
+                val name = element.getAttribute("name")
+                assertTrue("$dir: name 이 없는 string 이 있습니다", name.isNotEmpty())
+                assertTrue("$dir: $name 이 두 번 있습니다", name !in strings)
+                strings[name] = StringEntry(element.textContent, element.getAttribute("translatable") != "false")
+            }
         }
         return StringFile(dir, strings)
     }
 
     private companion object {
         const val DEFAULT_DIR = "values"
+
+        /** 문구를 두는 파일. strings.xml 은 폴더마다 반드시 있고, 소리 이름 파일은 번역이 있을 때만 있다. */
+        val STRING_FILES = listOf("strings.xml", "sound_names.xml")
 
         /** %1$s, %d, %.1f 같은 서식 지정자. %% 는 글자 % 라서 뺀다. */
         val FORMAT_SPECIFIER = Regex("""%(\d+\$)?[-#+ 0,(]*\d*(\.\d+)?[a-zA-Z]""")
