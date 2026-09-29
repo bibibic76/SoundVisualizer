@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
 
 @Composable
-fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
+fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOpenTutorial: () -> Unit) {
     val isRunning by SettingsManager.isServiceRunning.collectAsState()
     val tileAdded by SettingsManager.tileAdded.collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
@@ -37,16 +37,20 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
 
     // 글자 크기나 화면 확대를 크게 쓰면 안내와 버튼이 화면보다 길어진다. Column 은 남은 높이만 나눠 주므로
     // 마지막 자식(실행·실행 종료 버튼, 타일 안내)이 눌려 사라진다. 스크롤을 열고 최소 높이를 화면 높이로 잡아
-    // 짧을 때는 지금처럼 가운데 정렬로, 길면 밀어 볼 수 있게 한다.
+    // 짧을 때는 가운데 정렬로, 길면 밀어 볼 수 있게 한다.
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .heightIn(min = maxHeight)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.Center
+                .padding(horizontal = 24.dp)
         ) {
+            // 본 내용은 가운데에, ‘튜토리얼 보기’는 맨 아래에 둔다. 스크롤 안이라 최대 높이는 끝이 없지만, 최소 높이
+            // (화면 높이)까지 남는 자리는 weight 를 준 두 빈칸이 나눠 가진다. 내용이 화면보다 길면 남는 자리가 없어
+            // 빈칸은 0 이 되고, ‘튜토리얼 보기’는 스크롤 끝에 온다.
+            Spacer(modifier = Modifier.weight(1f))
+
             // 줄 간격을 지정하지 않으면 큰 글꼴 설정에서 제목이 두 줄로 접힐 때 위아래 줄이 서로 붙는다.
             Text(stringResource(R.string.home_title), fontSize = 36.sp, lineHeight = 48.sp, fontWeight = FontWeight.Black, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 12.dp))
             Text(
@@ -154,6 +158,22 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit) {
                     // Android 12 이하는 앱에서 추가 창을 띄울 수 없어 방법만 안내한다.
                     Text(stringResource(R.string.home_add_tile_manual), fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp)
                 }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // 처음 열 때 한 번 저절로 뜬 튜토리얼을 다시 보는 곳. 실행 버튼들과 겨루지 않게 회색 글자 버튼으로 둔다.
+            TextButton(
+                onClick = onOpenTutorial,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 24.dp, bottom = 8.dp)
+                    .heightIn(min = 48.dp)
+            ) {
+                Text(
+                    stringResource(R.string.home_tutorial),
+                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, color = SecondaryTextColor
+                )
             }
         }
     }

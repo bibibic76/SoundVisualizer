@@ -16,6 +16,33 @@
     <string name="home_add_tile">เพิ่มลงในการตั้งค่าด่วน</string>
     <string name="home_add_tile_desc">เปิดหรือปิดได้ทันทีจากแผงการแจ้งเตือน ขณะเล่นเกมหรือดูวิดีโอ</string>
     <string name="home_add_tile_manual">ดึงแผงการแจ้งเตือนลงมา แตะแก้ไข (รูปดินสอ) แล้วเพิ่ม “แสดงภาพเสียง” เพื่อเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอ</string>
+    <string name="home_tutorial">ดูบทแนะนำ</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">บทแนะนำ</string>
+    <string name="tutorial_skip">ข้าม</string>
+    <string name="tutorial_back">หน้าก่อนหน้า</string>
+    <string name="tutorial_next">ถัดไป</string>
+    <string name="tutorial_done">เข้าใจแล้ว</string>
+    <string name="tutorial_page_status">หน้า %1$d จาก %2$d</string>
+    <string name="tutorial_pause">หยุดภาพเคลื่อนไหวชั่วคราว</string>
+    <string name="tutorial_play">เล่นภาพเคลื่อนไหว</string>
+    <string name="tutorial_sound_title">มองเห็นเสียงบนหน้าจอ</string>
+    <string name="tutorial_sound_body">เสียงจากเกมหรือวิดีโอจะแสดงเป็นภาพตามขอบหน้าจอ ยิ่งเสียงดัง ภาพก็ยิ่งใหญ่ แสดงเฉพาะเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น แอปจะไม่จับเสียงรอบตัวคุณ</string>
+    <string name="tutorial_direction_title">แยกเสียงซ้ายกับขวาได้</string>
+    <string name="tutorial_direction_body">หากเสียงมาจากทางซ้าย ภาพฝั่งซ้ายของหน้าจอจะใหญ่กว่า หากมาจากทางขวา ภาพฝั่งขวาจะใหญ่กว่า แอปแยกด้านหน้ากับด้านหลังไม่ได้</string>
+    <string name="tutorial_types_title">เสียงแต่ละประเภทมีสีของตัวเอง</string>
+    <string name="tutorial_types_body">AI จะแยกเสียงออกเป็น 3 ประเภท และวาดแต่ละประเภทด้วยสีของตัวเอง คุณเปลี่ยนสีได้ในแท็บการตั้งค่า</string>
+    <string name="tutorial_type_ambient">เสียงแวดล้อม</string>
+    <string name="tutorial_type_ambient_examples">เพลง เสียงฝน และเสียงอื่นทั้งหมด</string>
+    <string name="tutorial_type_speech">เสียงพูด</string>
+    <string name="tutorial_type_speech_examples">เสียงคน</string>
+    <string name="tutorial_type_danger">เสียงอันตราย</string>
+    <string name="tutorial_type_danger_examples">เสียงปืน เสียงระเบิด เสียงฝีเท้า</string>
+    <string name="tutorial_vibration_title">เมื่อมีเสียงอันตราย โทรศัพท์จะสั่นด้วย</string>
+    <string name="tutorial_vibration_body">เมื่อมีเสียงอันตรายในเกมหรือวิดีโอ โทรศัพท์จะสั่น คุณจึงรู้ได้แม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะสั่นเฉพาะเสียงอันตราย คุณเปิดหรือปิดการสั่นของแต่ละประเภทได้ในแท็บการตั้งค่า</string>
+    <string name="tutorial_start_title">วิธีเปิดและปิด</string>
+    <string name="tutorial_privacy_note">แอปใช้สิทธิ์ไมโครโฟนและสิทธิ์การบันทึกหน้าจอเพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น แอปจะไม่บันทึกทั้งเสียงรอบตัวคุณและหน้าจอของคุณ</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">โปรดอนุญาต “แสดงทับแอปอื่น”</string>

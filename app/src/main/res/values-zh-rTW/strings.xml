@@ -16,6 +16,33 @@
     <string name="home_add_tile">新增至快速設定</string>
     <string name="home_add_tile_desc">下拉通知欄，就能在遊戲或影片畫面上直接開啟或關閉。</string>
     <string name="home_add_tile_manual">下拉通知欄，輕觸「編輯」(鉛筆圖示) 並新增「聲音視覺化」，就能在遊戲或影片畫面上直接開啟或關閉。</string>
+    <string name="home_tutorial">查看教學</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">教學</string>
+    <string name="tutorial_skip">略過</string>
+    <string name="tutorial_back">上一頁</string>
+    <string name="tutorial_next">下一步</string>
+    <string name="tutorial_done">我知道了</string>
+    <string name="tutorial_page_status">第 %1$d 頁，共 %2$d 頁</string>
+    <string name="tutorial_pause">暫停動畫</string>
+    <string name="tutorial_play">播放動畫</string>
+    <string name="tutorial_sound_title">在螢幕上看見聲音</string>
+    <string name="tutorial_sound_body">遊戲或影片的聲音會沿著螢幕邊緣描繪出來。聲音越大，圖形就越大。只會顯示手機內播放的聲音。這個應用程式不會擷取你周遭的聲音。</string>
+    <string name="tutorial_direction_title">可以分辨左右</string>
+    <string name="tutorial_direction_body">來自左邊的聲音會在左側顯示得更大，來自右邊的聲音會在右側顯示得更大。無法分辨前後。</string>
+    <string name="tutorial_types_title">用顏色區分聲音類型</string>
+    <string name="tutorial_types_body">AI 會將聲音分為三種類型，並以不同顏色顯示。你可以在「設定」分頁中變更顏色。</string>
+    <string name="tutorial_type_ambient">環境音</string>
+    <string name="tutorial_type_ambient_examples">音樂、雨聲等其他聲音</string>
+    <string name="tutorial_type_speech">人聲</string>
+    <string name="tutorial_type_speech_examples">說話聲</string>
+    <string name="tutorial_type_danger">危險音</string>
+    <string name="tutorial_type_danger_examples">槍聲、爆炸聲、腳步聲</string>
+    <string name="tutorial_vibration_title">危險音還會以震動提醒</string>
+    <string name="tutorial_vibration_body">遊戲或影片中出現危險音時，手機會震動。即使沒有看著螢幕，也能察覺到。預設只有危險音會震動。你可以在「設定」分頁中為每種類型開啟或關閉震動。</string>
+    <string name="tutorial_start_title">如何開啟和關閉</string>
+    <string name="tutorial_privacy_note">麥克風和螢幕錄影權限只會用來擷取手機內播放的聲音。你周遭的聲音和螢幕畫面都不會被錄下。</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">請允許「在其他應用程式上層顯示」</string>

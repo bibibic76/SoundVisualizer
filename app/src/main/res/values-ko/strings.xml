@@ -16,6 +16,33 @@
     <string name="home_add_tile">빠른 설정에 추가</string>
     <string name="home_add_tile_desc">알림창을 내려 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
     <string name="home_add_tile_manual">알림창을 내려 편집(연필) 버튼에서 ‘소리 시각화’를 추가하면, 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="home_tutorial">튜토리얼 보기</string>
+
+    <!-- 처음 열 때, 그리고 홈에서 다시 보는 튜토리얼 -->
+    <string name="tutorial_pane_title">튜토리얼</string>
+    <string name="tutorial_skip">건너뛰기</string>
+    <string name="tutorial_back">이전 쪽</string>
+    <string name="tutorial_next">다음</string>
+    <string name="tutorial_done">확인</string>
+    <string name="tutorial_page_status">%2$d쪽 중 %1$d쪽</string>
+    <string name="tutorial_pause">그림 멈추기</string>
+    <string name="tutorial_play">그림 움직이기</string>
+    <string name="tutorial_sound_title">소리를 눈으로 보여 드립니다</string>
+    <string name="tutorial_sound_body">게임이나 영상의 소리를 화면 테두리에 그립니다. 소리가 클수록 크게 그려집니다. 폰에서 재생되는 소리만 보여 드리고, 주변에서 나는 소리는 듣지 않습니다.</string>
+    <string name="tutorial_direction_title">왼쪽·오른쪽을 구분합니다</string>
+    <string name="tutorial_direction_body">왼쪽에서 나는 소리는 왼쪽이, 오른쪽에서 나는 소리는 오른쪽이 더 크게 그려집니다. 앞뒤는 구분하지 못합니다.</string>
+    <string name="tutorial_types_title">소리 종류를 색으로 구분합니다</string>
+    <string name="tutorial_types_body">AI가 소리를 세 종류로 나눠 서로 다른 색으로 그립니다. 색은 설정 탭에서 바꿀 수 있습니다.</string>
+    <string name="tutorial_type_ambient">환경음</string>
+    <string name="tutorial_type_ambient_examples">음악·빗소리 등 그 밖의 소리</string>
+    <string name="tutorial_type_speech">대화음</string>
+    <string name="tutorial_type_speech_examples">사람 목소리</string>
+    <string name="tutorial_type_danger">위협음</string>
+    <string name="tutorial_type_danger_examples">총소리·폭발음·발소리</string>
+    <string name="tutorial_vibration_title">위협음은 진동으로도 알려 드립니다</string>
+    <string name="tutorial_vibration_body">게임이나 영상에서 위협음이 나면 폰이 진동합니다. 화면을 보고 있지 않아도 알 수 있습니다. 처음에는 위협음만 진동하고, 설정 탭에서 종류마다 켜고 끌 수 있습니다.</string>
+    <string name="tutorial_start_title">켜고 끄는 방법</string>
+    <string name="tutorial_privacy_note">마이크와 화면 녹화 권한은 폰에서 재생되는 소리를 받는 데만 씁니다. 주변 소리와 화면은 녹화하지 않습니다.</string>
 
     <!-- 권한 -->
     <string name="permission_overlay_title">‘다른 앱 위에 표시’를 허용해 주세요</string>
@@ -135,7 +162,7 @@
     <!-- 접근성 -->
     <string name="cd_pick_color">색상 선택 열기</string>
     <string name="cd_color_ambient">환경음 색상</string>
-    <string name="cd_color_speech">말소리 색상</string>
+    <string name="cd_color_speech">대화음 색상</string>
     <string name="cd_color_danger">위협음 색상</string>
     <string name="cd_expand">펼치기</string>
     <string name="cd_collapse">접기</string>

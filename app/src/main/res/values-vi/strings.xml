@@ -16,6 +16,33 @@
     <string name="home_add_tile">Thêm vào Cài đặt nhanh</string>
     <string name="home_add_tile_desc">Bật hoặc tắt ngay từ bảng thông báo khi đang chơi trò chơi hoặc xem video.</string>
     <string name="home_add_tile_manual">Kéo bảng thông báo xuống, nhấn Chỉnh sửa (biểu tượng bút chì) rồi thêm “Âm thanh trực quan” để bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video.</string>
+    <string name="home_tutorial">Xem hướng dẫn</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Hướng dẫn</string>
+    <string name="tutorial_skip">Bỏ qua</string>
+    <string name="tutorial_back">Trang trước</string>
+    <string name="tutorial_next">Tiếp theo</string>
+    <string name="tutorial_done">Đã hiểu</string>
+    <string name="tutorial_page_status">Trang %1$d trên %2$d</string>
+    <string name="tutorial_pause">Tạm dừng hoạt ảnh</string>
+    <string name="tutorial_play">Phát hoạt ảnh</string>
+    <string name="tutorial_sound_title">Nhìn thấy âm thanh trên màn hình</string>
+    <string name="tutorial_sound_body">Âm thanh từ trò chơi hoặc video được vẽ dọc theo các cạnh màn hình. Âm thanh càng lớn thì đồ họa càng lớn. Chỉ âm thanh đang phát trên điện thoại mới được hiển thị. Ứng dụng không thu âm thanh xung quanh bạn.</string>
+    <string name="tutorial_direction_title">Phân biệt trái và phải</string>
+    <string name="tutorial_direction_body">Âm thanh từ bên trái được vẽ lớn hơn ở bên trái, âm thanh từ bên phải được vẽ lớn hơn ở bên phải. Ứng dụng không phân biệt được phía trước và phía sau.</string>
+    <string name="tutorial_types_title">Mỗi loại âm thanh có một màu riêng</string>
+    <string name="tutorial_types_body">AI phân loại âm thanh thành ba loại và vẽ mỗi loại bằng một màu riêng. Bạn có thể đổi màu trong thẻ Cài đặt.</string>
+    <string name="tutorial_type_ambient">Môi trường</string>
+    <string name="tutorial_type_ambient_examples">Nhạc, tiếng mưa và mọi âm thanh khác</string>
+    <string name="tutorial_type_speech">Giọng nói</string>
+    <string name="tutorial_type_speech_examples">Tiếng người nói</string>
+    <string name="tutorial_type_danger">Nguy hiểm</string>
+    <string name="tutorial_type_danger_examples">Tiếng súng, tiếng nổ, tiếng bước chân</string>
+    <string name="tutorial_vibration_title">Âm thanh nguy hiểm còn được báo bằng rung</string>
+    <string name="tutorial_vibration_body">Khi có âm thanh nguy hiểm trong trò chơi hoặc video, điện thoại sẽ rung. Bạn vẫn nhận biết được ngay cả khi không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể bật hoặc tắt rung cho từng loại trong thẻ Cài đặt.</string>
+    <string name="tutorial_start_title">Cách bật và tắt</string>
+    <string name="tutorial_privacy_note">Quyền micrô và quyền ghi màn hình chỉ dùng để thu âm thanh đang phát trên điện thoại. Âm thanh xung quanh bạn và màn hình của bạn không bị ghi lại.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Hãy cho phép “Hiển thị trên các ứng dụng khác”</string>

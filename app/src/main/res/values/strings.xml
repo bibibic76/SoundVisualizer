@@ -20,6 +20,38 @@
     <string name="home_add_tile">Add to Quick Settings</string>
     <string name="home_add_tile_desc">Turn it on or off from the notification shade, right over your game or video.</string>
     <string name="home_add_tile_manual">Pull down the notification shade, tap Edit (pencil) and add “Sound visualizer” to turn it on or off right over your game or video.</string>
+    <string name="home_tutorial">View tutorial</string>
+
+    <!-- Tutorial shown the first time the app opens, and again from Home -->
+    <!-- Name of the tutorial screen. Screen readers announce it when the tutorial opens and closes. -->
+    <string name="tutorial_pane_title">Tutorial</string>
+    <string name="tutorial_skip">Skip</string>
+    <!-- Screen reader label of the arrow that goes to the previous page -->
+    <string name="tutorial_back">Previous page</string>
+    <string name="tutorial_next">Next</string>
+    <!-- Closes the tutorial. Deliberately not "Start": that is the Home button that turns the visualizer on. -->
+    <string name="tutorial_done">Got it</string>
+    <!-- Read by screen readers instead of the page dots. %1$d is the current page, %2$d the number of pages. -->
+    <string name="tutorial_page_status">Page %1$d of %2$d</string>
+    <!-- Screen reader labels of the button that stops and restarts the moving pictures -->
+    <string name="tutorial_pause">Pause animation</string>
+    <string name="tutorial_play">Play animation</string>
+    <string name="tutorial_sound_title">See sound on your screen</string>
+    <string name="tutorial_sound_body">Sound from your game or video is drawn along the edges of the screen. The louder it is, the bigger it is drawn. Only sound playing on your phone is shown. Sounds around you are not picked up.</string>
+    <string name="tutorial_direction_title">Tells left from right</string>
+    <string name="tutorial_direction_body">A sound on the left is drawn bigger on the left, and a sound on the right on the right. It can\'t tell front from back.</string>
+    <string name="tutorial_types_title">Each type of sound gets its own color</string>
+    <string name="tutorial_types_body">AI sorts sounds into three types and draws each in its own color. You can change the colors in the Settings tab.</string>
+    <string name="tutorial_type_ambient">Ambient</string>
+    <string name="tutorial_type_ambient_examples">Music, rain and everything else</string>
+    <string name="tutorial_type_speech">Speech</string>
+    <string name="tutorial_type_speech_examples">Voices</string>
+    <string name="tutorial_type_danger">Danger</string>
+    <string name="tutorial_type_danger_examples">Gunshots, explosions, footsteps</string>
+    <string name="tutorial_vibration_title">Danger sounds also vibrate</string>
+    <string name="tutorial_vibration_body">When a danger sound plays in your game or video, your phone vibrates. You notice it even when you\'re not looking at the screen. At first only danger sounds vibrate. You can turn vibration on or off for each type in the Settings tab.</string>
+    <string name="tutorial_start_title">How to turn it on and off</string>
+    <string name="tutorial_privacy_note">The microphone and screen recording permissions are only used to get the sound playing on your phone. Sounds around you and your screen are not recorded.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Allow “Display over other apps”</string>

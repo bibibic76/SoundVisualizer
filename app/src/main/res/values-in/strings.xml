@@ -16,6 +16,33 @@
     <string name="home_add_tile">Tambahkan ke Setelan Cepat</string>
     <string name="home_add_tile_desc">Nyalakan atau matikan dari panel notifikasi, langsung di atas game atau video Anda.</string>
     <string name="home_add_tile_manual">Buka panel notifikasi, ketuk Edit (ikon pensil), lalu tambahkan “Visualisasi suara” untuk menyalakan atau mematikannya langsung di atas game atau video.</string>
+    <string name="home_tutorial">Lihat tutorial</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tutorial</string>
+    <string name="tutorial_skip">Lewati</string>
+    <string name="tutorial_back">Halaman sebelumnya</string>
+    <string name="tutorial_next">Berikutnya</string>
+    <string name="tutorial_done">Mengerti</string>
+    <string name="tutorial_page_status">Halaman %1$d dari %2$d</string>
+    <string name="tutorial_pause">Jeda animasi</string>
+    <string name="tutorial_play">Putar animasi</string>
+    <string name="tutorial_sound_title">Lihat suara di layar Anda</string>
+    <string name="tutorial_sound_body">Suara dari game atau video Anda digambar di sepanjang tepi layar. Makin keras suaranya, makin besar gambarnya. Hanya suara yang diputar di ponsel Anda yang ditampilkan. Aplikasi ini tidak mendengarkan suara di sekitar Anda.</string>
+    <string name="tutorial_direction_title">Membedakan kiri dan kanan</string>
+    <string name="tutorial_direction_body">Suara dari kiri digambar lebih besar di sisi kiri, dan suara dari kanan di sisi kanan. Aplikasi tidak dapat membedakan depan dan belakang.</string>
+    <string name="tutorial_types_title">Setiap jenis suara punya warnanya sendiri</string>
+    <string name="tutorial_types_body">AI mengelompokkan suara menjadi tiga jenis dan menggambar setiap jenis dengan warna yang berbeda. Anda dapat mengubah warnanya di tab Setelan.</string>
+    <string name="tutorial_type_ambient">Suara latar</string>
+    <string name="tutorial_type_ambient_examples">Musik, hujan, dan suara lainnya</string>
+    <string name="tutorial_type_speech">Percakapan</string>
+    <string name="tutorial_type_speech_examples">Suara manusia</string>
+    <string name="tutorial_type_danger">Suara bahaya</string>
+    <string name="tutorial_type_danger_examples">Tembakan, ledakan, langkah kaki</string>
+    <string name="tutorial_vibration_title">Suara bahaya juga membuat ponsel bergetar</string>
+    <string name="tutorial_vibration_body">Saat ada suara bahaya di game atau video Anda, ponsel Anda bergetar. Anda tetap tahu meskipun tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat mengaktifkan atau menonaktifkan getaran untuk setiap jenis di tab Setelan.</string>
+    <string name="tutorial_start_title">Cara menyalakan dan mematikannya</string>
+    <string name="tutorial_privacy_note">Izin mikrofon dan persetujuan perekaman layar hanya digunakan untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda dan layar Anda tidak direkam.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Izinkan “Tampilkan di atas aplikasi lain”</string>

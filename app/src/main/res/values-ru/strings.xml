@@ -16,6 +16,33 @@
     <string name="home_add_tile">Добавить в быстрые настройки</string>
     <string name="home_add_tile_desc">Включайте и выключайте визуализацию из панели уведомлений прямо поверх игры или видео.</string>
     <string name="home_add_tile_manual">Опустите панель уведомлений, нажмите «Изменить» (значок карандаша) и добавьте «Визуализатор звука», чтобы включать и выключать его прямо поверх игры или видео.</string>
+    <string name="home_tutorial">Показать обучение</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Обучение</string>
+    <string name="tutorial_skip">Пропустить</string>
+    <string name="tutorial_back">Предыдущая страница</string>
+    <string name="tutorial_next">Далее</string>
+    <string name="tutorial_done">Понятно</string>
+    <string name="tutorial_page_status">Страница %1$d из %2$d</string>
+    <string name="tutorial_pause">Приостановить анимацию</string>
+    <string name="tutorial_play">Воспроизвести анимацию</string>
+    <string name="tutorial_sound_title">Показываем звук на экране</string>
+    <string name="tutorial_sound_body">Звук из игры или видео рисуется по краям экрана. Чем громче звук, тем крупнее рисунок. Показывается только звук, который воспроизводится на телефоне. Приложение не слышит звуки вокруг вас.</string>
+    <string name="tutorial_direction_title">Различает звуки слева и справа</string>
+    <string name="tutorial_direction_body">Звук слева рисуется крупнее у левого края экрана, а звук справа — у правого. Приложение не отличает звук спереди от звука сзади.</string>
+    <string name="tutorial_types_title">У каждого типа звука свой цвет</string>
+    <string name="tutorial_types_body">ИИ делит звуки на три типа и рисует каждый своим цветом. Цвета можно изменить на вкладке «Настройки».</string>
+    <string name="tutorial_type_ambient">Фоновые звуки</string>
+    <string name="tutorial_type_ambient_examples">Музыка, дождь и всё остальное</string>
+    <string name="tutorial_type_speech">Речь</string>
+    <string name="tutorial_type_speech_examples">Голоса людей</string>
+    <string name="tutorial_type_danger">Опасные звуки</string>
+    <string name="tutorial_type_danger_examples">Выстрелы, взрывы, шаги</string>
+    <string name="tutorial_vibration_title">При опасных звуках телефон также вибрирует</string>
+    <string name="tutorial_vibration_body">Когда в игре или видео звучит опасный звук, телефон вибрирует. Вы заметите это, даже когда не смотрите на экран. По умолчанию вибрация включена только для опасных звуков. На вкладке «Настройки» её можно включить или выключить для каждого типа.</string>
+    <string name="tutorial_start_title">Как включить и выключить</string>
+    <string name="tutorial_privacy_note">Разрешения «Микрофон» и «Запись экрана» используются только для получения звука, который воспроизводится на телефоне. Звуки вокруг вас и изображение экрана не записываются.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Разрешите «Поверх других приложений»</string>

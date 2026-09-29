@@ -16,6 +16,33 @@
     <string name="home_add_tile">फटाफट सेटिंग में जोड़ें</string>
     <string name="home_add_tile_desc">गेम खेलते या वीडियो देखते हुए ही, सूचना पैनल से इसे चालू या बंद करें।</string>
     <string name="home_add_tile_manual">सूचना पैनल नीचे खींचें, बदलाव करें (पेंसिल) पर टैप करें और “आवाज़ विज़ुअलाइज़र” जोड़ें। इसके बाद, गेम खेलते या वीडियो देखते हुए ही इसे चालू या बंद किया जा सकता है।</string>
+    <string name="home_tutorial">ट्यूटोरियल देखें</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">ट्यूटोरियल</string>
+    <string name="tutorial_skip">छोड़ें</string>
+    <string name="tutorial_back">पिछला पेज</string>
+    <string name="tutorial_next">आगे बढ़ें</string>
+    <string name="tutorial_done">ठीक है</string>
+    <string name="tutorial_page_status">%2$d में से पेज %1$d</string>
+    <string name="tutorial_pause">ऐनिमेशन रोकें</string>
+    <string name="tutorial_play">ऐनिमेशन चलाएं</string>
+    <string name="tutorial_sound_title">आवाज़ को स्क्रीन पर देखें</string>
+    <string name="tutorial_sound_body">आपके गेम या वीडियो की आवाज़ स्क्रीन के किनारों पर बनाई जाती है। आवाज़ जितनी तेज़ होती है, उतनी ही बड़ी दिखती है। सिर्फ़ फ़ोन में चल रही आवाज़ ही दिखाई जाती है। यह ऐप आपके आस-पास की आवाज़ें नहीं सुनता।</string>
+    <string name="tutorial_direction_title">बाएं और दाएं का फ़र्क पहचानता है</string>
+    <string name="tutorial_direction_body">बाईं तरफ़ से आने वाली आवाज़ स्क्रीन की बाईं तरफ़ ज़्यादा बड़ी दिखती है, और दाईं तरफ़ से आने वाली आवाज़ दाईं तरफ़। यह ऐप आगे और पीछे का फ़र्क नहीं पहचान सकता।</string>
+    <string name="tutorial_types_title">आवाज़ के हर प्रकार का अपना रंग है</string>
+    <string name="tutorial_types_body">AI आवाज़ों को तीन प्रकारों में बांटता है और हर प्रकार को अलग रंग में बनाता है। रंग “सेटिंग” टैब में बदले जा सकते हैं।</string>
+    <string name="tutorial_type_ambient">माहौल की आवाज़ें</string>
+    <string name="tutorial_type_ambient_examples">संगीत, बारिश और बाकी सब</string>
+    <string name="tutorial_type_speech">बातचीत</string>
+    <string name="tutorial_type_speech_examples">लोगों की आवाज़ें</string>
+    <string name="tutorial_type_danger">खतरे की आवाज़ें</string>
+    <string name="tutorial_type_danger_examples">गोलियों की आवाज़, धमाके, कदमों की आहट</string>
+    <string name="tutorial_vibration_title">खतरे की आवाज़ पर फ़ोन वाइब्रेट भी करता है</string>
+    <string name="tutorial_vibration_body">गेम या वीडियो में खतरे की आवाज़ आने पर आपका फ़ोन वाइब्रेट करता है। स्क्रीन न देखते समय भी आपको पता चल जाता है। डिफ़ॉल्ट रूप से सिर्फ़ खतरे की आवाज़ों के लिए वाइब्रेशन चालू रहता है। “सेटिंग” टैब में हर प्रकार के लिए वाइब्रेशन चालू या बंद किया जा सकता है।</string>
+    <string name="tutorial_start_title">चालू और बंद कैसे करें</string>
+    <string name="tutorial_privacy_note">माइक्रोफ़ोन और स्क्रीन रिकॉर्डिंग की अनुमतियों का इस्तेमाल सिर्फ़ फ़ोन में चल रही आवाज़ कैप्चर करने के लिए होता है। आपके आस-पास की आवाज़ें और आपकी स्क्रीन रिकॉर्ड नहीं की जातीं।</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">“दूसरे ऐप्लिकेशन के ऊपर दिखाएं” की अनुमति दें</string>

@@ -30,7 +30,8 @@ fun LauncherApp(
     onSelectTab: (Int) -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
-    onAddTile: () -> Unit
+    onAddTile: () -> Unit,
+    onOpenTutorial: () -> Unit
 ) {
     // 탭 이름은 화면 맨 위에 있다. 큰 화면에서 한 손으로 쓰면 거기까지 손이 가지 않으므로
     // 화면 아무 데서나 좌우로 밀어도 넘어가게 한다.
@@ -78,7 +79,7 @@ fun LauncherApp(
         // 남은 높이를 전부 준다. 세 탭 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             when (page) {
-                0 -> HomeTab(onStart, onStop, onAddTile)
+                0 -> HomeTab(onStart, onStop, onAddTile, onOpenTutorial)
                 1 -> SettingsTab()
                 else -> HelpTab()
             }

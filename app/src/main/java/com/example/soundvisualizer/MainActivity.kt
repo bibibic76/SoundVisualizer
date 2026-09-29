@@ -18,6 +18,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.soundvisualizer.language.AppLanguage
 import com.example.soundvisualizer.tile.VisualizerTileService
+import com.example.soundvisualizer.tutorial.TutorialScreen
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import kotlinx.coroutines.launch
 
@@ -61,6 +63,15 @@ class MainActivity : ComponentActivity() {
     /** 꺼짐 안내로 홈 탭에 한 번만 옮기기 위한 상태. 다시 만들어져도 유지되도록 [KEY_ROUTED_STOP_NOTICE] 로 저장한다. */
     private var stopNoticeRouting = StopNoticeRouting()
 
+    /**
+     * 홈의 ‘튜토리얼 보기’로 튜토리얼을 연 상태인지. 화면을 돌리거나 언어를 바꿔 다시 만들어져도 닫히지 않게
+     * [KEY_TUTORIAL_REQUESTED] 로 저장한다.
+     *
+     * 처음 열 때 저절로 뜨는 것은 여기 담지 않고 [SettingsManager.tutorialSeen] 에서 바로 읽는다. 담아 두면 다른
+     * 창(타일이 권한을 받으러 새로 연 MainActivity 등)에서 닫았을 때 이 창에만 옛 값이 남는다.
+     */
+    private val tutorialRequested = mutableStateOf(false)
+
     // Android 12 이하에서는 고른 앱 언어를 여기서 입힌다. 13 이상은 시스템이 적용한다.
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLanguage.wrap(newBase))
@@ -89,6 +100,7 @@ class MainActivity : ComponentActivity() {
             stopNoticeRouting = StopNoticeRouting(
                 savedInstanceState.getInt(KEY_ROUTED_STOP_NOTICE, StopNoticeRouting.NONE)
             )
+            tutorialRequested.value = savedInstanceState.getBoolean(KEY_TUTORIAL_REQUESTED, false)
         }
         // 권한 화면에 보내 놓고 화면이 돌아가면 여기서 다시 만들어진다. 기다리던 실행을 잃지 않는다.
         @Suppress("DEPRECATION")
@@ -101,19 +113,30 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = BgColor
                 ) {
-                    LauncherApp(
-                        selectedTab = selectedTab.intValue,
-                        onSelectTab = { selectedTab.intValue = it },
-                        onStart = { capturePermission.start() },
-                        onStop = {
-                            // 직접 껐으면 기다리던 실행도 버린다. 권한을 켜고 돌아와도 다시 켜지지 않는다.
-                            pendingStart.cancel()
-                            VisualizerController.stop(this)
-                        },
-                        onAddTile = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
+                    // 본 적이 없으면 저절로, 홈에서 누르면 다시 연다.
+                    val tutorialSeen by SettingsManager.tutorialSeen.collectAsState()
+                    val tutorialOpen = tutorialRequested.value || !tutorialSeen
+                    // 튜토리얼과 탭 화면을 겹쳐 두지 않고 바꿔 끼운다. 겹쳐 두면 화면 읽어주기가 가려진 탭 화면까지 읽는다.
+                    Crossfade(targetState = tutorialOpen, label = "tutorial") { open ->
+                        if (open) {
+                            TutorialScreen(onClose = ::closeTutorial)
+                        } else {
+                            LauncherApp(
+                                selectedTab = selectedTab.intValue,
+                                onSelectTab = { selectedTab.intValue = it },
+                                onStart = { capturePermission.start() },
+                                onStop = {
+                                    // 직접 껐으면 기다리던 실행도 버린다. 권한을 켜고 돌아와도 다시 켜지지 않는다.
+                                    pendingStart.cancel()
+                                    VisualizerController.stop(this)
+                                },
+                                onAddTile = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
+                                },
+                                onOpenTutorial = { tutorialRequested.value = true }
+                            )
                         }
-                    )
+                    }
                     CapturePermissionDialogs(capturePermission)
                 }
             }
@@ -124,6 +147,13 @@ class MainActivity : ComponentActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_SELECTED_TAB, selectedTab.intValue)
         outState.putInt(KEY_ROUTED_STOP_NOTICE, stopNoticeRouting.routedSeq)
+        outState.putBoolean(KEY_TUTORIAL_REQUESTED, tutorialRequested.value)
+    }
+
+    /** 튜토리얼을 닫는다. 끝까지 넘겼든 건너뛰었든 본 것으로 저장해, 다음에 열 때는 띄우지 않는다. */
+    private fun closeTutorial() {
+        tutorialRequested.value = false
+        SettingsManager.setTutorialSeen(true)
     }
 
     /** 화면 회전으로 다시 만들어지는 동안만 [pendingStart] 를 넘긴다. 프로세스가 죽으면 함께 사라져야 한다. */
@@ -215,5 +245,6 @@ class MainActivity : ComponentActivity() {
         const val TAB_SETTINGS = 1
         const val KEY_SELECTED_TAB = "selected_tab"
         const val KEY_ROUTED_STOP_NOTICE = "routed_stop_notice"
+        const val KEY_TUTORIAL_REQUESTED = "tutorial_requested"
     }
 }
