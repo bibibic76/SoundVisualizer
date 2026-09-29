@@ -19,6 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -60,6 +61,23 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
 
     val switchEnabled = shown && player.hasVibrator
+
+    // 소리 따라 미리보기는 몇 초 동안 돈다. 이 줄이 사라지면(탭을 옮기면) 이 줄이 튼 미리보기만 멈춘다.
+    DisposableEffect(label) {
+        onDispose { HapticPreviewGate.stopPreview(owner = label) }
+    }
+
+    // 고른 모양을 미리 느끼게 한다. 소리 따라는 이 종류의 흔한 소리를 흉내 내 실제와 같은 경로로 울린다.
+    val preview: (HapticPattern, HapticStrength) -> Unit = { pattern, strength ->
+        if (pattern == HapticPattern.Repeat) {
+            HapticPreviewGate.startScene(context, owner = label, HapticScenes.previewFor(label), label, strength)
+        } else {
+            HapticPreviewGate.stopPreview(owner = label)
+            if (player.play(pattern, strength)) {
+                HapticPreviewGate.holdFor(HapticShapes.oneShot(pattern, strength, player.hasAmplitudeControl).durationMs)
+            }
+        }
+    }
     // 소리 종류 구분(AI)을 못 불러오면 진동 알림 자체가 돌지 않는다. 스위치는 켜진 그대로라
     // 위협음 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 설정값은 다음 실행을 위해 바꾸지 않는다.
     val aiNote = !aiAvailable && switchEnabled && settings.enabled
@@ -86,7 +104,10 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                     indication = null,
                     enabled = switchEnabled,
                     role = Role.Switch,
-                    onValueChange = { SettingsManager.updateHaptic(label, settings.copy(enabled = it)) }
+                    onValueChange = {
+                        if (!it) HapticPreviewGate.stopPreview(owner = label)
+                        SettingsManager.updateHaptic(label, settings.copy(enabled = it))
+                    }
                 )
         ) {
             Text(
@@ -128,7 +149,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 enabled = player.hasAmplitudeControl,
                 onSelect = { strength ->
                     SettingsManager.updateHaptic(label, settings.copy(strength = strength))
-                    player.play(settings.pattern, strength)
+                    preview(settings.pattern, strength)
                 }
             )
             if (!player.hasAmplitudeControl) {
@@ -148,9 +169,18 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 enabled = true,
                 onSelect = { pattern ->
                     SettingsManager.updateHaptic(label, settings.copy(pattern = pattern))
-                    player.play(pattern, settings.strength)
+                    preview(pattern, settings.strength)
                 }
             )
+
+            if (settings.pattern == HapticPattern.Repeat) {
+                Text(
+                    stringResource(R.string.haptic_pattern_follow_desc),
+                    fontSize = 13.sp,
+                    color = SecondaryTextColor,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
             Text(
                 stringResource(R.string.haptic_preview_hint),
@@ -162,9 +192,9 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     }
 }
 
-/** 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄. */
+/** 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄. 개발자 진동 시험도 쓴다. */
 @Composable
-private fun <T> HapticChoiceRow(
+internal fun <T> HapticChoiceRow(
     title: String,
     options: List<T>,
     selected: T,

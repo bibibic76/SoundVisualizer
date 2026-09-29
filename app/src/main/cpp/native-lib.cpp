@@ -1,6 +1,8 @@
 #include <android/log.h>
 #include <atomic>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 #include <jni.h>
 
 #define LOG_TAG "SoundVisualizer_NDK"
@@ -43,12 +45,35 @@ static std::atomic<float> lastLevel{0.0f};
 static std::atomic<float> checkPeak{0.0f};
 static std::atomic<int> checkCount{0};
 
-// 진동 알림(HapticNotifier)이 쓰는 네 번째 누적값. 0.1초마다 읽고 0 으로 되돌린다.
+// 진동 알림(HapticNotifier)이 쓰는 네 번째 누적값. 0.1초마다(소리 따라가 울리는 동안은 0.02초마다) 읽고 0 으로 되돌린다.
 //
 // 여기도 lastLevel 로는 안 된다. 0.1초에 한 번 가장 최근 버퍼(11.6ms)만 보면 시간의 12% 남짓만 보는 셈이라,
 // 총소리 한 발처럼 30~60ms 만 큰 소리는 확인과 확인 사이에 들어왔다 사라진다. 그러면 화면에는 그려지는데
 // (오버레이는 구간 최대값을 읽는다) 진동은 오지 않는다. 폰이 주머니에 있으면 진동이 유일한 알림이다.
 static std::atomic<float> hapticPeak{0.0f};
+
+// 진동 알림 전용 두 번째 누적값. [가장 큰 버퍼의 RMS(float 비트 32) | 그 버퍼의 영교차율(u16) | 버퍼 수(u16)].
+//
+// '소리 따라' 진동은 소리 크기(RMS)와 음높이 단서(영교차율)를 따라간다. 사이렌은 크기가 한결같고 음높이만
+// 움직이므로 크기만으로는 모든 사이렌이 같은 웅 소리가 된다. 영교차율은 FFT 없이 버퍼당 비교 한 번으로 얻는다.
+//
+// 셋을 한 칸에 담는 이유: 따로 두면 읽는 사이에 끼어든 버퍼 때문에 "개수는 이번, 크기는 다음" 으로 갈라진다.
+// 그러면 소리가 났는데 크기 0 인 틱이 생겨, 진동이 한 틱 동안 소리가 끊긴 것으로 보고 모터를 쉬게 한다.
+// 한 칸이면 compare_exchange 한 번으로 셋이 함께 바뀌고 함께 읽힌다.
+static std::atomic<uint64_t> hapticFrame{0};
+static_assert(std::atomic<uint64_t>::is_always_lock_free, "arm64-v8a/x86_64 only");
+
+static inline uint32_t floatBits(float f) {
+  uint32_t u;
+  memcpy(&u, &f, sizeof u);
+  return u;
+}
+
+static inline float bitsFloat(uint32_t u) {
+  float f;
+  memcpy(&f, &u, sizeof f);
+  return f;
+}
 
 static inline void atomicMax(std::atomic<float> &target, float value) {
   float cur = target.load(std::memory_order_relaxed);
@@ -79,6 +104,7 @@ Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
 
   float l = 0.0f;
   float r = 0.0f;
+  float sumSq = 0.0f;
   for (jint i = 0; i + 1 < floatCount; i += 2) {
     const float a = fabsf(samples[i]);
     const float b = fabsf(samples[i + 1]);
@@ -86,12 +112,69 @@ Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
       l = a;
     if (b > r)
       r = b;
+    sumSq += a * a + b * b;
   }
   const float peak = l > r ? l : r;
   atomicMax(peakLeft, l);
   atomicMax(peakRight, r);
   atomicMax(checkPeak, peak);
   atomicMax(hapticPeak, peak);
+
+  // 진동용 RMS 는 좌우 각각의 에너지로 잰다. 좌우를 먼저 더하면 위상이 반대인 스테레오가 지워진다.
+  const jint frames = floatCount / 2;
+  float rms = frames > 0 ? sqrtf(sumSq / (2.0f * static_cast<float>(frames))) : 0.0f;
+  if (!(rms >= 0.0f && rms < 16.0f)) // NaN·inf 가 한 번 들어오면 최대값 누적이 굳는다
+    rms = 0.0f;
+
+  // 영교차율: 좌우 평균의 부호가 바뀐 횟수. 크기의 10% 안쪽은 흔들림으로 보고 세지 않는다(히스테리시스).
+  // 첫 교차와 마지막 교차 사이만 재므로 버퍼 경계에 따라 값이 흔들리지 않고, 버퍼끼리 상태를 넘기지 않는다.
+  // 결과는 샘플당 교차 수라 순음이면 정확히 2f/sr 이다. 샘플레이트를 몰라도 된다.
+  const float h = fmaxf(0.1f * rms, 1e-4f);
+  int state = 0;
+  jint crossings = 0;
+  jint first = -1;
+  jint last = -1;
+  for (jint i = 0; i < frames; i++) {
+    const float m = 0.5f * (samples[2 * i] + samples[2 * i + 1]);
+    if (m > h) {
+      if (state < 0) {
+        crossings++;
+        if (first < 0)
+          first = i;
+        last = i;
+      }
+      state = 1;
+    } else if (m < -h) {
+      if (state > 0) {
+        crossings++;
+        if (first < 0)
+          first = i;
+        last = i;
+      }
+      state = -1;
+    }
+  }
+  const float tone = (crossings >= 2 && last > first)
+                         ? static_cast<float>(crossings - 1) / static_cast<float>(last - first)
+                         : 0.0f;
+  const long toneL = lroundf(fminf(tone, 1.0f) * 65535.0f);
+  const uint16_t toneQ = static_cast<uint16_t>(toneL < 0 ? 0 : (toneL > 65535 ? 65535 : toneL));
+
+  // 가장 큰 RMS 의 버퍼가 제 영교차율을 함께 들고 가고, 개수는 하나 늘린다.
+  uint64_t cur = hapticFrame.load(std::memory_order_relaxed);
+  for (;;) {
+    const float curRms = bitsFloat(static_cast<uint32_t>(cur >> 32));
+    const uint16_t cnt = static_cast<uint16_t>(cur & 0xFFFF);
+    const bool louder = rms > curRms;
+    const uint32_t rBits = louder ? floatBits(rms) : static_cast<uint32_t>(cur >> 32);
+    const uint16_t tQ = louder ? toneQ : static_cast<uint16_t>((cur >> 16) & 0xFFFF);
+    const uint16_t c2 = cnt == 0xFFFF ? cnt : static_cast<uint16_t>(cnt + 1);
+    const uint64_t next = (static_cast<uint64_t>(rBits) << 32) |
+                          (static_cast<uint64_t>(tQ) << 16) | c2;
+    if (hapticFrame.compare_exchange_weak(cur, next, std::memory_order_release,
+                                          std::memory_order_relaxed))
+      break;
+  }
   // 두 카운터 모두 피크 뒤에 release 로 올린다 (읽는 쪽의 acquire 와 짝을 이룬다).
   pushCount.fetch_add(1, std::memory_order_release);
   checkCount.fetch_add(1, std::memory_order_release);
@@ -137,10 +220,22 @@ Java_com_example_soundvisualizer_AudioEngine_takePeakSinceLastCheck(JNIEnv *env,
   env->SetFloatArrayRegion(out, 0, 2, values);
 }
 
-// 마지막 호출 이후의 최대 피크 (0..1). 읽은 뒤 0 으로 되돌린다. 진동 알림 전용이라 다른 소비자와 값을 빼앗지 않는다.
-extern "C" JNIEXPORT jfloat JNICALL
-Java_com_example_soundvisualizer_AudioEngine_takeHapticPeak(JNIEnv *env, jobject thiz) {
-  return hapticPeak.exchange(0.0f, std::memory_order_acq_rel);
+// 진동 알림 전용. out[0] = 마지막 호출 이후의 최대 피크, out[1] = 가장 큰 버퍼의 RMS,
+// out[2] = 그 버퍼의 영교차율(샘플당), out[3] = 그사이 도착한 버퍼 수. 읽은 뒤 모두 0 으로 되돌린다.
+// 피크와 나머지는 사이에 버퍼 하나가 끼어 갈라질 수 있는데, 피크는 400ms 여유를 두고 보는 "소리가 났나" 판단에만
+// 쓰이므로 괜찮다. RMS·영교차율·개수는 한 칸이라 서로 갈라지지 않는다.
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_soundvisualizer_AudioEngine_takeHapticFrame(JNIEnv *env, jobject thiz,
+                                                             jfloatArray out) {
+  if (out == nullptr || env->GetArrayLength(out) < 4)
+    return;
+  const uint64_t packed = hapticFrame.exchange(0, std::memory_order_acquire);
+  jfloat values[4];
+  values[0] = hapticPeak.exchange(0.0f, std::memory_order_acq_rel);
+  values[1] = bitsFloat(static_cast<uint32_t>(packed >> 32));
+  values[2] = static_cast<jfloat>((packed >> 16) & 0xFFFF) / 65535.0f;
+  values[3] = static_cast<jfloat>(packed & 0xFFFF);
+  env->SetFloatArrayRegion(out, 0, 4, values);
 }
 
 // 누적값을 0 으로 돌린다. 캡처 시작 시점과 종료 시점에 각각 호출한다.
@@ -154,5 +249,6 @@ Java_com_example_soundvisualizer_AudioEngine_reset(JNIEnv *env, jobject thiz) {
   checkPeak.store(0.0f, std::memory_order_relaxed);
   checkCount.store(0, std::memory_order_relaxed);
   hapticPeak.store(0.0f, std::memory_order_relaxed);
+  hapticFrame.store(0, std::memory_order_relaxed);
   LOGD("Audio engine reset.");
 }
