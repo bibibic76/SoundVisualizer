@@ -9,7 +9,6 @@
     <string name="home_status_running">Estado: en ejecución</string>
     <string name="home_status_idle">Estado: listo</string>
     <string name="home_capture_blocked">No llega ningún sonido al visor, así que no se puede dibujar nada. Puede que la app que reproduce el sonido no permita compartirlo (así funcionan los videos protegidos), o que su propio sonido esté silenciado.</string>
-    <string name="home_ai_unavailable">La detección del tipo de sonido no funciona, así que todos los sonidos se muestran en el color del sonido ambiente y los avisos por vibración están desactivados. Prueba a apagar y volver a encender la visualización.</string>
     <string name="home_stopped_dismiss">Cerrar aviso</string>
     <string name="home_start">Iniciar</string>
     <string name="home_stop">Detener</string>
@@ -120,7 +119,6 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrar</string>
     <string name="haptic_requires_display">Solo vibra si este tipo de sonido se muestra en pantalla.</string>
-    <string name="haptic_ai_unavailable">No vibrará mientras la detección del tipo de sonido no funcione.</string>
     <string name="haptic_unsupported">Este dispositivo no admite la vibración.</string>
     <string name="haptic_no_amplitude">Este dispositivo no permite ajustar la intensidad de la vibración, así que vibra con la intensidad predeterminada.</string>
     <string name="haptic_strength">Intensidad</string>
@@ -162,7 +160,6 @@
     <string name="notification_text">Visualizando el sonido.</string>
     <string name="notification_stop">Detener</string>
     <string name="notification_mode_selected">%1$s, seleccionado</string>
-    <string name="notification_text_ai_unavailable">Visualizando el sonido. La detección del tipo de sonido no funciona, así que los avisos por vibración están desactivados.</string>
     <string name="notification_text_capture_blocked">No llega ningún sonido al visor. Puede que la app que reproduce el sonido no permita compartirlo o que su propio sonido esté silenciado.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -232,7 +229,6 @@
     <string name="help_faq_no_graphic_q">No veo ningún gráfico.</string>
     <string name="help_faq_no_graphic_a">Comprueba si la app que reproduce el sonido bloquea la captura de audio y si el sonido está desactivado dentro de esa app. Si el visor pasa un rato sin recibir sonido, la pestaña Inicio y la notificación en curso te avisan. En la pestaña Ajustes, asegúrate también de que la Opacidad no esté demasiado baja y de que “Mostrar” no esté desactivado para el tipo de sonido que se está reproduciendo.</string>
     <string name="help_faq_no_vibration_q">No vibra.</string>
-    <string name="help_faq_no_vibration_a">En la pestaña Ajustes, en “Tipos de sonido (IA)”, comprueba que “Mostrar” y “Vibrar” estén activados para ese tipo. Si la vibración está desactivada en los ajustes de tu teléfono, es posible que no vibre.</string>
     <string name="help_faq_install_q">No se instala una versión nueva.</string>
     <string name="help_faq_install_a">Un APK compilado en otro lugar tiene una firma distinta y no se puede instalar sobre la app actual. Primero desinstala la app actual y luego instala la nueva. Esto restablecerá tus ajustes.</string>
     <string name="help_faq_battery_q">¿Consume mucha batería?</string>

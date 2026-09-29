@@ -9,7 +9,6 @@
     <string name="home_status_running">สถานะ: กำลังทำงาน</string>
     <string name="home_status_idle">สถานะ: พร้อมใช้งาน</string>
     <string name="home_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ จึงวาดอะไรไม่ได้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง (วิดีโอที่มีการป้องกันเนื้อหาจะเป็นแบบนี้) หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
-    <string name="home_ai_unavailable">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม และปิดการแจ้งเตือนด้วยการสั่น ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
     <string name="home_stopped_dismiss">ปิดข้อความแจ้ง</string>
     <string name="home_start">เริ่ม</string>
     <string name="home_stop">หยุด</string>
@@ -120,7 +119,6 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">สั่น</string>
     <string name="haptic_requires_display">สั่นได้เฉพาะเมื่อเปิดการแสดงเสียงประเภทนี้</string>
-    <string name="haptic_ai_unavailable">จะไม่สั่นขณะที่ระบบแยกประเภทเสียงไม่ทำงาน</string>
     <string name="haptic_unsupported">อุปกรณ์นี้ไม่รองรับการสั่น</string>
     <string name="haptic_no_amplitude">อุปกรณ์นี้ปรับความแรงของการสั่นไม่ได้ จึงสั่นด้วยความแรงเริ่มต้น</string>
     <string name="haptic_strength">ความแรง</string>
@@ -162,7 +160,6 @@
     <string name="notification_text">กำลังแสดงภาพเสียง</string>
     <string name="notification_stop">หยุด</string>
     <string name="notification_mode_selected">%1$s, เลือกแล้ว</string>
-    <string name="notification_text_ai_unavailable">กำลังแสดงภาพเสียง ระบบแยกประเภทเสียงไม่ทำงาน จึงปิดการแจ้งเตือนด้วยการสั่น</string>
     <string name="notification_text_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -232,7 +229,6 @@
     <string name="help_faq_no_graphic_q">ไม่เห็นกราฟิกเลย</string>
     <string name="help_faq_no_graphic_a">โปรดตรวจสอบว่าแอปที่กำลังเล่นเสียงอยู่บล็อกการจับเสียงหรือไม่ และเสียงในแอปนั้นถูกปิดอยู่หรือไม่ หากไม่มีเสียงเข้ามาที่แอปนี้ต่อเนื่องสักพัก แท็บหน้าแรกและการแจ้งเตือนขณะทำงานจะแจ้งให้คุณทราบ นอกจากนี้ โปรดตรวจสอบในแท็บการตั้งค่าด้วยว่าไม่ได้ตั้งความเข้มไว้ต่ำเกินไป รวมถึงไม่ได้ปิดการแสดงเสียงประเภทที่กำลังดังอยู่</string>
     <string name="help_faq_no_vibration_q">เครื่องไม่สั่น</string>
-    <string name="help_faq_no_vibration_a">ในแท็บการตั้งค่า ส่วน “ประเภทเสียง (AI)” ให้ตรวจสอบว่าได้เปิดทั้ง “แสดง” และ “สั่น” สำหรับเสียงประเภทนั้นแล้ว หากปิดการสั่นไว้ในการตั้งค่าของโทรศัพท์ เครื่องอาจไม่สั่น</string>
     <string name="help_faq_install_q">ติดตั้งเวอร์ชันใหม่ไม่ได้</string>
     <string name="help_faq_install_a">APK ที่บิลด์จากที่อื่นมีลายเซ็นต่างกัน จึงติดตั้งทับแอปเดิมไม่ได้ ให้ถอนการติดตั้งแอปเดิมก่อนแล้วจึงติดตั้ง การทำเช่นนี้จะรีเซ็ตการตั้งค่าของคุณ</string>
     <string name="help_faq_battery_q">ใช้แบตเตอรี่มากไหม</string>

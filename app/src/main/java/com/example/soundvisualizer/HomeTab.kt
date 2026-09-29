@@ -70,13 +70,13 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                 // 돌고 있는데도 화면에 아무 일이 없어 보이는 두 경우를 상태 바로 아래에 알린다.
                 // - 재생 중인데 아무것도 받지 못함: 소리 공유를 막은 앱이거나 그 앱이 음소거된 경우다. 청각장애
                 //   사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다.
-                // - AI 모델 실패: 위협음 색과 진동이 켜진 줄 믿게 된다.
+                // - AI 모델 실패: 위협음 색과 종류별 진동이 그대로인 줄 믿게 된다. 진동은 큰 소리에만 울린다.
                 // 둘 다 해당하면 받지 못한다는 쪽만 말한다. 받는 소리가 없으면 분류할 소리도 없어서 AI 안내는
                 // 그 순간 의미가 없고, 막힌 앱을 벗어나면 다시 나온다. 경고를 쌓아 두면 어느 것도 읽지 않는다.
                 // 글자는 상태 점 너비(12dp + 8dp)만큼 들여 상태 글자와 줄을 맞춘다.
                 if (isRunning && (captureBlocked || !aiAvailable)) {
                     Text(
-                        stringResource(if (captureBlocked) R.string.home_capture_blocked else R.string.home_ai_unavailable),
+                        stringResource(if (captureBlocked) R.string.home_capture_blocked else R.string.home_ai_unavailable_loud),
                         fontSize = 14.sp, color = WarningColor, lineHeight = 21.sp,
                         // 홈을 보는 중에 안내가 생길 수 있으므로 화면 읽어주기가 읽고 지나가게 한다.
                         modifier = Modifier.padding(start = 20.dp, top = 8.dp)

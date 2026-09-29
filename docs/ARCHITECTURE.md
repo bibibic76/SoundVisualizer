@@ -138,7 +138,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
   - `isRecording`을 먼저 내려서, `stop()`으로 풀린 `read()`가 내는 오류를 캡처 오류로 보지 않습니다. 쉬기는 사용자가 끈 것도 실패도 아니므로 꺼짐 알림을 띄우지 않습니다.
   - `AudioEngine.reset`을 하지 않으면 네이티브에 남은 마지막 소리 크기를 진동 판단과 오버레이가 "계속 나는 소리"로 봅니다.
   - 캡처 스레드가 끝나지 않으면 같은 `AudioRecord`로 다시 켤 수 없으므로 `CaptureError`로 내리고 알립니다.
-- **다시 켜기**: `startRecording`과 새 캡처 스레드, 그래픽(`isCapturePaused=false`)은 **바로** → (300ms 뒤) `RealtimeAiPipeline.start`(링버퍼·후처리·마지막 결과를 비워 쉬기 직전 소리를 다시 분류하지 않음) → `AiClassification.attach` → 새 `HapticNotifier`(한 번만 시작·정지하는 객체). 녹음을 다시 시작하지 못하면 `CaptureError`로 내리고 알립니다.
+- **다시 켜기**: `startRecording`과 새 캡처 스레드, 새 `HapticNotifier`(한 번만 시작·정지하는 객체), 그래픽(`isCapturePaused=false`)은 **바로** → (300ms 뒤) `RealtimeAiPipeline.start`(링버퍼·후처리·마지막 결과를 비워 쉬기 직전 소리를 다시 분류하지 않음) → `AiClassification.attach`. 진동은 AI 가 다시 붙을 때까지 라벨이 없어 울리지 않습니다. 녹음을 다시 시작하지 못하면 `CaptureError`로 내리고 알립니다.
   - AI만 300ms 미루는 이유: 쉴 때 부르는 `stop()`은 이미 돌던 추론 한 번을 기다리지 않습니다. 화면을 껐다 바로 켜서 그 추론이 `start()`로 비운 뒤에 끝나면 쉬기 직전 결과가 되살아나, 첫 소리에 위협음 진동이 잘못 울릴 수 있습니다. 추론 한 번보다 길게 기다렸다 시작하고, 그때까지 `aiPaused`를 세워 둡니다. 미뤄 둔 재시작은 다시 쉬거나 내려갈 때 취소합니다(`scheduleAiResume`·`cancelAiResume`).
   - 그래픽은 기다리지 않습니다. 소리를 보는 것이 이 앱의 본 일이라 화면을 켠 뒤 300ms를 비워 둘 수 없습니다. 기다리는 동안 라벨만 환경음으로 떨어집니다(읽는 쪽을 떼어 두었으므로). 붙이기는 `start()`가 비운 **뒤**에 하므로 그 사이에 옛 라벨이 화면에 나오지 않습니다.
   - 대신 **환경음 표시를 꺼 둔 사용자**는 그동안 소리가 나도 아무것도 보이지 않습니다. 기다리는 300ms에 더해 링 버퍼가 다시 찰 때까지(약 1초) 이어집니다. 옛 라벨로 위협음 색이 잘못 번쩍이는 것보다는 낫다고 보고 이렇게 두었습니다. 기기에서 체감을 확인할 항목입니다.
@@ -171,7 +171,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 서비스가 시작되면 `SV-AiInit` 스레드(`THREAD_PRIORITY_BACKGROUND`)가 `RealtimeAiPipeline.create`로 모델을 불러옵니다. 서비스 시작을 막지 않기 위해서입니다.
 - YAMNet은 가중치가 별도 파일(`yamnet.data`, 약 15MB)이라, ONNX Runtime이 파일 경로로 찾을 수 있게 assets에서 앱 내부 저장소로 복사한 뒤 세션을 만듭니다.
 - 로딩이 끝나기 전이나 모델 로딩이 실패하면 분류 결과가 없고, 오버레이는 모든 소리를 **환경음**으로 그립니다.
-- 로딩이 실패하면 캡처와 시각화는 계속 돌지만, 진동 알림(`HapticNotifier`)은 파이프라인이 붙어야 시작하므로 아예 돌지 않습니다. 설정 화면만 보면 위협음 진동이 켜진 것처럼 보이므로, `SettingsManager.aiAvailable`을 `false`로 두고 홈의 상태 아래, 설정의 소리 분류 카드 맨 위, 켜 둔 진동 스위치 아래, 실행 중 알림 문구에 소리 종류를 구분하지 못한다고 알립니다. 알림을 다시 올리는 일은 메인 스레드로 넘기며, 그사이 멈추는 중이거나(`StopLatch`) 끄기를 누른 뒤면(`AudioCaptureService.stopRequested`) 올리지 않습니다. 포그라운드 알림이 치워진 뒤 같은 번호로 올리면 지워지지 않는 알림이 남기 때문입니다. 끄기 신호는 서비스가 직접 들고, `VisualizerController.stop`이 `stopService` 앞에 세웁니다. UI 상태(`isServiceRunning`)로는 거를 수 없습니다. 액티비티가 `onResume`에서 `AudioCaptureService.isRunning`으로 다시 세우는데, 그 값은 `onDestroy` 전까지 `true`이기 때문입니다. 이 값은 켤 때와 끌 때 `true`로 되돌립니다(로딩 중에도 `true`). `ai/` 코드는 바꾸지 않고, 실패는 `create`가 던지는 예외로 압니다.
+- 로딩이 실패하면 캡처와 시각화는 계속 돌지만, 진동 알림(`HapticNotifier`)은 캡처와 함께 돌되 라벨이 오지 않으므로 종류를 가리지 않고 큰 소리에만 위협음 설정으로 울립니다(5장). 설정 화면만 보면 종류별 진동이 그대로인 것처럼 보이므로, `SettingsManager.aiAvailable`을 `false`로 두고 홈의 상태 아래, 설정의 소리 분류 카드 맨 위, 켜 둔 진동 스위치 아래, 실행 중 알림 문구에 소리 종류를 구분하지 못한다고 알립니다. 알림을 다시 올리는 일은 메인 스레드로 넘기며, 그사이 멈추는 중이거나(`StopLatch`) 끄기를 누른 뒤면(`AudioCaptureService.stopRequested`) 올리지 않습니다. 포그라운드 알림이 치워진 뒤 같은 번호로 올리면 지워지지 않는 알림이 남기 때문입니다. 끄기 신호는 서비스가 직접 들고, `VisualizerController.stop`이 `stopService` 앞에 세웁니다. UI 상태(`isServiceRunning`)로는 거를 수 없습니다. 액티비티가 `onResume`에서 `AudioCaptureService.isRunning`으로 다시 세우는데, 그 값은 `onDestroy` 전까지 `true`이기 때문입니다. 이 값은 켤 때와 끌 때 `true`로 되돌립니다(로딩 중에도 `true`). `ai/` 코드는 바꾸지 않고, 실패는 `create`가 던지는 예외로 압니다.
 
 ### 분석 주기
 
@@ -395,7 +395,9 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 | `HapticSettings` | 종류별 켜기·세기(약·중·강)·패턴(한 번·두 번·길게·소리 따라) |
 | `HapticSettingRow`, `HapticTestSection` | 설정 화면의 종류별 진동 설정 줄, 개발자 모드의 진동 시험 |
 
-- AI 모델이 준비된 뒤 캡처 서비스가 `HapticNotifier`를 시작합니다. 진동 모터가 없는 기기에서는 시작하지 않습니다. 화면이 꺼져 쉬면 멈추고, 켜지면 새로 만들어 시작합니다.
+- 캡처가 돌기 시작하면 캡처 서비스가 `HapticNotifier`를 시작합니다(`startHaptics`). 진동 모터가 없는 기기에서는 시작하지 않습니다. 화면이 꺼져 쉬면 멈추고, 켜지면 새로 만들어 시작합니다. 예전에는 AI 모델이 준비된 뒤에 시작해서, 모델을 못 불러온 실행에는 진동이 아예 없었습니다(#225). 화면을 볼 수 없을 때는 진동이 유일한 알림이라 AI 와 떼었습니다.
+- 라벨은 오버레이와 같은 `AiClassification.latest()`에서 읽습니다. AI 가 붙기 전(로딩 중, 화면을 켠 직후 300ms)에는 라벨이 없어 지금처럼 울리지 않습니다. 곧 올 라벨과 겹쳐 두 번 울리지 않게 하기 위해서입니다.
+- **AI 를 쓸 수 없는 실행**(`SettingsManager.aiAvailable`이 `false`)에서는 라벨이 끝내 오지 않으므로, 종류를 가리지 않고 **큰 소리**(`HapticTuning.UNLABELED_LOUD_LEVEL`, -12dBFS)에만 위협음 설정으로 울립니다. 이어지는 큰 소리 하나에 한 번이고 쿨다운 2초는 같습니다. 위협음의 표시나 진동을 꺼 두면 울리지 않습니다. 소리 따라는 모든 소리를 따라 울리게 되므로 두 번으로 울립니다. 소리가 난다는 기준(0.01)으로 울리면 게임·영상이 켜져 있는 내내 울리기 때문에 따로 둔 기준이며, 폰 체감 확인에서 정합니다. 규칙은 `HapticPolicyTest`가, 진동이 AI 가 아니라 캡처와 함께 켜지는지는 `HapticSourceContractTest`가 봅니다.
 - 시각화가 뜻하지 않게 꺼졌을 때의 진동(`HapticPlayer.playStoppedAlert`)은 이 설정과 상관없이 울립니다(1장 꺼짐 알림).
 - `SV-Haptic` 스레드(`THREAD_PRIORITY_DISPLAY`)가 조용할 때는 **100ms마다**, 소리 따라가 울리는 동안은 **20ms마다** 최근 분류 라벨과 `AudioEngine.takeHapticFrame()`(지난 틱 이후 구간 전체를 모은 값)을 읽습니다. AI 결과가 250ms마다 나오므로 100ms로도 놓치지 않고, 소리 따라는 20ms마다 봐야 소리가 시작된 곳을 바로 칩니다. 다음 틱은 절대 시각(`postAtTime`)으로 잡습니다. 배경 우선순위는 렌더·AI가 바쁠 때 틱이 밀려 쓰지 않습니다.
 - `ai/` 코드에 콜백을 넣지 않고 결과를 읽어 가는 방식이라 AI 파트를 건드리지 않습니다.

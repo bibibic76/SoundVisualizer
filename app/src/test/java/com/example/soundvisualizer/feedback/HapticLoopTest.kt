@@ -20,6 +20,16 @@ class HapticLoopTest {
         onTick(t, label, if (rms > 0f) loud else 0f, rms, 0.02f, 2, c)
 
     @Test
+    fun `AI 를 못 쓰는 실행이면 라벨 없는 큰 소리에 한 번 모양을 보낸다`() {
+        val c = cfg(HapticPattern.DoubleTap)
+        assertNull("AI 를 쓸 수 있으면 라벨을 기다린다", HapticLoop(36, true).onTick(0, null, 0.5f, 0.2f, 0.02f, 2, c))
+
+        val plan = HapticLoop(36, true).onTick(0, null, 0.5f, 0.2f, 0.02f, 2, c, unlabeledAlerts = true)
+        assertNotNull(plan)
+        assertEquals(PlanReason.ONE_SHOT, plan!!.reason)
+    }
+
+    @Test
     fun `한 번 패턴만 켜져 있으면 빠른 틱을 쓰지 않는다`() {
         val loop = HapticLoop(36, true)
         val c = cfg(HapticPattern.DoubleTap)

@@ -65,6 +65,17 @@ class HapticSourceContractTest {
     }
 
     @Test
+    fun `진동은 AI 가 아니라 캡처와 함께 켜진다`() {
+        // AI 모델을 못 불러온 실행에서도 큰 소리에는 울려야 한다(#225). 캡처 서비스는 Context 가 있어야 만들 수 있다.
+        val service = code("AudioCaptureService.kt")
+        assertFalse("AI 를 시작할 때 진동 알림을 만든다", body(service, "private fun startAiLocked(").contains("HapticNotifier("))
+        assertTrue("캡처를 시작할 때 진동 알림을 켜지 않는다", body(service, "private fun startCaptureLoop(").contains("startHaptics()"))
+        val start = body(service, "private fun startHaptics(")
+        assertTrue("AI 를 쓸 수 없는 실행을 진동 알림에 알리지 않는다", start.contains("unlabeledAlerts = { !SettingsManager.aiAvailable.value }"))
+        assertTrue("오버레이와 다른 곳에서 라벨을 읽는다", start.contains("AiClassification.latest()"))
+    }
+
+    @Test
     fun `라벨 공급자는 마지막 인자다`() {
         val ctor = notifier.substring(notifier.indexOf("class HapticNotifier("), notifier.indexOf(") {", notifier.indexOf("class HapticNotifier(")))
         assertTrue("labelSource 가 마지막 인자가 아니다", ctor.trimEnd().endsWith("private val labelSource: () -> String?"))

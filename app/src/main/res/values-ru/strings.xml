@@ -9,7 +9,6 @@
     <string name="home_status_running">Статус: работает</string>
     <string name="home_status_idle">Статус: ожидает запуска</string>
     <string name="home_capture_blocked">Звук не доходит до визуализатора, поэтому рисовать нечего. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука (так устроены защищённые видео), или звук в нём выключен.</string>
-    <string name="home_ai_unavailable">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков, а вибрация отключена. Попробуйте выключить и снова включить визуализатор.</string>
     <string name="home_stopped_dismiss">Скрыть</string>
     <string name="home_start">Запустить</string>
     <string name="home_stop">Остановить</string>
@@ -120,7 +119,6 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Вибрация</string>
     <string name="haptic_requires_display">Вибрация работает, только когда показ этого типа звука включён.</string>
-    <string name="haptic_ai_unavailable">Пока определение типа звука не работает, вибрации не будет.</string>
     <string name="haptic_unsupported">Это устройство не поддерживает вибрацию.</string>
     <string name="haptic_no_amplitude">На этом устройстве нельзя менять силу вибрации, поэтому она будет стандартной.</string>
     <string name="haptic_strength">Сила</string>
@@ -162,7 +160,6 @@
     <string name="notification_text">Идёт визуализация звука.</string>
     <string name="notification_stop">Остановить</string>
     <string name="notification_mode_selected">%1$s, выбрано</string>
-    <string name="notification_text_ai_unavailable">Идёт визуализация звука. Определение типа звука не работает, поэтому вибрация отключена.</string>
     <string name="notification_text_capture_blocked">Звук не доходит до визуализатора. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука, или звук в нём выключен.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -232,7 +229,6 @@
     <string name="help_faq_no_graphic_q">Графика не отображается.</string>
     <string name="help_faq_no_graphic_a">Проверьте, не запрещает ли захват звука приложение, в котором воспроизводится звук, и не выключен ли звук в этом приложении. Если звук долго не доходит до визуализатора, на вкладке «Главная» и в уведомлении во время работы появится сообщение об этом. Также убедитесь, что на вкладке «Настройки» значение «Плотность» не слишком низкое и что показ текущего типа звука не выключен.</string>
     <string name="help_faq_no_vibration_q">Нет вибрации.</string>
-    <string name="help_faq_no_vibration_a">На вкладке «Настройки» в разделе «Типы звуков (ИИ)» убедитесь, что для нужного типа звука включены и «Показывать», и «Вибрация». Если вибрация выключена в настройках телефона, она может не работать.</string>
     <string name="help_faq_install_q">Новая версия не устанавливается.</string>
     <string name="help_faq_install_a">APK, собранный в другом месте, имеет другую подпись, поэтому его нельзя установить поверх текущей версии. Сначала удалите приложение, затем установите новую версию. При этом настройки будут сброшены.</string>
     <string name="help_faq_battery_q">Приложение сильно расходует заряд батареи?</string>
