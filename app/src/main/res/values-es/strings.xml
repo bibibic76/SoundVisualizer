@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">Dibuja en tu pantalla los sonidos que no puedes ver.\nDe los juegos al cine, descubre una experiencia nueva.</string>
     <string name="home_status_running">Estado: en ejecución</string>
+    <string name="home_status_running_external">Estado: en ejecución · Sonido externo</string>
+    <string name="home_mic_silenced">No entra ningún sonido por el micrófono. Puede que estés en una llamada, que otra app esté usando el micrófono o que el acceso al micrófono esté desactivado en Ajustes rápidos.</string>
+    <string name="home_external_mode">Modo de sonido externo</string>
+    <string name="home_external_mode_desc">Escucha los sonidos de tu entorno con el micrófono en lugar del sonido que se reproduce en tu teléfono, y te los muestra en pantalla y con vibración. No hace falta aceptar la grabación de pantalla, y mientras escucha aparece un indicador de micrófono en la barra de estado. Lo que oye nunca se guarda en un archivo ni se envía a ningún sitio.</string>
+    <string name="home_external_mode_locked">No se puede cambiar mientras está en marcha. Detén la visualización, cámbialo y se aplicará la próxima vez que la inicies.</string>
     <string name="home_status_idle">Estado: listo</string>
     <string name="home_capture_blocked">No llega ningún sonido al visor, así que no se puede dibujar nada. Puede que la app que reproduce el sonido no permita compartirlo (así funcionan los videos protegidos), o que su propio sonido esté silenciado.</string>
     <string name="home_stopped_dismiss">Cerrar aviso</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">Se necesita el permiso de micrófono (grabación de audio) para capturar el audio.</string>
     <string name="permission_mic_rationale_title">¿Por qué el permiso de micrófono?</string>
     <string name="permission_mic_rationale_message">Android exige el permiso de micrófono para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
+    <string name="permission_mic_rationale_message_external">El modo de sonido externo escucha los sonidos de tu entorno con el micrófono y te los muestra en pantalla y con vibración. Mientras escucha, aparece un indicador de micrófono en la barra de estado, y lo que oye nunca se guarda en un archivo ni se envía a ningún sitio.</string>
     <string name="permission_mic_settings_title">Permite el micrófono en Ajustes</string>
     <string name="permission_mic_settings_message">No se concedió el permiso de micrófono. Si la solicitud de permiso no vuelve a aparecer, toca “Abrir ajustes”, ve a “Permisos” y permite “Micrófono”. Solo se usa para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
+    <string name="permission_mic_settings_message_external">No se concedió el permiso de micrófono. Si la solicitud de permiso no vuelve a aparecer, toca “Abrir ajustes”, ve a “Permisos” y permite “Micrófono”. El modo de sonido externo escucha los sonidos de tu entorno con el micrófono. Lo que oye nunca se guarda en un archivo ni se envía a ningún sitio.</string>
     <string name="permission_continue">Continuar</string>
     <string name="permission_cancel">Cancelar</string>
     <string name="permission_open_settings">Abrir ajustes</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">Solo vibra si este tipo de sonido se muestra en pantalla.</string>
     <string name="haptic_unsupported">Este dispositivo no admite la vibración.</string>
     <string name="haptic_no_amplitude">Este dispositivo no permite ajustar la intensidad de la vibración, así que vibra con la intensidad predeterminada.</string>
+    <string name="haptic_follow_external">En el modo de sonido externo, “Seguir el sonido” vibra “Dos veces”, para que el teléfono no oiga su propia vibración una y otra vez.</string>
     <string name="haptic_strength">Intensidad</string>
     <string name="haptic_strength_weak">Suave</string>
     <string name="haptic_strength_medium">Media</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">Captura de audio</string>
     <string name="notification_text">Visualizando el sonido.</string>
+    <string name="notification_title_external">SoundVisualizer · Sonido externo</string>
+    <string name="notification_text_external">Escuchando los sonidos de tu entorno y visualizándolos.</string>
+    <string name="notification_text_mic_silenced">No entra ningún sonido por el micrófono. Puede que estés en una llamada o que el micrófono esté bloqueado.</string>
     <string name="notification_stop">Detener</string>
     <string name="notification_mode_selected">%1$s, seleccionado</string>
     <string name="notification_text_capture_blocked">No llega ningún sonido al visor. Puede que la app que reproduce el sonido no permita compartirlo o que su propio sonido esté silenciado.</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">Necesario para mostrar los gráficos sobre juegos y videos.</string>
     <string name="help_perm_mic">Micrófono (grabación de audio)</string>
     <string name="help_perm_mic_desc">Android exige este permiso para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
+    <string name="help_perm_mic_desc_external">Android exige este permiso para capturar el sonido que se reproduce en tu teléfono. Con el modo de sonido externo activado, también se usa para escuchar los sonidos de tu entorno. Lo que se oye nunca se guarda en un archivo ni se envía a ningún sitio.</string>
     <string name="help_perm_capture">Grabación de pantalla</string>
     <string name="help_perm_capture_desc">Android solo permite que las apps capturen el sonido del teléfono con este consentimiento. Tu pantalla no se captura.</string>
     <string name="help_perm_notification">Notificaciones (Android 13 o posterior)</string>

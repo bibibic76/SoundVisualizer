@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">Vẽ lên màn hình những âm thanh mà bạn không nhìn thấy.\nTừ trò chơi đến phim ảnh, hãy khám phá một trải nghiệm hoàn toàn mới.</string>
     <string name="home_status_running">Trạng thái: Đang chạy</string>
+    <string name="home_status_running_external">Trạng thái: Đang chạy · Âm thanh bên ngoài</string>
+    <string name="home_mic_silenced">Không có âm thanh nào đi vào qua micrô. Có thể bạn đang trong cuộc gọi, một ứng dụng khác đang dùng micrô, hoặc quyền truy cập micrô đã bị tắt trong Cài đặt nhanh.</string>
+    <string name="home_external_mode">Chế độ âm thanh bên ngoài</string>
+    <string name="home_external_mode_desc">Nghe âm thanh xung quanh bạn qua micrô thay vì âm thanh đang phát trên điện thoại, rồi hiển thị trên màn hình và báo bằng rung. Không cần đồng ý ghi màn hình, và trong lúc nghe, biểu tượng micrô hiện trên thanh trạng thái. Những gì nghe được không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
+    <string name="home_external_mode_locked">Không thể thay đổi khi đang chạy. Hãy dừng âm thanh trực quan rồi thay đổi, thay đổi sẽ áp dụng từ lần bật tiếp theo.</string>
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
     <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
     <string name="home_stopped_dismiss">Đóng thông báo</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">Cần có quyền micrô (ghi âm) để thu âm thanh đang phát trên điện thoại.</string>
     <string name="permission_mic_rationale_title">Tại sao cần quyền micrô?</string>
     <string name="permission_mic_rationale_message">Android yêu cầu quyền micrô để thu âm thanh đang phát trên điện thoại của bạn. Âm thanh xung quanh bạn không bị ghi lại.</string>
+    <string name="permission_mic_rationale_message_external">Chế độ âm thanh bên ngoài nghe âm thanh xung quanh bạn qua micrô rồi hiển thị trên màn hình và báo bằng rung. Trong lúc nghe, biểu tượng micrô hiện trên thanh trạng thái, và những gì nó nghe được không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
     <string name="permission_mic_settings_title">Hãy cấp quyền micrô trong Cài đặt</string>
     <string name="permission_mic_settings_message">Quyền micrô chưa được cấp. Nếu yêu cầu cấp quyền không xuất hiện lại, hãy nhấn “Mở cài đặt”, vào “Quyền” rồi cho phép “Micrô”. Quyền này chỉ dùng để thu âm thanh đang phát trên điện thoại. Âm thanh xung quanh bạn không bị ghi lại.</string>
+    <string name="permission_mic_settings_message_external">Quyền micrô chưa được cấp. Nếu yêu cầu cấp quyền không xuất hiện lại, hãy nhấn “Mở cài đặt”, vào “Quyền” rồi cho phép “Micrô”. Chế độ âm thanh bên ngoài nghe âm thanh xung quanh bạn qua micrô. Những gì nó nghe được không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
     <string name="permission_continue">Tiếp tục</string>
     <string name="permission_cancel">Hủy</string>
     <string name="permission_open_settings">Mở cài đặt</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">Chỉ rung khi loại âm thanh này được hiện trên màn hình.</string>
     <string name="haptic_unsupported">Thiết bị này không hỗ trợ rung.</string>
     <string name="haptic_no_amplitude">Thiết bị này không điều chỉnh được cường độ rung nên sẽ rung ở cường độ mặc định.</string>
+    <string name="haptic_follow_external">Ở chế độ âm thanh bên ngoài, “Theo âm thanh” sẽ rung “Hai lần” để điện thoại không liên tục nghe thấy chính tiếng rung của mình.</string>
     <string name="haptic_strength">Cường độ</string>
     <string name="haptic_strength_weak">Nhẹ</string>
     <string name="haptic_strength_medium">Vừa</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">Thu âm thanh</string>
     <string name="notification_text">Đang trực quan hóa âm thanh.</string>
+    <string name="notification_title_external">SoundVisualizer · Âm thanh bên ngoài</string>
+    <string name="notification_text_external">Đang nghe và trực quan hóa âm thanh xung quanh bạn.</string>
+    <string name="notification_text_mic_silenced">Không có âm thanh nào đi vào qua micrô. Có thể bạn đang trong cuộc gọi hoặc micrô đang bị chặn.</string>
     <string name="notification_stop">Dừng</string>
     <string name="notification_mode_selected">%1$s, đã chọn</string>
     <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">Cần thiết để hiển thị đồ họa phía trên trò chơi và video.</string>
     <string name="help_perm_mic">Micrô (ghi âm)</string>
     <string name="help_perm_mic_desc">Android yêu cầu quyền này để thu âm thanh đang phát trên điện thoại của bạn. Âm thanh xung quanh bạn không bị ghi lại.</string>
+    <string name="help_perm_mic_desc_external">Android yêu cầu quyền này để thu âm thanh đang phát trên điện thoại của bạn. Khi bật chế độ âm thanh bên ngoài, quyền này còn được dùng để nghe âm thanh xung quanh bạn. Những gì nghe được không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
     <string name="help_perm_capture">Ghi màn hình</string>
     <string name="help_perm_capture_desc">Android chỉ cho phép ứng dụng thu âm thanh trên điện thoại khi bạn đồng ý với yêu cầu này. Màn hình của bạn không bị ghi lại.</string>
     <string name="help_perm_notification">Thông báo (Android 13 trở lên)</string>

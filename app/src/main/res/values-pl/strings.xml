@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">Pokazuje na ekranie dźwięki, których nie widać.\nOd gier po filmy – odkryj zupełnie nowe wrażenia.</string>
     <string name="home_status_running">Stan: działa</string>
+    <string name="home_status_running_external">Stan: działa · Dźwięki zewnętrzne</string>
+    <string name="home_mic_silenced">Przez mikrofon nie dociera żaden dźwięk. Być może trwa rozmowa telefoniczna, inna aplikacja używa mikrofonu albo dostęp do mikrofonu jest wyłączony w Szybkich ustawieniach.</string>
+    <string name="home_external_mode">Tryb dźwięków zewnętrznych</string>
+    <string name="home_external_mode_desc">Słucha przez mikrofon dźwięków wokół Ciebie zamiast dźwięku odtwarzanego na telefonie i pokazuje je na ekranie oraz za pomocą wibracji. Nie trzeba zgody na nagrywanie ekranu, a podczas słuchania na pasku stanu widać wskaźnik mikrofonu. To, co słychać, nie jest zapisywane w pliku ani nigdzie wysyłane.</string>
+    <string name="home_external_mode_locked">Nie można tego zmienić, gdy wizualizacja działa. Zatrzymaj ją i zmień ustawienie – zacznie obowiązywać przy następnym uruchomieniu.</string>
     <string name="home_status_idle">Stan: w gotowości</string>
     <string name="home_capture_blocked">Do wizualizacji nie dociera żaden dźwięk, więc nie ma czego rysować. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie (tak działają filmy chronione przed nagrywaniem) lub dźwięk może być w niej wyciszony.</string>
     <string name="home_stopped_dismiss">Zamknij komunikat</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">Do przechwytywania dźwięku potrzebne jest uprawnienie Mikrofon (nagrywanie dźwięku).</string>
     <string name="permission_mic_rationale_title">Po co uprawnienie do mikrofonu?</string>
     <string name="permission_mic_rationale_message">Android wymaga uprawnienia do mikrofonu, aby aplikacja mogła przechwytywać dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
+    <string name="permission_mic_rationale_message_external">Tryb dźwięków zewnętrznych słucha przez mikrofon dźwięków wokół Ciebie i pokazuje je na ekranie oraz za pomocą wibracji. Podczas słuchania na pasku stanu widać wskaźnik mikrofonu, a to, co słyszy, nie jest zapisywane w pliku ani nigdzie wysyłane.</string>
     <string name="permission_mic_settings_title">Włącz dostęp do mikrofonu w ustawieniach</string>
     <string name="permission_mic_settings_message">Nie przyznano uprawnienia do mikrofonu. Jeśli prośba o uprawnienie nie pojawi się ponownie, naciśnij „Otwórz ustawienia”, przejdź do sekcji „Uprawnienia”, wybierz „Mikrofon” i zezwól na dostęp. Uprawnienie służy tylko do przechwytywania dźwięku odtwarzanego na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
+    <string name="permission_mic_settings_message_external">Nie przyznano uprawnienia do mikrofonu. Jeśli prośba o uprawnienie nie pojawi się ponownie, naciśnij „Otwórz ustawienia”, przejdź do sekcji „Uprawnienia”, wybierz „Mikrofon” i zezwól na dostęp. Tryb dźwięków zewnętrznych słucha przez mikrofon dźwięków wokół Ciebie. To, co słyszy, nie jest zapisywane w pliku ani nigdzie wysyłane.</string>
     <string name="permission_continue">Dalej</string>
     <string name="permission_cancel">Anuluj</string>
     <string name="permission_open_settings">Otwórz ustawienia</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">Wibracje działają tylko wtedy, gdy ten rodzaj dźwięku jest pokazywany.</string>
     <string name="haptic_unsupported">To urządzenie nie obsługuje wibracji.</string>
     <string name="haptic_no_amplitude">To urządzenie nie pozwala regulować siły wibracji, więc wibruje z domyślną siłą.</string>
+    <string name="haptic_follow_external">W trybie dźwięków zewnętrznych zamiast wzoru „Za dźwiękiem” używany jest wzór „Dwa razy”, aby telefon nie słyszał bez przerwy własnej wibracji.</string>
     <string name="haptic_strength">Siła</string>
     <string name="haptic_strength_weak">Słaba</string>
     <string name="haptic_strength_medium">Średnia</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">Przechwytywanie dźwięku</string>
     <string name="notification_text">Trwa wizualizacja dźwięku.</string>
+    <string name="notification_title_external">SoundVisualizer · Dźwięki zewnętrzne</string>
+    <string name="notification_text_external">Trwa słuchanie i wizualizacja dźwięków wokół Ciebie.</string>
+    <string name="notification_text_mic_silenced">Przez mikrofon nie dociera żaden dźwięk. Być może trwa rozmowa telefoniczna albo mikrofon jest zablokowany.</string>
     <string name="notification_stop">Zatrzymaj</string>
     <string name="notification_mode_selected">%1$s, wybrano</string>
     <string name="notification_text_capture_blocked">Do wizualizacji nie dociera żaden dźwięk. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie lub dźwięk może być w niej wyciszony.</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">Potrzebne, aby wyświetlać grafikę nad grami i filmami.</string>
     <string name="help_perm_mic">Mikrofon (nagrywanie dźwięku)</string>
     <string name="help_perm_mic_desc">Android wymaga tego uprawnienia, aby aplikacja mogła przechwytywać dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są nagrywane.</string>
+    <string name="help_perm_mic_desc_external">Android wymaga tego uprawnienia, aby aplikacja mogła przechwytywać dźwięk odtwarzany na telefonie. Gdy tryb dźwięków zewnętrznych jest włączony, uprawnienie służy też do słuchania dźwięków wokół Ciebie. To, co słychać, nie jest zapisywane w pliku ani nigdzie wysyłane.</string>
     <string name="help_perm_capture">Nagrywanie ekranu</string>
     <string name="help_perm_capture_desc">Android pozwala aplikacjom przechwytywać dźwięk z telefonu tylko po udzieleniu tej zgody. Obraz ekranu nie jest przechwytywany.</string>
     <string name="help_perm_notification">Powiadomienia (Android 13 lub nowszy)</string>

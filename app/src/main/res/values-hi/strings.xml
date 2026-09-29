@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">जो आवाज़ें दिखती नहीं, उन्हें स्क्रीन पर दिखाता है।\nगेमिंग से लेकर फ़िल्मों तक, एक बिल्कुल नया अनुभव पाएं।</string>
     <string name="home_status_running">स्थिति: चालू है</string>
+    <string name="home_status_running_external">स्थिति: चालू है · बाहरी आवाज़</string>
+    <string name="home_mic_silenced">माइक्रोफ़ोन से कोई आवाज़ नहीं आ रही है। हो सकता है कि आप कॉल पर हों, कोई दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा हो, या फटाफट सेटिंग में माइक्रोफ़ोन का ऐक्सेस बंद हो।</string>
+    <string name="home_external_mode">बाहरी आवाज़ मोड</string>
+    <string name="home_external_mode_desc">फ़ोन में चल रही आवाज़ की जगह, माइक्रोफ़ोन से आपके आस-पास की आवाज़ें सुनता है और उन्हें स्क्रीन पर और वाइब्रेशन से बताता है। स्क्रीन रिकॉर्डिंग की अनुमति की ज़रूरत नहीं होती, और सुनते समय स्टेटस बार में माइक्रोफ़ोन का निशान दिखता है। जो सुना जाता है, वह न किसी फ़ाइल में सेव होता है और न कहीं भेजा जाता है।</string>
+    <string name="home_external_mode_locked">चालू रहते हुए इसे बदला नहीं जा सकता। विज़ुअलाइज़र बंद करके इसे बदलें, यह अगली बार चालू करने पर लागू होगा।</string>
     <string name="home_status_idle">स्थिति: तैयार</string>
     <string name="home_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है, इसलिए स्क्रीन पर कुछ भी नहीं बनाया जा सकता। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो (सुरक्षित वीडियो के साथ ऐसा ही होता है), या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
     <string name="home_stopped_dismiss">जानकारी हटाएं</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">ऑडियो कैप्चर करने के लिए माइक्रोफ़ोन (ऑडियो रिकॉर्डिंग) की अनुमति ज़रूरी है।</string>
     <string name="permission_mic_rationale_title">माइक्रोफ़ोन की अनुमति क्यों चाहिए?</string>
     <string name="permission_mic_rationale_message">Android पर, फ़ोन में चल रही आवाज़ कैप्चर करने के लिए माइक्रोफ़ोन की अनुमति ज़रूरी होती है। आपके आस-पास की आवाज़ें रिकॉर्ड नहीं की जातीं।</string>
+    <string name="permission_mic_rationale_message_external">बाहरी आवाज़ मोड, माइक्रोफ़ोन से आपके आस-पास की आवाज़ें सुनता है और उन्हें स्क्रीन पर और वाइब्रेशन से बताता है। सुनते समय स्टेटस बार में माइक्रोफ़ोन का निशान दिखता है। जो वह सुनता है, वह न किसी फ़ाइल में सेव होता है और न कहीं भेजा जाता है।</string>
     <string name="permission_mic_settings_title">सेटिंग में माइक्रोफ़ोन की अनुमति दें</string>
     <string name="permission_mic_settings_message">माइक्रोफ़ोन की अनुमति नहीं मिली। अगर अनुमति मांगने वाली विंडो फिर से न दिखे, तो “सेटिंग खोलें” पर टैप करें, फिर “अनुमतियां” में जाकर “माइक्रोफ़ोन” की अनुमति दें। इसका इस्तेमाल सिर्फ़ फ़ोन में चल रही आवाज़ कैप्चर करने के लिए होता है। आपके आस-पास की आवाज़ें रिकॉर्ड नहीं की जातीं।</string>
+    <string name="permission_mic_settings_message_external">माइक्रोफ़ोन की अनुमति नहीं मिली। अगर अनुमति मांगने वाली विंडो फिर से न दिखे, तो “सेटिंग खोलें” पर टैप करें, फिर “अनुमतियां” में जाकर “माइक्रोफ़ोन” की अनुमति दें। बाहरी आवाज़ मोड, माइक्रोफ़ोन से आपके आस-पास की आवाज़ें सुनता है। जो वह सुनता है, वह न किसी फ़ाइल में सेव होता है और न कहीं भेजा जाता है।</string>
     <string name="permission_continue">जारी रखें</string>
     <string name="permission_cancel">रद्द करें</string>
     <string name="permission_open_settings">सेटिंग खोलें</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">वाइब्रेशन तभी होगा, जब यह प्रकार स्क्रीन पर दिखाया जा रहा हो।</string>
     <string name="haptic_unsupported">इस डिवाइस पर वाइब्रेशन की सुविधा नहीं है।</string>
     <string name="haptic_no_amplitude">इस डिवाइस पर वाइब्रेशन की तीव्रता नहीं बदली जा सकती, इसलिए डिफ़ॉल्ट तीव्रता पर वाइब्रेशन होगा।</string>
+    <string name="haptic_follow_external">बाहरी आवाज़ मोड में “आवाज़ के साथ” की जगह “दो बार” वाइब्रेशन होता है, ताकि फ़ोन बार-बार अपना ही वाइब्रेशन न सुने।</string>
     <string name="haptic_strength">तीव्रता</string>
     <string name="haptic_strength_weak">हल्का</string>
     <string name="haptic_strength_medium">मध्यम</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">ऑडियो कैप्चर</string>
     <string name="notification_text">आवाज़ें स्क्रीन पर दिखाई जा रही हैं।</string>
+    <string name="notification_title_external">SoundVisualizer · बाहरी आवाज़</string>
+    <string name="notification_text_external">आपके आस-पास की आवाज़ें सुनी जा रही हैं और स्क्रीन पर दिखाई जा रही हैं।</string>
+    <string name="notification_text_mic_silenced">माइक्रोफ़ोन से कोई आवाज़ नहीं आ रही है। हो सकता है कि आप कॉल पर हों या माइक्रोफ़ोन ब्लॉक हो।</string>
     <string name="notification_stop">रोकें</string>
     <string name="notification_mode_selected">%1$s, चुना गया</string>
     <string name="notification_text_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो, या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">गेम और वीडियो के ऊपर ग्राफ़िक्स दिखाने के लिए ज़रूरी है।</string>
     <string name="help_perm_mic">माइक्रोफ़ोन (ऑडियो रिकॉर्डिंग)</string>
     <string name="help_perm_mic_desc">Android पर, फ़ोन में चल रही आवाज़ कैप्चर करने के लिए यह अनुमति ज़रूरी होती है। आपके आस-पास की आवाज़ें रिकॉर्ड नहीं की जातीं।</string>
+    <string name="help_perm_mic_desc_external">Android पर, फ़ोन में चल रही आवाज़ कैप्चर करने के लिए यह अनुमति ज़रूरी होती है। बाहरी आवाज़ मोड चालू होने पर, इसी अनुमति से आपके आस-पास की आवाज़ें भी सुनी जाती हैं। जो सुना जाता है, वह न किसी फ़ाइल में सेव होता है और न कहीं भेजा जाता है।</string>
     <string name="help_perm_capture">स्क्रीन रिकॉर्डिंग</string>
     <string name="help_perm_capture_desc">फ़ोन की आवाज़ कैप्चर करने के लिए, Android सिर्फ़ इसी सहमति के ज़रिए ऐप को अनुमति देता है। आपकी स्क्रीन कैप्चर नहीं की जाती।</string>
     <string name="help_perm_notification">सूचनाएं (Android 13+)</string>

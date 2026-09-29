@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">يرسم على شاشتك الأصوات التي لا تراها.\nمن الألعاب إلى الأفلام، عِش تجربة جديدة كليًا.</string>
     <string name="home_status_running">الحالة: قيد التشغيل</string>
+    <string name="home_status_running_external">الحالة: قيد التشغيل · الأصوات من حولك</string>
+    <string name="home_mic_silenced">لا يصل أي صوت عبر الميكروفون. ربما تكون في مكالمة، أو يستخدم تطبيق آخر الميكروفون، أو تم إيقاف الوصول إلى الميكروفون من الإعدادات السريعة.</string>
+    <string name="home_external_mode">وضع الأصوات الخارجية</string>
+    <string name="home_external_mode_desc">يستمع إلى الأصوات من حولك عبر الميكروفون بدلًا من الصوت الذي يعمل على هاتفك، ويعرضها على الشاشة وبالاهتزاز. لا يلزم الموافقة على تسجيل الشاشة، ويظهر رمز الميكروفون في شريط الحالة أثناء الاستماع. لا يُحفظ ما يسمعه في ملف ولا يُرسل إلى أي مكان.</string>
+    <string name="home_external_mode_locked">لا يمكن تغييره أثناء التشغيل. أوقف الصوت المرئي ثم غيّره، وسيُطبَّق عند التشغيل التالي.</string>
     <string name="home_status_idle">الحالة: جاهز للتشغيل</string>
     <string name="home_capture_blocked">لا يصل أي صوت إلى «الصوت المرئي»، لذا لا يمكن رسم أي شيء. قد لا يسمح التطبيق الذي يشغّل الصوت الآن بمشاركة صوته (هذا ما يحدث مع مقاطع الفيديو المحمية)، أو قد يكون صوت ذلك التطبيق نفسه مكتومًا.</string>
     <string name="home_stopped_dismiss">إخفاء التنبيه</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">يلزم منح إذن الميكروفون (تسجيل الصوت) لالتقاط الصوت.</string>
     <string name="permission_mic_rationale_title">لماذا يلزم إذن الميكروفون؟</string>
     <string name="permission_mic_rationale_message">يتطلب نظام Android إذن الميكروفون لالتقاط الصوت الذي يتم تشغيله على هاتفك. لا يتم تسجيل الأصوات من حولك.</string>
+    <string name="permission_mic_rationale_message_external">يستمع وضع الأصوات الخارجية إلى الأصوات من حولك عبر الميكروفون ويعرضها على الشاشة وبالاهتزاز. يظهر رمز الميكروفون في شريط الحالة أثناء الاستماع، ولا يُحفظ ما يسمعه في ملف ولا يُرسل إلى أي مكان.</string>
     <string name="permission_mic_settings_title">اسمح بإذن الميكروفون من الإعدادات</string>
     <string name="permission_mic_settings_message">لم يتم منح إذن الميكروفون. إذا لم يظهر طلب الإذن مرة أخرى، فانقر على «فتح الإعدادات»، ثم انتقل إلى «الأذونات» واسمح بإذن «الميكروفون». لا يُستخدم هذا الإذن إلا لالتقاط الصوت الذي يتم تشغيله على هاتفك، ولا يتم تسجيل الأصوات من حولك.</string>
+    <string name="permission_mic_settings_message_external">لم يتم منح إذن الميكروفون. إذا لم يظهر طلب الإذن مرة أخرى، فانقر على «فتح الإعدادات»، ثم انتقل إلى «الأذونات» واسمح بإذن «الميكروفون». يستمع وضع الأصوات الخارجية إلى الأصوات من حولك عبر الميكروفون، ولا يُحفظ ما يسمعه في ملف ولا يُرسل إلى أي مكان.</string>
     <string name="permission_continue">متابعة</string>
     <string name="permission_cancel">إلغاء</string>
     <string name="permission_open_settings">فتح الإعدادات</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">لا يعمل الاهتزاز إلا عند إظهار هذا النوع من الأصوات.</string>
     <string name="haptic_unsupported">لا يدعم هذا الجهاز الاهتزاز.</string>
     <string name="haptic_no_amplitude">لا يمكن ضبط قوة الاهتزاز على هذا الجهاز، لذا سيهتز بالقوة التلقائية.</string>
+    <string name="haptic_follow_external">في وضع الأصوات الخارجية يُستبدل نمط «مع الصوت» بنمط «مرتان»، حتى لا يظل الهاتف يسمع اهتزازه.</string>
     <string name="haptic_strength">القوة</string>
     <string name="haptic_strength_weak">خفيف</string>
     <string name="haptic_strength_medium">متوسط</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">التقاط الصوت</string>
     <string name="notification_text">جارٍ عرض الأصوات على الشاشة.</string>
+    <string name="notification_title_external">SoundVisualizer · الأصوات من حولك</string>
+    <string name="notification_text_external">جارٍ الاستماع إلى الأصوات من حولك وعرضها على الشاشة.</string>
+    <string name="notification_text_mic_silenced">لا يصل أي صوت عبر الميكروفون. ربما تكون في مكالمة، أو قد يكون الميكروفون محظورًا.</string>
     <string name="notification_stop">إيقاف</string>
     <string name="notification_mode_selected">%1$s، محدّد</string>
     <string name="notification_text_capture_blocked">لا يصل أي صوت إلى «الصوت المرئي». قد لا يسمح التطبيق الذي يشغّل الصوت الآن بمشاركة صوته، أو قد يكون صوت ذلك التطبيق نفسه مكتومًا.</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">يلزم هذا الإذن لعرض الرسومات فوق الألعاب ومقاطع الفيديو.</string>
     <string name="help_perm_mic">الميكروفون (تسجيل الصوت)</string>
     <string name="help_perm_mic_desc">يتطلب نظام Android هذا الإذن لالتقاط الصوت الذي يتم تشغيله على هاتفك. لا يتم تسجيل الأصوات من حولك.</string>
+    <string name="help_perm_mic_desc_external">يتطلب نظام Android هذا الإذن لالتقاط الصوت الذي يتم تشغيله على هاتفك. وعند تشغيل وضع الأصوات الخارجية يُستخدم أيضًا للاستماع إلى الأصوات من حولك. لا يُحفظ ما يسمعه في ملف ولا يُرسل إلى أي مكان.</string>
     <string name="help_perm_capture">تسجيل الشاشة</string>
     <string name="help_perm_capture_desc">لا يسمح نظام Android للتطبيقات بالتقاط صوت هاتفك إلا من خلال هذه الموافقة. لا يتم التقاط محتوى شاشتك.</string>
     <string name="help_perm_notification">الإشعارات (Android 13 أو أحدث)</string>

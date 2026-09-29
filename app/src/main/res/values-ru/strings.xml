@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">Показывает на экране звуки, которые нельзя увидеть.\nОт игр до фильмов — откройте для себя новые впечатления.</string>
     <string name="home_status_running">Статус: работает</string>
+    <string name="home_status_running_external">Статус: работает · Внешние звуки</string>
+    <string name="home_mic_silenced">Через микрофон не поступает никакой звук. Возможно, вы разговариваете по телефону, микрофон использует другое приложение или доступ к микрофону выключен в быстрых настройках.</string>
+    <string name="home_external_mode">Режим внешних звуков</string>
+    <string name="home_external_mode_desc">Слушает звуки вокруг вас через микрофон вместо звука, который воспроизводится на телефоне, и показывает их на экране и вибрацией. Согласие на запись экрана не нужно, а пока идёт прослушивание, в строке состояния виден значок микрофона. Услышанное никогда не сохраняется в файл и никуда не отправляется.</string>
+    <string name="home_external_mode_locked">Нельзя изменить во время работы. Остановите визуализатор и измените настройку — она применится при следующем запуске.</string>
     <string name="home_status_idle">Статус: ожидает запуска</string>
     <string name="home_capture_blocked">Звук не доходит до визуализатора, поэтому рисовать нечего. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука (так устроены защищённые видео), или звук в нём выключен.</string>
     <string name="home_stopped_dismiss">Скрыть</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">Для захвата звука нужно разрешение «Микрофон» (запись аудио).</string>
     <string name="permission_mic_rationale_title">Зачем нужен доступ к микрофону?</string>
     <string name="permission_mic_rationale_message">Android требует разрешения на доступ к микрофону, чтобы приложение могло получать звук, который воспроизводится на телефоне. Звуки вокруг вас не записываются.</string>
+    <string name="permission_mic_rationale_message_external">Режим внешних звуков слушает звуки вокруг вас через микрофон и показывает их на экране и вибрацией. Пока он слушает, в строке состояния виден значок микрофона, а услышанное никогда не сохраняется в файл и никуда не отправляется.</string>
     <string name="permission_mic_settings_title">Включите доступ к микрофону в настройках</string>
     <string name="permission_mic_settings_message">Доступ к микрофону не предоставлен. Если запрос разрешения больше не появляется, нажмите «Открыть настройки», перейдите в раздел «Разрешения», выберите «Микрофон» и разрешите доступ. Он нужен только для получения звука, который воспроизводится на телефоне. Звуки вокруг вас не записываются.</string>
+    <string name="permission_mic_settings_message_external">Доступ к микрофону не предоставлен. Если запрос разрешения больше не появляется, нажмите «Открыть настройки», перейдите в раздел «Разрешения», выберите «Микрофон» и разрешите доступ. Режим внешних звуков слушает звуки вокруг вас через микрофон. Услышанное никогда не сохраняется в файл и никуда не отправляется.</string>
     <string name="permission_continue">Продолжить</string>
     <string name="permission_cancel">Отмена</string>
     <string name="permission_open_settings">Открыть настройки</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">Вибрация работает, только когда показ этого типа звука включён.</string>
     <string name="haptic_unsupported">Это устройство не поддерживает вибрацию.</string>
     <string name="haptic_no_amplitude">На этом устройстве нельзя менять силу вибрации, поэтому она будет стандартной.</string>
+    <string name="haptic_follow_external">В режиме внешних звуков вместо шаблона «По звуку» используется «Два раза», чтобы телефон не слышал собственную вибрацию снова и снова.</string>
     <string name="haptic_strength">Сила</string>
     <string name="haptic_strength_weak">Слабая</string>
     <string name="haptic_strength_medium">Средняя</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">Захват звука</string>
     <string name="notification_text">Идёт визуализация звука.</string>
+    <string name="notification_title_external">SoundVisualizer · Внешние звуки</string>
+    <string name="notification_text_external">Идёт прослушивание и визуализация звуков вокруг вас.</string>
+    <string name="notification_text_mic_silenced">Через микрофон не поступает никакой звук. Возможно, вы разговариваете по телефону или микрофон заблокирован.</string>
     <string name="notification_stop">Остановить</string>
     <string name="notification_mode_selected">%1$s, выбрано</string>
     <string name="notification_text_capture_blocked">Звук не доходит до визуализатора. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука, или звук в нём выключен.</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">Нужно, чтобы показывать графику поверх игр и видео.</string>
     <string name="help_perm_mic">Микрофон (запись аудио)</string>
     <string name="help_perm_mic_desc">Android требует этого разрешения, чтобы приложение могло получать звук, который воспроизводится на телефоне. Звуки вокруг вас не записываются.</string>
+    <string name="help_perm_mic_desc_external">Android требует этого разрешения, чтобы приложение могло получать звук, который воспроизводится на телефоне. Когда включён режим внешних звуков, оно также используется, чтобы слушать звуки вокруг вас. Услышанное никогда не сохраняется в файл и никуда не отправляется.</string>
     <string name="help_perm_capture">Запись экрана</string>
     <string name="help_perm_capture_desc">Android позволяет приложениям получать звук телефона только после такого согласия. Изображение экрана не записывается.</string>
     <string name="help_perm_notification">Уведомления (Android 13 и выше)</string>

@@ -7,6 +7,11 @@
     <!-- Home -->
     <string name="home_subtitle">Suara yang tak terlihat kini tergambar langsung di layar Anda.\nDari bermain game hingga menonton film, rasakan pengalaman yang benar-benar baru.</string>
     <string name="home_status_running">Status: Berjalan</string>
+    <string name="home_status_running_external">Status: Berjalan · Suara luar</string>
+    <string name="home_mic_silenced">Tidak ada suara yang masuk melalui mikrofon. Anda mungkin sedang dalam panggilan, aplikasi lain mungkin sedang memakai mikrofon, atau akses mikrofon mungkin dimatikan di Setelan Cepat.</string>
+    <string name="home_external_mode">Mode suara luar</string>
+    <string name="home_external_mode_desc">Mendengarkan suara di sekitar Anda melalui mikrofon, bukan suara yang diputar di ponsel, lalu menampilkannya di layar dan lewat getaran. Tidak perlu persetujuan perekaman layar, dan indikator mikrofon muncul di status bar selama mendengarkan. Apa yang didengar tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
+    <string name="home_external_mode_locked">Tidak dapat diubah saat berjalan. Hentikan visualisasi lalu ubah pengaturan ini; perubahan berlaku saat Anda memulainya lagi.</string>
     <string name="home_status_idle">Status: Siap</string>
     <string name="home_capture_blocked">Aplikasi ini tidak menerima suara apa pun, sehingga tidak ada yang dapat digambar. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan (video yang dilindungi memang begitu), atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
     <string name="home_stopped_dismiss">Tutup info</string>
@@ -49,8 +54,10 @@
     <string name="permission_record_audio_required">Izin mikrofon (rekam audio) diperlukan untuk menangkap audio.</string>
     <string name="permission_mic_rationale_title">Mengapa perlu izin mikrofon?</string>
     <string name="permission_mic_rationale_message">Android mewajibkan izin mikrofon untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
+    <string name="permission_mic_rationale_message_external">Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon lalu menampilkannya di layar dan lewat getaran. Selama mendengarkan, indikator mikrofon muncul di status bar, dan apa yang didengarnya tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
     <string name="permission_mic_settings_title">Izinkan mikrofon di Setelan</string>
     <string name="permission_mic_settings_message">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Izin ini hanya digunakan untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
+    <string name="permission_mic_settings_message_external">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon. Apa yang didengarnya tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
     <string name="permission_continue">Lanjutkan</string>
     <string name="permission_cancel">Batal</string>
     <string name="permission_open_settings">Buka setelan</string>
@@ -121,6 +128,7 @@
     <string name="haptic_requires_display">Getaran hanya aktif jika jenis suara ini ditampilkan.</string>
     <string name="haptic_unsupported">Perangkat ini tidak mendukung getaran.</string>
     <string name="haptic_no_amplitude">Perangkat ini tidak dapat mengatur kekuatan getaran, sehingga bergetar dengan kekuatan default.</string>
+    <string name="haptic_follow_external">Di mode suara luar, “Ikuti suara” diganti dengan “Dua kali” agar ponsel tidak terus mendengar getarannya sendiri.</string>
     <string name="haptic_strength">Kekuatan</string>
     <string name="haptic_strength_weak">Lemah</string>
     <string name="haptic_strength_medium">Sedang</string>
@@ -158,6 +166,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">Penangkapan audio</string>
     <string name="notification_text">Memvisualisasikan suara.</string>
+    <string name="notification_title_external">SoundVisualizer · Suara luar</string>
+    <string name="notification_text_external">Mendengarkan suara di sekitar Anda dan memvisualisasikannya.</string>
+    <string name="notification_text_mic_silenced">Tidak ada suara yang masuk melalui mikrofon. Anda mungkin sedang dalam panggilan, atau mikrofon mungkin diblokir.</string>
     <string name="notification_stop">Hentikan</string>
     <string name="notification_mode_selected">%1$s, dipilih</string>
     <string name="notification_text_capture_blocked">Aplikasi ini tidak menerima suara apa pun. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan, atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
@@ -196,6 +207,7 @@
     <string name="help_perm_overlay_desc">Diperlukan untuk menampilkan grafik di atas game dan video.</string>
     <string name="help_perm_mic">Mikrofon (rekam audio)</string>
     <string name="help_perm_mic_desc">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
+    <string name="help_perm_mic_desc_external">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Saat mode suara luar aktif, izin ini juga dipakai untuk mendengarkan suara di sekitar Anda. Apa yang didengar tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
     <string name="help_perm_capture">Perekaman layar</string>
     <string name="help_perm_capture_desc">Android hanya mengizinkan aplikasi menangkap suara ponsel Anda melalui persetujuan ini. Layar Anda tidak direkam.</string>
     <string name="help_perm_notification">Notifikasi (Android 13+)</string>
