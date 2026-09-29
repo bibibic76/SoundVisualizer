@@ -9,6 +9,7 @@
     <string name="home_status_running">Trạng thái: Đang chạy</string>
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
     <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
+    <string name="home_ai_unavailable_loud">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường, và chỉ âm thanh lớn mới rung, theo cài đặt rung của âm thanh nguy hiểm. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
     <string name="home_stopped_dismiss">Đóng thông báo</string>
     <string name="home_start">Bắt đầu</string>
     <string name="home_stop">Dừng</string>
@@ -119,6 +120,8 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Rung</string>
     <string name="haptic_requires_display">Chỉ rung khi loại âm thanh này được hiện trên màn hình.</string>
+    <string name="haptic_ai_unavailable_danger">Khi ứng dụng không nhận diện được loại âm thanh, mọi âm thanh lớn đều rung theo cài đặt này, bất kể thuộc loại nào. “Theo âm thanh” sẽ được thay bằng “Hai lần”.</string>
+    <string name="haptic_ai_unavailable_other">Khi ứng dụng không nhận diện được loại âm thanh, loại này sẽ không rung. Âm thanh lớn rung theo cài đặt của âm thanh nguy hiểm.</string>
     <string name="haptic_unsupported">Thiết bị này không hỗ trợ rung.</string>
     <string name="haptic_no_amplitude">Thiết bị này không điều chỉnh được cường độ rung nên sẽ rung ở cường độ mặc định.</string>
     <string name="haptic_strength">Cường độ</string>
@@ -129,8 +132,9 @@
     <string name="haptic_pattern_tap">Một lần</string>
     <string name="haptic_pattern_double">Hai lần</string>
     <string name="haptic_pattern_hold">Dài</string>
-    <string name="haptic_pattern_repeat">Lặp lại</string>
+    <string name="haptic_pattern_repeat">Theo âm thanh</string>
     <string name="haptic_preview_hint">Nhấn vào một tùy chọn để thử cảm giác rung.</string>
+    <string name="haptic_pattern_follow_desc">“Theo âm thanh” rung liên tục khi âm thanh còn kéo dài và thay đổi theo âm thanh. Bản xem trước mô phỏng một âm thanh thường gặp của loại này.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Chọn màu</string>
@@ -160,6 +164,7 @@
     <string name="notification_text">Đang trực quan hóa âm thanh.</string>
     <string name="notification_stop">Dừng</string>
     <string name="notification_mode_selected">%1$s, đã chọn</string>
+    <string name="notification_text_ai_unavailable_loud">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên chỉ âm thanh lớn mới rung.</string>
     <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -212,8 +217,8 @@
     <string name="help_sound_title">Loại âm thanh và rung</string>
     <string name="help_sound_kinds">AI phân loại âm thanh bạn nghe thấy thành âm thanh môi trường, giọng nói và âm thanh nguy hiểm. Theo mặc định, âm thanh môi trường có màu trắng, giọng nói màu vàng và âm thanh nguy hiểm màu đỏ. Bạn có thể đổi màu và chọn có hiện hay không cho từng loại trong thẻ Cài đặt.</string>
     <string name="help_sound_danger">Khi phát hiện âm thanh nguy hiểm (như tiếng súng), màu sẽ đổi ngay lập tức thay vì chuyển dần.</string>
-    <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn cường độ (Nhẹ, Vừa, Mạnh) và kiểu rung (Một lần, Hai lần, Dài, Lặp lại) cho từng loại.</string>
-    <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Cùng một loại sẽ không rung lại trong vòng 2 giây, và “Lặp lại” sẽ rung mỗi 1,5 giây khi âm thanh còn tiếp diễn.</string>
+    <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn cường độ (Nhẹ, Vừa, Mạnh) và kiểu rung (Một lần, Hai lần, Dài, Theo âm thanh) cho từng loại.</string>
+    <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Với Một lần, Hai lần và Dài, cùng một loại sẽ không rung lại trong vòng 2 giây. “Theo âm thanh” rung liên tục khi âm thanh còn kéo dài và thay đổi theo âm thanh: âm thanh đột ngột rung mạnh, tiếng bíp rung theo nhịp riêng, giọng nói rung theo từng âm tiết và tiếng còi báo động mạnh lên, yếu đi theo cao độ. Âm thanh không thay đổi sẽ dịu dần thành rung nhẹ, cứ vài giây lại gõ nhẹ một lần, nhưng không dừng cho đến khi âm thanh dừng.</string>
 
     <string name="help_notes_title">Lưu ý</string>
     <string name="help_note_direction">Ứng dụng phân biệt được trái và phải, nhưng không phân biệt được phía trước và phía sau. Đồ họa ở cạnh trên và cạnh dưới màn hình biểu thị âm thanh nghe như nhau ở cả hai bên, cũng như cảm giác không gian.</string>
@@ -229,6 +234,7 @@
     <string name="help_faq_no_graphic_q">Tôi không thấy đồ họa nào.</string>
     <string name="help_faq_no_graphic_a">Hãy kiểm tra xem ứng dụng đang phát có chặn thu âm thanh hay không, và âm thanh trong chính ứng dụng đó có đang bị tắt không. Nếu tình trạng không nhận được âm thanh kéo dài, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Ngoài ra, hãy đảm bảo Độ đậm trong thẻ Cài đặt không quá thấp và tùy chọn “Hiện” của loại âm thanh đang phát vẫn đang bật.</string>
     <string name="help_faq_no_vibration_q">Điện thoại không rung.</string>
+    <string name="help_faq_no_vibration_answer">Trong Cài đặt, ở mục Loại âm thanh (AI), hãy đảm bảo cả “Hiện” và “Rung” đều đang bật cho loại âm thanh đó. Theo mặc định, ứng dụng tạm dừng khi màn hình tắt, vì vậy nếu vẫn muốn nhận thông báo rung lúc đó, hãy tắt “Tạm dừng khi màn hình tắt” trong mục Pin của Cài đặt. Khi ứng dụng không nhận diện được loại âm thanh, chỉ âm thanh lớn mới rung, theo cài đặt của âm thanh nguy hiểm. Nếu bạn đã tắt rung trong cài đặt điện thoại, ứng dụng có thể không rung.</string>
     <string name="help_faq_install_q">Không cài được phiên bản mới.</string>
     <string name="help_faq_install_a">APK được tạo ở nơi khác có chữ ký khác nên không thể cài đè lên ứng dụng hiện có. Hãy gỡ cài đặt ứng dụng hiện có trước rồi mới cài. Việc này sẽ đặt lại các cài đặt của bạn.</string>
     <string name="help_faq_battery_q">Ứng dụng có tốn nhiều pin không?</string>
