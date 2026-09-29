@@ -9,7 +9,6 @@
     <string name="home_status_running">Status: Berjalan</string>
     <string name="home_status_idle">Status: Siap</string>
     <string name="home_capture_blocked">Aplikasi ini tidak menerima suara apa pun, sehingga tidak ada yang dapat digambar. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan (video yang dilindungi memang begitu), atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
-    <string name="home_ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan peringatan getar dimatikan. Coba matikan lalu nyalakan lagi visualisasinya.</string>
     <string name="home_stopped_dismiss">Tutup info</string>
     <string name="home_start">Mulai</string>
     <string name="home_stop">Hentikan</string>
@@ -120,7 +119,6 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Getar</string>
     <string name="haptic_requires_display">Getaran hanya aktif jika jenis suara ini ditampilkan.</string>
-    <string name="haptic_ai_unavailable">Ponsel tidak akan bergetar selama deteksi jenis suara tidak berfungsi.</string>
     <string name="haptic_unsupported">Perangkat ini tidak mendukung getaran.</string>
     <string name="haptic_no_amplitude">Perangkat ini tidak dapat mengatur kekuatan getaran, sehingga bergetar dengan kekuatan default.</string>
     <string name="haptic_strength">Kekuatan</string>
@@ -162,7 +160,6 @@
     <string name="notification_text">Memvisualisasikan suara.</string>
     <string name="notification_stop">Hentikan</string>
     <string name="notification_mode_selected">%1$s, dipilih</string>
-    <string name="notification_text_ai_unavailable">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga peringatan getar dimatikan.</string>
     <string name="notification_text_capture_blocked">Aplikasi ini tidak menerima suara apa pun. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan, atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -232,7 +229,6 @@
     <string name="help_faq_no_graphic_q">Grafik tidak muncul.</string>
     <string name="help_faq_no_graphic_a">Periksa apakah aplikasi yang sedang memutar suara memblokir penangkapan audio, dan apakah suara di aplikasi itu sendiri dimatikan. Jika aplikasi ini tidak menerima suara dalam waktu cukup lama, Beranda dan notifikasi saat aplikasi berjalan akan memberi tahu Anda. Pastikan juga Opasitas di tab Setelan tidak terlalu rendah, dan opsi Tampilkan untuk jenis suara yang sedang terdengar tidak dimatikan.</string>
     <string name="help_faq_no_vibration_q">Tidak ada getaran.</string>
-    <string name="help_faq_no_vibration_a">Di tab Setelan, pada bagian Jenis suara (AI), pastikan Tampilkan dan Getar sama-sama aktif untuk jenis tersebut. Jika getaran dimatikan di setelan ponsel Anda, ponsel mungkin tidak bergetar.</string>
     <string name="help_faq_install_q">Versi baru tidak dapat diinstal.</string>
     <string name="help_faq_install_a">APK yang dibuat di tempat lain memiliki tanda tangan yang berbeda, sehingga tidak dapat diinstal di atas aplikasi yang sudah ada. Uninstal aplikasi yang ada terlebih dahulu, lalu instal. Setelan Anda akan direset.</string>
     <string name="help_faq_battery_q">Apakah aplikasi ini boros baterai?</string>

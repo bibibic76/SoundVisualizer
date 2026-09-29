@@ -9,7 +9,6 @@
     <string name="home_status_running">Trạng thái: Đang chạy</string>
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
     <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
-    <string name="home_ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường và thông báo rung đang tắt. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
     <string name="home_stopped_dismiss">Đóng thông báo</string>
     <string name="home_start">Bắt đầu</string>
     <string name="home_stop">Dừng</string>
@@ -120,7 +119,6 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Rung</string>
     <string name="haptic_requires_display">Chỉ rung khi loại âm thanh này được hiện trên màn hình.</string>
-    <string name="haptic_ai_unavailable">Sẽ không rung khi ứng dụng không nhận diện được loại âm thanh.</string>
     <string name="haptic_unsupported">Thiết bị này không hỗ trợ rung.</string>
     <string name="haptic_no_amplitude">Thiết bị này không điều chỉnh được cường độ rung nên sẽ rung ở cường độ mặc định.</string>
     <string name="haptic_strength">Cường độ</string>
@@ -162,7 +160,6 @@
     <string name="notification_text">Đang trực quan hóa âm thanh.</string>
     <string name="notification_stop">Dừng</string>
     <string name="notification_mode_selected">%1$s, đã chọn</string>
-    <string name="notification_text_ai_unavailable">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên thông báo rung đang tắt.</string>
     <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -232,7 +229,6 @@
     <string name="help_faq_no_graphic_q">Tôi không thấy đồ họa nào.</string>
     <string name="help_faq_no_graphic_a">Hãy kiểm tra xem ứng dụng đang phát có chặn thu âm thanh hay không, và âm thanh trong chính ứng dụng đó có đang bị tắt không. Nếu tình trạng không nhận được âm thanh kéo dài, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Ngoài ra, hãy đảm bảo Độ đậm trong thẻ Cài đặt không quá thấp và tùy chọn “Hiện” của loại âm thanh đang phát vẫn đang bật.</string>
     <string name="help_faq_no_vibration_q">Điện thoại không rung.</string>
-    <string name="help_faq_no_vibration_a">Trong thẻ Cài đặt, ở mục Loại âm thanh (AI), hãy đảm bảo cả “Hiện” và “Rung” đều đang bật cho loại âm thanh đó. Nếu bạn đã tắt rung trong cài đặt điện thoại, ứng dụng có thể không rung.</string>
     <string name="help_faq_install_q">Không cài được phiên bản mới.</string>
     <string name="help_faq_install_a">APK được tạo ở nơi khác có chữ ký khác nên không thể cài đè lên ứng dụng hiện có. Hãy gỡ cài đặt ứng dụng hiện có trước rồi mới cài. Việc này sẽ đặt lại các cài đặt của bạn.</string>
     <string name="help_faq_battery_q">Ứng dụng có tốn nhiều pin không?</string>

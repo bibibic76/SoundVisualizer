@@ -46,7 +46,7 @@ You can see the same sound in four shapes and switch between them any time in Se
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
 - When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away.
 - Even with only danger sounds shown, short danger sounds like gunshots that end before the AI decides are still drawn at their real size.
-- In the rare case the AI model can't be loaded, Home and Settings show that **sound type detection isn't working**. Every sound is then shown in the ambient color and vibration alerts don't go off. The model is only loaded when it starts, so turning it off and on again gives it another try.
+- In the rare case the AI model can't be loaded, Home and Settings show that **sound type detection isn't working**. Every sound is then shown in the ambient color, and only loud sounds vibrate, using the danger sound vibration setting. The model is only loaded when it starts, so turning it off and on again gives it another try.
 
 ### 📳 Vibration alerts
 
@@ -161,7 +161,7 @@ It turns off when screen recording, screen sharing or casting starts, or when so
 Check whether the app you're playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off.
 
 **It doesn't vibrate.**
-In Settings, under Sound types, make sure both **Show** and **Vibrate** are on for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. It also doesn't vibrate while sound type detection isn't working. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration.
+In Settings, under Sound types, make sure both **Show** and **Vibrate** are on for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration.
 
 **A new version won't install.**
 An APK built on a different computer has a different signature and can't be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.

@@ -14,6 +14,10 @@ import com.example.soundvisualizer.AiClassification
  * 한 번·두 번·길게는 사건이 시작될 때 [Decision] 하나를 낸다. 소리 따라([HapticPattern.Repeat])는 [Decision] 을
  * 내지 않고 [follow] 세션을 연다. 세션 동안 무엇을 울릴지는 [FollowEngine] 이 소리를 보며 정한다.
  *
+ * 이번 실행에서 AI 를 쓸 수 없으면(모델 로딩 실패 등) 라벨이 끝내 오지 않는다. 그때는 종류를 가리지 않고
+ * **큰 소리**에만 위협음 설정으로 울린다([onTick] 의 `unlabeledAlerts`, #225). 화면을 볼 수 없을 때 진동이
+ * 유일한 알림이라, AI 가 실패했다고 알림까지 사라지면 안 되기 때문이다.
+ *
  * 한 스레드에서만 호출한다.
  */
 class HapticPolicy(
@@ -21,7 +25,8 @@ class HapticPolicy(
     private val releaseMs: Long = RELEASE_MS,
     private val cooldownMs: Long = COOLDOWN_MS,
     private val followReleaseMs: Long = HapticTuning.FOLLOW_RELEASE_MS,
-    private val labelGraceMs: Long = HapticTuning.LABEL_GRACE_MS
+    private val labelGraceMs: Long = HapticTuning.LABEL_GRACE_MS,
+    private val unlabeledLoudLevel: Float = HapticTuning.UNLABELED_LOUD_LEVEL
 ) {
     companion object {
         /** 이보다 큰 피크를 "소리가 난다" 로 본다. 오버레이 엔진이 idle 에서 깨어나는 기준과 같다. */
@@ -57,18 +62,27 @@ class HapticPolicy(
     /** 쿨다운에 막혀 아직 울리지 못한 사건. 쿨다운이 끝났을 때 소리가 이어지고 있으면 그때 울린다(#174). */
     private var waitingForCooldown = false
 
+    /** 종류를 모르는 큰 소리로 이미 울린 사건이 이어지는 중인지. 소리가 끊기면 끝난다. */
+    private var unlabeledEvent = false
+
+    /** 종류를 모르는 큰 소리로 마지막에 울린 시각. 아직 없으면 [Long.MIN_VALUE]. */
+    private var lastUnlabeledFireMs = Long.MIN_VALUE
+
     /**
      * @param nowMs 단조 증가하는 시각 (elapsedRealtime)
      * @param label 가장 최근 분류 라벨. 분류 결과가 아직 없으면 null
      * @param level 지난 틱 이후 구간 전체의 최대 진폭 (0..1). 가장 최근 버퍼만 보면 짧은 소리를 놓친다(#174).
      * @param config 라벨별 표시·진동 설정
+     * @param unlabeledAlerts 라벨이 끝내 오지 않는 실행(AI 를 쓸 수 없음)인지. 참이면 라벨 없이도 큰 소리에 울린다.
+     *   로딩 중처럼 라벨이 곧 올 때는 거짓으로 둔다. 곧 올 라벨과 겹쳐 두 번 울리지 않게 하기 위해서다.
      * @return 지금 울려야 할 한 번·두 번·길게. 소리 따라는 [follow] 로 알린다.
      */
     fun onTick(
         nowMs: Long,
         label: String?,
         level: Float,
-        config: (String) -> ClassConfig
+        config: (String) -> ClassConfig,
+        unlabeledAlerts: Boolean = false
     ): Decision? {
         if (level > levelThreshold) lastLoudMs = nowMs
         val heard = lastLoudMs != Long.MIN_VALUE
@@ -115,6 +129,13 @@ class HapticPolicy(
             activeLabel = null
         }
 
+        if (label == null && unlabeledAlerts) {
+            activeLabel = null
+            waitingForCooldown = false
+            return onUnlabeled(nowMs, level, soundShort, config)
+        }
+        unlabeledEvent = false
+
         val cfg = if (soundShort && label != null) config(label) else null
         if (label == null || cfg == null || !cfg.shown || !cfg.haptic.enabled) {
             activeLabel = null
@@ -153,6 +174,33 @@ class HapticPolicy(
         return Decision(cfg.haptic.pattern, cfg.haptic.strength)
     }
 
+    /**
+     * 종류를 모르는 동안의 한 틱(#225). 큰 소리가 시작되면 위협음 설정으로 한 번 울리고, 그 소리가 이어지는 동안은
+     * 다시 울리지 않는다. 위협음의 표시나 진동을 꺼 두었으면 울리지 않는다.
+     *
+     * 소리 따라는 쓰지 않는다. 종류를 모르면 게임·영상의 모든 소리를 따라 울리게 되기 때문이다.
+     * 위협음을 소리 따라로 골라 두었으면 두 번으로 울린다(위협음의 기본 모양).
+     */
+    private fun onUnlabeled(
+        nowMs: Long,
+        level: Float,
+        soundShort: Boolean,
+        config: (String) -> ClassConfig
+    ): Decision? {
+        if (!soundShort) {
+            unlabeledEvent = false
+            return null
+        }
+        if (unlabeledEvent || level < unlabeledLoudLevel) return null
+        val danger = config(AiClassification.DANGER)
+        if (!danger.shown || !danger.haptic.enabled) return null
+        if (lastUnlabeledFireMs != Long.MIN_VALUE && nowMs - lastUnlabeledFireMs < cooldownMs) return null
+        unlabeledEvent = true
+        lastUnlabeledFireMs = nowMs
+        val pattern = if (danger.haptic.pattern == HapticPattern.Repeat) HapticPattern.DoubleTap else danger.haptic.pattern
+        return Decision(pattern, danger.haptic.strength)
+    }
+
     private fun endFollow() {
         follow = null
         waitingForCooldown = false
@@ -168,5 +216,7 @@ class HapticPolicy(
         follow = null
         mismatchMs = 0L
         lastTickMs = Long.MIN_VALUE
+        unlabeledEvent = false
+        lastUnlabeledFireMs = Long.MIN_VALUE
     }
 }

@@ -81,7 +81,10 @@ class AudioCaptureService : Service() {
     /** 화면이 꺼져 AI 와 진동을 쉬는 중인지. 늦게 끝난 초기화가 쉬는 중에 추론을 시작하지 않도록 알린다. aiLock 으로 보호. */
     private var aiPaused = false
 
-    /** 분류 결과에 맞춰 진동을 준다. AI 파이프라인이 붙은 뒤에만 생긴다. aiLock 으로 보호. */
+    /**
+     * 분류 결과와 소리 크기에 맞춰 진동을 준다. 캡처가 도는 동안 있고, AI 와 따로 켜고 끈다([startHaptics]).
+     * 메인 스레드에서 만들고 없애며, 읽고 쓸 때는 aiLock 을 잡는다.
+     */
     private var hapticNotifier: HapticNotifier? = null
 
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
@@ -369,8 +372,9 @@ class AudioCaptureService : Service() {
             return
         }
         if (pipeline == null) {
-            // 캡처와 시각화는 계속한다. 대신 모든 소리가 환경음으로 그려지고 진동 알림이 돌지 않는다는 걸
-            // 홈·설정 화면과 실행 중 알림에 알린다. 알리지 않으면 위협음 진동이 켜진 줄 믿게 된다.
+            // 캡처와 시각화는 계속한다. 대신 모든 소리가 환경음으로 그려지고, 진동은 종류를 가리지 않고 큰 소리에만
+            // 울린다는 걸 홈·설정 화면과 실행 중 알림에 알린다. 알리지 않으면 종류별 진동이 그대로인 줄 믿게 된다.
+            // 진동 알림은 이 값을 보고 큰 소리 알림으로 바뀐다([startHaptics]).
             SettingsManager.setAiAvailable(false)
             mainHandler.post { refreshOngoingNotification() }
             return
@@ -383,21 +387,39 @@ class AudioCaptureService : Service() {
     }
 
     /**
-     * 추론과 진동 알림을 시작하고, 오버레이가 읽을 결과를 [AiClassification] 에 붙인다. aiLock 안에서 부른다.
-     * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
+     * 추론을 시작하고, 오버레이와 진동이 읽을 결과를 [AiClassification] 에 붙인다. aiLock 안에서 부른다.
      * start() 는 링버퍼·후처리·마지막 결과를 비우므로 쉬기 직전의 소리를 다시 분류하지 않는다.
      * 비우기 직전까지 돌던 추론 한 번이 뒤늦게 덮어쓰지 않도록 [scheduleAiResume] 가 그만큼 기다렸다 부른다.
      *
      * 붙이기는 비운 **뒤**에 한다. 파이프라인이 도는 동안에만 붙어 있어야, 쉬는 동안과 다시 켜기를 기다리는
-     * 동안 오버레이가 환경음으로 떨어진다([pauseForScreenOff] 가 뗀다).
+     * 동안 오버레이는 환경음으로 떨어지고 진동은 라벨이 없어 울리지 않는다([pauseForScreenOff] 가 뗀다).
      */
     private fun startAiLocked(pipeline: RealtimeAiPipeline) {
         pipeline.start()
         AiClassification.attach { pipeline.lastClassification() }
-        if (hapticNotifier != null) return
-        // 첫 분류 결과가 나오기 전(null)에는 울리지 않는다.
-        hapticNotifier = HapticNotifier(applicationContext) { pipeline.lastClassification()?.coarse }
-            .also { it.start() }
+    }
+
+    /**
+     * 진동 알림을 켠다. 캡처가 돌기 시작할 때([startCaptureLoop]) 부른다. 두 번 불러도 하나만 돈다.
+     *
+     * 예전에는 AI 가 로딩을 마친 뒤에만 켰다. 그러면 모델을 못 불러온 실행에서는 진동이 아예 없었다. 화면을 볼 수 없을 때
+     * (주머니 속, 잠자리) 진동이 유일한 알림이라, AI 와 떼어 캡처와 함께 켠다(#225).
+     *
+     * 라벨은 오버레이와 같은 곳([AiClassification.latest])에서 읽는다. 로딩 중이나 화면을 켠 직후처럼 AI 가 붙기 전에는
+     * 라벨이 없어 지금처럼 울리지 않는다. AI 를 쓸 수 없는 실행([SettingsManager.aiAvailable] 이 거짓)에서만 라벨 없이
+     * 큰 소리에 울린다([com.example.soundvisualizer.feedback.HapticPolicy]).
+     *
+     * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
+     */
+    private fun startHaptics() {
+        if (stopLatch.isStopping) return
+        synchronized(aiLock) {
+            if (hapticNotifier != null) return
+            hapticNotifier = HapticNotifier(
+                applicationContext,
+                unlabeledAlerts = { !SettingsManager.aiAvailable.value }
+            ) { AiClassification.latest()?.coarse }.also { it.start() }
+        }
     }
 
     /**
@@ -528,7 +550,7 @@ class AudioCaptureService : Service() {
         return startCaptureLoop(record)
     }
 
-    /** 녹음을 시작하고 캡처 스레드를 띄운다. 처음 켤 때와 화면이 다시 켜질 때 쓴다. 녹음이 시작되지 않으면 false. */
+    /** 녹음을 시작하고 캡처 스레드와 진동 알림을 띄운다. 처음 켤 때와 화면이 다시 켜질 때 쓴다. 녹음이 시작되지 않으면 false. */
     private fun startCaptureLoop(record: AudioRecord): Boolean {
         try {
             record.startRecording()
@@ -546,6 +568,7 @@ class AudioCaptureService : Service() {
             start()
         }
         startBlockedCheck()
+        startHaptics()
         return true
     }
 
@@ -783,7 +806,10 @@ class AudioCaptureService : Service() {
         AudioEngine.reset()
     }
 
-    /** 화면이 켜져 다시 켠다. 캡처를 먼저 켜고, AI 와 진동은 [scheduleAiResume] 가 조금 뒤에 켠다. */
+    /**
+     * 화면이 켜져 다시 켠다. 캡처와 진동을 먼저 켜고, AI 는 [scheduleAiResume] 가 조금 뒤에 켠다.
+     * 진동은 AI 가 다시 붙을 때까지 라벨이 없어, AI 를 쓸 수 있는 실행에서는 그사이 울리지 않는다.
+     */
     private fun resumeAfterScreenOff() {
         Log.i(TAG, "screen on: resuming capture, AI and haptics")
         // 동의 직후 꺼져서 아직 AudioRecord 가 없으면 onStartCommand 가 이어서 시작한다.
@@ -800,7 +826,7 @@ class AudioCaptureService : Service() {
     }
 
     /**
-     * AI 와 진동 알림만 [AI_RESUME_DELAY_MS] 뒤에 켠다. 캡처와 그래픽은 바로 켠다.
+     * AI 만 [AI_RESUME_DELAY_MS] 뒤에 켠다. 캡처와 그래픽과 진동은 바로 켠다.
      *
      * 쉴 때 부르는 파이프라인의 stop() 은 이미 돌고 있던 추론 한 번을 기다리지 않는다. 화면을 껐다 바로 켜서
      * 그 추론이 start() 로 비운 뒤에 끝나면, 쉬기 직전의 결과가 되살아나 첫 소리에 위협음 진동이 잘못 울린다.
@@ -860,7 +886,8 @@ class AudioCaptureService : Service() {
 
     /**
      * 멈춤 진동을 울리기 전에 진동 알림을 떼어 멈춘다. 진동 알림의 cancel() 이 멈춤 진동까지 끊기 때문이다.
-     * aiPaused 를 세워, onDestroy 전에 모델 로딩이 끝나도 진동 알림을 새로 붙이지 않게 한다(추론도 시작하지 않는다).
+     * aiPaused 를 세워, onDestroy 전에 모델 로딩이 끝나도 추론을 시작하지 않게 한다. 진동 알림은 [startHaptics] 가
+     * 멈추는 중이면 새로 만들지 않는다.
      */
     private fun stopHapticsBeforeAlert() {
         val haptics = synchronized(aiLock) {
@@ -1001,7 +1028,7 @@ class AudioCaptureService : Service() {
         val text = uiContext.getString(
             when {
                 SettingsManager.isCaptureBlocked.value -> R.string.notification_text_capture_blocked
-                !SettingsManager.aiAvailable.value -> R.string.notification_text_ai_unavailable
+                !SettingsManager.aiAvailable.value -> R.string.notification_text_ai_unavailable_loud
                 else -> R.string.notification_text
             }
         )

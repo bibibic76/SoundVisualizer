@@ -9,7 +9,6 @@
     <string name="home_status_running">स्थिति: चालू है</string>
     <string name="home_status_idle">स्थिति: तैयार</string>
     <string name="home_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है, इसलिए स्क्रीन पर कुछ भी नहीं बनाया जा सकता। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो (सुरक्षित वीडियो के साथ ऐसा ही होता है), या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
-    <string name="home_ai_unavailable">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं और वाइब्रेशन भी नहीं हो रहा। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
     <string name="home_stopped_dismiss">जानकारी हटाएं</string>
     <string name="home_start">शुरू करें</string>
     <string name="home_stop">बंद करें</string>
@@ -120,7 +119,6 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">वाइब्रेट करें</string>
     <string name="haptic_requires_display">वाइब्रेशन तभी होगा, जब यह प्रकार स्क्रीन पर दिखाया जा रहा हो।</string>
-    <string name="haptic_ai_unavailable">जब तक आवाज़ का प्रकार नहीं पहचाना जा रहा, तब तक वाइब्रेशन नहीं होगा।</string>
     <string name="haptic_unsupported">इस डिवाइस पर वाइब्रेशन की सुविधा नहीं है।</string>
     <string name="haptic_no_amplitude">इस डिवाइस पर वाइब्रेशन की तीव्रता नहीं बदली जा सकती, इसलिए डिफ़ॉल्ट तीव्रता पर वाइब्रेशन होगा।</string>
     <string name="haptic_strength">तीव्रता</string>
@@ -162,7 +160,6 @@
     <string name="notification_text">आवाज़ें स्क्रीन पर दिखाई जा रही हैं।</string>
     <string name="notification_stop">रोकें</string>
     <string name="notification_mode_selected">%1$s, चुना गया</string>
-    <string name="notification_text_ai_unavailable">आवाज़ें स्क्रीन पर दिखाई जा रही हैं। आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए वाइब्रेशन बंद है।</string>
     <string name="notification_text_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो, या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -232,7 +229,6 @@
     <string name="help_faq_no_graphic_q">ग्राफ़िक्स नहीं दिख रहे हैं।</string>
     <string name="help_faq_no_graphic_a">देखें कि जिस ऐप में आवाज़ चल रही है, वह ऑडियो कैप्चर करने से तो नहीं रोकता, और कहीं उसी ऐप में आवाज़ बंद तो नहीं है। विज़ुअलाइज़र तक कुछ देर कोई आवाज़ न पहुंचे, तो “होम” टैब और चालू रहने के दौरान दिखने वाली सूचना में यह बता दिया जाता है। यह भी देखें कि “सेटिंग” टैब में “गहरापन” बहुत कम न हो और अभी चल रही आवाज़ के प्रकार को दिखाने की सेटिंग बंद न हो।</string>
     <string name="help_faq_no_vibration_q">वाइब्रेशन नहीं हो रहा है।</string>
-    <string name="help_faq_no_vibration_a">“सेटिंग” टैब के “आवाज़ के प्रकार (AI)” में देखें कि उस प्रकार के लिए “दिखाएं” और “वाइब्रेट करें”, दोनों चालू हों। अगर फ़ोन की सेटिंग में वाइब्रेशन बंद है, तो हो सकता है कि वाइब्रेशन न हो।</string>
     <string name="help_faq_install_q">नया वर्शन इंस्टॉल नहीं हो रहा है।</string>
     <string name="help_faq_install_a">किसी दूसरी जगह बनाए गए APK का सिग्नेचर अलग होता है, इसलिए वह मौजूदा ऐप के ऊपर इंस्टॉल नहीं हो सकता। पहले मौजूदा ऐप को अनइंस्टॉल करें, फिर नया वर्शन इंस्टॉल करें। ऐसा करने पर आपकी सेटिंग रीसेट हो जाएंगी।</string>
     <string name="help_faq_battery_q">क्या यह ज़्यादा बैटरी खर्च करता है?</string>

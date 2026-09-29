@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.DependentSettings
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
@@ -78,13 +79,15 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             }
         }
     }
-    // 소리 종류 구분(AI)을 못 불러오면 진동 알림 자체가 돌지 않는다. 스위치는 켜진 그대로라
-    // 위협음 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 설정값은 다음 실행을 위해 바꾸지 않는다.
+    // 소리 종류 구분(AI)을 못 불러오면 종류별 진동이 돌지 않고, 큰 소리만 위협음 설정으로 울린다(HapticPolicy).
+    // 스위치는 켜진 그대로라 종류별 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 위협음 줄은 이 설정으로
+    // 큰 소리가 울린다고, 다른 줄은 이 종류로는 울리지 않는다고 적는다. 설정값은 다음 실행을 위해 바꾸지 않는다.
     val aiNote = !aiAvailable && switchEnabled && settings.enabled
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
         !shown -> R.string.haptic_requires_display
-        aiNote -> R.string.haptic_ai_unavailable
+        aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
+        aiNote -> R.string.haptic_ai_unavailable_other
         else -> null
     }
 

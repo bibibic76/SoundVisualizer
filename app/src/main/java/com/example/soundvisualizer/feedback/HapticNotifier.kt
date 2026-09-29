@@ -32,6 +32,7 @@ internal object NativeHapticInput : HapticInput {
  * @param input 소리 특징. 실제로는 네이티브 누적값이고, 미리보기는 흉내 낸 소리를 넣는다.
  * @param configFor 라벨별 표시·진동 설정.
  * @param gated 실제 진동 알림이면 true. 설정 화면의 미리보기가 진동기를 잡고 있는 동안에는 보내지 않는다.
+ * @param unlabeledAlerts 라벨이 끝내 오지 않는 실행(AI 를 쓸 수 없음)인지. 참인 동안은 라벨 없이도 큰 소리에 울린다(#225).
  * @param labelSource 가장 최근 분류 라벨. 결과가 아직 없으면 null. 마지막 인자라 `HapticNotifier(context) { … }` 로 쓴다.
  */
 class HapticNotifier(
@@ -39,6 +40,7 @@ class HapticNotifier(
     private val input: HapticInput = NativeHapticInput,
     private val configFor: (String) -> HapticPolicy.ClassConfig = LIVE_CONFIG,
     private val gated: Boolean = true,
+    private val unlabeledAlerts: () -> Boolean = { false },
     private val labelSource: () -> String?
 ) {
     private companion object {
@@ -90,7 +92,8 @@ class HapticNotifier(
                 frame[HapticInput.RMS],
                 frame[HapticInput.TONE],
                 frame[HapticInput.BUFFERS].toInt(),
-                configFor
+                configFor,
+                unlabeledAlerts()
             )
             if (plan != null) issue(plan, now)
 

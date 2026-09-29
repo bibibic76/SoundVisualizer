@@ -24,6 +24,7 @@ class HapticLoop(
     val follow: HapticPolicy.Follow? get() = policy.follow
 
     /**
+     * @param unlabeledAlerts 라벨이 끝내 오지 않는 실행인지. [HapticPolicy.onTick] 참고.
      * @return 지금 보낼 계획. 없으면 null.
      */
     fun onTick(
@@ -33,13 +34,14 @@ class HapticLoop(
         rms: Float,
         tone: Float,
         buffers: Int,
-        config: (String) -> HapticPolicy.ClassConfig
+        config: (String) -> HapticPolicy.ClassConfig,
+        unlabeledAlerts: Boolean = false
     ): HapticPlan? {
         val fast = lastTickMs != Long.MIN_VALUE && nowMs - lastTickMs <= FAST_TICK_LIMIT_MS
         lastTickMs = nowMs
         analyzer.onFrame(nowMs, rms, tone, buffers, fast)
 
-        val decision = policy.onTick(nowMs, label, peak, config)
+        val decision = policy.onTick(nowMs, label, peak, config, unlabeledAlerts)
         if (decision != null) {
             val shot = HapticShapes.oneShot(decision.pattern, decision.strength, amplitudeControl)
             engine.abort(nowMs, shot.durationMs)

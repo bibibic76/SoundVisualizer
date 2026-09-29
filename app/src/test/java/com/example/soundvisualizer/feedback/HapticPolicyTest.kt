@@ -31,12 +31,13 @@ private fun HapticPolicy.feed(
     toMs: Long,
     label: String?,
     level: Float,
-    cfg: (String) -> HapticPolicy.ClassConfig
+    cfg: (String) -> HapticPolicy.ClassConfig,
+    unlabeledAlerts: Boolean = false
 ): List<Pair<Long, HapticPolicy.Decision>> {
     val fired = ArrayList<Pair<Long, HapticPolicy.Decision>>()
     var t = fromMs
     while (t <= toMs) {
-        onTick(t, label, level, cfg)?.let { fired.add(t to it) }
+        onTick(t, label, level, cfg, unlabeledAlerts)?.let { fired.add(t to it) }
         t += TICK
     }
     return fired
@@ -344,8 +345,85 @@ class HapticPolicyTest {
 
     @Test
     fun `분류 결과가 없으면 울리지 않는다`() {
+        // AI 가 로딩 중이거나 화면을 켠 직후라 라벨이 곧 온다. 먼저 울리면 곧 올 라벨과 겹쳐 두 번 울린다.
         val fired = HapticPolicy().feed(0, 2000, null, LOUD, config())
         assertTrue(fired.isEmpty())
+    }
+
+    // ---------------------------------------------------------------
+    // AI 를 쓸 수 없는 실행 (#225)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `AI 를 못 쓰면 라벨 없이도 큰 소리에 위협음 설정으로 한 번 울린다`() {
+        val cfg: (String) -> HapticPolicy.ClassConfig = { label ->
+            when (label) {
+                DANGER -> HapticPolicy.ClassConfig(true, HapticSettings(true, HapticStrength.Strong, HapticPattern.Hold))
+                else -> HapticPolicy.ClassConfig(true, HapticSettings(true, HapticStrength.Weak, HapticPattern.Tap))
+            }
+        }
+        val fired = HapticPolicy().feed(0, 3000, null, LOUD, cfg, unlabeledAlerts = true)
+
+        assertEquals("이어지는 큰 소리 하나에 한 번만 울린다", listOf(0L), fired.map { it.first })
+        assertEquals(HapticPolicy.Decision(HapticPattern.Hold, HapticStrength.Strong), fired.single().second)
+    }
+
+    @Test
+    fun `AI 를 못 써도 큰 소리가 아니면 울리지 않는다`() {
+        // 소리는 나지만(0.01 초과) 큰 소리는 아니다. 게임·영상이 켜져 있는 내내 울리면 안 된다.
+        val fired = HapticPolicy().feed(0, 3000, null, HapticTuning.UNLABELED_LOUD_LEVEL / 2, config(), unlabeledAlerts = true)
+        assertTrue(fired.isEmpty())
+    }
+
+    @Test
+    fun `AI 를 못 쓸 때 조용해졌다가 다시 큰 소리가 나면 다시 울린다`() {
+        val policy = HapticPolicy()
+        val first = policy.feed(0, 500, null, LOUD, config(), unlabeledAlerts = true)
+        policy.feed(600, 2400, null, QUIET, config(), unlabeledAlerts = true)
+        val second = policy.feed(2500, 3000, null, LOUD, config(), unlabeledAlerts = true)
+
+        assertEquals(listOf(0L), first.map { it.first })
+        assertEquals(listOf(2500L), second.map { it.first })
+    }
+
+    @Test
+    fun `AI 를 못 쓸 때 쿨다운 안에 시작된 큰 소리는 쿨다운이 끝나고 이어지면 울린다`() {
+        val policy = HapticPolicy()
+        val first = policy.feed(0, 200, null, LOUD, config(), unlabeledAlerts = true)
+        policy.feed(300, 900, null, QUIET, config(), unlabeledAlerts = true)
+        val second = policy.feed(1000, 4000, null, LOUD, config(), unlabeledAlerts = true)
+
+        assertEquals(listOf(0L), first.map { it.first })
+        assertEquals(listOf(HapticPolicy.COOLDOWN_MS), second.map { it.first })
+    }
+
+    @Test
+    fun `위협음의 표시나 진동을 꺼 두면 종류를 몰라도 울리지 않는다`() {
+        assertTrue(HapticPolicy().feed(0, 2000, null, LOUD, config(enabled = false), unlabeledAlerts = true).isEmpty())
+        assertTrue(HapticPolicy().feed(0, 2000, null, LOUD, config(shown = false), unlabeledAlerts = true).isEmpty())
+    }
+
+    @Test
+    fun `위협음이 소리 따라여도 종류를 모를 때는 두 번으로 울리고 따라가지 않는다`() {
+        val policy = HapticPolicy()
+        val fired = policy.feed(0, 3000, null, LOUD, config(pattern = HapticPattern.Repeat, strength = HapticStrength.Weak), unlabeledAlerts = true)
+
+        assertEquals(listOf(HapticPolicy.Decision(HapticPattern.DoubleTap, HapticStrength.Weak)), fired.map { it.second })
+        assertNull("모든 소리를 따라 울리면 안 된다", policy.follow)
+    }
+
+    @Test
+    fun `라벨이 오면 AI 를 못 쓴다는 표시와 상관없이 라벨로 판단한다`() {
+        val fired = HapticPolicy().feed(0, 2000, SPEECH, LOUD, config(pattern = HapticPattern.Tap), unlabeledAlerts = true)
+        assertEquals(listOf(HapticPolicy.Decision(HapticPattern.Tap, HapticStrength.Medium)), fired.map { it.second })
+    }
+
+    @Test
+    fun `reset 하면 종류를 모를 때의 쿨다운도 지워진다`() {
+        val policy = HapticPolicy()
+        assertNotNull(policy.onTick(0, null, LOUD, config(), unlabeledAlerts = true))
+        policy.reset()
+        assertNotNull(policy.onTick(100, null, LOUD, config(), unlabeledAlerts = true))
     }
 
     @Test
