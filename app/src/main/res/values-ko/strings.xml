@@ -119,6 +119,8 @@
     <string name="setting_ai_qualcomm_frontend_desc">현재 앱 전처리 대신 고정된 Qualcomm 소스 전처리 계약을 사용합니다. 다음 AI 결과부터 선택이 적용되는 진단용 설정입니다.</string>
     <string name="setting_ai_booster">Gunshot Booster</string>
     <string name="setting_ai_booster_desc">YAMNet 뒤에서 기존 Gunshot Booster를 실행합니다. 끄면 Booster 추론 없이 기존 YAMNet 매핑과 후처리 결과를 확인합니다.</string>
+    <string name="setting_haptic_test">진동 시험</string>
+    <string name="setting_haptic_test_desc">소리를 내지 않고 예시 소리를 실제 진동 경로로 울립니다. 같은 예시를 다시 누르면 멈춥니다. 시각화가 켜져 있는 동안에는 쓸 수 없습니다.</string>
 
     <!-- 소리 분류 표시 -->
     <string name="ai_show_ambient">환경음 표시</string>
@@ -140,8 +142,9 @@
     <string name="haptic_pattern_tap">한 번</string>
     <string name="haptic_pattern_double">두 번</string>
     <string name="haptic_pattern_hold">길게</string>
-    <string name="haptic_pattern_repeat">계속 반복</string>
+    <string name="haptic_pattern_repeat">소리 따라</string>
     <string name="haptic_preview_hint">선택지를 누르면 진동을 미리 느껴볼 수 있습니다.</string>
+    <string name="haptic_pattern_follow_desc">‘소리 따라’는 소리가 이어지는 동안 멈추지 않고 소리를 따라 세졌다 약해졌다 합니다. 미리보기는 이 종류의 흔한 소리를 흉내 냅니다.</string>
 
     <!-- 색상 선택 -->
     <string name="color_picker_title">색상 선택</string>
@@ -226,8 +229,8 @@
     <string name="help_sound_title">소리 종류와 진동</string>
     <string name="help_sound_kinds">AI가 들리는 소리를 환경음·대화음·위협음으로 나눕니다. 기본색은 환경음 흰색, 대화음 노란색, 위협음 빨간색이고, 설정 탭에서 종류마다 색과 표시 여부를 바꿀 수 있습니다.</string>
     <string name="help_sound_danger">위협음(총소리 등)이 감지되면 색이 서서히 바뀌지 않고 즉시 바뀝니다.</string>
-    <string name="help_sound_haptic">화면을 보고 있지 않아도 진동으로 알려줍니다. 처음에는 위협음만 켜져 있고, 종류마다 세기(약·중·강)와 패턴(한 번·두 번·길게·계속 반복)을 고를 수 있습니다.</string>
-    <string name="help_sound_haptic_rule">화면 표시가 켜진 종류만 진동합니다. 같은 종류는 2초 안에 다시 울리지 않고, ‘계속 반복’은 소리가 이어지는 동안 1.5초마다 울립니다.</string>
+    <string name="help_sound_haptic">화면을 보고 있지 않아도 진동으로 알려줍니다. 처음에는 위협음만 켜져 있고, 종류마다 세기(약·중·강)와 패턴(한 번·두 번·길게·소리 따라)을 고를 수 있습니다.</string>
+    <string name="help_sound_haptic_rule">화면 표시가 켜진 종류만 진동합니다. ‘한 번’·‘두 번’·‘길게’는 같은 종류가 2초 안에 다시 울리지 않습니다. ‘소리 따라’는 소리가 이어지는 동안 소리를 따라 움직입니다. 갑작스러운 소리는 세게 치고, 삐 소리는 제 박자대로, 말소리는 음절마다 두근거리고, 사이렌은 음이 오르내리는 대로 세졌다 약해집니다. 변하지 않고 이어지는 소리는 잔잔한 울림으로 줄어들고 몇 초마다 가볍게 톡 치지만, 소리가 멈출 때까지 멈추지 않습니다.</string>
 
     <string name="help_notes_title">알아두세요</string>
     <string name="help_note_direction">좌우는 구분하지만 앞뒤는 구분하지 못합니다. 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감 효과를 나타냅니다.</string>

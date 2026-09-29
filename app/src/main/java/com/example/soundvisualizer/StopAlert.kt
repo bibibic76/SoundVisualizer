@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import com.example.soundvisualizer.feedback.HapticPlayer
+import com.example.soundvisualizer.feedback.HapticPreviewGate
 import com.example.soundvisualizer.tile.StartVisualizerActivity
 
 /**
@@ -66,12 +67,17 @@ object StopAlert {
      * 멈춘 이유에 맞게 알린다. 사용자가 끈 경우에는 아무것도 하지 않는다. 메인 스레드에서 부른다(토스트).
      *
      * 캡처 서비스를 내리기 전, 아직 포그라운드일 때 부른다. 내린 뒤에는 진동이 백그라운드 앱의 것으로 막힐 수 있다.
-     * 진동 알림을 멈춘 뒤에 불러야 한다. 진동 알림의 cancel() 이 이 진동까지 끊는다.
+     * 진동 알림을 멈춘 뒤에 불러야 한다. 진동 알림을 멈출 때의 close() 가 이 진동까지 끊는다.
      */
     fun show(context: Context, reason: StopReason) {
         val player = HapticPlayer(context)
         val plan = StopAlertPlan.decide(reason, player.hasVibrator)
-        if (plan.vibrate) player.playStoppedAlert()
+        if (plan.vibrate) {
+            // 설정 화면의 진동 미리보기가 돌고 있으면 먼저 멈춘다. 안 멈추면 미리보기의 다음 진동이 이 알림을 끊는다
+            // (Android 10·11 은 알람 용도의 우선순위 규칙이 없다).
+            HapticPreviewGate.stopPreview()
+            player.playStoppedAlert()
+        }
         if (!plan.notify) return
         // 알림이 올라가도 남긴다. 알림을 밀어서 치웠거나 못 보고 앱을 열어도 무엇이 꺼졌는지 알 수 있다.
         SettingsManager.setLastUnexpectedStop(reason)

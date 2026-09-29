@@ -8,8 +8,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** 실제 알림 루프의 주기와 같게 흘린다. */
-private const val TICK = 100L
+/** 실제 알림 루프의 조용할 때 주기와 같게 흘린다. */
+private const val TICK = HapticTuning.IDLE_TICK_MS
 private const val LOUD = 0.5f
 private const val QUIET = 0f
 
@@ -81,10 +81,167 @@ class HapticPolicyTest {
         assertEquals(listOf(0L), fired.map { it.first })
     }
 
+    // ---------------------------------------------------------------
+    // 소리 따라 (HapticPattern.Repeat)
+    // ---------------------------------------------------------------
+
     @Test
-    fun `반복 패턴은 간격마다 다시 울린다`() {
-        val fired = HapticPolicy().feed(0, 5000, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
-        assertEquals(listOf(0L, 1500L, 3000L, 4500L), fired.map { it.first })
+    fun `소리 따라는 소리가 나는 동안 세션을 이어가고 한 번 패턴을 내지 않는다`() {
+        val policy = HapticPolicy()
+        val cfg = config(pattern = HapticPattern.Repeat)
+        val ids = HashSet<Int>()
+        var t = 0L
+        while (t <= 5000) {
+            assertNull("소리 따라가 한 번 패턴을 냈다 ($t)", policy.onTick(t, DANGER, LOUD, cfg))
+            val f = policy.follow
+            assertNotNull("$t 에 세션이 없다", f)
+            assertEquals(DANGER, f!!.label)
+            assertEquals(HapticStrength.Medium, f.strength)
+            ids.add(f.id)
+            t += TICK
+        }
+        assertEquals("세션이 중간에 새로 시작됐다", 1, ids.size)
+    }
+
+    @Test
+    fun `무음에서는 라벨이 남아 있어도 소리 따라를 시작하지 않는다`() {
+        val policy = HapticPolicy()
+        policy.feed(0, 3000, DANGER, QUIET, config(pattern = HapticPattern.Repeat))
+        assertNull(policy.follow)
+    }
+
+    @Test
+    fun `소리 따라 세션은 소리가 2초 끊기면 끝난다`() {
+        val policy = HapticPolicy()
+        val cfg = config(pattern = HapticPattern.Repeat)
+        policy.feed(0, 500, DANGER, LOUD, cfg)
+        val id = policy.follow!!.id
+        policy.feed(600, 2500, DANGER, QUIET, cfg)
+        assertEquals("2초 안의 쉼은 같은 세션", id, policy.follow?.id)
+        policy.onTick(2600, DANGER, QUIET, cfg)
+        assertNull("2초 넘게 끊겼는데 세션이 남았다", policy.follow)
+    }
+
+    @Test
+    fun `T3 의 쉼 동안 라벨이 바뀌어도 세션은 이어진다`() {
+        val policy = HapticPolicy()
+        val cfg = mixed(danger = HapticPattern.Repeat, other = HapticPattern.Tap)
+        policy.feed(0, 500, DANGER, LOUD, cfg)
+        val id = policy.follow!!.id
+        val gap = policy.feed(600, 1400, AiClassification.AMBIENT, QUIET, cfg)
+        val back = policy.feed(1500, 2000, DANGER, LOUD, cfg)
+        assertTrue("쉼에서 다른 종류가 울렸다: $gap $back", gap.isEmpty() && back.isEmpty())
+        assertEquals(id, policy.follow?.id)
+    }
+
+    @Test
+    fun `600ms 안에 돌아온 라벨 흔들림은 세션을 끊지 않는다`() {
+        val policy = HapticPolicy()
+        val cfg = mixed(danger = HapticPattern.Repeat, other = HapticPattern.Tap)
+        policy.feed(0, 1000, DANGER, LOUD, cfg)
+        val id = policy.follow!!.id
+        val flicker = policy.feed(1100, 1500, SPEECH, LOUD, cfg)
+        policy.feed(1600, 2000, DANGER, LOUD, cfg)
+        assertTrue("흔들림에 말소리 진동이 울렸다: $flicker", flicker.isEmpty())
+        assertEquals("흔들림에 세션이 새로 시작됐다", id, policy.follow?.id)
+    }
+
+    @Test
+    fun `소리와 함께 다른 종류가 600ms 넘게 이어지면 세션이 끝나고 그 종류가 울린다`() {
+        val policy = HapticPolicy()
+        val cfg = mixed(danger = HapticPattern.Repeat, other = HapticPattern.Tap)
+        policy.feed(0, 1000, DANGER, LOUD, cfg)
+        val fired = policy.feed(1100, 2500, SPEECH, LOUD, cfg)
+        assertEquals("600ms 째에 말소리가 울려야 한다", listOf(1600L), fired.map { it.first })
+        assertNull(policy.follow)
+    }
+
+    @Test
+    fun `위협음은 기다리지 않고 소리 따라를 끊고 제 패턴으로 울린다`() {
+        val policy = HapticPolicy()
+        val cfg: (String) -> HapticPolicy.ClassConfig = { label ->
+            when (label) {
+                SPEECH -> HapticPolicy.ClassConfig(true, HapticSettings(true, HapticStrength.Medium, HapticPattern.Repeat))
+                else -> HapticPolicy.ClassConfig(true, HapticSettings(true, HapticStrength.Strong, HapticPattern.DoubleTap))
+            }
+        }
+        policy.feed(0, 1000, SPEECH, LOUD, cfg)
+        val fired = policy.feed(1100, 1500, DANGER, LOUD, cfg)
+        assertEquals(listOf(1100L), fired.map { it.first })
+        assertEquals(HapticPattern.DoubleTap, fired.single().second.pattern)
+        assertNull(policy.follow)
+    }
+
+    @Test
+    fun `위협음도 소리 따라면 바로 위협음 세션으로 바뀐다`() {
+        val policy = HapticPolicy()
+        val cfg = config(pattern = HapticPattern.Repeat)
+        policy.feed(0, 1000, SPEECH, LOUD, cfg)
+        val speechId = policy.follow!!.id
+        policy.onTick(1100, DANGER, LOUD, cfg)
+        val f = policy.follow!!
+        assertEquals(DANGER, f.label)
+        assertTrue(f.id != speechId)
+    }
+
+    @Test
+    fun `소리 따라는 쿨다운을 읽지도 쓰지도 않는다`() {
+        val policy = HapticPolicy()
+        val follow = config(pattern = HapticPattern.Repeat)
+        policy.onTick(0, DANGER, LOUD, follow)
+        val first = policy.follow!!.id
+        policy.onTick(100, DANGER, LOUD, config(enabled = false, pattern = HapticPattern.Repeat))
+        assertNull(policy.follow)
+        policy.onTick(200, DANGER, LOUD, follow)
+        assertTrue("2초 안에 다시 켠 세션이 막혔다", policy.follow != null && policy.follow!!.id != first)
+
+        // 소리 따라가 쿨다운을 남기지 않았으니, 끝난 바로 뒤 같은 종류의 한 번 패턴도 막히지 않는다.
+        val other = HapticPolicy()
+        other.onTick(0, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
+        other.onTick(100, DANGER, LOUD, config(enabled = false, pattern = HapticPattern.Repeat))
+        assertNotNull("소리 따라 뒤의 한 번이 쿨다운에 막혔다", other.onTick(200, DANGER, LOUD, config(pattern = HapticPattern.Tap)))
+    }
+
+    @Test
+    fun `사건 중간에 소리 따라를 한 번으로 바꾸면 세션이 끝나고 그 사건에는 다시 울리지 않는다`() {
+        val policy = HapticPolicy()
+        policy.feed(0, 300, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
+        val after = policy.feed(400, 3000, DANGER, LOUD, config(pattern = HapticPattern.Tap))
+        assertNull(policy.follow)
+        assertTrue("이어지는 같은 소리에 한 번이 울렸다: $after", after.isEmpty())
+    }
+
+    @Test
+    fun `표시를 끄면 세션이 끝난다`() {
+        val policy = HapticPolicy()
+        policy.feed(0, 300, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
+        policy.onTick(400, DANGER, LOUD, config(shown = false, pattern = HapticPattern.Repeat))
+        assertNull(policy.follow)
+    }
+
+    @Test
+    fun `세기를 바꾸면 세션 세기가 바로 바뀐다`() {
+        val policy = HapticPolicy()
+        policy.feed(0, 300, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
+        val id = policy.follow!!.id
+        policy.onTick(400, DANGER, LOUD, config(pattern = HapticPattern.Repeat, strength = HapticStrength.Strong))
+        assertEquals(id, policy.follow!!.id)
+        assertEquals(HapticStrength.Strong, policy.follow!!.strength)
+    }
+
+    @Test
+    fun `reset 하면 세션도 지워진다`() {
+        val policy = HapticPolicy()
+        policy.onTick(0, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
+        policy.reset()
+        assertNull(policy.follow)
+    }
+
+    private fun mixed(danger: HapticPattern, other: HapticPattern): (String) -> HapticPolicy.ClassConfig = { label ->
+        HapticPolicy.ClassConfig(
+            true,
+            HapticSettings(true, HapticStrength.Medium, if (label == DANGER) danger else other)
+        )
     }
 
     @Test
@@ -173,11 +330,16 @@ class HapticPolicyTest {
     }
 
     @Test
-    fun `진동을 켠 채 사건 중간에 끄면 그 뒤로 울리지 않는다`() {
+    fun `사건 중간에 진동을 끄면 같은 틱에 세션이 끝난다`() {
         val policy = HapticPolicy()
         policy.feed(0, 300, DANGER, LOUD, config(pattern = HapticPattern.Repeat))
-        val afterOff = policy.feed(400, 5000, DANGER, LOUD, config(enabled = false, pattern = HapticPattern.Repeat))
+        assertNotNull(policy.follow)
+        val off = config(enabled = false, pattern = HapticPattern.Repeat)
+        assertNull(policy.onTick(400, DANGER, LOUD, off))
+        assertNull("끈 틱에 세션이 남았다", policy.follow)
+        val afterOff = policy.feed(500, 5000, DANGER, LOUD, off)
         assertTrue(afterOff.isEmpty())
+        assertNull(policy.follow)
     }
 
     @Test

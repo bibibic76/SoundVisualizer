@@ -133,6 +133,8 @@
     <string name="setting_ai_qualcomm_frontend_desc" tools:ignore="MissingTranslation">Uses the pinned Qualcomm source preprocessing contract instead of the current app preprocessing. This diagnostic choice applies from the next AI result.</string>
     <string name="setting_ai_booster" tools:ignore="MissingTranslation">Gunshot Booster</string>
     <string name="setting_ai_booster_desc" tools:ignore="MissingTranslation">Runs the existing Gunshot Booster after YAMNet. Turn it off to inspect the existing YAMNet mapping and post-processing without Booster inference.</string>
+    <string name="setting_haptic_test" tools:ignore="MissingTranslation">Vibration test</string>
+    <string name="setting_haptic_test_desc" tools:ignore="MissingTranslation">Plays sample sounds through the real vibration path without making any sound. Tap a sample again to stop. Unavailable while the visualizer is running.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
@@ -154,8 +156,9 @@
     <string name="haptic_pattern_tap">Once</string>
     <string name="haptic_pattern_double">Twice</string>
     <string name="haptic_pattern_hold">Long</string>
-    <string name="haptic_pattern_repeat">Repeat</string>
+    <string name="haptic_pattern_repeat">Follow</string>
     <string name="haptic_preview_hint">Tap an option to feel a preview.</string>
+    <string name="haptic_pattern_follow_desc">Follow keeps vibrating while the sound lasts and moves with it. The preview plays a typical sound of this type.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
@@ -243,8 +246,8 @@
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
-    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a strength (Light, Medium, Strong) and pattern (Once, Twice, Long, Repeat) for each type.</string>
-    <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The same type won\'t vibrate again within 2 seconds, and “Repeat” vibrates every 1.5 seconds while the sound continues.</string>
+    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a strength (Light, Medium, Strong) and pattern (Once, Twice, Long, Follow) for each type.</string>
+    <string name="help_sound_haptic_rule">Only types shown on screen vibrate. With Once, Twice and Long, the same type won\'t vibrate again within 2 seconds. “Follow” keeps vibrating while the sound lasts and moves with it: sudden sounds hit, beeps pulse in their own rhythm, speech pulses with the syllables and a siren rises and falls with its pitch. A sound that doesn\'t change settles into a gentle hum with a light tap every few seconds, but it doesn\'t stop until the sound does.</string>
 
     <string name="help_notes_title">Good to know</string>
     <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>
