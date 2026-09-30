@@ -14,6 +14,8 @@
     <string name="home_external_mode_locked">运行时无法更改。请先停止可视化再更改，更改会在下次开启时生效。</string>
     <string name="home_status_idle">状态：待启动</string>
     <string name="home_capture_blocked">本应用当前接收不到声音，因此无法绘制任何图形。可能是正在播放声音的应用不允许共享自己的声音（受保护的视频就属于这种情况），也可能是该应用自身已静音。</string>
+    <string name="home_ai_unavailable_loud">当前无法识别声音类型，所有声音都以环境音的颜色显示，并且只有较大的声音会按危险音的振动设置振动。请尝试将可视化关闭后重新开启。</string>
+    <string name="home_ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示，振动提醒也已关闭。请尝试将可视化关闭后重新开启。</string>
     <string name="home_stopped_dismiss">关闭提示</string>
     <string name="home_start">启动</string>
     <string name="home_stop">停止</string>
@@ -128,6 +130,9 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">振动</string>
     <string name="haptic_requires_display">需开启此声音类型的显示才会振动。</string>
+    <string name="haptic_ai_unavailable_danger">无法识别声音类型时，无论什么类型，较大的声音都会按此设置振动。“跟随声音”会改为振动“两次”。</string>
+    <string name="haptic_ai_unavailable_other">无法识别声音类型时，此类型不会振动。较大的声音会按危险音的设置振动。</string>
+    <string name="haptic_ai_unavailable">无法识别声音类型时不会振动。</string>
     <string name="haptic_unsupported">此设备不支持振动。</string>
     <string name="haptic_no_amplitude">此设备无法调节振动强度，将以默认强度振动。</string>
     <string name="haptic_follow_external">在外部声音模式下，“跟随声音”会改为振动“两次”，以免手机不断听到自己的振动。</string>
@@ -139,8 +144,9 @@
     <string name="haptic_pattern_tap">一次</string>
     <string name="haptic_pattern_double">两次</string>
     <string name="haptic_pattern_hold">长振动</string>
-    <string name="haptic_pattern_repeat">重复</string>
+    <string name="haptic_pattern_repeat">跟随声音</string>
     <string name="haptic_preview_hint">点按选项即可预览振动效果。</string>
+    <string name="haptic_pattern_follow_desc">“跟随声音”会在声音持续时一直振动，并随声音变化。预览会模拟这种类型的常见声音。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">选择颜色</string>
@@ -173,6 +179,8 @@
     <string name="notification_text_mic_silenced">麦克风没有收到任何声音。可能您正在通话，或者麦克风已被阻止。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s，已选中</string>
+    <string name="notification_text_ai_unavailable_loud">正在进行声音可视化。由于无法识别声音类型，只有较大的声音会振动。</string>
+    <string name="notification_text_ai_unavailable">正在进行声音可视化。由于无法识别声音类型，振动提醒已关闭。</string>
     <string name="notification_text_capture_blocked">本应用当前接收不到声音。可能是正在播放声音的应用不允许共享自己的声音，也可能是该应用自身已静音。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -227,8 +235,8 @@
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
-    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择强度（弱、中、强）和振动方式（一次、两次、长振动、重复）。</string>
-    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。同一类型在 2 秒内不会再次振动；选择“重复”时，只要声音持续，每 1.5 秒振动一次。</string>
+    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择强度（弱、中、强）和振动方式（一次、两次、长振动、跟随声音）。</string>
+    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。选择“一次”“两次”“长振动”时，同一类型在 2 秒内不会再次振动。“跟随声音”会在声音持续时一直振动，并随声音变化：突然的声音会重重一击，提示音按自己的节奏跳动，说话声随音节跳动，警报声随音调起伏时强时弱。持续不变的声音会逐渐变为轻柔的振动，每隔几秒轻轻一点，但直到声音停止才会停止。</string>
 
     <string name="help_notes_title">注意事项</string>
     <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>
@@ -244,6 +252,7 @@
     <string name="help_faq_no_graphic_q">看不到任何图形。</string>
     <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
     <string name="help_faq_no_vibration_q">没有振动。</string>
+    <string name="help_faq_no_vibration_answer">请在“设置”的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。默认情况下，屏幕关闭时应用会暂停；如需在此期间也收到振动提醒，请在“设置”的“电池”中关闭“屏幕关闭时暂停”。无法识别声音类型时，只有较大的声音会按危险音的设置振动。如果在手机设置中关闭了振动，则可能不会振动。</string>
     <string name="help_faq_install_q">无法安装新版本。</string>
     <string name="help_faq_install_a">在其他地方构建的 APK 签名不同，无法在现有应用上覆盖安装。请先卸载现有应用，然后再安装。此操作会重置您的设置。</string>
     <string name="help_faq_battery_q">耗电量大吗？</string>

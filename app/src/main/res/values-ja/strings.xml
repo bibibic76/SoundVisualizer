@@ -14,6 +14,8 @@
     <string name="home_external_mode_locked">実行中は変更できません。可視化を停止してから変更すると、次回の開始時から適用されます。</string>
     <string name="home_status_idle">状態：待機中</string>
     <string name="home_capture_blocked">音を受け取れていないため、何も描けません。再生中のアプリが音の共有を許可していないか（保護された動画がそうです）、そのアプリの音がオフになっている可能性があります。</string>
+    <string name="home_ai_unavailable_loud">音の種類を判別できないため、すべての音が環境音の色で表示され、振動は種類に関係なく大きな音にだけ、危険音の振動設定で起こります。可視化を一度オフにして、もう一度オンにしてみてください。</string>
+    <string name="home_ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示され、振動のお知らせもオフになっています。可視化を一度オフにして、もう一度オンにしてみてください。</string>
     <string name="home_stopped_dismiss">お知らせを閉じる</string>
     <string name="home_start">開始</string>
     <string name="home_stop">停止</string>
@@ -128,6 +130,9 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">振動</string>
     <string name="haptic_requires_display">この種類の表示がオンのときだけ振動します。</string>
+    <string name="haptic_ai_unavailable_danger">音の種類を判別できない間は、種類に関係なく大きな音にこの設定で振動します。「音に合わせて」は代わりに「2回」で振動します。</string>
+    <string name="haptic_ai_unavailable_other">音の種類を判別できない間は、この種類では振動しません。大きな音は危険音の設定で振動します。</string>
+    <string name="haptic_ai_unavailable">音の種類を判別できない間は振動しません。</string>
     <string name="haptic_unsupported">このデバイスは振動に対応していません。</string>
     <string name="haptic_no_amplitude">このデバイスは振動の強さを調整できないため、標準の強さで振動します。</string>
     <string name="haptic_follow_external">外部音モードでは、スマートフォンが自分の振動を聞き取り続けないように、「音に合わせて」は「2回」で振動します。</string>
@@ -139,8 +144,9 @@
     <string name="haptic_pattern_tap">1回</string>
     <string name="haptic_pattern_double">2回</string>
     <string name="haptic_pattern_hold">長く</string>
-    <string name="haptic_pattern_repeat">繰り返し</string>
+    <string name="haptic_pattern_repeat">音に合わせて</string>
     <string name="haptic_preview_hint">選択肢をタップすると、振動を試せます。</string>
+    <string name="haptic_pattern_follow_desc">「音に合わせて」は、音が続いている間は止まらずに振動し、音に合わせて変化します。プレビューでは、この種類によくある音をまねて振動します。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">色を選択</string>
@@ -173,6 +179,8 @@
     <string name="notification_text_mic_silenced">マイクから音が入ってきません。通話中か、マイクがブロックされている可能性があります。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s、選択済み</string>
+    <string name="notification_text_ai_unavailable_loud">音を可視化しています。音の種類を判別できないため、大きな音にだけ振動します。</string>
+    <string name="notification_text_ai_unavailable">音を可視化しています。音の種類を判別できないため、振動のお知らせはオフです。</string>
     <string name="notification_text_capture_blocked">音を受け取れていません。再生中のアプリが音の共有を許可していないか、そのアプリの音がオフになっている可能性があります。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -227,8 +235,8 @@
     <string name="help_sound_title">音の種類と振動</string>
     <string name="help_sound_kinds">聞こえてくる音を、AI が環境音・話し声・危険音に分類します。初期設定の色は、環境音が白、話し声が黄色、危険音が赤です。種類ごとの色と表示の有無は「設定」タブで変更できます。</string>
     <string name="help_sound_danger">危険音（銃声など）を検出すると、色が徐々にではなく、すぐに切り替わります。</string>
-    <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに強さ（弱・中・強）とパターン（1回・2回・長く・繰り返し）を選べます。</string>
-    <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。同じ種類は2秒以内に続けて振動しません。「繰り返し」は、音が続いている間1.5秒ごとに振動します。</string>
+    <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに強さ（弱・中・強）とパターン（1回・2回・長く・音に合わせて）を選べます。</string>
+    <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。「1回」「2回」「長く」では、同じ種類は2秒以内に続けて振動しません。「音に合わせて」は、音が続いている間は止まらずに振動し、音に合わせて変化します。突然の音は強く打ち、ビープ音はそのリズムで、話し声は音節ごとに脈打ち、サイレンは音の高さに合わせて強くなったり弱くなったりします。変化しない音が続くと穏やかな振動に落ち着き、数秒ごとに軽くトンと打ちますが、音が止まるまで止まりません。</string>
 
     <string name="help_notes_title">知っておきたいこと</string>
     <string name="help_note_direction">左右は区別できますが、前後は区別できません。画面の上下に表示されるグラフィックは、左右から同じくらい聞こえる音と、空間の広がりを表します。</string>
@@ -244,6 +252,7 @@
     <string name="help_faq_no_graphic_q">グラフィックが表示されません。</string>
     <string name="help_faq_no_graphic_a">再生中のアプリが音声のキャプチャを禁止していないか、そのアプリの中で音がオフになっていないかを確認してください。音を受け取れない状態が続くと、「ホーム」タブと実行中の通知でお知らせします。また、「設定」タブで「濃さ」が低すぎないか、今鳴っている音の種類の表示がオフになっていないかも確認してください。</string>
     <string name="help_faq_no_vibration_q">振動しません。</string>
+    <string name="help_faq_no_vibration_answer">「設定」の「音の種類（AI）」で、その種類の「表示」と「振動」が両方オンになっているか確認してください。初期設定では画面オフの間は一時停止するため、その間も振動でお知らせを受け取るには、「設定」の「バッテリー」で「画面オフ中は一時停止」をオフにしてください。音の種類を判別できない間は、大きな音にだけ危険音の設定で振動します。スマートフォンの設定で振動をオフにしている場合は、振動しないことがあります。</string>
     <string name="help_faq_install_q">新しいバージョンをインストールできません。</string>
     <string name="help_faq_install_a">別の環境でビルドされた APK は署名が異なるため、既存のアプリに上書きインストールできません。既存のアプリをアンインストールしてからインストールしてください。この場合、設定はリセットされます。</string>
     <string name="help_faq_battery_q">バッテリーを多く消費しますか？</string>

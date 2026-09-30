@@ -37,12 +37,16 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
+import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticNotifier
+import com.example.soundvisualizer.feedback.HapticPlayer
 import com.example.soundvisualizer.language.AppLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
@@ -395,6 +399,7 @@ class AudioCaptureService : Service() {
 
         observeVisualMode()
         observeAppLanguage()
+        observeLoudAlertSettings()
 
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
         registerScreenReceiver()
@@ -1155,6 +1160,29 @@ class AudioCaptureService : Service() {
     }
 
     /**
+     * AI 를 쓸 수 없을 때의 알림 문구는 큰 소리에 실제로 울리는지를 따른다(#232). 설정에서 위협음의 표시나 진동을
+     * 바꾸면 알림도 맞춘다. 지금 값은 이미 알림에 들어 있으므로 첫 값은 흘린다.
+     */
+    private fun observeLoudAlertSettings() {
+        serviceScope.launch {
+            combine(SettingsManager.showDanger, SettingsManager.hapticSettings(AiClassification.DANGER)) { shown, haptic ->
+                shown && haptic.enabled
+            }.distinctUntilChanged().drop(1).collect {
+                if (!SettingsManager.aiAvailable.value) refreshOngoingNotification()
+            }
+        }
+    }
+
+    /** AI 를 쓸 수 없을 때 큰 소리에 실제로 울리는지. [HapticNotifier] 가 따르는 조건과 같다. */
+    private fun loudAlerts(): Boolean = AiUnavailableNotice.loudAlerts(
+        SettingsManager.showDanger.value,
+        SettingsManager.hapticSettings(AiClassification.DANGER).value.enabled,
+        hasVibrator
+    )
+
+    private val hasVibrator by lazy { HapticPlayer(this).hasVibrator }
+
+    /**
      * 알림 버튼이 보낼 인텐트. 서비스가 아니라 [NotificationActionReceiver] 로 보낸다.
      *
      * 누른 사람이 기다리고 있으므로 포그라운드 방송으로 보낸다. 백그라운드 방송은 시스템이 바쁘면 몇 초씩
@@ -1188,7 +1216,7 @@ class AudioCaptureService : Service() {
             when {
                 SettingsManager.isCaptureBlocked.value ->
                     if (mic) R.string.notification_text_mic_silenced else R.string.notification_text_capture_blocked
-                !SettingsManager.aiAvailable.value -> R.string.notification_text_ai_unavailable_loud
+                !SettingsManager.aiAvailable.value -> AiUnavailableNotice.notification(loudAlerts())
                 mic -> R.string.notification_text_external
                 else -> R.string.notification_text
             }

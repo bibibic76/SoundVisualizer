@@ -398,6 +398,51 @@ class HapticPolicyTest {
     }
 
     @Test
+    fun `AI 를 못 쓸 때 배경음이 이어져도 큰 소리가 새로 나면 다시 울린다`() {
+        // 게임 음악처럼 끊기지 않는 배경음(0.01 초과) 사이의 폭발음마다 울려야 한다(#232).
+        val policy = HapticPolicy()
+        val background = HapticTuning.UNLABELED_LOUD_LEVEL * HapticTuning.UNLABELED_RELEASE_RATIO / 2
+        val first = policy.feed(0, 500, null, LOUD, config(), unlabeledAlerts = true)
+        val between = policy.feed(600, 3000, null, background, config(), unlabeledAlerts = true)
+        val second = policy.feed(3100, 3500, null, LOUD, config(), unlabeledAlerts = true)
+
+        assertEquals(listOf(0L), first.map { it.first })
+        assertTrue(between.isEmpty())
+        assertEquals(listOf(3100L), second.map { it.first })
+    }
+
+    @Test
+    fun `AI 를 못 쓸 때 큰 소리 기준 근처를 오르내리는 소리는 한 사건이다`() {
+        // 기준 바로 위아래를 오가는 음악에 2초마다 울리면 안 된다. 기준의 절반 아래로 내려가야 사건이 끝난다.
+        val policy = HapticPolicy()
+        val over = HapticTuning.UNLABELED_LOUD_LEVEL * 1.2f
+        val under = HapticTuning.UNLABELED_LOUD_LEVEL * (1f + HapticTuning.UNLABELED_RELEASE_RATIO) / 2
+        val fired = ArrayList<Long>()
+        var t = 0L
+        while (t < 8000) {
+            // 0.2초는 기준 위, 1초는 기준 아래(그러나 절반 위).
+            val level = if (t % 1200 < 200) over else under
+            policy.onTick(t, null, level, config(), unlabeledAlerts = true)?.let { fired.add(t) }
+            t += TICK
+        }
+        assertEquals(listOf(0L), fired)
+    }
+
+    @Test
+    fun `AI 를 못 쓸 때 큰 소리가 잠깐 약해진 것은 같은 사건이다`() {
+        // 폭발음의 꼬리나 사이렌의 흔들림처럼 0.4초 안에 다시 커지면 새 사건이 아니다. 쿨다운이 지나도 다시 울리지 않는다.
+        val policy = HapticPolicy()
+        val fired = ArrayList<Long>()
+        var t = 0L
+        while (t < 5000) {
+            val level = if (t % 700 < 400) LOUD else 0.02f
+            policy.onTick(t, null, level, config(), unlabeledAlerts = true)?.let { fired.add(t) }
+            t += TICK
+        }
+        assertEquals(listOf(0L), fired)
+    }
+
+    @Test
     fun `위협음의 표시나 진동을 꺼 두면 종류를 몰라도 울리지 않는다`() {
         assertTrue(HapticPolicy().feed(0, 2000, null, LOUD, config(enabled = false), unlabeledAlerts = true).isEmpty())
         assertTrue(HapticPolicy().feed(0, 2000, null, LOUD, config(shown = false), unlabeledAlerts = true).isEmpty())

@@ -101,7 +101,13 @@ class HapticNotifier(
                 tickConfig,
                 unlabeledAlerts()
             )
-            if (plan != null) issue(plan, now)
+            if (plan != null) {
+                issue(plan, now)
+            } else if (gated && now < HapticPreviewGate.busyUntilMs) {
+                // 미리보기가 진동기를 가져가 이 알림이 보낸 계획은 끊겼다. 새 계획이 없는 틱에도 그 계획을 잊어야 미리보기가
+                // 끝나자마자 멈춘 곳에서 다시 낸다. 잊지 않으면 그 계획이 끝날 때까지(최대 2.5초) 조용하다(#232).
+                loop.onIssueSkipped(now)
+            }
 
             val fast = loop.wantsFastTick(now)
             if (fast) fastTicks++ else idleTicks++
@@ -147,10 +153,12 @@ class HapticNotifier(
         input.takeFrame(frame)
         thread.start()
         statsSince = SystemClock.elapsedRealtime()
-        handler = Handler(thread.looper).also {
-            nextDueUptime = SystemClock.uptimeMillis()
-            it.post(tick)
-        }
+        // handler 를 먼저 두고 첫 틱을 보낸다. 틱은 handler 로만 다음 틱을 잡으므로, 보낸 뒤에 두면 진동 스레드가 그 틈에
+        // 먼저 돌 때 다음 틱을 잡지 못해 이번 실행 내내 진동이 오류도 없이 멈춘다(#232).
+        val h = Handler(thread.looper)
+        handler = h
+        nextDueUptime = SystemClock.uptimeMillis()
+        h.post(tick)
         if (debug) Log.i(TAG, player.capabilityLine())
     }
 

@@ -14,6 +14,8 @@
     <string name="home_external_mode_locked">Çalışırken değiştirilemez. Görselleştirmeyi durdurup değiştirin; değişiklik bir sonraki başlatmada geçerli olur.</string>
     <string name="home_status_idle">Durum: Hazır</string>
     <string name="home_capture_blocked">Görselleştirmeye hiç ses ulaşmıyor; bu yüzden hiçbir şey çizilemiyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir (korumalı videolarda durum böyledir) veya o uygulamanın kendi sesi kapalı olabilir.</string>
+    <string name="home_ai_unavailable_loud">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve yalnızca yüksek sesler, tehlike seslerinin titreşim ayarıyla titreşiyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
+    <string name="home_ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve titreşim uyarıları kapalı. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
     <string name="home_stopped_dismiss">Uyarıyı kapat</string>
     <string name="home_start">Başlat</string>
     <string name="home_stop">Durdur</string>
@@ -128,6 +130,9 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Titreşim</string>
     <string name="haptic_requires_display">Titreşim yalnızca bu ses türü ekranda gösterildiğinde çalışır.</string>
+    <string name="haptic_ai_unavailable_danger">Ses türü algılama çalışmadığı sürece, türü ne olursa olsun her yüksek ses bu ayarla titreşir. “Sesi izle” yerine “İki kez” kullanılır.</string>
+    <string name="haptic_ai_unavailable_other">Ses türü algılama çalışmadığı sürece bu tür için titreşim olmaz. Yüksek sesler, tehlike seslerinin ayarıyla titreşir.</string>
+    <string name="haptic_ai_unavailable">Ses türü algılama çalışmadığı sürece telefon titreşmez.</string>
     <string name="haptic_unsupported">Bu cihaz titreşimi desteklemiyor.</string>
     <string name="haptic_no_amplitude">Bu cihaz titreşim yoğunluğunun ayarlanmasını desteklemediği için varsayılan yoğunlukta titreşir.</string>
     <string name="haptic_follow_external">Dış ses modunda, telefon kendi titreşimini duymaya devam etmesin diye “Sesi izle” yerine “İki kez” kullanılır.</string>
@@ -139,8 +144,9 @@
     <string name="haptic_pattern_tap">Bir kez</string>
     <string name="haptic_pattern_double">İki kez</string>
     <string name="haptic_pattern_hold">Uzun</string>
-    <string name="haptic_pattern_repeat">Tekrarlı</string>
+    <string name="haptic_pattern_repeat">Sesi izle</string>
     <string name="haptic_preview_hint">Titreşimi denemek için bir seçeneğe dokunun.</string>
+    <string name="haptic_pattern_follow_desc">“Sesi izle”, ses sürdüğü sürece titreşmeye devam eder ve sesle birlikte değişir. Önizleme, bu türün tipik bir sesini taklit eder.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>
@@ -173,6 +179,8 @@
     <string name="notification_text_mic_silenced">Mikrofondan hiç ses gelmiyor. Bir aramada olabilirsiniz ya da mikrofon engellenmiş olabilir.</string>
     <string name="notification_stop">Durdur</string>
     <string name="notification_mode_selected">%1$s, seçili</string>
+    <string name="notification_text_ai_unavailable_loud">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için yalnızca yüksek sesler titreşir.</string>
+    <string name="notification_text_ai_unavailable">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için titreşim uyarıları kapalı.</string>
     <string name="notification_text_capture_blocked">Görselleştirmeye ses ulaşmıyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir veya o uygulamanın kendi sesi kapalı olabilir.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
@@ -227,8 +235,8 @@
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
     <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
-    <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için yoğunluk (Hafif, Orta, Güçlü) ve desen (Bir kez, İki kez, Uzun, Tekrarlı) seçebilirsiniz.</string>
-    <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Aynı tür için 2 saniye içinde yeniden titreşim olmaz; “Tekrarlı” seçildiğinde ise telefon, ses sürdüğü sürece 1,5 saniyede bir titreşir.</string>
+    <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için yoğunluk (Hafif, Orta, Güçlü) ve desen (Bir kez, İki kez, Uzun, Sesi izle) seçebilirsiniz.</string>
+    <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Bir kez, İki kez ve Uzun desenlerinde aynı tür için 2 saniye içinde yeniden titreşim olmaz. “Sesi izle”, ses sürdüğü sürece titreşmeye devam eder ve sesle birlikte değişir: Ani sesler güçlü bir vuruşla, bip sesleri kendi ritmiyle, konuşma hecelerle birlikte atar; siren ise perdesi yükselip alçaldıkça güçlenip zayıflar. Değişmeyen bir ses, birkaç saniyede bir hafif bir dokunuşla yumuşak bir uğultuya dönüşür ama titreşim ses durana kadar durmaz.</string>
 
     <string name="help_notes_title">Bilmeniz gerekenler</string>
     <string name="help_note_direction">Uygulama sağı ve solu ayırt edebilir, ancak önü ve arkayı ayırt edemez. Ekranın üst ve alt kısmındaki grafikler, her iki tarafta eşit duyulan sesleri ve uzamsal etkiyi gösterir.</string>
@@ -244,6 +252,7 @@
     <string name="help_faq_no_graphic_q">Hiç grafik göremiyorum.</string>
     <string name="help_faq_no_graphic_a">Video izlediğiniz ya da oyun oynadığınız uygulamanın ses yakalamayı engelleyip engellemediğini ve o uygulamada sesin kapalı olup olmadığını kontrol edin. Görselleştirmeye bir süre boyunca ses ulaşmazsa “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir. Ayrıca “Ayarlar” sekmesinde “Opaklık” değerinin çok düşük olmadığından ve o an çalan ses türünün gösteriminin kapalı olmadığından emin olun.</string>
     <string name="help_faq_no_vibration_q">Telefon titreşmiyor.</string>
+    <string name="help_faq_no_vibration_answer">Ayarlar’daki “Ses türleri (yapay zeka)” bölümünde, ilgili tür için hem gösterme ayarının hem de “Titreşim” ayarının açık olduğundan emin olun. Ekran kapalıyken uygulama varsayılan olarak duraklar; bu sırada da titreşim uyarısı almak için Ayarlar’daki “Pil” bölümünden “Ekran kapalıyken duraklat” ayarını kapatın. Ses türü algılama çalışmadığı sürece yalnızca yüksek sesler, tehlike seslerinin ayarıyla titreşir. Telefonunuzun ayarlarında titreşim kapatılmışsa telefon titreşmeyebilir.</string>
     <string name="help_faq_install_q">Yeni sürüm yüklenmiyor.</string>
     <string name="help_faq_install_a">Başka bir yerde derlenen APK farklı bir imzaya sahip olduğundan mevcut uygulamanın üzerine yüklenemez. Önce mevcut uygulamayı kaldırın, ardından yeni sürümü yükleyin. Bu işlem ayarlarınızı sıfırlar.</string>
     <string name="help_faq_battery_q">Çok pil harcıyor mu?</string>

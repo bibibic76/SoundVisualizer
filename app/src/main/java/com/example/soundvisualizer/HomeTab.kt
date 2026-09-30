@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -23,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.soundvisualizer.feedback.AiUnavailableNotice
+import com.example.soundvisualizer.feedback.HapticPlayer
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -35,6 +38,10 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
     val captureBlocked by SettingsManager.isCaptureBlocked.collectAsState()
     val lastUnexpectedStop by SettingsManager.lastUnexpectedStop.collectAsState()
     val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+    val dangerShown by SettingsManager.showDanger.collectAsState()
+    val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
+    val context = LocalContext.current
+    val hasVibrator = remember { HapticPlayer(context).hasVibrator }
 
     // 글자 크기나 화면 확대를 크게 쓰면 안내와 버튼이 화면보다 길어진다. Column 은 남은 높이만 나눠 주므로
     // 마지막 자식(실행·실행 종료 버튼, 타일 안내)이 눌려 사라진다. 스크롤을 열고 최소 높이를 화면 높이로 잡아
@@ -79,15 +86,17 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                 // - 재생 중인데 아무것도 받지 못함: 소리 공유를 막은 앱이거나 그 앱이 음소거된 경우다. 청각장애
                 //   사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다. 외부 사운드 모드에서는 마이크로
                 //   아무것도 들어오지 않는 경우다(통화 중, 다른 앱이 마이크를 씀, 마이크 차단).
-                // - AI 모델 실패: 위협음 색과 종류별 진동이 그대로인 줄 믿게 된다. 진동은 큰 소리에만 울린다.
+                // - AI 모델 실패: 위협음 색과 종류별 진동이 그대로인 줄 믿게 된다. 진동은 큰 소리에만 울리고,
+                //   위협음의 표시나 진동을 꺼 두었으면 그것도 울리지 않는다(#232).
                 // 둘 다 해당하면 받지 못한다는 쪽만 말한다. 받는 소리가 없으면 분류할 소리도 없어서 AI 안내는
                 // 그 순간 의미가 없고, 막힌 앱을 벗어나면 다시 나온다. 경고를 쌓아 두면 어느 것도 읽지 않는다.
                 // 글자는 상태 점 너비(12dp + 8dp)만큼 들여 상태 글자와 줄을 맞춘다.
                 if (isRunning && (captureBlocked || !aiAvailable)) {
+                    val loudAlerts = AiUnavailableNotice.loudAlerts(dangerShown, dangerHaptic.enabled, hasVibrator)
                     Text(
                         stringResource(
                             when {
-                                !captureBlocked -> R.string.home_ai_unavailable_loud
+                                !captureBlocked -> AiUnavailableNotice.home(loudAlerts)
                                 externalSoundMode -> R.string.home_mic_silenced
                                 else -> R.string.home_capture_blocked
                             }

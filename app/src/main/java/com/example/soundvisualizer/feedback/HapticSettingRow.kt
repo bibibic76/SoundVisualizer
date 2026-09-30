@@ -74,7 +74,9 @@ fun HapticSettingRow(label: String, shown: Boolean) {
         if (pattern == HapticPattern.Repeat) {
             HapticPreviewGate.startScene(context, owner = label, HapticScenes.previewFor(label), label, strength)
         } else {
-            HapticPreviewGate.stopPreview(owner = label)
+            // 누가 튼 미리보기든 멈추고 진동기를 가져온다(소리 따라 미리보기와 같다). 이 줄 것만 멈추면 다른 줄의 소리 따라
+            // 미리보기가 겹쳐 돌고, 아래 holdFor 가 그 미리보기가 세운 막음을 줄여 실제 진동이 끼어든다(#232).
+            HapticPreviewGate.stopPreview()
             if (player.play(pattern, strength)) {
                 HapticPreviewGate.holdFor(HapticShapes.oneShot(pattern, strength, player.hasAmplitudeControl).durationMs)
             }
@@ -82,7 +84,11 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     }
     // 소리 종류 구분(AI)을 못 불러오면 종류별 진동이 돌지 않고, 큰 소리만 위협음 설정으로 울린다(HapticPolicy).
     // 스위치는 켜진 그대로라 종류별 진동을 믿게 되므로, 켜 둔 스위치 바로 아래에 알린다. 위협음 줄은 이 설정으로
-    // 큰 소리가 울린다고, 다른 줄은 이 종류로는 울리지 않는다고 적는다. 설정값은 다음 실행을 위해 바꾸지 않는다.
+    // 큰 소리가 울린다고, 다른 줄은 이 종류로는 울리지 않는다고 적는다. 위협음의 표시나 진동을 꺼 두었으면 큰 소리도
+    // 울리지 않으므로 다른 줄은 진동하지 않는다고만 적는다(#232). 설정값은 다음 실행을 위해 바꾸지 않는다.
+    val dangerShown by SettingsManager.showDanger.collectAsState()
+    val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
+    val loudAlerts = AiUnavailableNotice.loudAlerts(dangerShown, dangerHaptic.enabled, player.hasVibrator)
     val aiNote = !aiAvailable && switchEnabled && settings.enabled
     // 외부 사운드 모드에서는 폰이 자기 진동을 다시 들어 소리 따라가 끝나지 않으므로 두 번으로 울린다(#226).
     // 고른 값은 바꾸지 않고, 고른 그대로 울지 않는다는 것만 알린다.
@@ -91,7 +97,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
         !player.hasVibrator -> R.string.haptic_unsupported
         !shown -> R.string.haptic_requires_display
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
-        aiNote -> R.string.haptic_ai_unavailable_other
+        aiNote -> AiUnavailableNotice.otherRow(loudAlerts)
         followNote -> R.string.haptic_follow_external
         else -> null
     }
