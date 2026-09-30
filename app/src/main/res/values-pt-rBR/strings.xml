@@ -10,6 +10,7 @@
     <string name="home_status_idle">Status: Pronto</string>
     <string name="home_capture_blocked">A visualização não está recebendo nenhum som, então não há nada para desenhar. Pode ser que o app que está tocando não permita compartilhar o som dele (é o caso dos vídeos protegidos) ou que o som esteja desligado dentro do próprio app.</string>
     <string name="home_ai_unavailable_loud">A detecção do tipo de som não está funcionando, então todos os sons aparecem na cor dos sons ambientes e só os sons altos vibram, com o ajuste de vibração dos sons de perigo. Tente desligar e ligar a visualização de novo.</string>
+    <string name="home_ai_unavailable">A detecção do tipo de som não está funcionando, então todos os sons aparecem na cor dos sons ambientes e os avisos por vibração estão desligados. Tente desligar e ligar a visualização de novo.</string>
     <string name="home_stopped_dismiss">Fechar aviso</string>
     <string name="home_start">Iniciar</string>
     <string name="home_stop">Parar</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Só vibra quando este tipo de som é mostrado na tela.</string>
     <string name="haptic_ai_unavailable_danger">Enquanto a detecção do tipo de som não estiver funcionando, qualquer som alto vibra com este ajuste, seja qual for o tipo. No lugar de “Seguir o som”, vibra “Duas vezes”.</string>
     <string name="haptic_ai_unavailable_other">Enquanto a detecção do tipo de som não estiver funcionando, este tipo não vibra. Os sons altos vibram com o ajuste dos sons de perigo.</string>
+    <string name="haptic_ai_unavailable">Não vibra enquanto a detecção do tipo de som não estiver funcionando.</string>
     <string name="haptic_unsupported">Este dispositivo não é compatível com vibração.</string>
     <string name="haptic_no_amplitude">Este dispositivo não permite ajustar a intensidade da vibração, por isso vibra na intensidade padrão.</string>
     <string name="haptic_strength">Intensidade</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Parar</string>
     <string name="notification_mode_selected">%1$s, selecionado</string>
     <string name="notification_text_ai_unavailable_loud">Visualizando os sons. A detecção do tipo de som não está funcionando, então só os sons altos vibram.</string>
+    <string name="notification_text_ai_unavailable">Visualizando os sons. A detecção do tipo de som não está funcionando, então os avisos por vibração estão desligados.</string>
     <string name="notification_text_capture_blocked">A visualização não está recebendo som. Pode ser que o app que está tocando não permita compartilhar o som dele ou que o som esteja desligado dentro do próprio app.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

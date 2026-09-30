@@ -10,6 +10,7 @@
     <string name="home_status_idle">状态：待启动</string>
     <string name="home_capture_blocked">本应用当前接收不到声音，因此无法绘制任何图形。可能是正在播放声音的应用不允许共享自己的声音（受保护的视频就属于这种情况），也可能是该应用自身已静音。</string>
     <string name="home_ai_unavailable_loud">当前无法识别声音类型，所有声音都以环境音的颜色显示，并且只有较大的声音会按危险音的振动设置振动。请尝试将可视化关闭后重新开启。</string>
+    <string name="home_ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示，振动提醒也已关闭。请尝试将可视化关闭后重新开启。</string>
     <string name="home_stopped_dismiss">关闭提示</string>
     <string name="home_start">启动</string>
     <string name="home_stop">停止</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">需开启此声音类型的显示才会振动。</string>
     <string name="haptic_ai_unavailable_danger">无法识别声音类型时，无论什么类型，较大的声音都会按此设置振动。“跟随声音”会改为振动“两次”。</string>
     <string name="haptic_ai_unavailable_other">无法识别声音类型时，此类型不会振动。较大的声音会按危险音的设置振动。</string>
+    <string name="haptic_ai_unavailable">无法识别声音类型时不会振动。</string>
     <string name="haptic_unsupported">此设备不支持振动。</string>
     <string name="haptic_no_amplitude">此设备无法调节振动强度，将以默认强度振动。</string>
     <string name="haptic_strength">强度</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s，已选中</string>
     <string name="notification_text_ai_unavailable_loud">正在进行声音可视化。由于无法识别声音类型，只有较大的声音会振动。</string>
+    <string name="notification_text_ai_unavailable">正在进行声音可视化。由于无法识别声音类型，振动提醒已关闭。</string>
     <string name="notification_text_capture_blocked">本应用当前接收不到声音。可能是正在播放声音的应用不允许共享自己的声音，也可能是该应用自身已静音。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

@@ -10,6 +10,7 @@
     <string name="home_status_idle">สถานะ: พร้อมใช้งาน</string>
     <string name="home_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ จึงวาดอะไรไม่ได้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง (วิดีโอที่มีการป้องกันเนื้อหาจะเป็นแบบนี้) หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
     <string name="home_ai_unavailable_loud">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม และจะสั่นเฉพาะเสียงดังตามการตั้งค่าการสั่นของเสียงอันตราย ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
+    <string name="home_ai_unavailable">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม และปิดการแจ้งเตือนด้วยการสั่น ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
     <string name="home_stopped_dismiss">ปิดข้อความแจ้ง</string>
     <string name="home_start">เริ่ม</string>
     <string name="home_stop">หยุด</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">สั่นได้เฉพาะเมื่อเปิดการแสดงเสียงประเภทนี้</string>
     <string name="haptic_ai_unavailable_danger">ขณะที่ระบบแยกประเภทเสียงไม่ทำงาน เสียงดังทุกประเภทจะสั่นด้วยการตั้งค่านี้ และ “ตามเสียง” จะสั่นแบบ “2 ครั้ง” แทน</string>
     <string name="haptic_ai_unavailable_other">ขณะที่ระบบแยกประเภทเสียงไม่ทำงาน เสียงประเภทนี้จะไม่สั่น ส่วนเสียงดังจะสั่นตามการตั้งค่าของเสียงอันตราย</string>
+    <string name="haptic_ai_unavailable">จะไม่สั่นขณะที่ระบบแยกประเภทเสียงไม่ทำงาน</string>
     <string name="haptic_unsupported">อุปกรณ์นี้ไม่รองรับการสั่น</string>
     <string name="haptic_no_amplitude">อุปกรณ์นี้ปรับความแรงของการสั่นไม่ได้ จึงสั่นด้วยความแรงเริ่มต้น</string>
     <string name="haptic_strength">ความแรง</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">หยุด</string>
     <string name="notification_mode_selected">%1$s, เลือกแล้ว</string>
     <string name="notification_text_ai_unavailable_loud">กำลังแสดงภาพเสียง ระบบแยกประเภทเสียงไม่ทำงาน จึงจะสั่นเฉพาะเสียงดัง</string>
+    <string name="notification_text_ai_unavailable">กำลังแสดงภาพเสียง ระบบแยกประเภทเสียงไม่ทำงาน จึงปิดการแจ้งเตือนด้วยการสั่น</string>
     <string name="notification_text_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

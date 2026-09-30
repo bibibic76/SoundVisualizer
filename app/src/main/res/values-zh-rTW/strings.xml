@@ -10,6 +10,7 @@
     <string name="home_status_idle">狀態：準備就緒</string>
     <string name="home_capture_blocked">目前接收不到聲音，因此無法繪製任何圖形。可能是正在播放的應用程式不允許分享聲音 (受保護的影片就是這樣)，也可能是該應用程式本身的聲音已靜音。</string>
     <string name="home_ai_unavailable_loud">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示，而且只有較大的聲音會依危險音的震動設定震動。請試著關閉聲音視覺化後再重新開啟。</string>
+    <string name="home_ai_unavailable">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示，震動提醒也已關閉。請試著關閉聲音視覺化後再重新開啟。</string>
     <string name="home_stopped_dismiss">關閉提示</string>
     <string name="home_start">開始</string>
     <string name="home_stop">停止</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">只有在顯示這個聲音類型時才會震動。</string>
     <string name="haptic_ai_unavailable_danger">無法辨識聲音類型時，無論哪種類型，較大的聲音都會依這個設定震動。「跟著聲音」會改為震動「兩次」。</string>
     <string name="haptic_ai_unavailable_other">無法辨識聲音類型時，這個類型不會震動。較大的聲音會依危險音的設定震動。</string>
+    <string name="haptic_ai_unavailable">無法辨識聲音類型時不會震動。</string>
     <string name="haptic_unsupported">這部裝置不支援震動。</string>
     <string name="haptic_no_amplitude">這部裝置無法調整震動強度，將以預設強度震動。</string>
     <string name="haptic_strength">強度</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s，已選取</string>
     <string name="notification_text_ai_unavailable_loud">正在將聲音視覺化。由於無法辨識聲音類型，只有較大的聲音會震動。</string>
+    <string name="notification_text_ai_unavailable">正在將聲音視覺化。由於無法辨識聲音類型，震動提醒已關閉。</string>
     <string name="notification_text_capture_blocked">目前接收不到聲音。可能是正在播放的應用程式不允許分享聲音，也可能是該應用程式本身的聲音已靜音。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

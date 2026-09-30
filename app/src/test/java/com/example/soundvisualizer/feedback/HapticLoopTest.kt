@@ -131,6 +131,39 @@ class HapticLoopTest {
     }
 
     @Test
+    fun `미리보기 때문에 건너뛴 옐프 떨림 계획도 곧 다시 낸다`() {
+        // 떨림 계획이 남긴 표시가 남으면 음높이 갱신이 "아직 울리는 중" 으로 보고, 그 계획이 끝날 때까지 다시 내지 않았다(#232).
+        var now = 0L
+        val scene = HapticScenes.yelp
+        val input = SyntheticHapticInput(scene, { now })
+        val loop = HapticLoop(36, true)
+        val frame = FloatArray(HapticInput.FRAME_SIZE)
+        val c = cfg(HapticPattern.Repeat)
+        input.takeFrame(frame)
+        var skippedAt = -1L
+        var resentAt = -1L
+        while (now <= scene.durationMs && resentAt < 0) {
+            input.takeFrame(frame)
+            val plan = loop.onTick(
+                now, scene.label, frame[HapticInput.PEAK], frame[HapticInput.RMS], frame[HapticInput.TONE],
+                frame[HapticInput.BUFFERS].toInt(), c
+            )
+            if (plan != null) {
+                val throb = plan.reason == PlanReason.PITCH && plan.timings.size >= 20
+                if (skippedAt < 0 && throb) {
+                    loop.onIssueSkipped(now)
+                    skippedAt = now
+                } else if (skippedAt >= 0) {
+                    resentAt = now
+                }
+            }
+            now += HapticTuning.tickPeriodMs(loop.wantsFastTick(now))
+        }
+        assertTrue("옐프에서 떨림 계획이 나오지 않았다", skippedAt >= 0)
+        assertTrue("건너뛴 뒤 ${now - skippedAt}ms 동안 다시 내지 않았다", resentAt >= 0 && resentAt - skippedAt <= 700)
+    }
+
+    @Test
     fun `세기를 바꾸면 다음 계획부터 새 세기다`() {
         val loop = HapticLoop(36, true)
         var t = 0L

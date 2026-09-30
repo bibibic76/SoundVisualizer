@@ -10,6 +10,7 @@
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
     <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
     <string name="home_ai_unavailable_loud">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường, và chỉ âm thanh lớn mới rung, theo cài đặt rung của âm thanh nguy hiểm. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
+    <string name="home_ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường và thông báo rung đang tắt. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
     <string name="home_stopped_dismiss">Đóng thông báo</string>
     <string name="home_start">Bắt đầu</string>
     <string name="home_stop">Dừng</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Chỉ rung khi loại âm thanh này được hiện trên màn hình.</string>
     <string name="haptic_ai_unavailable_danger">Khi ứng dụng không nhận diện được loại âm thanh, mọi âm thanh lớn đều rung theo cài đặt này, bất kể thuộc loại nào. “Theo âm thanh” sẽ được thay bằng “Hai lần”.</string>
     <string name="haptic_ai_unavailable_other">Khi ứng dụng không nhận diện được loại âm thanh, loại này sẽ không rung. Âm thanh lớn rung theo cài đặt của âm thanh nguy hiểm.</string>
+    <string name="haptic_ai_unavailable">Sẽ không rung khi ứng dụng không nhận diện được loại âm thanh.</string>
     <string name="haptic_unsupported">Thiết bị này không hỗ trợ rung.</string>
     <string name="haptic_no_amplitude">Thiết bị này không điều chỉnh được cường độ rung nên sẽ rung ở cường độ mặc định.</string>
     <string name="haptic_strength">Cường độ</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Dừng</string>
     <string name="notification_mode_selected">%1$s, đã chọn</string>
     <string name="notification_text_ai_unavailable_loud">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên chỉ âm thanh lớn mới rung.</string>
+    <string name="notification_text_ai_unavailable">Đang trực quan hóa âm thanh. Ứng dụng không nhận diện được loại âm thanh nên thông báo rung đang tắt.</string>
     <string name="notification_text_capture_blocked">Ứng dụng không nhận được âm thanh nào. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình, hoặc chính ứng dụng đó đang tắt tiếng.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

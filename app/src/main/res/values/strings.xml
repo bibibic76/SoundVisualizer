@@ -14,6 +14,7 @@
     <string name="home_status_idle">Status: Ready</string>
     <string name="home_capture_blocked">No sound is reaching the visualizer, so nothing can be drawn. The app you\'re using may not allow its sound to be shared (protected video works this way), or its own sound may be muted.</string>
     <string name="home_ai_unavailable_loud">Sound type detection isn\'t working, so every sound is shown in the ambient color and only loud sounds vibrate, using the danger sound vibration setting. Try turning the visualizer off and on again.</string>
+    <string name="home_ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color and vibration alerts are off. Try turning the visualizer off and on again.</string>
     <string name="home_stopped_dismiss">Dismiss notice</string>
     <string name="home_start">Start</string>
     <string name="home_stop">Stop</string>
@@ -147,6 +148,7 @@
     <string name="haptic_requires_display">Vibration works only when this sound type is shown.</string>
     <string name="haptic_ai_unavailable_danger">While sound type detection isn\'t working, any loud sound vibrates with this setting, whatever its type. Follow vibrates Twice instead.</string>
     <string name="haptic_ai_unavailable_other">While sound type detection isn\'t working, this type doesn\'t vibrate. Loud sounds vibrate with the danger sound setting.</string>
+    <string name="haptic_ai_unavailable">It won\'t vibrate while sound type detection isn\'t working.</string>
     <string name="haptic_unsupported">This device doesn\'t support vibration.</string>
     <string name="haptic_no_amplitude">This device can\'t adjust vibration strength, so it vibrates at the default strength.</string>
     <string name="haptic_strength">Strength</string>
@@ -195,6 +197,7 @@
     <!-- %1$s is the mode name. Read out for the mode that is currently on, so it is not shown by colour alone. -->
     <string name="notification_mode_selected">%1$s, selected</string>
     <string name="notification_text_ai_unavailable_loud">Visualizing sound. Sound type detection isn\'t working, so only loud sounds vibrate.</string>
+    <string name="notification_text_ai_unavailable">Visualizing sound. Sound type detection isn\'t working, so vibration alerts are off.</string>
     <string name="notification_text_capture_blocked">No sound is reaching the visualizer. The app you\'re using may not allow its sound to be shared, or its own sound may be muted.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

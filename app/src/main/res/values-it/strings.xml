@@ -10,6 +10,7 @@
     <string name="home_status_idle">Stato: pronto</string>
     <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
     <string name="home_ai_unavailable_loud">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e vibrano solo i suoni forti, con l\'impostazione di vibrazione dei suoni di pericolo. Prova a disattivare e riattivare la visualizzazione.</string>
+    <string name="home_ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e gli avvisi con vibrazione sono disattivati. Prova a disattivare e riattivare la visualizzazione.</string>
     <string name="home_stopped_dismiss">Chiudi avviso</string>
     <string name="home_start">Avvia</string>
     <string name="home_stop">Interrompi</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">La vibrazione funziona solo se questo tipo di suono viene mostrato.</string>
     <string name="haptic_ai_unavailable_danger">Finché il riconoscimento del tipo di suono non funziona, qualsiasi suono forte vibra con questa impostazione, di qualunque tipo sia. Al posto di “Segui il suono” si usa “Due volte”.</string>
     <string name="haptic_ai_unavailable_other">Finché il riconoscimento del tipo di suono non funziona, questo tipo non vibra. I suoni forti vibrano con l\'impostazione dei suoni di pericolo.</string>
+    <string name="haptic_ai_unavailable">Il telefono non vibra mentre il riconoscimento del tipo di suono non funziona.</string>
     <string name="haptic_unsupported">Questo dispositivo non supporta la vibrazione.</string>
     <string name="haptic_no_amplitude">Questo dispositivo non può regolare l\'intensità della vibrazione, quindi vibra con l\'intensità predefinita.</string>
     <string name="haptic_strength">Intensità</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Interrompi</string>
     <string name="notification_mode_selected">%1$s, selezionato</string>
     <string name="notification_text_ai_unavailable_loud">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi vibrano solo i suoni forti.</string>
+    <string name="notification_text_ai_unavailable">Visualizzazione del suono in corso. Il riconoscimento del tipo di suono non funziona, quindi gli avvisi con vibrazione sono disattivati.</string>
     <string name="notification_text_capture_blocked">Questa app non riceve nessun suono. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio, oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

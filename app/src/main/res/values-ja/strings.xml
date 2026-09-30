@@ -10,6 +10,7 @@
     <string name="home_status_idle">状態：待機中</string>
     <string name="home_capture_blocked">音を受け取れていないため、何も描けません。再生中のアプリが音の共有を許可していないか（保護された動画がそうです）、そのアプリの音がオフになっている可能性があります。</string>
     <string name="home_ai_unavailable_loud">音の種類を判別できないため、すべての音が環境音の色で表示され、振動は種類に関係なく大きな音にだけ、危険音の振動設定で起こります。可視化を一度オフにして、もう一度オンにしてみてください。</string>
+    <string name="home_ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示され、振動のお知らせもオフになっています。可視化を一度オフにして、もう一度オンにしてみてください。</string>
     <string name="home_stopped_dismiss">お知らせを閉じる</string>
     <string name="home_start">開始</string>
     <string name="home_stop">停止</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">この種類の表示がオンのときだけ振動します。</string>
     <string name="haptic_ai_unavailable_danger">音の種類を判別できない間は、種類に関係なく大きな音にこの設定で振動します。「音に合わせて」は代わりに「2回」で振動します。</string>
     <string name="haptic_ai_unavailable_other">音の種類を判別できない間は、この種類では振動しません。大きな音は危険音の設定で振動します。</string>
+    <string name="haptic_ai_unavailable">音の種類を判別できない間は振動しません。</string>
     <string name="haptic_unsupported">このデバイスは振動に対応していません。</string>
     <string name="haptic_no_amplitude">このデバイスは振動の強さを調整できないため、標準の強さで振動します。</string>
     <string name="haptic_strength">強さ</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s、選択済み</string>
     <string name="notification_text_ai_unavailable_loud">音を可視化しています。音の種類を判別できないため、大きな音にだけ振動します。</string>
+    <string name="notification_text_ai_unavailable">音を可視化しています。音の種類を判別できないため、振動のお知らせはオフです。</string>
     <string name="notification_text_capture_blocked">音を受け取れていません。再生中のアプリが音の共有を許可していないか、そのアプリの音がオフになっている可能性があります。</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->
