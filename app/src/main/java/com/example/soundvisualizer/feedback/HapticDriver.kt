@@ -32,10 +32,12 @@ class HapticDriver(private val amplitudeControl: Boolean) {
     private var continuousUntilMs = Long.MIN_VALUE
 
     /**
-     * @param want 지금 울려야 할 진동. 없으면 null.
+     * @param vibe 지금 울려야 할 진동. 없으면 null.
      * @return 지금 진동기에 할 일.
      */
-    fun onTick(nowMs: Long, want: HapticPolicy.Vibe?): Command {
+    fun onTick(nowMs: Long, vibe: HapticPolicy.Vibe?): Command {
+        // 꺼짐은 울리지 않는 것과 같다. 박자가 없어(0) 그대로 다루면 0으로 나눈다.
+        val want = vibe?.takeIf { it.mode != HapticMode.Off }
         val prev = current
         current = want
         if (want == null) {

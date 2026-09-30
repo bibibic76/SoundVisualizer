@@ -184,6 +184,15 @@ class HapticDriverTest {
     }
 
     @Test
+    fun `꺼짐 진동은 울리지 않는 것과 같다`() {
+        val driver = HapticDriver(true)
+        assertTrue(driver.onTick(0, vibe(HapticMode.Continuous)) is Play)
+        assertEquals(HapticDriver.Command.Cancel, driver.onTick(100, vibe(HapticMode.Off)))
+        assertEquals(HapticDriver.Command.None, driver.onTick(200, vibe(HapticMode.Off)))
+        assertEquals(300L + HapticTuning.IDLE_TICK_MS, driver.nextWakeMs(300))
+    }
+
+    @Test
     fun `아무것도 울리지 않으면 판단 주기마다 깨어나 아무것도 보내지 않는다`() {
         val driver = HapticDriver(true)
         assertTrue(driver.run(0, 2000) { null }.isEmpty())

@@ -155,7 +155,7 @@ fun SettingsTab() {
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     // 모델을 못 불러온 채 실행 중이면 색 설정이 먹지 않는 이유를 카드 맨 위에 알린다.
-                    // 진동이 울리지 않는다는 안내는 켜 둔 진동 스위치 바로 아래에 붙는다 (HapticSettingRow).
+                    // 진동이 울리지 않는다는 안내는 켜 둔 진동 줄의 제목 바로 아래에 붙는다 (HapticSettingRow).
                     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
                     if (!aiAvailable) {
                         Text(

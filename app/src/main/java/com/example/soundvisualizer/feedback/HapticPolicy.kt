@@ -108,7 +108,11 @@ class HapticPolicy(
             active = label?.takeIf { config(it).vibrates }
             mismatchMs = 0L
         }
-        return active?.let { vibeOf(config(it).haptic) }
+        // 설정은 다른 스레드(설정 화면)가 바꾼다. 위에서 본 뒤 그 사이에 꺼졌을 수 있으므로 돌려줄 설정을 한 번 더 확인한다.
+        // 확인 없이 돌려주면 꺼짐 방식의 진동을 내보낸다.
+        val chosen = active ?: return null
+        val cfg = config(chosen)
+        return if (cfg.vibrates) vibeOf(cfg.haptic) else null
     }
 
     /**

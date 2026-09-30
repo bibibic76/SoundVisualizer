@@ -138,6 +138,17 @@ class HapticPolicyTest {
     }
 
     @Test
+    fun `판단하는 사이에 진동을 끄면 꺼짐 방식을 돌려주지 않는다`() {
+        // 설정 화면(메인 스레드)이 틱 도중에 바꿀 수 있다. 처음 몇 번은 켜짐, 그 뒤로는 꺼짐으로 읽히게 한다.
+        var reads = 0
+        val flipping: (String) -> HapticPolicy.ClassConfig = {
+            reads++
+            HapticPolicy.ClassConfig(true, HapticSettings(if (reads <= 1) HapticMode.Medium else HapticMode.Off, 60))
+        }
+        assertNull(HapticPolicy().onTick(0, DANGER, LOUD, flipping))
+    }
+
+    @Test
     fun `울리는 중에 방식이나 세기를 바꾸면 바로 따른다`() {
         val policy = HapticPolicy()
         assertEquals(vibe(HapticMode.Slow, 30), policy.onTick(0, DANGER, LOUD, config(mode = HapticMode.Slow, level = 30)))
@@ -167,7 +178,7 @@ class HapticPolicyTest {
     }
 
     @Test
-    fun `다른 종류가 600ms 넘게 이어지면 그 종류로 넘어간다`() {
+    fun `다른 종류가 600ms 이어지면 그 종류로 넘어간다`() {
         val policy = HapticPolicy()
         policy.feed(0, 1000, SPEECH, LOUD, speechSlowAmbientFast)
         val next = policy.feed(1100, 3000, AMBIENT, LOUD, speechSlowAmbientFast)

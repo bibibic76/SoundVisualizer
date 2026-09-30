@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -169,6 +170,7 @@ private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit)
     var dragging by remember { mutableStateOf<Float?>(null) }
     val value = dragging ?: level.toFloat()
     val name = stringResource(R.string.haptic_strength)
+    val percent = stringResource(R.string.haptic_level_percent, value.roundToInt())
     val labelColor = if (enabled) SecondaryTextColor else SecondaryTextColor.copy(alpha = 0.4f)
     val valueColor = if (enabled) AccentColor else AccentColor.copy(alpha = 0.35f)
 
@@ -181,7 +183,7 @@ private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit)
             Text(name, fontSize = 13.sp, color = labelColor, modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                stringResource(R.string.haptic_level_percent, value.roundToInt()),
+                percent,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = valueColor
@@ -208,7 +210,11 @@ private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit)
                 disabledInactiveTrackColor = Color(0xFF2A3038)
             ),
             // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다.
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = name }
+            // 값도 화면과 같은 글자로 읽힌다. 두지 않으면 슬라이더가 범위 안의 위치로 읽어 50% 가 "44퍼센트" 가 된다(범위가 10부터라).
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = name
+                stateDescription = percent
+            }
         )
     }
 }
