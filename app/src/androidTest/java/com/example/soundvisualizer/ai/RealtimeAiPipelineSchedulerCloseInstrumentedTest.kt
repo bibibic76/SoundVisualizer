@@ -6,10 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.Collections
-import java.util.IdentityHashMap
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
 /**
@@ -21,8 +17,8 @@ import kotlin.random.Random
  *
  * 스케줄러는 catch(Throwable) 로 예외를 삼키므로 실패는 두 갈래로 잡는다.
  * 1. logcat 의 "AI tick failed" — debuggable 빌드에서만 남고 링 버퍼가 밀어낼 수 있어 중간중간 읽는다.
- * 2. 로그가 필요 없는 대조 — doInference 는 시작할 때 executed 를 올리고 끝에 결과를 남기므로,
- *    시작한 추론보다 남은 결과가 적으면 그 추론은 도중에 예외로 죽은 것이다.
+ * 2. 로그가 필요 없는 대조 — doInference 는 결과를 남긴 뒤에만 completed 를 올린다. 시작한
+ *    추론보다 완료 수가 적으면 그 추론은 도중에 예외로 죽었거나 끝나지 않은 것이다.
  * SIGSEGV 변종은 프로세스가 죽어 테스트 실행 자체가 실패한다.
  */
 @RunWith(AndroidJUnit4::class)
@@ -42,8 +38,6 @@ class RealtimeAiPipelineSchedulerCloseInstrumentedTest {
 
         repeat(ITERATIONS) { i ->
             val pipeline = RealtimeAiPipeline.create(app, captureSampleRate = 44100, channels = 2)
-            val watcher = ResultWatcher(pipeline)
-            watcher.start()
             pipeline.start()
             // start() 이후에만 ingest 가 받아들여진다 (프로덕션 캡처 스레드와 동일).
             pipeline.ingestInterleavedPcm(chunk, chunk.size)
@@ -54,15 +48,16 @@ class RealtimeAiPipelineSchedulerCloseInstrumentedTest {
             if (jitterMs > 0) Thread.sleep(jitterMs)
             pipeline.close()
 
-            // 시간 초과로 빠진 close() 뒤에도 진행 중이던 추론은 결과를 남기므로 잠깐 더 지켜본다.
+            // 시간 초과로 빠진 close() 뒤에도 진행 중이던 추론은 세션을 건드리지 않은 채 끝날 수 있다.
+            // 그 완료만 제한 시간 동안 기다린다.
             val executed = pipeline.inferenceStatsForTest().executed
-            awaitResults(watcher, executed)
-            watcher.close()
+            awaitCompletedInferences(pipeline, executed)
+            val completed = pipeline.inferenceStatsForTest().completed
             assertEquals(
-                "iteration $i: 시작한 추론 ${executed}건 중 ${watcher.completed()}건만 결과를 남겼다 — " +
-                    "close() 가 기다리지 않아 틱이 도중에 죽었다 (스케줄러가 예외를 삼킨다)",
+                "iteration $i: 시작한 추론 ${executed}건 중 ${completed}건만 완료했다 — " +
+                    "close() 뒤 틱이 도중에 죽었거나 끝나지 않았다 (스케줄러가 예외를 삼킨다)",
                 executed,
-                watcher.completed().toLong()
+                completed
             )
             totalExecuted += executed
 
@@ -98,48 +93,10 @@ class RealtimeAiPipelineSchedulerCloseInstrumentedTest {
         return false
     }
 
-    private fun awaitResults(watcher: ResultWatcher, expected: Long) {
+    private fun awaitCompletedInferences(pipeline: RealtimeAiPipeline, expected: Long) {
         val deadline = System.nanoTime() + SETTLE_WAIT_NS
-        while (System.nanoTime() < deadline && watcher.completed() < expected) {
+        while (System.nanoTime() < deadline && pipeline.inferenceStatsForTest().completed < expected) {
             Thread.sleep(1)
-        }
-    }
-
-    /**
-     * 끝까지 돈 추론의 수를 센다 — 로그캣에 기대지 않는 두 번째 탐지기.
-     *
-     * close() 가 마지막에 lastResult 를 비우므로, 추론이 끝난 직후의 짧은 순간을 놓치면 안 된다.
-     * 그래서 추론이 시작된 뒤에는 쉬지 않고 돌며 본다.
-     */
-    private class ResultWatcher(private val pipeline: RealtimeAiPipeline) {
-        private val seen =
-            Collections.newSetFromMap(IdentityHashMap<AiClassificationResult, Boolean>())
-        private val distinct = AtomicInteger(0)
-        private val running = AtomicBoolean(true)
-        private val thread = Thread({
-            var inferenceStarted = false
-            while (running.get()) {
-                val result = pipeline.lastClassification()
-                if (result != null && seen.add(result)) distinct.incrementAndGet()
-                if (!inferenceStarted) {
-                    // 추론 전에는 쉬어 준다. 뜨겁게 도는 구간에서는 stats 를 읽지 않는다 — 읽을 때마다
-                    // 객체가 하나씩 생겨 GC 가 추론 스레드까지 흔든다.
-                    if (pipeline.inferenceStatsForTest().executed > 0L) {
-                        inferenceStarted = true
-                    } else {
-                        Thread.sleep(1)
-                    }
-                }
-            }
-        }, "test-result-watcher").apply { isDaemon = true }
-
-        fun start() = thread.start()
-
-        fun completed(): Int = distinct.get()
-
-        fun close() {
-            running.set(false)
-            thread.join(5_000)
         }
     }
 

@@ -130,23 +130,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">震動</string>
     <string name="haptic_requires_display">只有在顯示這個聲音類型時才會震動。</string>
-    <string name="haptic_ai_unavailable_danger">無法辨識聲音類型時，無論哪種類型，較大的聲音都會依這個設定震動。「跟著聲音」會改為震動「兩次」。</string>
+    <string name="haptic_ai_unavailable_danger">無法辨識聲音類型時，無論哪種類型，較大的聲音持續多久，就會依這個設定震動多久。</string>
     <string name="haptic_ai_unavailable_other">無法辨識聲音類型時，這個類型不會震動。較大的聲音會依危險音的設定震動。</string>
     <string name="haptic_ai_unavailable">無法辨識聲音類型時不會震動。</string>
     <string name="haptic_unsupported">這部裝置不支援震動。</string>
     <string name="haptic_no_amplitude">這部裝置無法調整震動強度，將以預設強度震動。</string>
-    <string name="haptic_follow_external">在外部聲音模式下，「跟著聲音」會改為震動「兩次」，以免手機一直聽到自己的震動。</string>
     <string name="haptic_strength">強度</string>
-    <string name="haptic_strength_weak">弱</string>
-    <string name="haptic_strength_medium">中</string>
-    <string name="haptic_strength_strong">強</string>
-    <string name="haptic_pattern">震動方式</string>
-    <string name="haptic_pattern_tap">一次</string>
-    <string name="haptic_pattern_double">兩次</string>
-    <string name="haptic_pattern_hold">長震動</string>
-    <string name="haptic_pattern_repeat">跟著聲音</string>
-    <string name="haptic_preview_hint">輕觸選項即可預覽震動效果。</string>
-    <string name="haptic_pattern_follow_desc">「跟著聲音」會在聲音持續時一直震動，並隨聲音變化。預覽會模擬這個類型常見的聲音。</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">關閉</string>
+    <string name="haptic_mode_slow">慢</string>
+    <string name="haptic_mode_medium">中</string>
+    <string name="haptic_mode_fast">快</string>
+    <string name="haptic_mode_continuous">連續</string>
+    <string name="haptic_preview_hint">輕觸一種震動方式或調整強度，即可預覽 2 秒震動效果。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">選擇顏色</string>
@@ -235,8 +231,8 @@
     <string name="help_sound_title">聲音類型與震動</string>
     <string name="help_sound_kinds">AI 會將聽到的聲音分為環境音、人聲和危險音。預設情況下，環境音為白色、人聲為黃色、危險音為紅色。你可以在「設定」分頁中變更各類型的顏色，以及是否顯示。</string>
     <string name="help_sound_danger">偵測到危險音 (例如槍聲) 時，顏色會立即改變，而不是逐漸轉變。</string>
-    <string name="help_sound_haptic">即使沒有看著螢幕，也能透過震動得知聲音。預設只有危險音會震動；你可以為每種類型選擇強度 (弱、中、強) 和震動方式 (一次、兩次、長震動、跟著聲音)。</string>
-    <string name="help_sound_haptic_rule">只有在螢幕上顯示的類型才會震動。選擇「一次」、「兩次」、「長震動」時，同一類型在 2 秒內不會再次震動。「跟著聲音」會在聲音持續時一直震動，並隨聲音變化：突然的聲音會重重一擊，提示音照自己的節奏跳動，說話聲隨音節跳動，警報聲隨音調起伏忽強忽弱。持續不變的聲音會逐漸變成輕柔的震動，每隔幾秒輕點一下，但要等聲音停止才會停止。</string>
+    <string name="help_sound_haptic">即使沒有看著螢幕，也能透過震動得知聲音。預設只有危險音會震動；你可以為每種類型選擇震動方式 (關閉、慢、中、快、連續) 和強度。</string>
+    <string name="help_sound_haptic_rule">只有在螢幕上顯示的類型才會震動。該類型的聲音持續期間會一直震動，聲音停止時震動也會停止。「中」每半秒震動一下，「慢」的速度是它的一半，「快」是它的兩倍，「連續」則不間斷地震動。無論哪種震動方式，震動都會維持你選擇的強度。</string>
 
     <string name="help_notes_title">注意事項</string>
     <string name="help_note_direction">可以分辨左右，但無法分辨前後。螢幕上方和下方的圖形代表兩側聽起來差不多的聲音，以及空間感效果。</string>

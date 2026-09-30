@@ -82,15 +82,8 @@ jobs:
           script: echo "에뮬레이터 스냅숏을 만들었습니다."
 
       # 소리는 내지 않는다(-no-audio). 오디오·AI 테스트는 저장소의 픽스처를 코드로 넣어 본다.
-      #
-      # AI 스케줄러의 close 경쟁 테스트는 따로 돌리고, 실패해도 이 job 을 막지 않고 경고로만 남긴다.
-      # 느린 에뮬레이터에서 50번 되풀이 중 한 번 "시작한 추론 1건 중 0건만 결과를 남겼다"로 가끔 실패한다
-      # (2026-09-17 API29 에뮬레이터, 2026-09-30 이 러너). 흔들림인지 실제 경쟁인지는 AI 담당이 판단하고,
-      # 판단이 나올 때까지 다른 테스트의 결과를 가리지 않게 한다. 테스트는 ai/ 에 있어 여기서 고치지 않는다.
       - name: 계측 테스트
         uses: reactivecircus/android-emulator-runner@v2
-        env:
-          FLAKY_AI_TEST: com.example.soundvisualizer.ai.RealtimeAiPipelineSchedulerCloseInstrumentedTest
         with:
           api-level: ${{ env.API_LEVEL }}
           target: google_apis
@@ -98,12 +91,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none
           disable-animations: true
-          # 두 번째 실행이 결과 폴더를 덮으므로 첫 실행의 결과를 옮겨 둔다(아래 요약이 읽는다).
           script: |
-            ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.notClass=$FLAKY_AI_TEST
+            ./gradlew connectedDebugAndroidTest
             mkdir -p ci-results && cp -r app/build/outputs/androidTest-results/connected ci-results/main
-            ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=$FLAKY_AI_TEST || echo "::warning title=AI 스케줄러 close 테스트::$FLAKY_AI_TEST 가 실패했습니다. 이 job 은 막지 않습니다. 결과는 AI 담당에게 알려 주세요."
-            cp -r app/build/outputs/androidTest-results/connected ci-results/ai-close
 
       # Gradle 은 계측 테스트가 몇 개 돌았는지 찍지 않는다. 0개가 돌고 통과한 것처럼 보이지 않게 개수를 남긴다.
       - name: 계측 테스트 결과 요약
@@ -114,7 +104,7 @@ jobs:
           import xml.etree.ElementTree as ET
 
           lines = []
-          for part, title in (("main", "계측 테스트"), ("ai-close", "AI 스케줄러 close 테스트 (막지 않음)")):
+          for part, title in (("main", "계측 테스트"),):
               files = glob.glob(f"ci-results/{part}/**/*.xml", recursive=True)
               if not files and part == "main":
                   # 첫 실행이 실패하면 결과를 옮기기 전에 멈추므로 원래 폴더에 남아 있다.

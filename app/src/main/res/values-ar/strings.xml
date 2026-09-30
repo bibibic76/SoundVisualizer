@@ -130,23 +130,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">الاهتزاز</string>
     <string name="haptic_requires_display">لا يعمل الاهتزاز إلا عند إظهار هذا النوع من الأصوات.</string>
-    <string name="haptic_ai_unavailable_danger">ما دام تحديد نوع الصوت لا يعمل، يهتز الجهاز بهذا الإعداد لأي صوت عالٍ مهما كان نوعه. ويُستبدل نمط «مع الصوت» بنمط «مرتان».</string>
+    <string name="haptic_ai_unavailable_danger">ما دام تحديد نوع الصوت لا يعمل، يهتز الجهاز بهذا الإعداد طوال استمرار أي صوت عالٍ، مهما كان نوعه.</string>
     <string name="haptic_ai_unavailable_other">ما دام تحديد نوع الصوت لا يعمل، لا يهتز الجهاز لهذا النوع. أما الأصوات العالية فتهتز وفق إعداد أصوات الخطر.</string>
     <string name="haptic_ai_unavailable">لن يهتز الجهاز ما دام تحديد نوع الصوت غير متاح.</string>
     <string name="haptic_unsupported">لا يدعم هذا الجهاز الاهتزاز.</string>
     <string name="haptic_no_amplitude">لا يمكن ضبط قوة الاهتزاز على هذا الجهاز، لذا سيهتز بالقوة التلقائية.</string>
-    <string name="haptic_follow_external">في وضع الأصوات الخارجية يُستبدل نمط «مع الصوت» بنمط «مرتان»، حتى لا يظل الهاتف يسمع اهتزازه.</string>
     <string name="haptic_strength">القوة</string>
-    <string name="haptic_strength_weak">خفيف</string>
-    <string name="haptic_strength_medium">متوسط</string>
-    <string name="haptic_strength_strong">قوي</string>
-    <string name="haptic_pattern">النمط</string>
-    <string name="haptic_pattern_tap">مرة</string>
-    <string name="haptic_pattern_double">مرتان</string>
-    <string name="haptic_pattern_hold">طويل</string>
-    <string name="haptic_pattern_repeat">مع الصوت</string>
-    <string name="haptic_preview_hint">انقر على أي خيار لتجربة الاهتزاز.</string>
-    <string name="haptic_pattern_follow_desc">يستمر نمط «مع الصوت» في الاهتزاز ما دام الصوت مستمرًا ويتغيّر معه. وتحاكي المعاينة صوتًا شائعًا من هذا النوع.</string>
+    <string name="haptic_level_percent">%1$d٪</string>
+    <string name="haptic_mode_off">متوقف</string>
+    <string name="haptic_mode_slow">بطيء</string>
+    <string name="haptic_mode_medium">متوسط</string>
+    <string name="haptic_mode_fast">سريع</string>
+    <string name="haptic_mode_continuous">مستمر</string>
+    <string name="haptic_preview_hint">انقر على أحد الأوضاع أو غيّر القوة لتجربة الاهتزاز لمدة ثانيتين.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">اختيار لون</string>
@@ -235,8 +231,8 @@
     <string name="help_sound_title">أنواع الأصوات والاهتزاز</string>
     <string name="help_sound_kinds">يصنّف الذكاء الاصطناعي ما تسمعه إلى أصوات محيطة وكلام وأصوات خطر. الألوان التلقائية هي: الأبيض للأصوات المحيطة، والأصفر للكلام، والأحمر لأصوات الخطر. يمكنك تغيير لون كل نوع واختيار إظهاره أو إخفائه من علامة تبويب «الإعدادات».</string>
     <string name="help_sound_danger">عند رصد صوت خطر (مثل طلق ناري)، يتغير اللون فورًا وليس تدريجيًا.</string>
-    <string name="help_sound_haptic">ينبّهك الاهتزاز حتى عندما لا تنظر إلى الشاشة. في البداية يكون الاهتزاز مفعّلًا لأصوات الخطر فقط، ويمكنك اختيار القوة (خفيف، متوسط، قوي) والنمط (مرة، مرتان، طويل، مع الصوت) لكل نوع.</string>
-    <string name="help_sound_haptic_rule">لا يهتز الجهاز إلا لأنواع الأصوات التي تم تفعيل إظهارها على الشاشة. في أنماط «مرة» و«مرتان» و«طويل» لا يتكرر الاهتزاز للنوع نفسه خلال ثانيتين. أما «مع الصوت» فيستمر في الاهتزاز ما دام الصوت مستمرًا ويتغيّر معه: الأصوات المفاجئة تهتز بقوة، والصفير ينبض على إيقاعه، والكلام ينبض مع المقاطع، وصفارة الإنذار تقوى وتضعف مع ارتفاع نغمتها وانخفاضها. والصوت الذي لا يتغيّر يهدأ إلى اهتزاز خفيف مع نقرة خفيفة كل بضع ثوانٍ، لكن الاهتزاز لا يتوقف حتى يتوقف الصوت.</string>
+    <string name="help_sound_haptic">ينبّهك الاهتزاز حتى عندما لا تنظر إلى الشاشة. في البداية يكون الاهتزاز مفعّلًا لأصوات الخطر فقط، ويمكنك اختيار الوضع (متوقف، بطيء، متوسط، سريع، مستمر) والقوة لكل نوع.</string>
+    <string name="help_sound_haptic_rule">لا يهتز الجهاز إلا لأنواع الأصوات التي تم تفعيل إظهارها على الشاشة. يستمر الاهتزاز ما دام صوت من ذلك النوع مستمرًا، ويتوقف عندما يتوقف الصوت. في وضع «متوسط» ينبض الاهتزاز كل نصف ثانية، وفي «بطيء» بنصف هذه السرعة، وفي «سريع» بضعفها، أما «مستمر» فيهتز دون انقطاع. وفي كل الأوضاع يبقى الاهتزاز بالقوة التي اخترتها.</string>
 
     <string name="help_notes_title">معلومات مفيدة</string>
     <string name="help_note_direction">يميّز التطبيق بين اليسار واليمين، لكنه لا يميّز بين الأمام والخلف. تُمثّل الرسومات في أعلى الشاشة وأسفلها الأصوات المسموعة بالتساوي من الجانبين، كما تعبّر عن الإحساس المكاني.</string>

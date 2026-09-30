@@ -130,23 +130,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Rung</string>
     <string name="haptic_requires_display">Chỉ rung khi loại âm thanh này được hiện trên màn hình.</string>
-    <string name="haptic_ai_unavailable_danger">Khi ứng dụng không nhận diện được loại âm thanh, mọi âm thanh lớn đều rung theo cài đặt này, bất kể thuộc loại nào. “Theo âm thanh” sẽ được thay bằng “Hai lần”.</string>
+    <string name="haptic_ai_unavailable_danger">Khi ứng dụng không nhận diện được loại âm thanh, mọi âm thanh lớn đều rung theo cài đặt này trong suốt thời gian âm thanh kéo dài, bất kể thuộc loại nào.</string>
     <string name="haptic_ai_unavailable_other">Khi ứng dụng không nhận diện được loại âm thanh, loại này sẽ không rung. Âm thanh lớn rung theo cài đặt của âm thanh nguy hiểm.</string>
     <string name="haptic_ai_unavailable">Sẽ không rung khi ứng dụng không nhận diện được loại âm thanh.</string>
     <string name="haptic_unsupported">Thiết bị này không hỗ trợ rung.</string>
     <string name="haptic_no_amplitude">Thiết bị này không điều chỉnh được cường độ rung nên sẽ rung ở cường độ mặc định.</string>
-    <string name="haptic_follow_external">Ở chế độ âm thanh bên ngoài, “Theo âm thanh” sẽ rung “Hai lần” để điện thoại không liên tục nghe thấy chính tiếng rung của mình.</string>
     <string name="haptic_strength">Cường độ</string>
-    <string name="haptic_strength_weak">Nhẹ</string>
-    <string name="haptic_strength_medium">Vừa</string>
-    <string name="haptic_strength_strong">Mạnh</string>
-    <string name="haptic_pattern">Kiểu rung</string>
-    <string name="haptic_pattern_tap">Một lần</string>
-    <string name="haptic_pattern_double">Hai lần</string>
-    <string name="haptic_pattern_hold">Dài</string>
-    <string name="haptic_pattern_repeat">Theo âm thanh</string>
-    <string name="haptic_preview_hint">Nhấn vào một tùy chọn để thử cảm giác rung.</string>
-    <string name="haptic_pattern_follow_desc">“Theo âm thanh” rung liên tục khi âm thanh còn kéo dài và thay đổi theo âm thanh. Bản xem trước mô phỏng một âm thanh thường gặp của loại này.</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">Tắt</string>
+    <string name="haptic_mode_slow">Chậm</string>
+    <string name="haptic_mode_medium">Vừa</string>
+    <string name="haptic_mode_fast">Nhanh</string>
+    <string name="haptic_mode_continuous">Liên tục</string>
+    <string name="haptic_preview_hint">Nhấn vào một chế độ hoặc thay đổi cường độ để thử cảm giác rung trong 2 giây.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Chọn màu</string>
@@ -235,8 +231,8 @@
     <string name="help_sound_title">Loại âm thanh và rung</string>
     <string name="help_sound_kinds">AI phân loại âm thanh bạn nghe thấy thành âm thanh môi trường, giọng nói và âm thanh nguy hiểm. Theo mặc định, âm thanh môi trường có màu trắng, giọng nói màu vàng và âm thanh nguy hiểm màu đỏ. Bạn có thể đổi màu và chọn có hiện hay không cho từng loại trong thẻ Cài đặt.</string>
     <string name="help_sound_danger">Khi phát hiện âm thanh nguy hiểm (như tiếng súng), màu sẽ đổi ngay lập tức thay vì chuyển dần.</string>
-    <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn cường độ (Nhẹ, Vừa, Mạnh) và kiểu rung (Một lần, Hai lần, Dài, Theo âm thanh) cho từng loại.</string>
-    <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Với Một lần, Hai lần và Dài, cùng một loại sẽ không rung lại trong vòng 2 giây. “Theo âm thanh” rung liên tục khi âm thanh còn kéo dài và thay đổi theo âm thanh: âm thanh đột ngột rung mạnh, tiếng bíp rung theo nhịp riêng, giọng nói rung theo từng âm tiết và tiếng còi báo động mạnh lên, yếu đi theo cao độ. Âm thanh không thay đổi sẽ dịu dần thành rung nhẹ, cứ vài giây lại gõ nhẹ một lần, nhưng không dừng cho đến khi âm thanh dừng.</string>
+    <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn chế độ (Tắt, Chậm, Vừa, Nhanh, Liên tục) và cường độ cho từng loại.</string>
+    <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Điện thoại rung suốt khi âm thanh thuộc loại đó còn kéo dài và dừng khi âm thanh dừng. Vừa rung theo nhịp mỗi nửa giây, Chậm bằng một nửa nhịp đó và Nhanh gấp đôi, còn Liên tục rung không ngắt quãng. Ở mọi chế độ, rung luôn giữ đúng cường độ bạn đã chọn.</string>
 
     <string name="help_notes_title">Lưu ý</string>
     <string name="help_note_direction">Ứng dụng phân biệt được trái và phải, nhưng không phân biệt được phía trước và phía sau. Đồ họa ở cạnh trên và cạnh dưới màn hình biểu thị âm thanh nghe như nhau ở cả hai bên, cũng như cảm giác không gian.</string>

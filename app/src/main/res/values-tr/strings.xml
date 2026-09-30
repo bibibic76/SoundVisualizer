@@ -130,23 +130,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Titreşim</string>
     <string name="haptic_requires_display">Titreşim yalnızca bu ses türü ekranda gösterildiğinde çalışır.</string>
-    <string name="haptic_ai_unavailable_danger">Ses türü algılama çalışmadığı sürece, türü ne olursa olsun her yüksek ses bu ayarla titreşir. “Sesi izle” yerine “İki kez” kullanılır.</string>
+    <string name="haptic_ai_unavailable_danger">Ses türü algılama çalışmadığı sürece, türü ne olursa olsun her yüksek ses sürdüğü boyunca bu ayarla titreşir.</string>
     <string name="haptic_ai_unavailable_other">Ses türü algılama çalışmadığı sürece bu tür için titreşim olmaz. Yüksek sesler, tehlike seslerinin ayarıyla titreşir.</string>
     <string name="haptic_ai_unavailable">Ses türü algılama çalışmadığı sürece telefon titreşmez.</string>
     <string name="haptic_unsupported">Bu cihaz titreşimi desteklemiyor.</string>
     <string name="haptic_no_amplitude">Bu cihaz titreşim yoğunluğunun ayarlanmasını desteklemediği için varsayılan yoğunlukta titreşir.</string>
-    <string name="haptic_follow_external">Dış ses modunda, telefon kendi titreşimini duymaya devam etmesin diye “Sesi izle” yerine “İki kez” kullanılır.</string>
     <string name="haptic_strength">Yoğunluk</string>
-    <string name="haptic_strength_weak">Hafif</string>
-    <string name="haptic_strength_medium">Orta</string>
-    <string name="haptic_strength_strong">Güçlü</string>
-    <string name="haptic_pattern">Desen</string>
-    <string name="haptic_pattern_tap">Bir kez</string>
-    <string name="haptic_pattern_double">İki kez</string>
-    <string name="haptic_pattern_hold">Uzun</string>
-    <string name="haptic_pattern_repeat">Sesi izle</string>
-    <string name="haptic_preview_hint">Titreşimi denemek için bir seçeneğe dokunun.</string>
-    <string name="haptic_pattern_follow_desc">“Sesi izle”, ses sürdüğü sürece titreşmeye devam eder ve sesle birlikte değişir. Önizleme, bu türün tipik bir sesini taklit eder.</string>
+    <string name="haptic_level_percent">%%%1$d</string>
+    <string name="haptic_mode_off">Kapalı</string>
+    <string name="haptic_mode_slow">Yavaş</string>
+    <string name="haptic_mode_medium">Orta</string>
+    <string name="haptic_mode_fast">Hızlı</string>
+    <string name="haptic_mode_continuous">Sürekli</string>
+    <string name="haptic_preview_hint">Titreşimi 2 saniye boyunca denemek için bir moda dokunun veya yoğunluğu değiştirin.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>
@@ -235,8 +231,8 @@
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
     <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
-    <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için yoğunluk (Hafif, Orta, Güçlü) ve desen (Bir kez, İki kez, Uzun, Sesi izle) seçebilirsiniz.</string>
-    <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Bir kez, İki kez ve Uzun desenlerinde aynı tür için 2 saniye içinde yeniden titreşim olmaz. “Sesi izle”, ses sürdüğü sürece titreşmeye devam eder ve sesle birlikte değişir: Ani sesler güçlü bir vuruşla, bip sesleri kendi ritmiyle, konuşma hecelerle birlikte atar; siren ise perdesi yükselip alçaldıkça güçlenip zayıflar. Değişmeyen bir ses, birkaç saniyede bir hafif bir dokunuşla yumuşak bir uğultuya dönüşür ama titreşim ses durana kadar durmaz.</string>
+    <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için bir mod (Kapalı, Yavaş, Orta, Hızlı, Sürekli) ve yoğunluk seçebilirsiniz.</string>
+    <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Telefon, o türden bir ses sürdüğü sürece titreşir ve ses durunca durur. Orta her yarım saniyede bir atar, Yavaş bunun yarı hızında, Hızlı ise iki katı hızında atar; Sürekli ise ara vermeden titreşir. Her modda titreşim seçtiğiniz yoğunlukta kalır.</string>
 
     <string name="help_notes_title">Bilmeniz gerekenler</string>
     <string name="help_note_direction">Uygulama sağı ve solu ayırt edebilir, ancak önü ve arkayı ayırt edemez. Ekranın üst ve alt kısmındaki grafikler, her iki tarafta eşit duyulan sesleri ve uzamsal etkiyi gösterir.</string>

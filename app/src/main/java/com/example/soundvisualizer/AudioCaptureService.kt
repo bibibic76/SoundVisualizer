@@ -501,8 +501,6 @@ class AudioCaptureService : Service() {
             if (hapticNotifier != null) return
             hapticNotifier = HapticNotifier(
                 applicationContext,
-                // 마이크는 폰의 진동을 다시 듣는다. 소리 따라는 그 진동을 이어지는 소리로 알고 끝나지 않는다(#226).
-                allowFollow = captureSource != CaptureSource.Microphone,
                 unlabeledAlerts = { !SettingsManager.aiAvailable.value }
             ) { AiClassification.latest()?.coarse }.also { it.start() }
         }

@@ -130,23 +130,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Getar</string>
     <string name="haptic_requires_display">Getaran hanya aktif jika jenis suara ini ditampilkan.</string>
-    <string name="haptic_ai_unavailable_danger">Selama deteksi jenis suara tidak berfungsi, setiap suara keras memicu getaran dengan setelan ini, apa pun jenisnya. “Ikuti suara” diganti dengan “Dua kali”.</string>
+    <string name="haptic_ai_unavailable_danger">Selama deteksi jenis suara tidak berfungsi, setiap suara keras memicu getaran dengan setelan ini selama suaranya berlangsung, apa pun jenisnya.</string>
     <string name="haptic_ai_unavailable_other">Selama deteksi jenis suara tidak berfungsi, jenis ini tidak memicu getaran. Suara keras bergetar dengan setelan suara bahaya.</string>
     <string name="haptic_ai_unavailable">Ponsel tidak akan bergetar selama deteksi jenis suara tidak berfungsi.</string>
     <string name="haptic_unsupported">Perangkat ini tidak mendukung getaran.</string>
     <string name="haptic_no_amplitude">Perangkat ini tidak dapat mengatur kekuatan getaran, sehingga bergetar dengan kekuatan default.</string>
-    <string name="haptic_follow_external">Di mode suara luar, “Ikuti suara” diganti dengan “Dua kali” agar ponsel tidak terus mendengar getarannya sendiri.</string>
     <string name="haptic_strength">Kekuatan</string>
-    <string name="haptic_strength_weak">Lemah</string>
-    <string name="haptic_strength_medium">Sedang</string>
-    <string name="haptic_strength_strong">Kuat</string>
-    <string name="haptic_pattern">Pola</string>
-    <string name="haptic_pattern_tap">Sekali</string>
-    <string name="haptic_pattern_double">Dua kali</string>
-    <string name="haptic_pattern_hold">Panjang</string>
-    <string name="haptic_pattern_repeat">Ikuti suara</string>
-    <string name="haptic_preview_hint">Ketuk salah satu opsi untuk merasakan contoh getarannya.</string>
-    <string name="haptic_pattern_follow_desc">“Ikuti suara” terus bergetar selama suara masih terdengar dan berubah mengikuti suara itu. Pratinjau menirukan suara yang umum untuk jenis ini.</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">Mati</string>
+    <string name="haptic_mode_slow">Lambat</string>
+    <string name="haptic_mode_medium">Sedang</string>
+    <string name="haptic_mode_fast">Cepat</string>
+    <string name="haptic_mode_continuous">Terus-menerus</string>
+    <string name="haptic_preview_hint">Ketuk salah satu mode atau ubah kekuatannya untuk merasakan getarannya selama 2 detik.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pilih warna</string>
@@ -235,8 +231,8 @@
     <string name="help_sound_title">Jenis suara dan getaran</string>
     <string name="help_sound_kinds">AI mengelompokkan suara yang terdengar menjadi suara latar, percakapan, dan suara bahaya. Secara default, suara latar berwarna putih, percakapan kuning, dan suara bahaya merah. Di tab Setelan, Anda dapat mengubah warna setiap jenis dan memilih apakah jenis tersebut ditampilkan.</string>
     <string name="help_sound_danger">Saat suara bahaya (seperti suara tembakan) terdeteksi, warna langsung berubah tanpa memudar perlahan.</string>
-    <string name="help_sound_haptic">Getaran memberi tahu Anda meskipun Anda tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat memilih kekuatan (Lemah, Sedang, Kuat) dan pola (Sekali, Dua kali, Panjang, Ikuti suara) untuk setiap jenis.</string>
-    <string name="help_sound_haptic_rule">Getaran hanya berlaku untuk jenis suara yang ditampilkan di layar. Untuk Sekali, Dua kali, dan Panjang, jenis yang sama tidak akan memicu getaran lagi dalam 2 detik. “Ikuti suara” terus bergetar selama suara masih terdengar dan bergerak mengikutinya: suara tiba-tiba menghentak, bunyi bip berdenyut sesuai iramanya sendiri, ucapan berdenyut mengikuti suku kata, dan sirene menguat lalu melemah mengikuti naik-turun nadanya. Suara yang tidak berubah mereda menjadi dengungan lembut dengan ketukan ringan setiap beberapa detik, tetapi getaran baru berhenti saat suaranya berhenti.</string>
+    <string name="help_sound_haptic">Getaran memberi tahu Anda meskipun Anda tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat memilih mode (Mati, Lambat, Sedang, Cepat, Terus-menerus) dan kekuatan untuk setiap jenis.</string>
+    <string name="help_sound_haptic_rule">Getaran hanya berlaku untuk jenis suara yang ditampilkan di layar. Ponsel terus bergetar selama suara jenis itu masih terdengar dan berhenti saat suaranya berhenti. Sedang berdenyut setiap setengah detik, Lambat dengan setengah kecepatan itu, dan Cepat dengan dua kali kecepatan itu, sedangkan Terus-menerus bergetar tanpa jeda. Di semua mode, getaran tetap pada kekuatan yang Anda pilih.</string>
 
     <string name="help_notes_title">Perlu diketahui</string>
     <string name="help_note_direction">Aplikasi dapat membedakan kiri dan kanan, tetapi tidak dapat membedakan depan dan belakang. Grafik di bagian atas dan bawah layar menunjukkan suara yang terdengar sama kuat di kedua sisi, serta memberi kesan ruang.</string>
