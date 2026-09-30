@@ -13,6 +13,7 @@ import com.example.soundvisualizer.CapturePermissionDialogs
 import com.example.soundvisualizer.CapturePermissionFlow
 import com.example.soundvisualizer.MainActivity
 import com.example.soundvisualizer.R
+import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.VisualizerController
 import com.example.soundvisualizer.language.AppLanguage
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
@@ -49,6 +50,9 @@ class StartVisualizerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 저장된 외부 사운드 모드를 읽어 둔다. 꺼짐 알림의 ‘다시 켜기’는 앱 프로세스가 죽은 뒤에도 이 화면을 바로 여는데,
+        // 읽지 않으면 모드가 기본값(꺼짐)으로 보여 마이크 대신 폰 안의 소리로 켜고, 홈은 ‘주변 소리’라고 잘못 알린다.
+        SettingsManager.init(applicationContext)
         // 회전 뒤에도 떠 있던 안내 창을 다시 그려야 하므로 아래의 재생성 검사보다 먼저 붙인다.
         setContent {
             // 안내 창만 그린다. 테마가 창의 바를 건드리지 않으므로 안내 창이 떠 있을 때만 씌울 까닭이 없다.

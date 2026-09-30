@@ -10,7 +10,7 @@
     <string name="home_status_running_external">Stato: in esecuzione · Suoni esterni</string>
     <string name="home_mic_silenced">Dal microfono non arriva nessun suono. Potresti essere in chiamata, un\'altra app potrebbe usare il microfono oppure l\'accesso al microfono potrebbe essere disattivato nelle Impostazioni rapide.</string>
     <string name="home_external_mode">Modalità suoni esterni</string>
-    <string name="home_external_mode_desc">Ascolta i suoni intorno a te con il microfono invece dell\'audio riprodotto sul telefono e te li mostra sullo schermo e con la vibrazione. Non serve il consenso alla registrazione dello schermo e, mentre ascolta, nella barra di stato compare l\'indicatore del microfono. Ciò che sente non viene mai salvato in un file né inviato altrove.</string>
+    <string name="home_external_mode_desc">Ascolta i suoni intorno a te con il microfono invece dell\'audio riprodotto sul telefono e te li mostra sullo schermo e con la vibrazione. Non serve il consenso alla registrazione dello schermo. Su Android 12 e versioni successive, mentre ascolta nella barra di stato compare l\'indicatore del microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
     <string name="home_external_mode_locked">Non si può cambiare mentre è in esecuzione. Interrompi la visualizzazione e cambialo: varrà dal prossimo avvio.</string>
     <string name="home_status_idle">Stato: pronto</string>
     <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
@@ -33,6 +33,7 @@
     <string name="tutorial_play">Riproduci l\'animazione</string>
     <string name="tutorial_sound_title">Vedi i suoni sullo schermo</string>
     <string name="tutorial_sound_body">Il suono del gioco o del video viene disegnato lungo i bordi dello schermo. Più il suono è forte, più il disegno è grande. Viene mostrato solo l\'audio riprodotto sul telefono. I suoni intorno a te non vengono captati.</string>
+    <string name="tutorial_sound_body_external">La modalità suoni esterni è attiva, quindi i suoni intorno a te captati dal microfono vengono disegnati lungo i bordi dello schermo. Più un suono è forte, più il disegno è grande. In questa modalità l\'audio riprodotto sul telefono non viene mostrato.</string>
     <string name="tutorial_direction_title">Distingue la sinistra dalla destra</string>
     <string name="tutorial_direction_body">Un suono a sinistra viene disegnato più grande sul lato sinistro, e un suono a destra sul lato destro. L\'app non distingue il davanti dal dietro.</string>
     <string name="tutorial_types_title">Ogni tipo di suono ha il suo colore</string>
@@ -47,6 +48,7 @@
     <string name="tutorial_vibration_body">Quando nel gioco o nel video c\'è un suono di pericolo, il telefono vibra. Così te ne accorgi anche se non stai guardando lo schermo. Inizialmente la vibrazione è attiva solo per i suoni di pericolo. Nella scheda Impostazioni puoi attivarla o disattivarla per ogni tipo.</string>
     <string name="tutorial_start_title">Come si attiva e si disattiva</string>
     <string name="tutorial_privacy_note">Le autorizzazioni “Microfono” e “Registrazione dello schermo” servono solo ad acquisire l\'audio riprodotto sul telefono. Non vengono registrati né i suoni intorno a te né lo schermo.</string>
+    <string name="tutorial_privacy_note_external">La modalità suoni esterni ascolta i suoni intorno a te con il microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove, e lo schermo non viene registrato.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Consenti “Mostra sopra altre app”</string>
@@ -54,10 +56,10 @@
     <string name="permission_record_audio_required">Per acquisire l\'audio serve l\'autorizzazione Microfono (registrazione audio).</string>
     <string name="permission_mic_rationale_title">Perché serve l\'accesso al microfono?</string>
     <string name="permission_mic_rationale_message">Android richiede l\'autorizzazione Microfono per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
-    <string name="permission_mic_rationale_message_external">La modalità suoni esterni ascolta i suoni intorno a te con il microfono e te li mostra sullo schermo e con la vibrazione. Mentre ascolta, nella barra di stato compare l\'indicatore del microfono, e ciò che sente non viene mai salvato in un file né inviato altrove.</string>
+    <string name="permission_mic_rationale_message_external">La modalità suoni esterni ascolta i suoni intorno a te con il microfono e te li mostra sullo schermo e con la vibrazione. Su Android 12 e versioni successive, mentre ascolta nella barra di stato compare l\'indicatore del microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
     <string name="permission_mic_settings_title">Consenti il microfono in Impostazioni</string>
     <string name="permission_mic_settings_message">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. Viene usata solo per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
-    <string name="permission_mic_settings_message_external">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. La modalità suoni esterni ascolta i suoni intorno a te con il microfono. Ciò che sente non viene mai salvato in un file né inviato altrove.</string>
+    <string name="permission_mic_settings_message_external">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. La modalità suoni esterni ascolta i suoni intorno a te con il microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
     <string name="permission_continue">Continua</string>
     <string name="permission_cancel">Annulla</string>
     <string name="permission_open_settings">Apri impostazioni</string>
@@ -194,6 +196,7 @@
     <string name="help_start_title">Per iniziare</string>
     <string name="help_start_1">Nella scheda Home, tocca “Avvia”.</string>
     <string name="help_start_2">Concedi le autorizzazioni. Android chiede il consenso alla registrazione dello schermo ogni volta che avvii la visualizzazione.</string>
+    <string name="help_start_2_external">Concedi le autorizzazioni. La modalità suoni esterni non chiede il consenso alla registrazione dello schermo.</string>
     <string name="help_start_3">Apri un gioco o un video: i suoni vengono disegnati lungo i bordi dello schermo.</string>
     <string name="help_start_4">Per disattivare la visualizzazione, tocca “Interrompi” nella scheda Home o nella notifica.</string>
 
@@ -207,7 +210,7 @@
     <string name="help_perm_overlay_desc">Serve per mostrare la grafica sopra giochi e video.</string>
     <string name="help_perm_mic">Microfono (registrazione audio)</string>
     <string name="help_perm_mic_desc">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
-    <string name="help_perm_mic_desc_external">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. Con la modalità suoni esterni attiva, viene usata anche per ascoltare i suoni intorno a te. Ciò che si sente non viene mai salvato in un file né inviato altrove.</string>
+    <string name="help_perm_mic_desc_external">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. Con la modalità suoni esterni attiva, viene usata anche per ascoltare i suoni intorno a te. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
     <string name="help_perm_capture">Registrazione dello schermo</string>
     <string name="help_perm_capture_desc">Android consente alle app di acquisire l\'audio del telefono solo tramite questo consenso. Lo schermo non viene registrato.</string>
     <string name="help_perm_notification">Notifiche (Android 13+)</string>

@@ -3,6 +3,7 @@ package com.example.soundvisualizer
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 /**
  * 외부 사운드 모드 설정의 저장·복원(#226).
@@ -35,5 +36,15 @@ class ExternalSoundModeSettingTest {
         assertTrue(SettingsManager.loadExternalSoundMode(prefs))
         assertTrue("화면 꺼짐 설정은 기본값 그대로여야 한다", SettingsManager.loadPauseWhenScreenOff(prefs))
         assertFalse("개발자 모드는 기본값 그대로여야 한다", SettingsManager.loadDeveloperMode(prefs))
+    }
+
+    @Test
+    fun `타일과 다시 켜기 화면은 모드를 고르기 전에 설정을 읽는다`() {
+        // 꺼짐 알림의 ‘다시 켜기’는 앱 프로세스가 죽은 뒤에도 이 화면을 바로 연다. 설정을 읽지 않으면 모드가 기본값(꺼짐)으로
+        // 보여 마이크 대신 폰 안의 소리로 켜고, 뒤이어 서비스가 읽은 설정 때문에 홈은 ‘주변 소리’라고 잘못 알린다.
+        val source = File("src/main/java/com/example/soundvisualizer/tile/StartVisualizerActivity.kt").readText(Charsets.UTF_8)
+        val init = source.indexOf("SettingsManager.init(")
+        val start = source.indexOf("capturePermission.start()")
+        assertTrue("StartVisualizerActivity 가 설정을 읽지 않거나 권한을 받은 뒤에 읽는다", init >= 0 && start > init)
     }
 }

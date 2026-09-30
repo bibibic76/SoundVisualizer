@@ -10,7 +10,7 @@
     <string name="home_status_running_external">Durum: Çalışıyor · Dış sesler</string>
     <string name="home_mic_silenced">Mikrofondan hiç ses gelmiyor. Bir aramada olabilirsiniz, mikrofonu başka bir uygulama kullanıyor olabilir ya da mikrofon erişimi Hızlı Ayarlar\'dan kapatılmış olabilir.</string>
     <string name="home_external_mode">Dış ses modu</string>
-    <string name="home_external_mode_desc">Telefonunuzda çalan ses yerine mikrofonla çevrenizdeki sesleri dinler ve bunları ekranda ve titreşimle gösterir. Ekran kaydı onayı gerekmez; dinleme sırasında durum çubuğunda mikrofon göstergesi görünür. Duyulan hiçbir şey dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="home_external_mode_desc">Telefonunuzda çalan ses yerine mikrofonla çevrenizdeki sesleri dinler ve bunları ekranda ve titreşimle gösterir. Ekran kaydı onayı gerekmez. Android 12 ve sonraki sürümlerde, dinleme sırasında durum çubuğunda mikrofon göstergesi görünür. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
     <string name="home_external_mode_locked">Çalışırken değiştirilemez. Görselleştirmeyi durdurup değiştirin; değişiklik bir sonraki başlatmada geçerli olur.</string>
     <string name="home_status_idle">Durum: Hazır</string>
     <string name="home_capture_blocked">Görselleştirmeye hiç ses ulaşmıyor; bu yüzden hiçbir şey çizilemiyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir (korumalı videolarda durum böyledir) veya o uygulamanın kendi sesi kapalı olabilir.</string>
@@ -33,6 +33,7 @@
     <string name="tutorial_play">Animasyonu oynat</string>
     <string name="tutorial_sound_title">Sesleri ekranınızda görün</string>
     <string name="tutorial_sound_body">Oyununuzun veya videonuzun sesi ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Yalnızca telefonunuzda çalan ses gösterilir. Uygulama çevrenizdeki sesleri dinlemez.</string>
+    <string name="tutorial_sound_body_external">Dış ses modu açık; bu yüzden mikrofonun duyduğu çevrenizdeki sesler ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Bu modda telefonunuzda çalan ses gösterilmez.</string>
     <string name="tutorial_direction_title">Sağı ve solu ayırt eder</string>
     <string name="tutorial_direction_body">Soldan gelen ses solda, sağdan gelen ses sağda daha büyük çizilir. Uygulama önü ve arkayı ayırt edemez.</string>
     <string name="tutorial_types_title">Her ses türünün kendi rengi var</string>
@@ -47,6 +48,7 @@
     <string name="tutorial_vibration_body">Oyununuzda veya videonuzda bir tehlike sesi çaldığında telefonunuz titreşir. Ekrana bakmıyorken bile fark edersiniz. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Titreşimi her tür için “Ayarlar” sekmesinden açıp kapatabilirsiniz.</string>
     <string name="tutorial_start_title">Nasıl açılıp kapatılır</string>
     <string name="tutorial_privacy_note">Mikrofon izni ve ekran kaydı onayı yalnızca telefonunuzda çalan sesi yakalamak için kullanılır. Çevrenizdeki sesler ve ekranınız kaydedilmez.</string>
+    <string name="tutorial_privacy_note_external">Dış ses modu, mikrofonla çevrenizdeki sesleri dinler. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez; ekranınız da kaydedilmez.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">“Diğer uygulamaların üzerinde göster” iznini verin</string>
@@ -54,10 +56,10 @@
     <string name="permission_record_audio_required">Sesi yakalamak için Mikrofon (ses kaydı) izni gerekiyor.</string>
     <string name="permission_mic_rationale_title">Mikrofon izni neden gerekli?</string>
     <string name="permission_mic_rationale_message">Android, telefonunuzda çalan sesin yakalanabilmesi için mikrofon izni gerektirir. Çevrenizdeki sesler kaydedilmez.</string>
-    <string name="permission_mic_rationale_message_external">Dış ses modu, mikrofonla çevrenizdeki sesleri dinler ve bunları ekranda ve titreşimle gösterir. Dinlerken durum çubuğunda mikrofon göstergesi görünür; duyduğu hiçbir şey dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="permission_mic_rationale_message_external">Dış ses modu, mikrofonla çevrenizdeki sesleri dinler ve bunları ekranda ve titreşimle gösterir. Android 12 ve sonraki sürümlerde, dinlerken durum çubuğunda mikrofon göstergesi görünür. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
     <string name="permission_mic_settings_title">Mikrofon iznini Ayarlar\'dan verin</string>
     <string name="permission_mic_settings_message">Mikrofon izni verilmedi. İzin penceresi tekrar görünmezse “Ayarları aç” düğmesine dokunun, ardından “İzinler” bölümüne gidip “Mikrofon” iznini verin. Bu izin yalnızca telefonunuzda çalan sesi yakalamak için kullanılır. Çevrenizdeki sesler kaydedilmez.</string>
-    <string name="permission_mic_settings_message_external">Mikrofon izni verilmedi. İzin penceresi tekrar görünmezse “Ayarları aç” düğmesine dokunun, ardından “İzinler” bölümüne gidip “Mikrofon” iznini verin. Dış ses modu, mikrofonla çevrenizdeki sesleri dinler. Duyduğu hiçbir şey dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="permission_mic_settings_message_external">Mikrofon izni verilmedi. İzin penceresi tekrar görünmezse “Ayarları aç” düğmesine dokunun, ardından “İzinler” bölümüne gidip “Mikrofon” iznini verin. Dış ses modu, mikrofonla çevrenizdeki sesleri dinler. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
     <string name="permission_continue">Devam</string>
     <string name="permission_cancel">İptal</string>
     <string name="permission_open_settings">Ayarları aç</string>
@@ -194,6 +196,7 @@
     <string name="help_start_title">Başlarken</string>
     <string name="help_start_1">“Ana sayfa” sekmesinde “Başlat” düğmesine dokunun.</string>
     <string name="help_start_2">İzinleri verin. Android, görselleştirmeyi her başlattığınızda ekran kaydı için onayınızı ister.</string>
+    <string name="help_start_2_external">İzinleri verin. Dış ses modu ekran kaydı için onay istemez.</string>
     <string name="help_start_3">Bir oyun veya video açın; sesler ekranın kenarlarında çizilir.</string>
     <string name="help_start_4">Kapatmak için “Ana sayfa” sekmesindeki ya da bildirimdeki “Durdur” düğmesine dokunun.</string>
 
@@ -207,7 +210,7 @@
     <string name="help_perm_overlay_desc">Oyunların ve videoların üzerinde grafik göstermek için gereklidir.</string>
     <string name="help_perm_mic">Mikrofon (ses kaydı)</string>
     <string name="help_perm_mic_desc">Android, telefonunuzda çalan sesin yakalanabilmesi için bu izni gerektirir. Çevrenizdeki sesler kaydedilmez.</string>
-    <string name="help_perm_mic_desc_external">Android, telefonunuzda çalan sesin yakalanabilmesi için bu izni gerektirir. Dış ses modu açıkken bu izin, çevrenizdeki sesleri dinlemek için de kullanılır. Duyulan hiçbir şey dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="help_perm_mic_desc_external">Android, telefonunuzda çalan sesin yakalanabilmesi için bu izni gerektirir. Dış ses modu açıkken bu izin, çevrenizdeki sesleri dinlemek için de kullanılır. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
     <string name="help_perm_capture">Ekran kaydı</string>
     <string name="help_perm_capture_desc">Android, uygulamaların telefonunuzdaki sesi yalnızca bu onay aracılığıyla yakalamasına izin verir. Ekranınız kaydedilmez.</string>
     <string name="help_perm_notification">Bildirimler (Android 13+)</string>

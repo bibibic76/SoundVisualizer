@@ -10,7 +10,7 @@
     <string name="home_status_running_external">Status: Aktiv · Außengeräusche</string>
     <string name="home_mic_silenced">Über das Mikrofon kommt kein Ton an. Möglicherweise telefonieren Sie gerade, eine andere App verwendet das Mikrofon oder der Mikrofonzugriff ist in den Schnelleinstellungen ausgeschaltet.</string>
     <string name="home_external_mode">Modus für Außengeräusche</string>
-    <string name="home_external_mode_desc">Hört über das Mikrofon auf die Geräusche in Ihrer Umgebung statt auf den Ton, der auf Ihrem Smartphone läuft, und zeigt sie auf dem Bildschirm und per Vibration an. Eine Zustimmung zur Bildschirmaufnahme ist nicht nötig. Solange zugehört wird, erscheint in der Statusleiste ein Mikrofonsymbol. Was gehört wird, wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
+    <string name="home_external_mode_desc">Hört über das Mikrofon auf die Geräusche in Ihrer Umgebung statt auf den Ton, der auf Ihrem Smartphone läuft, und zeigt sie auf dem Bildschirm und per Vibration an. Eine Zustimmung zur Bildschirmaufnahme ist nicht nötig. Ab Android 12 erscheint in der Statusleiste ein Mikrofonsymbol, solange zugehört wird. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
     <string name="home_external_mode_locked">Kann während der Ausführung nicht geändert werden. Schalten Sie die Tonvisualisierung aus und ändern Sie die Einstellung. Sie gilt ab dem nächsten Start.</string>
     <string name="home_status_idle">Status: Bereit</string>
     <string name="home_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an, daher kann nichts dargestellt werden. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu (bei geschützten Videos ist das so), oder in dieser App ist der Ton ausgeschaltet.</string>
@@ -33,6 +33,7 @@
     <string name="tutorial_play">Animation abspielen</string>
     <string name="tutorial_sound_title">Geräusche auf dem Bildschirm sehen</string>
     <string name="tutorial_sound_body">Der Ton Ihres Spiels oder Videos wird an den Bildschirmrändern dargestellt. Je lauter er ist, desto größer wird er gezeichnet. Angezeigt wird nur der Ton, der auf Ihrem Smartphone wiedergegeben wird. Geräusche um Sie herum werden nicht erfasst.</string>
+    <string name="tutorial_sound_body_external">Der Modus für Außengeräusche ist eingeschaltet. Daher werden die Geräusche um Sie herum, die das Mikrofon hört, an den Bildschirmrändern dargestellt. Je lauter ein Geräusch ist, desto größer wird es gezeichnet. Der auf Ihrem Smartphone wiedergegebene Ton wird in diesem Modus nicht angezeigt.</string>
     <string name="tutorial_direction_title">Unterscheidet links und rechts</string>
     <string name="tutorial_direction_body">Ein Geräusch von links wird auf der linken Seite größer dargestellt, ein Geräusch von rechts auf der rechten Seite. Vorne und hinten kann die App nicht unterscheiden.</string>
     <string name="tutorial_types_title">Jede Geräuschart hat ihre eigene Farbe</string>
@@ -47,6 +48,7 @@
     <string name="tutorial_vibration_body">Wenn in Ihrem Spiel oder Video ein Gefahrengeräusch ertönt, vibriert Ihr Smartphone. So bemerken Sie es auch, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Im Tab „Einstellungen“ können Sie die Vibration für jede Art ein- und ausschalten.</string>
     <string name="tutorial_start_title">Ein- und ausschalten</string>
     <string name="tutorial_privacy_note">Die Berechtigungen „Mikrofon“ und „Bildschirmaufnahme“ werden nur verwendet, um den auf Ihrem Smartphone wiedergegebenen Ton zu erfassen. Geräusche um Sie herum und Ihr Bildschirm werden nicht aufgezeichnet.</string>
+    <string name="tutorial_privacy_note_external">Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche um Sie herum. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet, und Ihr Bildschirm wird nicht aufgezeichnet.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">„Über anderen Apps einblenden“ zulassen</string>
@@ -54,10 +56,10 @@
     <string name="permission_record_audio_required">Zum Erfassen von Ton ist die Berechtigung „Mikrofon“ (Audioaufnahme) erforderlich.</string>
     <string name="permission_mic_rationale_title">Wozu die Mikrofonberechtigung?</string>
     <string name="permission_mic_rationale_message">Android verlangt die Mikrofonberechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
-    <string name="permission_mic_rationale_message_external">Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche in Ihrer Umgebung und zeigt sie auf dem Bildschirm und per Vibration an. Solange er zuhört, erscheint in der Statusleiste ein Mikrofonsymbol. Was er hört, wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
+    <string name="permission_mic_rationale_message_external">Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche in Ihrer Umgebung und zeigt sie auf dem Bildschirm und per Vibration an. Ab Android 12 erscheint in der Statusleiste ein Mikrofonsymbol, solange er zuhört. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
     <string name="permission_mic_settings_title">Mikrofon in den Einstellungen zulassen</string>
     <string name="permission_mic_settings_message">Die Mikrofonberechtigung wurde nicht erteilt. Falls keine Berechtigungsanfrage mehr erscheint, tippen Sie auf „Einstellungen“, öffnen Sie „Berechtigungen“ und lassen Sie unter „Mikrofon“ den Zugriff zu. Die Berechtigung wird nur verwendet, um den auf Ihrem Smartphone wiedergegebenen Ton zu erfassen. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
-    <string name="permission_mic_settings_message_external">Die Mikrofonberechtigung wurde nicht erteilt. Falls keine Berechtigungsanfrage mehr erscheint, tippen Sie auf „Einstellungen“, öffnen Sie „Berechtigungen“ und lassen Sie unter „Mikrofon“ den Zugriff zu. Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche in Ihrer Umgebung. Was er hört, wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
+    <string name="permission_mic_settings_message_external">Die Mikrofonberechtigung wurde nicht erteilt. Falls keine Berechtigungsanfrage mehr erscheint, tippen Sie auf „Einstellungen“, öffnen Sie „Berechtigungen“ und lassen Sie unter „Mikrofon“ den Zugriff zu. Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche in Ihrer Umgebung. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
     <string name="permission_continue">Weiter</string>
     <string name="permission_cancel">Abbrechen</string>
     <string name="permission_open_settings">Einstellungen</string>
@@ -194,6 +196,7 @@
     <string name="help_start_title">Erste Schritte</string>
     <string name="help_start_1">Tippen Sie im Tab „Startseite“ auf „Starten“.</string>
     <string name="help_start_2">Erteilen Sie die Berechtigungen. Android fragt bei jedem Einschalten erneut nach Ihrer Zustimmung zur Bildschirmaufnahme.</string>
+    <string name="help_start_2_external">Erteilen Sie die Berechtigungen. Im Modus für Außengeräusche wird keine Zustimmung zur Bildschirmaufnahme abgefragt.</string>
     <string name="help_start_3">Öffnen Sie ein Spiel oder Video. Geräusche werden dann an den Bildschirmrändern dargestellt.</string>
     <string name="help_start_4">Zum Ausschalten tippen Sie im Tab „Startseite“ auf „Beenden“ oder in der Benachrichtigung auf „Stopp“.</string>
 
@@ -207,7 +210,7 @@
     <string name="help_perm_overlay_desc">Wird benötigt, um Grafiken über Spielen und Videos anzuzeigen.</string>
     <string name="help_perm_mic">Mikrofon (Audioaufnahme)</string>
     <string name="help_perm_mic_desc">Android verlangt diese Berechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
-    <string name="help_perm_mic_desc_external">Android verlangt diese Berechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Ist der Modus für Außengeräusche eingeschaltet, wird sie auch verwendet, um auf die Geräusche in Ihrer Umgebung zu hören. Was gehört wird, wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
+    <string name="help_perm_mic_desc_external">Android verlangt diese Berechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Ist der Modus für Außengeräusche eingeschaltet, wird sie auch verwendet, um auf die Geräusche in Ihrer Umgebung zu hören. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet.</string>
     <string name="help_perm_capture">Bildschirmaufnahme</string>
     <string name="help_perm_capture_desc">Android erlaubt Apps nur mit dieser Zustimmung, den Ton Ihres Smartphones zu erfassen. Ihr Bildschirm wird nicht aufgezeichnet.</string>
     <string name="help_perm_notification">Benachrichtigungen (ab Android 13)</string>

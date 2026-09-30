@@ -10,7 +10,7 @@
     <string name="home_status_running_external">Status: Em execução · Som externo</string>
     <string name="home_mic_silenced">Nenhum som está chegando pelo microfone. Talvez você esteja em uma ligação, outro app esteja usando o microfone ou o acesso ao microfone esteja desativado nas Configurações rápidas.</string>
     <string name="home_external_mode">Modo de som externo</string>
-    <string name="home_external_mode_desc">Ouve os sons ao seu redor pelo microfone, em vez do som que toca no celular, e mostra esses sons na tela e com vibração. Não é preciso autorizar a gravação da tela, e um indicador de microfone aparece na barra de status enquanto ele ouve. O que ele ouve nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="home_external_mode_desc">Ouve os sons ao seu redor pelo microfone, em vez do som que toca no celular, e mostra esses sons na tela e com vibração. Não é preciso autorizar a gravação da tela. No Android 12 ou mais recente, um indicador de microfone aparece na barra de status enquanto ele ouve. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
     <string name="home_external_mode_locked">Não dá para mudar enquanto está em execução. Pare a visualização e mude; a alteração vale na próxima vez que você iniciar.</string>
     <string name="home_status_idle">Status: Pronto</string>
     <string name="home_capture_blocked">A visualização não está recebendo nenhum som, então não há nada para desenhar. Pode ser que o app que está tocando não permita compartilhar o som dele (é o caso dos vídeos protegidos) ou que o som esteja desligado dentro do próprio app.</string>
@@ -33,6 +33,7 @@
     <string name="tutorial_play">Reproduzir animação</string>
     <string name="tutorial_sound_title">Veja o som na sua tela</string>
     <string name="tutorial_sound_body">O som do seu jogo ou vídeo é desenhado nas bordas da tela. Quanto mais alto o som, maior o desenho. Só aparece o som que toca no seu celular. Os sons ao seu redor não são captados.</string>
+    <string name="tutorial_sound_body_external">O modo de som externo está ligado, então os sons ao seu redor captados pelo microfone são desenhados nas bordas da tela. Quanto mais alto o som, maior o desenho. Neste modo, o som que toca no seu celular não aparece.</string>
     <string name="tutorial_direction_title">Diferencia esquerda e direita</string>
     <string name="tutorial_direction_body">Um som da esquerda é desenhado maior do lado esquerdo, e um som da direita, do lado direito. O app não diferencia frente e trás.</string>
     <string name="tutorial_types_title">Cada tipo de som tem sua própria cor</string>
@@ -47,6 +48,7 @@
     <string name="tutorial_vibration_body">Quando toca um som de perigo no seu jogo ou vídeo, o seu celular vibra. Você percebe mesmo quando não está olhando para a tela. Por padrão, só os sons de perigo vibram. Na aba Ajustes, você pode ativar ou desativar a vibração de cada tipo.</string>
     <string name="tutorial_start_title">Como ligar e desligar</string>
     <string name="tutorial_privacy_note">A permissão do microfone e a autorização de gravação de tela só são usadas para capturar o som que toca no seu celular. Os sons ao seu redor e a sua tela não são gravados.</string>
+    <string name="tutorial_privacy_note_external">O modo de som externo ouve os sons ao seu redor pelo microfone. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum, e a sua tela não é gravada.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Permita “Sobrepor a outros apps”</string>
@@ -54,10 +56,10 @@
     <string name="permission_record_audio_required">A permissão do microfone (gravação de áudio) é necessária para capturar o áudio.</string>
     <string name="permission_mic_rationale_title">Por que a permissão do microfone?</string>
     <string name="permission_mic_rationale_message">O Android exige a permissão do microfone para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
-    <string name="permission_mic_rationale_message_external">O modo de som externo ouve os sons ao seu redor pelo microfone e mostra esses sons na tela e com vibração. Enquanto ele ouve, aparece um indicador de microfone na barra de status, e o que ele ouve nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="permission_mic_rationale_message_external">O modo de som externo ouve os sons ao seu redor pelo microfone e mostra esses sons na tela e com vibração. No Android 12 ou mais recente, um indicador de microfone aparece na barra de status enquanto ele ouve. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
     <string name="permission_mic_settings_title">Permita o microfone nas Configurações</string>
     <string name="permission_mic_settings_message">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. Ela só é usada para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
-    <string name="permission_mic_settings_message_external">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. O modo de som externo ouve os sons ao seu redor pelo microfone. O que ele ouve nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="permission_mic_settings_message_external">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. O modo de som externo ouve os sons ao seu redor pelo microfone. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
     <string name="permission_continue">Continuar</string>
     <string name="permission_cancel">Cancelar</string>
     <string name="permission_open_settings">Configurações</string>
@@ -194,6 +196,7 @@
     <string name="help_start_title">Primeiros passos</string>
     <string name="help_start_1">Na aba Início, toque em “Iniciar”.</string>
     <string name="help_start_2">Conceda as permissões. O Android pede autorização de gravação de tela toda vez que você liga a visualização.</string>
+    <string name="help_start_2_external">Conceda as permissões. O modo de som externo não pede autorização de gravação de tela.</string>
     <string name="help_start_3">Abra um jogo ou vídeo, e os sons serão desenhados nas bordas da tela.</string>
     <string name="help_start_4">Para desligar, toque em “Parar” na aba Início ou na notificação.</string>
 
@@ -207,7 +210,7 @@
     <string name="help_perm_overlay_desc">Necessária para mostrar os gráficos por cima de jogos e vídeos.</string>
     <string name="help_perm_mic">Microfone (gravação de áudio)</string>
     <string name="help_perm_mic_desc">O Android exige esta permissão para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
-    <string name="help_perm_mic_desc_external">O Android exige esta permissão para capturar o som que toca no seu celular. Com o modo de som externo ligado, ela também é usada para ouvir os sons ao seu redor. O que é ouvido nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="help_perm_mic_desc_external">O Android exige esta permissão para capturar o som que toca no seu celular. Com o modo de som externo ligado, ela também é usada para ouvir os sons ao seu redor. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
     <string name="help_perm_capture">Gravação de tela</string>
     <string name="help_perm_capture_desc">O Android só permite que apps capturem o som do celular por meio desta autorização. A sua tela não é capturada.</string>
     <string name="help_perm_notification">Notificações (Android 13+)</string>

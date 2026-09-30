@@ -72,7 +72,14 @@ fun HelpTab() {
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
             SettingsExpander(stringResource(R.string.help_start_title), isExpanded = true) {
-                NumberedSteps(R.string.help_start_1, R.string.help_start_2, R.string.help_start_3, R.string.help_start_4)
+                // 외부 사운드 모드는 화면 녹화 동의를 묻지 않는다. 켤 때마다 묻는다고 하면 그 모드에서는 거짓이다(#226).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                NumberedSteps(
+                    R.string.help_start_1,
+                    if (externalSoundMode) R.string.help_start_2_external else R.string.help_start_2,
+                    R.string.help_start_3,
+                    R.string.help_start_4
+                )
             }
         }
         item {
