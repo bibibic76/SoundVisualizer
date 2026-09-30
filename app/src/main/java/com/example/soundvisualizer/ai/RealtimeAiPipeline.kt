@@ -77,9 +77,10 @@ class RealtimeAiPipeline private constructor(
         val uiConfidence: Float
     )
 
-    /** Lightweight counters for verifying inference suppression in device tests. */
+    /** Lightweight counters for device tests of inference suppression and lifecycle completion. */
     data class InferenceStats(
         val executed: Long,
+        val completed: Long,
         val skippedForSilence: Long
     )
 
@@ -139,6 +140,7 @@ class RealtimeAiPipeline private constructor(
     private val lastResult = AtomicReference<AiClassificationResult?>(null)
     private val captureInferenceGate = AiCaptureInferenceGate(audioBuffer)
     private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
+    private val inferenceCompletions = java.util.concurrent.atomic.AtomicLong(0)
     private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
     private var lastLogMs = 0L
     private var appliedDiagnosticConfig: AiDiagnosticConfig? = null
@@ -155,6 +157,7 @@ class RealtimeAiPipeline private constructor(
 
     fun inferenceStatsForTest(): InferenceStats = InferenceStats(
         executed = inferenceExecutions.get(),
+        completed = inferenceCompletions.get(),
         skippedForSilence = silenceSkippedTicks.get()
     )
 
@@ -167,6 +170,7 @@ class RealtimeAiPipeline private constructor(
         appliedDiagnosticConfig = null
         lastResult.set(null)
         inferenceExecutions.set(0)
+        inferenceCompletions.set(0)
         silenceSkippedTicks.set(0)
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
@@ -222,6 +226,7 @@ class RealtimeAiPipeline private constructor(
         appliedDiagnosticConfig = null
         lastResult.set(null)
         inferenceExecutions.set(0)
+        inferenceCompletions.set(0)
         silenceSkippedTicks.set(0)
     }
 
@@ -256,6 +261,9 @@ class RealtimeAiPipeline private constructor(
                 captureInferenceGate.onInferenceFailed(snapshotTimeMs)
                 throw t
             }
+            // doInference() 는 결과를 lastResult 에 넣은 뒤에만 정상 반환한다. close 경쟁 테스트가
+            // 일시적인 lastResult 관측 대신 완료 사실 자체를 확인할 수 있게 남긴다.
+            inferenceCompletions.incrementAndGet()
             captureInferenceGate.onInferenceCompleted(snapshotTimeMs)
             return result
         } finally {

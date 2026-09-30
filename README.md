@@ -218,7 +218,6 @@ English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español ·
 - **릴리스 APK**: `main` 에 `v1.0.0` 같은 버전 태그를 push 하면 그 코드로 폰용 APK 를 빌드해 [Releases](https://github.com/bibibic76/SoundVisualizer/releases) 에 붙입니다. 이 워크플로가 생기기 전 커밋에 단 태그는 **Actions → 릴리스 APK → Run workflow** 에서 태그 이름을 넣어 돌립니다.
 - **계측 테스트**: `develop`·`main` 으로 가는 PR 과 `develop` push 마다 **계측 테스트** 워크플로가 GitHub 러너에서 에뮬레이터(API 36)를 띄워 `connectedDebugAndroidTest` 를 돌립니다(#234). 에뮬레이터를 띄우는 시간 때문에 모든 브랜치 push 에는 돌지 않습니다.
   - 아직 머지를 막는 필수 체크는 아닙니다. 러너 속도에 흔들리지 않는지 본 뒤에 필수로 올립니다.
-  - AI 스케줄러의 close 경쟁 테스트(`RealtimeAiPipelineSchedulerCloseInstrumentedTest`)는 느린 에뮬레이터에서 가끔 실패해, 따로 돌리고 실패하면 경고로만 남깁니다. AI 담당이 판단할 때까지 다른 테스트의 결과를 가리지 않기 위해서입니다.
   - 실패하면 **Artifacts** 의 `instrumented-test-reports` 에 결과가 있습니다.
   - 사람의 폰에서는 `connectedDebugAndroidTest` 를 쓰지 마세요. 끝날 때 앱을 지워 설정이 사라집니다. 폰에서는 APK 두 개를 설치하고 `adb shell am instrument` 로 돌립니다.
   - 화면 여백 테스트(`LauncherInsetsInstrumentedTest`)는 Compose 테스트 도구를 씁니다. Espresso 3.6.1 은 API 37 기기에서 돌지 못했는데, 3.7.0 으로 올린 뒤(#141) Android 10·16 과 API 37 에서 모두 돕니다.
