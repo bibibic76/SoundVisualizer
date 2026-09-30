@@ -79,8 +79,8 @@ fun LauncherApp(
         // 남은 높이를 전부 준다. 세 탭 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             when (page) {
-                0 -> HomeTab(onStart, onStop, onAddTile, onOpenTutorial)
-                1 -> SettingsTab()
+                0 -> HomeTab(onStart, onStop, onOpenTutorial)
+                1 -> SettingsTab(onAddTile)
                 else -> HelpTab()
             }
         }

@@ -14,9 +14,11 @@
     <string name="home_stopped_dismiss">안내 닫기</string>
     <string name="home_start">실행</string>
     <string name="home_stop">실행 종료</string>
-    <string name="home_add_tile">빠른 설정에 추가</string>
-    <string name="home_add_tile_desc">알림창을 내려 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
-    <string name="home_add_tile_manual">알림창을 내려 편집(연필) 버튼에서 ‘소리 시각화’를 추가하면, 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="tile_add">빠른 설정에 추가</string>
+    <string name="tile_add_desc">알림창을 내려 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="tile_add_manual">알림창을 내려 편집(연필) 버튼에서 ‘소리 시각화’를 추가하면, 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="settings_tile_title">알림창에서 켜고 끄기</string>
+    <string name="tile_added">알림창의 빠른 설정에 ‘소리 시각화’가 추가되어 있습니다.</string>
     <string name="home_tutorial">튜토리얼 보기</string>
 
     <!-- 처음 열 때, 그리고 홈에서 다시 보는 튜토리얼 -->
@@ -203,7 +205,7 @@
     <string name="help_start_4">끌 때는 홈의 실행 종료나 알림의 중지 버튼을 누릅니다.</string>
 
     <string name="help_tile_title">알림창에서 켜고 끄기</string>
-    <string name="help_tile_body">홈의 ‘빠른 설정에 추가’를 누르면 알림창에 ‘소리 시각화’ 버튼이 생깁니다. 앱으로 나가지 않고 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
+    <string name="help_tile_body">설정 탭의 ‘빠른 설정에 추가’를 누르면 알림창에 ‘소리 시각화’ 버튼이 생깁니다. 앱으로 나가지 않고 게임이나 영상 위에서 바로 켜고 끌 수 있습니다.</string>
     <string name="help_tile_use">누르면 켜지고, 켜져 있을 때 다시 누르면 꺼집니다. 길게 누르면 이 앱의 설정 화면이 열립니다.</string>
     <string name="help_tile_old">Android 12 이하는 알림창의 편집(연필) 버튼에서 ‘소리 시각화’를 직접 끌어다 놓습니다.</string>
 

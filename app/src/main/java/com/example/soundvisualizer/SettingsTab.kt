@@ -1,5 +1,7 @@
 package com.example.soundvisualizer
 
+import android.os.Build
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,8 +32,9 @@ import com.example.soundvisualizer.feedback.HapticSettingRow
 import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.language.LanguageSettingCard
 
+/** @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다. */
 @Composable
-fun SettingsTab() {
+fun SettingsTab(onAddTile: () -> Unit) {
     val currentMode by SettingsManager.visualMode.collectAsState()
 
     // 색 고르기 창은 목록 **밖**에 둔다. 줄 안에 두면 그 줄이 화면 밖으로 밀릴 때(회전 뒤 스크롤 위치가
@@ -64,6 +67,7 @@ fun SettingsTab() {
         item {
             // 읽지 못하는 언어로 바뀌어도 찾을 수 있게 맨 위에 둔다.
             LanguageSettingCard()
+            QuickTileCard(onAddTile)
 
             Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
             Card(
@@ -441,6 +445,52 @@ fun ColorSettingRow(
                     .background(Color(color))
                     .border(1.dp, SecondaryTextColor.copy(alpha = 0.5f), CircleShape)
             )
+        }
+    }
+}
+
+/**
+ * 알림창의 빠른 설정 타일을 추가하는 카드(#245). 예전에는 홈에 있었지만, 홈은 실행·실행 종료와 상태만 보이게 두고
+ * 한 번 하면 끝나는 설정은 여기로 옮겼다.
+ *
+ * 추가해 두었으면 버튼 대신 추가되어 있다고만 보여 준다. 설정 탭은 늘 보는 곳이 아니라, 카드를 통째로 감추면 어디서
+ * 추가했는지, 지웠을 때 어디서 다시 추가하는지 헷갈린다. 추가 여부는 타일 서비스가 추가·제거될 때 알려 준다.
+ */
+@Composable
+private fun QuickTileCard(onAddTile: () -> Unit) {
+    val tileAdded by SettingsManager.tileAdded.collectAsState()
+    Card(
+        colors = CardDefaults.cardColors(containerColor = CardColor),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+            Text(stringResource(R.string.settings_tile_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
+            when {
+                tileAdded -> Text(
+                    stringResource(R.string.tile_added),
+                    fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp)
+                )
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                    Text(
+                        stringResource(R.string.tile_add_desc),
+                        fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+                    )
+                    OutlinedButton(
+                        onClick = onAddTile,
+                        border = BorderStroke(1.dp, AccentColor),
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
+                    ) {
+                        Text(stringResource(R.string.tile_add), fontSize = 16.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor)
+                    }
+                }
+                // Android 12 이하는 앱에서 추가 창을 띄울 수 없어 방법만 안내한다.
+                else -> Text(
+                    stringResource(R.string.tile_add_manual),
+                    fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp)
+                )
+            }
         }
     }
 }

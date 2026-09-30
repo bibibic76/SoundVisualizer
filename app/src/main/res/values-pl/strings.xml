@@ -14,9 +14,11 @@
     <string name="home_stopped_dismiss">Zamknij komunikat</string>
     <string name="home_start">Uruchom</string>
     <string name="home_stop">Zatrzymaj</string>
-    <string name="home_add_tile">Dodaj do Szybkich ustawień</string>
-    <string name="home_add_tile_desc">Włączaj i wyłączaj wizualizację z panelu powiadomień, nie wychodząc z gry ani filmu.</string>
-    <string name="home_add_tile_manual">Rozwiń panel powiadomień, naciśnij Edytuj (ołówek) i dodaj kafelek „Wizualizacja audio”. Możesz wtedy włączać i wyłączać wizualizację, nie wychodząc z gry ani filmu.</string>
+    <string name="tile_add">Dodaj do Szybkich ustawień</string>
+    <string name="tile_add_desc">Włączaj i wyłączaj wizualizację z panelu powiadomień, nie wychodząc z gry ani filmu.</string>
+    <string name="tile_add_manual">Rozwiń panel powiadomień, naciśnij Edytuj (ołówek) i dodaj kafelek „Wizualizacja audio”. Możesz wtedy włączać i wyłączać wizualizację, nie wychodząc z gry ani filmu.</string>
+    <string name="settings_tile_title">Sterowanie z panelu powiadomień</string>
+    <string name="tile_added">Kafelek „Wizualizacja audio” jest już w Szybkich ustawieniach panelu powiadomień.</string>
     <string name="home_tutorial">Zobacz samouczek</string>
 
     <!-- Tutorial -->
@@ -192,7 +194,7 @@
     <string name="help_start_4">Aby wyłączyć, naciśnij „Zatrzymaj” na karcie „Główna” lub w powiadomieniu.</string>
 
     <string name="help_tile_title">Sterowanie z panelu powiadomień</string>
-    <string name="help_tile_body">Naciśnij „Dodaj do Szybkich ustawień” na karcie „Główna”, aby dodać kafelek „Wizualizacja audio” do panelu powiadomień. Możesz wtedy włączać i wyłączać wizualizację podczas gry lub filmu, bez przełączania aplikacji.</string>
+    <string name="help_tile_body">Naciśnij „Dodaj do Szybkich ustawień” na karcie „Ustawienia”, aby dodać kafelek „Wizualizacja audio” do panelu powiadomień. Możesz wtedy włączać i wyłączać wizualizację podczas gry lub filmu, bez przełączania aplikacji.</string>
     <string name="help_tile_use">Naciśnij, aby włączyć, i naciśnij ponownie, aby wyłączyć. Naciśnij i przytrzymaj, aby otworzyć ustawienia tej aplikacji.</string>
     <string name="help_tile_old">W systemie Android 12 lub starszym otwórz panel powiadomień, naciśnij Edytuj (ołówek) i ręcznie przeciągnij kafelek „Wizualizacja audio” do Szybkich ustawień.</string>
 

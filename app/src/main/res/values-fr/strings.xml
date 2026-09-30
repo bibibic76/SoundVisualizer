@@ -14,9 +14,11 @@
     <string name="home_stopped_dismiss">Masquer le message</string>
     <string name="home_start">Démarrer</string>
     <string name="home_stop">Arrêter</string>
-    <string name="home_add_tile">Ajouter aux Réglages rapides</string>
-    <string name="home_add_tile_desc">Activez ou désactivez la visualisation depuis le volet des notifications, directement par-dessus votre jeu ou votre vidéo.</string>
-    <string name="home_add_tile_manual">Déroulez le volet des notifications, appuyez sur Modifier (crayon) et ajoutez « Visualiseur audio » pour activer ou désactiver la visualisation directement par-dessus votre jeu ou votre vidéo.</string>
+    <string name="tile_add">Ajouter aux Réglages rapides</string>
+    <string name="tile_add_desc">Activez ou désactivez la visualisation depuis le volet des notifications, directement par-dessus votre jeu ou votre vidéo.</string>
+    <string name="tile_add_manual">Déroulez le volet des notifications, appuyez sur Modifier (crayon) et ajoutez « Visualiseur audio » pour activer ou désactiver la visualisation directement par-dessus votre jeu ou votre vidéo.</string>
+    <string name="settings_tile_title">Marche/arrêt depuis les notifications</string>
+    <string name="tile_added">« Visualiseur audio » figure dans les Réglages rapides du volet des notifications.</string>
     <string name="home_tutorial">Voir le tutoriel</string>
 
     <!-- Tutorial -->
@@ -192,7 +194,7 @@
     <string name="help_start_4">Pour désactiver la visualisation, appuyez sur « Arrêter » dans l\'onglet Accueil ou dans la notification.</string>
 
     <string name="help_tile_title">Marche/arrêt depuis les notifications</string>
-    <string name="help_tile_body">Dans l\'onglet Accueil, appuyez sur « Ajouter aux Réglages rapides » : un bouton « Visualiseur audio » s\'ajoute au volet des notifications. Vous pourrez ensuite activer ou désactiver la visualisation directement par-dessus votre jeu ou votre vidéo, sans changer d\'application.</string>
+    <string name="help_tile_body">Dans l\'onglet Paramètres, appuyez sur « Ajouter aux Réglages rapides » : un bouton « Visualiseur audio » s\'ajoute au volet des notifications. Vous pourrez ensuite activer ou désactiver la visualisation directement par-dessus votre jeu ou votre vidéo, sans changer d\'application.</string>
     <string name="help_tile_use">Appuyez sur le bouton pour activer la visualisation, puis appuyez de nouveau pour la désactiver. Appuyez de manière prolongée pour ouvrir l\'onglet Paramètres de l\'application.</string>
     <string name="help_tile_old">Sous Android 12 ou version antérieure, ouvrez le volet des notifications, appuyez sur Modifier (crayon) et faites glisser vous-même « Visualiseur audio » dans les Réglages rapides.</string>
 

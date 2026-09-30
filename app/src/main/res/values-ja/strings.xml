@@ -14,9 +14,11 @@
     <string name="home_stopped_dismiss">お知らせを閉じる</string>
     <string name="home_start">開始</string>
     <string name="home_stop">停止</string>
-    <string name="home_add_tile">クイック設定に追加</string>
-    <string name="home_add_tile_desc">通知パネルから、ゲームや動画を表示したまますぐにオン/オフできます。</string>
-    <string name="home_add_tile_manual">通知パネルを開いて編集（鉛筆アイコン）をタップし、「音の可視化」を追加すると、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="tile_add">クイック設定に追加</string>
+    <string name="tile_add_desc">通知パネルから、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="tile_add_manual">通知パネルを開いて編集（鉛筆アイコン）をタップし、「音の可視化」を追加すると、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="settings_tile_title">通知パネルからオン/オフする</string>
+    <string name="tile_added">通知パネルのクイック設定に「音の可視化」が追加されています。</string>
     <string name="home_tutorial">チュートリアルを見る</string>
 
     <!-- Tutorial -->
@@ -192,7 +194,7 @@
     <string name="help_start_4">オフにするには、「ホーム」タブまたは通知で「停止」をタップします。</string>
 
     <string name="help_tile_title">通知パネルからオン/オフする</string>
-    <string name="help_tile_body">「ホーム」タブで「クイック設定に追加」をタップすると、通知パネルに「音の可視化」ボタンが追加されます。アプリを切り替えずに、ゲームや動画を表示したまますぐにオン/オフできます。</string>
+    <string name="help_tile_body">「設定」タブで「クイック設定に追加」をタップすると、通知パネルに「音の可視化」ボタンが追加されます。アプリを切り替えずに、ゲームや動画を表示したまますぐにオン/オフできます。</string>
     <string name="help_tile_use">タップするとオン、もう一度タップするとオフになります。長押しすると、このアプリの設定画面が開きます。</string>
     <string name="help_tile_old">Android 12 以前では、通知パネルを開いて編集（鉛筆アイコン）をタップし、「音の可視化」を自分でドラッグして追加します。</string>
 

@@ -134,7 +134,7 @@ The first time you open the app, a **tutorial** shows up first. In five pages it
 
 You can turn it on and off from a Quick Settings button in the notification shade without switching apps.
 
-1. Tap **Add to Quick Settings** on the app's Home tab and allow it. If it isn't added, the app tells you how to add it yourself. (On Android 12 and earlier, pull down the notification shade, tap Edit (pencil) and drag **Sound visualizer** in.)
+1. Tap **Add to Quick Settings** at the top of the app's Settings tab and allow it. If it isn't added, the app tells you how to add it yourself. (On Android 12 and earlier, pull down the notification shade, tap Edit (pencil) and drag **Sound visualizer** in.)
 2. While playing a game or watching a video, pull down the notification shade and tap **Sound visualizer** to turn it on. Android shows the screen recording consent every time you turn it on.
 3. Tap it again to turn it off. Long-press it to open the app's settings.
 
