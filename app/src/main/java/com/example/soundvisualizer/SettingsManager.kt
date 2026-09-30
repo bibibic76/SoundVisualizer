@@ -298,15 +298,42 @@ object SettingsManager {
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
         _lastUnexpectedStopSeq.value = loadLastUnexpectedStopSeq(prefs)
 
-        // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
-        hapticFlows.forEach { (label, flow) ->
-            val default = HapticSettings.defaultFor(label)
-            flow.value = HapticSettings(
-                enabled = prefs.getBoolean("haptic_${label}_enabled", default.enabled),
-                strength = enumByName(prefs.getString("haptic_${label}_strength", null), default.strength),
-                pattern = enumByName(prefs.getString("haptic_${label}_pattern", null), default.pattern)
-            )
+        hapticFlows.forEach { (label, flow) -> flow.value = loadHaptic(prefs, label) }
+    }
+
+    /**
+     * 한 종류의 진동 설정. 방식은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
+     *
+     * #242 전의 설정(켜기·패턴·세기)만 있으면 방식과 세기로 옮겨 곧바로 저장하고 예전 키는 지운다
+     * ([HapticSettings.fromLegacy]). 옮긴 뒤에는 새 키만 읽는다.
+     */
+    private fun loadHaptic(prefs: SharedPreferences, label: String): HapticSettings {
+        val default = HapticSettings.defaultFor(label)
+        val modeKey = "haptic_${label}_mode"
+        val levelKey = "haptic_${label}_level"
+        if (!prefs.contains(modeKey)) {
+            val enabledKey = "haptic_${label}_enabled"
+            val patternKey = "haptic_${label}_pattern"
+            val strengthKey = "haptic_${label}_strength"
+            val legacy = HapticSettings.fromLegacy(
+                label,
+                enabled = if (prefs.contains(enabledKey)) prefs.getBoolean(enabledKey, default.enabled) else null,
+                pattern = prefs.getString(patternKey, null),
+                strength = prefs.getString(strengthKey, null)
+            ) ?: return default
+            prefs.edit {
+                putString(modeKey, legacy.mode.name)
+                putInt(levelKey, legacy.level)
+                remove(enabledKey)
+                remove(patternKey)
+                remove(strengthKey)
+            }
+            return legacy
         }
+        return HapticSettings(
+            mode = enumByName(prefs.getString(modeKey, null), default.mode),
+            level = HapticSettings.clampLevel(prefs.getInt(levelKey, default.level))
+        )
     }
 
     private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
@@ -500,9 +527,8 @@ object SettingsManager {
         val flow = hapticFlows[label] ?: return
         flow.value = settings
         prefs.edit {
-            putBoolean("haptic_${label}_enabled", settings.enabled)
-            putString("haptic_${label}_strength", settings.strength.name)
-            putString("haptic_${label}_pattern", settings.pattern.name)
+            putString("haptic_${label}_mode", settings.mode.name)
+            putInt("haptic_${label}_level", settings.level)
         }
     }
 

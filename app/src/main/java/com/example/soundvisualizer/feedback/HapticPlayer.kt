@@ -11,15 +11,15 @@ import android.os.VibratorManager
 import android.util.Log
 
 /**
- * 계획([HapticPlan])을 진동기로 보낸다. 캡처 중 알림, 설정 화면의 미리보기, 개발자 진동 시험이 모두 이것을 쓴다.
+ * 계획([HapticPlan])을 진동기로 보낸다. 캡처 중 알림과 설정 화면의 미리보기가 모두 이것을 쓴다.
  * Vibrator 는 시스템 서비스라 여러 스레드에서 불러도 된다.
  *
  * 모든 `vibrate()` 는 한 잠금 안에서 [close] 여부를 확인한 뒤에만 부른다. 진동 알림을 멈출 때 [close] 가 같은 잠금을
  * 잡으므로, 스레드가 늦게 끝나도(Android 10·11 에서 200ms 기다림이 넘쳐도) 멈춘 뒤에 진동이 나가지 않는다.
  * 그래서 꺼짐 알림 진동이 늦은 진동 하나에 덮이지 않는다.
  *
- * 반복 효과는 쓰지 않는다. 같은 우선순위에서 반복 효과가 울리는 동안에는 반복이 아닌 새 진동이 무시되어, 한 번·두 번·길게와
- * 끝 페이드가 먹힌다.
+ * 반복 효과는 쓰지 않는다. 같은 우선순위에서 반복 효과가 울리는 동안에는 반복이 아닌 새 진동이 무시되어, 방식을 바꾸거나
+ * 미리보기를 틀어도 먹힌다. 또 반복 효과는 끄는 쪽이 한 번 빠지면 끝없이 울린다. 연속 진동도 끝이 있는 울림을 이어 보낸다.
  */
 class HapticPlayer(context: Context) {
 
@@ -37,10 +37,6 @@ class HapticPlayer(context: Context) {
     /** 세기 조절이 되는지. 안 되면 세기와 상관없이 기본 세기로 울린다. */
     val hasAmplitudeControl: Boolean = hasVibrator && vibrator?.hasAmplitudeControl() == true
 
-    /** 한 번·두 번·길게. 설정 화면의 미리보기가 쓴다. */
-    fun play(pattern: HapticPattern, strength: HapticStrength): Boolean =
-        playPlan(HapticShapes.oneShot(pattern, strength, hasAmplitudeControl))
-
     /** 계획 하나를 접근성 용도로 울린다. 보내지 못하면 false. 효과는 잠금 밖에서 만든다. */
     fun playPlan(plan: HapticPlan): Boolean {
         val effect = buildEffect(plan) ?: return false
@@ -50,7 +46,7 @@ class HapticPlayer(context: Context) {
     /**
      * 시각화가 뜻하지 않게 꺼졌을 때의 진동. 소리 종류별 진동 설정과 상관없이 울린다.
      *
-     * 사용자가 소리 종류에 고를 수 있는 패턴(한 번·두 번·길게·소리 따라)과 겹치면 위협음 진동으로 착각하므로,
+     * 사용자가 소리 종류에 고를 수 있는 방식(느림·중간·빠름·연속)과 겹치면 위협음 진동으로 착각하므로,
      * 그 어느 것과도 다른 "길게 세 번"을 가장 센 세기로 울린다([HapticShapes.STOPPED_ALERT]).
      *
      * 알람 용도로 울린다. 캡처 서비스가 아직 포그라운드일 때 부르므로 백그라운드 진동 규칙에 걸리지는 않지만,
@@ -63,6 +59,14 @@ class HapticPlayer(context: Context) {
     fun playStoppedAlert() {
         val effect = buildEffect(HapticShapes.STOPPED_ALERT) ?: return
         vibrate(effect, alarm = true)
+    }
+
+    /** 지금 울리는 것을 끊는다. 연속 진동의 소리가 끝났을 때 쓴다. 닫은 뒤에는 아무것도 하지 않는다. */
+    fun cancel() {
+        synchronized(lock) {
+            if (closed) return
+            vibrator?.cancel()
+        }
     }
 
     /** 닫는다. 지금 울리는 것을 끊고, 이 플레이어로는 다시 울리지 않는다. */

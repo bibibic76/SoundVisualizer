@@ -121,22 +121,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrieren</string>
     <string name="haptic_requires_display">Vibriert nur, wenn diese Geräuschart angezeigt wird.</string>
-    <string name="haptic_ai_unavailable_danger">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert jedes laute Geräusch mit dieser Einstellung, egal welcher Art. Statt „Folgt dem Ton“ wird dann „Zweimal“ verwendet.</string>
+    <string name="haptic_ai_unavailable_danger">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert jedes laute Geräusch mit dieser Einstellung, solange es anhält, egal welcher Art.</string>
     <string name="haptic_ai_unavailable_other">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert diese Art nicht. Laute Geräusche vibrieren mit der Einstellung für Gefahrengeräusche.</string>
     <string name="haptic_ai_unavailable">Solange die Erkennung der Geräuscharten nicht funktioniert, wird nicht vibriert.</string>
     <string name="haptic_unsupported">Dieses Gerät unterstützt keine Vibration.</string>
     <string name="haptic_no_amplitude">Dieses Gerät kann die Vibrationsstärke nicht anpassen und vibriert daher mit der Standardstärke.</string>
     <string name="haptic_strength">Stärke</string>
-    <string name="haptic_strength_weak">Leicht</string>
-    <string name="haptic_strength_medium">Mittel</string>
-    <string name="haptic_strength_strong">Stark</string>
-    <string name="haptic_pattern">Muster</string>
-    <string name="haptic_pattern_tap">Einmal</string>
-    <string name="haptic_pattern_double">Zweimal</string>
-    <string name="haptic_pattern_hold">Lang</string>
-    <string name="haptic_pattern_repeat">Folgt dem Ton</string>
-    <string name="haptic_preview_hint">Tippen Sie auf eine Option, um die Vibration vorab zu spüren.</string>
-    <string name="haptic_pattern_follow_desc">„Folgt dem Ton“ vibriert, solange das Geräusch anhält, und verändert sich mit ihm. Die Vorschau simuliert ein typisches Geräusch dieser Art.</string>
+    <string name="haptic_level_percent">%1$d %%</string>
+    <string name="haptic_mode_off">Aus</string>
+    <string name="haptic_mode_slow">Langsam</string>
+    <string name="haptic_mode_medium">Mittel</string>
+    <string name="haptic_mode_fast">Schnell</string>
+    <string name="haptic_mode_continuous">Dauerhaft</string>
+    <string name="haptic_preview_hint">Tippen Sie auf einen Modus oder ändern Sie die Stärke, um die Vibration 2 Sekunden lang zu spüren.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Farbe auswählen</string>
@@ -220,8 +217,8 @@
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
     <string name="help_sound_danger">Wird ein Gefahrengeräusch (z. B. ein Schuss) erkannt, wechselt die Farbe sofort statt allmählich.</string>
-    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie eine Stärke (Leicht, Mittel, Stark) und ein Muster (Einmal, Zweimal, Lang, Folgt dem Ton) wählen.</string>
-    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Bei „Einmal“, „Zweimal“ und „Lang“ vibriert das Smartphone für dieselbe Art frühestens nach 2 Sekunden erneut. „Folgt dem Ton“ vibriert, solange das Geräusch anhält, und bewegt sich mit ihm: Plötzliche Geräusche schlagen kräftig an, Pieptöne pulsieren in ihrem eigenen Rhythmus, Sprache pulsiert mit den Silben und eine Sirene wird mit ihrer Tonhöhe stärker und schwächer. Ein gleichbleibendes Geräusch geht in ein sanftes Summen mit einem leichten Tippen alle paar Sekunden über, hört aber erst auf, wenn das Geräusch aufhört.</string>
+    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie einen Modus (Aus, Langsam, Mittel, Schnell, Dauerhaft) und eine Stärke wählen.</string>
+    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Das Smartphone vibriert, solange ein Geräusch dieser Art anhält, und hört mit dem Geräusch auf. „Mittel“ pulsiert jede halbe Sekunde, „Langsam“ halb so schnell und „Schnell“ doppelt so schnell, während „Dauerhaft“ ohne Unterbrechung vibriert. In jedem Modus bleibt die Vibration bei der gewählten Stärke.</string>
 
     <string name="help_notes_title">Gut zu wissen</string>
     <string name="help_note_direction">Links und rechts werden unterschieden, vorne und hinten jedoch nicht. Grafiken am oberen und unteren Bildschirmrand zeigen Geräusche, die auf beiden Seiten gleich stark zu hören sind, sowie den Raumeindruck.</string>

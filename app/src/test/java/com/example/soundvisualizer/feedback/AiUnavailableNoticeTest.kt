@@ -12,7 +12,7 @@ class AiUnavailableNoticeTest {
         for (shown in listOf(true, false)) {
             for (enabled in listOf(true, false)) {
                 val cfg: (String) -> HapticPolicy.ClassConfig = {
-                    HapticPolicy.ClassConfig(shown, HapticSettings(enabled, HapticStrength.Strong, HapticPattern.DoubleTap))
+                    HapticPolicy.ClassConfig(shown, HapticSettings(if (enabled) HapticMode.Medium else HapticMode.Off, 100))
                 }
                 val fires = HapticPolicy().onTick(0, null, 0.9f, cfg, unlabeledAlerts = true) != null
                 assertEquals("표시 $shown, 진동 $enabled", fires, AiUnavailableNotice.loudAlerts(shown, enabled, hasVibrator = true))

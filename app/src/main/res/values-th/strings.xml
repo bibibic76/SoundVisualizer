@@ -121,22 +121,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">สั่น</string>
     <string name="haptic_requires_display">สั่นได้เฉพาะเมื่อเปิดการแสดงเสียงประเภทนี้</string>
-    <string name="haptic_ai_unavailable_danger">ขณะที่ระบบแยกประเภทเสียงไม่ทำงาน เสียงดังทุกประเภทจะสั่นด้วยการตั้งค่านี้ และ “ตามเสียง” จะสั่นแบบ “2 ครั้ง” แทน</string>
+    <string name="haptic_ai_unavailable_danger">ขณะที่ระบบแยกประเภทเสียงไม่ทำงาน เสียงดังทุกประเภทจะสั่นด้วยการตั้งค่านี้ตลอดเวลาที่เสียงยังดังอยู่</string>
     <string name="haptic_ai_unavailable_other">ขณะที่ระบบแยกประเภทเสียงไม่ทำงาน เสียงประเภทนี้จะไม่สั่น ส่วนเสียงดังจะสั่นตามการตั้งค่าของเสียงอันตราย</string>
     <string name="haptic_ai_unavailable">จะไม่สั่นขณะที่ระบบแยกประเภทเสียงไม่ทำงาน</string>
     <string name="haptic_unsupported">อุปกรณ์นี้ไม่รองรับการสั่น</string>
     <string name="haptic_no_amplitude">อุปกรณ์นี้ปรับความแรงของการสั่นไม่ได้ จึงสั่นด้วยความแรงเริ่มต้น</string>
     <string name="haptic_strength">ความแรง</string>
-    <string name="haptic_strength_weak">เบา</string>
-    <string name="haptic_strength_medium">กลาง</string>
-    <string name="haptic_strength_strong">แรง</string>
-    <string name="haptic_pattern">รูปแบบ</string>
-    <string name="haptic_pattern_tap">1 ครั้ง</string>
-    <string name="haptic_pattern_double">2 ครั้ง</string>
-    <string name="haptic_pattern_hold">ยาว</string>
-    <string name="haptic_pattern_repeat">ตามเสียง</string>
-    <string name="haptic_preview_hint">แตะตัวเลือกเพื่อลองสัมผัสการสั่น</string>
-    <string name="haptic_pattern_follow_desc">“ตามเสียง” จะสั่นต่อเนื่องตราบใดที่เสียงยังดังอยู่ และเปลี่ยนไปตามเสียง ตัวอย่างจะจำลองเสียงที่พบบ่อยของประเภทนี้</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">ปิด</string>
+    <string name="haptic_mode_slow">ช้า</string>
+    <string name="haptic_mode_medium">กลาง</string>
+    <string name="haptic_mode_fast">เร็ว</string>
+    <string name="haptic_mode_continuous">ต่อเนื่อง</string>
+    <string name="haptic_preview_hint">แตะโหมดหรือเปลี่ยนความแรงเพื่อลองสัมผัสการสั่น 2 วินาที</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">เลือกสี</string>
@@ -220,8 +217,8 @@
     <string name="help_sound_title">ประเภทเสียงและการสั่น</string>
     <string name="help_sound_kinds">AI จะแยกเสียงที่ได้ยินออกเป็นเสียงแวดล้อม เสียงพูด และเสียงอันตราย สีเริ่มต้นคือ เสียงแวดล้อมสีขาว เสียงพูดสีเหลือง และเสียงอันตรายสีแดง ในแท็บการตั้งค่า คุณสามารถเปลี่ยนสีของแต่ละประเภทและเลือกได้ว่าจะแสดงหรือไม่</string>
     <string name="help_sound_danger">เมื่อตรวจพบเสียงอันตราย (เช่น เสียงปืน) สีจะเปลี่ยนทันทีแทนที่จะค่อยๆ เปลี่ยน</string>
-    <string name="help_sound_haptic">การสั่นช่วยแจ้งให้คุณทราบแม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะเปิดการสั่นไว้เฉพาะเสียงอันตราย และคุณเลือกความแรง (เบา, กลาง, แรง) กับรูปแบบ (1 ครั้ง, 2 ครั้ง, ยาว, ตามเสียง) ของแต่ละประเภทได้</string>
-    <string name="help_sound_haptic_rule">จะสั่นเฉพาะเสียงประเภทที่แสดงบนหน้าจอเท่านั้น สำหรับ 1 ครั้ง, 2 ครั้ง และยาว เสียงประเภทเดียวกันจะไม่สั่นอีกภายใน 2 วินาที ส่วน “ตามเสียง” จะสั่นต่อเนื่องตราบใดที่เสียงยังดังอยู่และเปลี่ยนไปตามเสียง เสียงที่ดังขึ้นกะทันหันจะสั่นแรง เสียงบี๊บจะสั่นตามจังหวะของมันเอง เสียงพูดจะสั่นตามพยางค์ และเสียงไซเรนจะแรงขึ้นและเบาลงตามระดับเสียงที่ขึ้นลง เสียงที่ไม่เปลี่ยนจะค่อยๆ เบาลงเป็นการสั่นแผ่วๆ และเคาะเบาๆ ทุกไม่กี่วินาที แต่จะไม่หยุดจนกว่าเสียงจะหยุด</string>
+    <string name="help_sound_haptic">การสั่นช่วยแจ้งให้คุณทราบแม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะเปิดการสั่นไว้เฉพาะเสียงอันตราย และคุณเลือกโหมด (ปิด, ช้า, กลาง, เร็ว, ต่อเนื่อง) กับความแรงของแต่ละประเภทได้</string>
+    <string name="help_sound_haptic_rule">จะสั่นเฉพาะเสียงประเภทที่แสดงบนหน้าจอเท่านั้น โทรศัพท์จะสั่นไปตลอดเวลาที่เสียงประเภทนั้นยังดังอยู่ และหยุดเมื่อเสียงหยุด “กลาง” สั่นเป็นจังหวะทุกครึ่งวินาที “ช้า” สั่นช้ากว่านั้นครึ่งหนึ่ง และ “เร็ว” สั่นเร็วกว่านั้นสองเท่า ส่วน “ต่อเนื่อง” จะสั่นโดยไม่หยุดพัก ทุกโหมดจะสั่นด้วยความแรงที่คุณเลือกไว้</string>
 
     <string name="help_notes_title">ข้อควรทราบ</string>
     <string name="help_note_direction">แอปแยกเสียงซ้ายกับขวาได้ แต่แยกด้านหน้ากับด้านหลังไม่ได้ กราฟิกที่ด้านบนและด้านล่างของหน้าจอแสดงถึงเสียงที่ได้ยินเท่าๆ กันทั้งสองข้าง รวมถึงมิติเชิงพื้นที่</string>

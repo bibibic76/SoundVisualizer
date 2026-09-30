@@ -66,21 +66,25 @@ class HapticSourceContractTest {
     }
 
     @Test
-    fun `미리보기가 진동기를 잡은 동안에는 계획이 없는 틱에도 보낸 계획을 잊는다`() {
-        // 미리보기가 끊은 계획을 아직 울리는 중으로 알면, 미리보기가 끝난 뒤에도 그 계획이 끝날 때까지 조용하다(#232).
+    fun `미리보기가 진동기를 잡은 동안에는 보내지 않고 보낸 연속 울림을 잊는다`() {
+        // 미리보기가 끊은 연속 울림을 아직 울리는 중으로 알면, 미리보기가 끝난 뒤에도 그 울림이 끝날 때까지 조용하다(#232).
         val tick = body(notifier, "override fun run()")
         val gate = tick.indexOf("HapticPreviewGate.busyUntilMs")
         assertTrue("틱이 미리보기가 진동기를 잡았는지 보지 않는다", gate >= 0)
-        assertTrue("미리보기 중에 보낸 계획을 잊지 않는다", tick.indexOf("loop.onIssueSkipped(", gate) > gate)
+        val forget = tick.indexOf("driver.onPreempted(", gate)
+        val send = tick.indexOf("issue(", gate)
+        assertTrue("미리보기 중에 보낸 울림을 잊지 않는다", forget > gate)
+        assertTrue("미리보기를 확인하기 전에 보낸다", send > forget && tick.indexOf("issue(") == send)
     }
 
     @Test
-    fun `계획은 한 곳에서만 보내고 멈춘 뒤와 미리보기 중에는 보내지 않는다`() {
+    fun `진동기에는 한 곳에서만 보내고 멈춘 뒤에는 보내지 않는다`() {
         assertTrue("playPlan 을 여러 곳에서 부른다", notifier.split("player.playPlan(").size == 2)
+        assertTrue("cancel 을 여러 곳에서 부른다", notifier.split("player.cancel(").size == 2)
         val issue = body(notifier, "private fun issue(")
         assertTrue(issue.contains("player.playPlan("))
+        assertTrue(issue.contains("player.cancel("))
         assertTrue("issue 가 멈춘 뒤를 먼저 거르지 않는다", issue.trimStart('{').trimStart().startsWith("if (!running) return"))
-        assertTrue(issue.contains("HapticPreviewGate.busyUntilMs"))
     }
 
     @Test
@@ -110,6 +114,8 @@ class HapticSourceContractTest {
         assertTrue("vibrate 가 잠금 밖에 있다", calls.isNotEmpty() && calls.all { it > closed })
         assertTrue("vibrate() 는 한 함수 안에서만 부른다", Regex("\\.vibrate\\(").findAll(player).count() == calls.size)
         assertTrue(body(player, "fun close()").contains("synchronized(lock)"))
+        val cancel = body(player, "fun cancel()")
+        assertTrue("cancel 이 닫힌 뒤에도 끊는다", cancel.indexOf("if (closed)") in 0 until cancel.indexOf(".cancel()"))
     }
 
     @Test

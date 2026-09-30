@@ -121,22 +121,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">振动</string>
     <string name="haptic_requires_display">需开启此声音类型的显示才会振动。</string>
-    <string name="haptic_ai_unavailable_danger">无法识别声音类型时，无论什么类型，较大的声音都会按此设置振动。“跟随声音”会改为振动“两次”。</string>
+    <string name="haptic_ai_unavailable_danger">无法识别声音类型时，无论什么类型，较大的声音持续多久，就会按此设置振动多久。</string>
     <string name="haptic_ai_unavailable_other">无法识别声音类型时，此类型不会振动。较大的声音会按危险音的设置振动。</string>
     <string name="haptic_ai_unavailable">无法识别声音类型时不会振动。</string>
     <string name="haptic_unsupported">此设备不支持振动。</string>
     <string name="haptic_no_amplitude">此设备无法调节振动强度，将以默认强度振动。</string>
     <string name="haptic_strength">强度</string>
-    <string name="haptic_strength_weak">弱</string>
-    <string name="haptic_strength_medium">中</string>
-    <string name="haptic_strength_strong">强</string>
-    <string name="haptic_pattern">振动方式</string>
-    <string name="haptic_pattern_tap">一次</string>
-    <string name="haptic_pattern_double">两次</string>
-    <string name="haptic_pattern_hold">长振动</string>
-    <string name="haptic_pattern_repeat">跟随声音</string>
-    <string name="haptic_preview_hint">点按选项即可预览振动效果。</string>
-    <string name="haptic_pattern_follow_desc">“跟随声音”会在声音持续时一直振动，并随声音变化。预览会模拟这种类型的常见声音。</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">关闭</string>
+    <string name="haptic_mode_slow">慢</string>
+    <string name="haptic_mode_medium">中</string>
+    <string name="haptic_mode_fast">快</string>
+    <string name="haptic_mode_continuous">连续</string>
+    <string name="haptic_preview_hint">点按一种振动方式或调整强度，即可预览 2 秒振动效果。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">选择颜色</string>
@@ -220,8 +217,8 @@
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
-    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择强度（弱、中、强）和振动方式（一次、两次、长振动、跟随声音）。</string>
-    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。选择“一次”“两次”“长振动”时，同一类型在 2 秒内不会再次振动。“跟随声音”会在声音持续时一直振动，并随声音变化：突然的声音会重重一击，提示音按自己的节奏跳动，说话声随音节跳动，警报声随音调起伏时强时弱。持续不变的声音会逐渐变为轻柔的振动，每隔几秒轻轻一点，但直到声音停止才会停止。</string>
+    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
+    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>
 
     <string name="help_notes_title">注意事项</string>
     <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>

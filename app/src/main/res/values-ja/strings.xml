@@ -121,22 +121,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">振動</string>
     <string name="haptic_requires_display">この種類の表示がオンのときだけ振動します。</string>
-    <string name="haptic_ai_unavailable_danger">音の種類を判別できない間は、種類に関係なく大きな音にこの設定で振動します。「音に合わせて」は代わりに「2回」で振動します。</string>
+    <string name="haptic_ai_unavailable_danger">音の種類を判別できない間は、種類に関係なく大きな音が続く間、この設定で振動します。</string>
     <string name="haptic_ai_unavailable_other">音の種類を判別できない間は、この種類では振動しません。大きな音は危険音の設定で振動します。</string>
     <string name="haptic_ai_unavailable">音の種類を判別できない間は振動しません。</string>
     <string name="haptic_unsupported">このデバイスは振動に対応していません。</string>
     <string name="haptic_no_amplitude">このデバイスは振動の強さを調整できないため、標準の強さで振動します。</string>
     <string name="haptic_strength">強さ</string>
-    <string name="haptic_strength_weak">弱</string>
-    <string name="haptic_strength_medium">中</string>
-    <string name="haptic_strength_strong">強</string>
-    <string name="haptic_pattern">パターン</string>
-    <string name="haptic_pattern_tap">1回</string>
-    <string name="haptic_pattern_double">2回</string>
-    <string name="haptic_pattern_hold">長く</string>
-    <string name="haptic_pattern_repeat">音に合わせて</string>
-    <string name="haptic_preview_hint">選択肢をタップすると、振動を試せます。</string>
-    <string name="haptic_pattern_follow_desc">「音に合わせて」は、音が続いている間は止まらずに振動し、音に合わせて変化します。プレビューでは、この種類によくある音をまねて振動します。</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">オフ</string>
+    <string name="haptic_mode_slow">ゆっくり</string>
+    <string name="haptic_mode_medium">普通</string>
+    <string name="haptic_mode_fast">速い</string>
+    <string name="haptic_mode_continuous">連続</string>
+    <string name="haptic_preview_hint">振動の仕方をタップするか強さを変えると、2秒間試せます。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">色を選択</string>
@@ -220,8 +217,8 @@
     <string name="help_sound_title">音の種類と振動</string>
     <string name="help_sound_kinds">聞こえてくる音を、AI が環境音・話し声・危険音に分類します。初期設定の色は、環境音が白、話し声が黄色、危険音が赤です。種類ごとの色と表示の有無は「設定」タブで変更できます。</string>
     <string name="help_sound_danger">危険音（銃声など）を検出すると、色が徐々にではなく、すぐに切り替わります。</string>
-    <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに強さ（弱・中・強）とパターン（1回・2回・長く・音に合わせて）を選べます。</string>
-    <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。「1回」「2回」「長く」では、同じ種類は2秒以内に続けて振動しません。「音に合わせて」は、音が続いている間は止まらずに振動し、音に合わせて変化します。突然の音は強く打ち、ビープ音はそのリズムで、話し声は音節ごとに脈打ち、サイレンは音の高さに合わせて強くなったり弱くなったりします。変化しない音が続くと穏やかな振動に落ち着き、数秒ごとに軽くトンと打ちますが、音が止まるまで止まりません。</string>
+    <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに振動の仕方（オフ・ゆっくり・普通・速い・連続）と強さを選べます。</string>
+    <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。その種類の音が続いている間は振動し続け、音が止まると一緒に止まります。「普通」は0.5秒ごとに、「ゆっくり」はその半分の速さで、「速い」は2倍の速さで振動し、「連続」は途切れずに振動します。どの振動の仕方でも、選んだ強さのまま振動します。</string>
 
     <string name="help_notes_title">知っておきたいこと</string>
     <string name="help_note_direction">左右は区別できますが、前後は区別できません。画面の上下に表示されるグラフィックは、左右から同じくらい聞こえる音と、空間の広がりを表します。</string>

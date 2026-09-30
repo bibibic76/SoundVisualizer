@@ -4,6 +4,8 @@ import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.ModeSettings
 import com.example.soundvisualizer.VisualMode
 import com.example.soundvisualizer.VisualizerInputs
+import com.example.soundvisualizer.feedback.HapticSettings
+import com.example.soundvisualizer.feedback.HapticTuning
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.floor
@@ -144,14 +146,18 @@ object TutorialScript {
     }
 
     /**
-     * 그 시각에 폰이 떨고 있는지. 기본 위협음 진동(강하게 두 번)처럼 짧게 두 번 떤다. 같은 종류는 2초 안에
-     * 다시 울리지 않으므로(HapticPolicy) 위협음이 이어져도 한 번만 떤다.
-     * 튜토리얼은 진동을 실제로 울리지 않고 그림으로만 보여 준다.
+     * 그 시각에 폰이 떨고 있는지. 기본 위협음 진동(중간)처럼 위협음이 나는 동안 0.5초마다 0.2초씩 떤다.
+     * 튜토리얼은 진동을 실제로 울리지 않고 그림으로만 보여 준다. 실제 진동은 소리가 끝나고 0.4초 더 이어질 수 있지만
+     * (HapticPolicy), 그림은 위협음이 보이는 동안만 떨어 무엇에 떠는지 헷갈리지 않게 한다.
      */
     fun vibrating(scene: TutorialScene, t: Float): Boolean {
         if (scene != TutorialScene.Vibration) return false
-        val u = loopTime(scene, t) - VIBRATION_DANGER_START
-        return (u >= 0f && u < BUZZ_SEC) || (u >= BUZZ_SEC + BUZZ_GAP_SEC && u < 2 * BUZZ_SEC + BUZZ_GAP_SEC)
+        val s = loopTime(scene, t)
+        if (s < VIBRATION_DANGER_START || s >= VIBRATION_DANGER_END) return false
+        val mode = HapticSettings.defaultFor(AiClassification.DANGER).mode
+        val period = HapticTuning.periodMs(mode) / 1000f
+        val on = HapticTuning.onMs(mode) / 1000f
+        return (s - VIBRATION_DANGER_START) % period < on
     }
 
     // ---------------- 대본의 조각 ----------------
@@ -167,8 +173,6 @@ object TutorialScript {
     private const val VIBRATION_DANGER_START = 1.5f
     private const val VIBRATION_DANGER_END = 2.9f
     private val VIBRATION_DANGER_HITS = floatArrayOf(0f, 0.7f)
-    private const val BUZZ_SEC = 0.14f
-    private const val BUZZ_GAP_SEC = 0.1f
 
     private fun directionSide(s: Float): Int = when {
         s < DIRECTION_LEFT_END -> -1

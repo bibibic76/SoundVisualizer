@@ -121,22 +121,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrar</string>
     <string name="haptic_requires_display">Solo vibra si este tipo de sonido se muestra en pantalla.</string>
-    <string name="haptic_ai_unavailable_danger">Mientras la detección del tipo de sonido no funcione, cualquier sonido fuerte vibra con este ajuste, sea del tipo que sea. En lugar de “Seguir el sonido”, vibra “Dos veces”.</string>
+    <string name="haptic_ai_unavailable_danger">Mientras la detección del tipo de sonido no funcione, cualquier sonido fuerte vibra con este ajuste mientras dure, sea del tipo que sea.</string>
     <string name="haptic_ai_unavailable_other">Mientras la detección del tipo de sonido no funcione, este tipo no vibra. Los sonidos fuertes vibran con el ajuste del peligro.</string>
     <string name="haptic_ai_unavailable">No vibrará mientras la detección del tipo de sonido no funcione.</string>
     <string name="haptic_unsupported">Este dispositivo no admite la vibración.</string>
     <string name="haptic_no_amplitude">Este dispositivo no permite ajustar la intensidad de la vibración, así que vibra con la intensidad predeterminada.</string>
     <string name="haptic_strength">Intensidad</string>
-    <string name="haptic_strength_weak">Suave</string>
-    <string name="haptic_strength_medium">Media</string>
-    <string name="haptic_strength_strong">Fuerte</string>
-    <string name="haptic_pattern">Patrón</string>
-    <string name="haptic_pattern_tap">Una vez</string>
-    <string name="haptic_pattern_double">Dos veces</string>
-    <string name="haptic_pattern_hold">Larga</string>
-    <string name="haptic_pattern_repeat">Seguir el sonido</string>
-    <string name="haptic_preview_hint">Toca una opción para probar la vibración.</string>
-    <string name="haptic_pattern_follow_desc">“Seguir el sonido” vibra mientras dura el sonido y cambia con él. La vista previa simula un sonido típico de este tipo.</string>
+    <string name="haptic_level_percent">%1$d %%</string>
+    <string name="haptic_mode_off">Desactivada</string>
+    <string name="haptic_mode_slow">Lenta</string>
+    <string name="haptic_mode_medium">Media</string>
+    <string name="haptic_mode_fast">Rápida</string>
+    <string name="haptic_mode_continuous">Continua</string>
+    <string name="haptic_preview_hint">Toca un modo o cambia la intensidad para sentir la vibración durante 2 segundos.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Elige un color</string>
@@ -220,8 +217,8 @@
     <string name="help_sound_title">Tipos de sonido y vibración</string>
     <string name="help_sound_kinds">La IA clasifica el audio en sonido ambiente, voz y peligro. De forma predeterminada, el sonido ambiente se muestra en blanco, la voz en amarillo y el peligro en rojo. En la pestaña Ajustes puedes cambiar el color de cada tipo y elegir si se muestra o no.</string>
     <string name="help_sound_danger">Cuando se detecta un sonido de peligro (como un disparo), el color cambia al instante en lugar de hacerlo poco a poco.</string>
-    <string name="help_sound_haptic">La vibración te avisa aunque no estés mirando la pantalla. Al principio solo está activada para el peligro, y puedes elegir la intensidad (Suave, Media, Fuerte) y el patrón (Una vez, Dos veces, Larga, Seguir el sonido) de cada tipo.</string>
-    <string name="help_sound_haptic_rule">Solo vibran los tipos que se muestran en pantalla. Con Una vez, Dos veces y Larga, un mismo tipo no vuelve a vibrar en los 2 segundos siguientes. “Seguir el sonido” vibra mientras dura el sonido y se mueve con él: los sonidos repentinos golpean, los pitidos laten a su propio ritmo, la voz late con las sílabas y una sirena sube y baja con su tono. Un sonido que no cambia se suaviza en un zumbido leve con un toque ligero cada pocos segundos, pero la vibración no se detiene hasta que termina el sonido.</string>
+    <string name="help_sound_haptic">La vibración te avisa aunque no estés mirando la pantalla. Al principio solo está activada para el peligro, y puedes elegir el modo (Desactivada, Lenta, Media, Rápida, Continua) y la intensidad de cada tipo.</string>
+    <string name="help_sound_haptic_rule">Solo vibran los tipos que se muestran en pantalla. El teléfono vibra mientras dura un sonido de ese tipo y se detiene cuando termina. Media late cada medio segundo, Lenta a la mitad de ese ritmo y Rápida al doble, mientras que Continua vibra sin interrupción. En todos los modos la vibración mantiene la intensidad que elegiste.</string>
 
     <string name="help_notes_title">Ten en cuenta</string>
     <string name="help_note_direction">La app distingue la izquierda de la derecha, pero no lo que está delante de lo que está detrás. Los gráficos de las partes superior e inferior de la pantalla representan los sonidos que se oyen por igual en ambos lados y la sensación de espacio.</string>

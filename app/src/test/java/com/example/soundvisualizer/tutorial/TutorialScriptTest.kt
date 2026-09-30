@@ -58,7 +58,7 @@ class TutorialScriptTest {
     }
 
     @Test
-    fun `진동 쪽은 위협음이 날 때 한 번만 짧게 두 번 떤다`() {
+    fun `진동 쪽은 위협음이 나는 동안 중간 박자로 떤다`() {
         val scene = TutorialScene.Vibration
         var t = 0f
         var buzzes = 0
@@ -72,8 +72,8 @@ class TutorialScriptTest {
             wasBuzzing = buzzing
             t += 0.005f
         }
-        // 기본 위협음 진동은 강하게 두 번이고, 같은 종류는 2초 안에 다시 울리지 않는다(HapticPolicy).
-        assertEquals("한 바퀴에 떠는 횟수", 2, buzzes)
+        // 기본 위협음 진동은 중간(0.5초마다 0.2초)이고, 위협음은 1.4초 동안 난다(1.5, 2.0, 2.5초에 떤다).
+        assertEquals("한 바퀴에 떠는 횟수", 3, buzzes)
         for (other in TutorialScene.entries - scene) {
             assertFalse("$other 쪽이 떤다", TutorialScript.vibrating(other, 1.55f))
         }
