@@ -52,13 +52,13 @@ You can see the same sound in four shapes and switch between them any time in Se
 
 Vibration lets you know a sound happened even when you're not looking at the screen.
 
-- **Turn vibration on or off for each sound type.** At first only danger sounds vibrate.
-- **Pick a strength (Light, Medium, Strong) and a pattern (Once, Twice, Long, Follow) for each type.** Set them differently per type and you can tell sounds apart by touch alone.
-- Tap an option in Settings to feel it right away.
+- **Pick a vibration mode for each sound type: Off, Slow, Medium, Fast or Continuous.** At first only danger sounds vibrate, on Medium.
+  - Medium pulses every half second, Slow at half that pace and Fast at twice that pace. Continuous vibrates without a break.
+- **Set the strength for each type with a slider (10–100%).** Every mode vibrates at the strength you picked. Give each type a different mode and you can tell sounds apart by touch alone.
+- **It keeps vibrating while a sound of that type lasts and stops when the sound does.** Pauses shorter than 0.4 seconds, like the gaps between words, count as the same sound.
+- Tap a mode or change the strength in Settings to feel it for 2 seconds.
 - **Only types shown on screen vibrate.**
-- So rapid gunfire doesn't buzz nonstop, with Once, Twice and Long the same type won't vibrate again within 2 seconds.
-- **Follow** keeps vibrating while the sound lasts and moves with it: sudden sounds hit, beeps and speech pulse in their own rhythm, and a siren rises and falls with its pitch. A sound that goes on unchanged settles into a gentle hum with a light tap every few seconds, so your hand doesn't go numb. The preview in Settings lets you feel a typical sound of each type without any sound playing.
-- While Follow is vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
+- While the phone keeps vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
 
 ### ⚙️ Settings for each mode
 
@@ -161,7 +161,7 @@ It turns off when screen recording, screen sharing or casting starts, or when so
 Check whether the app you're playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off.
 
 **It doesn't vibrate.**
-In Settings, under Sound types, make sure both **Show** and **Vibrate** are on for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration.
+In Settings, under Sound types, make sure **Show** is on and **Vibrate** isn't set to **Off** for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration.
 
 **A new version won't install.**
 An APK built on a different computer has a different signature and can't be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.

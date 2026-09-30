@@ -134,8 +134,6 @@
     <string name="setting_ai_qualcomm_frontend_desc" tools:ignore="MissingTranslation">Uses the pinned Qualcomm source preprocessing contract instead of the current app preprocessing. This diagnostic choice applies from the next AI result.</string>
     <string name="setting_ai_booster" tools:ignore="MissingTranslation">Gunshot Booster</string>
     <string name="setting_ai_booster_desc" tools:ignore="MissingTranslation">Runs the existing Gunshot Booster after YAMNet. Turn it off to inspect the existing YAMNet mapping and post-processing without Booster inference.</string>
-    <string name="setting_haptic_test" tools:ignore="MissingTranslation">Vibration test</string>
-    <string name="setting_haptic_test_desc" tools:ignore="MissingTranslation">Plays sample sounds through the real vibration path without making any sound. Tap a sample again to stop. Unavailable while the visualizer is running.</string>
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
@@ -146,22 +144,19 @@
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>
     <string name="haptic_requires_display">Vibration works only when this sound type is shown.</string>
-    <string name="haptic_ai_unavailable_danger">While sound type detection isn\'t working, any loud sound vibrates with this setting, whatever its type. Follow vibrates Twice instead.</string>
+    <string name="haptic_ai_unavailable_danger">While sound type detection isn\'t working, any loud sound vibrates with this setting for as long as it lasts, whatever its type.</string>
     <string name="haptic_ai_unavailable_other">While sound type detection isn\'t working, this type doesn\'t vibrate. Loud sounds vibrate with the danger sound setting.</string>
     <string name="haptic_ai_unavailable">It won\'t vibrate while sound type detection isn\'t working.</string>
     <string name="haptic_unsupported">This device doesn\'t support vibration.</string>
     <string name="haptic_no_amplitude">This device can\'t adjust vibration strength, so it vibrates at the default strength.</string>
     <string name="haptic_strength">Strength</string>
-    <string name="haptic_strength_weak">Light</string>
-    <string name="haptic_strength_medium">Medium</string>
-    <string name="haptic_strength_strong">Strong</string>
-    <string name="haptic_pattern">Pattern</string>
-    <string name="haptic_pattern_tap">Once</string>
-    <string name="haptic_pattern_double">Twice</string>
-    <string name="haptic_pattern_hold">Long</string>
-    <string name="haptic_pattern_repeat">Follow</string>
-    <string name="haptic_preview_hint">Tap an option to feel a preview.</string>
-    <string name="haptic_pattern_follow_desc">Follow keeps vibrating while the sound lasts and moves with it. The preview plays a typical sound of this type.</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">Off</string>
+    <string name="haptic_mode_slow">Slow</string>
+    <string name="haptic_mode_medium">Medium</string>
+    <string name="haptic_mode_fast">Fast</string>
+    <string name="haptic_mode_continuous">Continuous</string>
+    <string name="haptic_preview_hint">Tap a mode or change the strength to feel it for 2 seconds.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
@@ -250,8 +245,8 @@
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
-    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a strength (Light, Medium, Strong) and pattern (Once, Twice, Long, Follow) for each type.</string>
-    <string name="help_sound_haptic_rule">Only types shown on screen vibrate. With Once, Twice and Long, the same type won\'t vibrate again within 2 seconds. “Follow” keeps vibrating while the sound lasts and moves with it: sudden sounds hit, beeps pulse in their own rhythm, speech pulses with the syllables and a siren rises and falls with its pitch. A sound that doesn\'t change settles into a gentle hum with a light tap every few seconds, but it doesn\'t stop until the sound does.</string>
+    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
+    <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>
 
     <string name="help_notes_title">Good to know</string>
     <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>
