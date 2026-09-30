@@ -119,22 +119,42 @@ jobs:
               if not files and part == "main":
                   # 첫 실행이 실패하면 결과를 옮기기 전에 멈추므로 원래 폴더에 남아 있다.
                   files = glob.glob("app/build/outputs/androidTest-results/connected/**/*.xml", recursive=True)
-              cases = failed = skipped = 0
+              cases = skipped = 0
+              failed = []
               for f in files:
                   for case in ET.parse(f).getroot().iter("testcase"):
                       cases += 1
-                      if case.find("failure") is not None or case.find("error") is not None:
-                          failed += 1
+                      problem = case.find("failure")
+                      if problem is None:
+                          problem = case.find("error")
+                      if problem is not None:
+                          text = (problem.get("type") or "") + (problem.get("message") or "") + (problem.text or "")
+                          # assumeTrue 로 건너뛴 테스트(MicProbe 등)를 결과 파일이 failure 로 적기도 한다(#236).
+                          if "AssumptionViolatedException" in text:
+                              skipped += 1
+                          else:
+                              failed.append(case.get("classname", "").rsplit(".", 1)[-1] + "." + case.get("name", ""))
                       elif case.find("skipped") is not None:
                           skipped += 1
               if not files:
                   lines.append(f"- {title}: 결과 없음")
                   continue
-              lines.append(f"- {title}: {cases}개 중 {cases - failed - skipped}개 통과, 실패 {failed}, 건너뜀 {skipped}")
-              print(f"::notice title={title}::{cases}개 중 실패 {failed}, 건너뜀 {skipped}")
+              lines.append(f"- {title}: {cases}개 중 {cases - len(failed) - skipped}개 통과, 실패 {len(failed)}, 건너뜀 {skipped}")
+              lines += [f"  - 실패: `{name}`" for name in failed]
+              print(f"::notice title={title}::{cases}개 중 실패 {len(failed)}, 건너뜀 {skipped}" + (" (" + ", ".join(failed) + ")" if failed else ""))
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as out:
               out.write("### 계측 테스트 (에뮬레이터 API " + os.environ.get("API_LEVEL", "?") + ")\n" + "\n".join(lines) + "\n")
           PY
+
+      # 결과 XML 은 작아서 통과해도 올린다. 요약과 대조하거나 흔들리는 테스트의 기록을 볼 때 쓴다(#236).
+      - name: 테스트 결과 XML 올리기
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: instrumented-test-results
+          path: ci-results/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: 테스트 결과 올리기 (실패했을 때)
         if: failure()
