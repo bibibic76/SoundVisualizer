@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Ses yakalama</string>
     <string name="notification_text">Ses görselleştiriliyor.</string>
-    <string name="notification_title_external">SoundVisualizer · Dış sesler</string>
+    <string name="notification_title_external">Dış sesler · SoundVisualizer</string>
     <string name="notification_text_external">Çevrenizdeki sesler dinleniyor ve görselleştiriliyor.</string>
     <string name="notification_text_mic_silenced">Mikrofondan hiç ses gelmiyor. Bir aramada olabilirsiniz ya da mikrofon engellenmiş olabilir.</string>
     <string name="notification_stop">Durdur</string>

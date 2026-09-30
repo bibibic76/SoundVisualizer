@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Acquisizione audio</string>
     <string name="notification_text">Visualizzazione del suono in corso.</string>
-    <string name="notification_title_external">SoundVisualizer · Suoni esterni</string>
+    <string name="notification_title_external">Suoni esterni · SoundVisualizer</string>
     <string name="notification_text_external">Ascolto e visualizzazione dei suoni intorno a te in corso.</string>
     <string name="notification_text_mic_silenced">Dal microfono non arriva nessun suono. Potresti essere in chiamata, oppure il microfono potrebbe essere bloccato.</string>
     <string name="notification_stop">Interrompi</string>

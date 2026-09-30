@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">التقاط الصوت</string>
     <string name="notification_text">جارٍ عرض الأصوات على الشاشة.</string>
-    <string name="notification_title_external">SoundVisualizer · الأصوات من حولك</string>
+    <string name="notification_title_external">الأصوات من حولك · SoundVisualizer</string>
     <string name="notification_text_external">جارٍ الاستماع إلى الأصوات من حولك وعرضها على الشاشة.</string>
     <string name="notification_text_mic_silenced">لا يصل أي صوت عبر الميكروفون. ربما تكون في مكالمة، أو قد يكون الميكروفون محظورًا.</string>
     <string name="notification_stop">إيقاف</string>

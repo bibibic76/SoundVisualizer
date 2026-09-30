@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Przechwytywanie dźwięku</string>
     <string name="notification_text">Trwa wizualizacja dźwięku.</string>
-    <string name="notification_title_external">SoundVisualizer · Dźwięki zewnętrzne</string>
+    <string name="notification_title_external">Dźwięki zewnętrzne · SoundVisualizer</string>
     <string name="notification_text_external">Trwa słuchanie i wizualizacja dźwięków wokół Ciebie.</string>
     <string name="notification_text_mic_silenced">Przez mikrofon nie dociera żaden dźwięk. Być może trwa rozmowa telefoniczna albo mikrofon jest zablokowany.</string>
     <string name="notification_stop">Zatrzymaj</string>

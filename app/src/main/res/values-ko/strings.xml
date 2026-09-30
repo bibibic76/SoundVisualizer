@@ -187,7 +187,7 @@
     <!-- 알림 -->
     <string name="notification_channel_name">오디오 캡처</string>
     <string name="notification_text">소리를 시각화하는 중입니다.</string>
-    <string name="notification_title_external">SoundVisualizer · 주변 소리</string>
+    <string name="notification_title_external">주변 소리 · SoundVisualizer</string>
     <string name="notification_text_external">마이크로 주변 소리를 듣고 시각화하는 중입니다.</string>
     <string name="notification_stop">중지</string>
     <string name="notification_mode_selected">%1$s, 선택됨</string>

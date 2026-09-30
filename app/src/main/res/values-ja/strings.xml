@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">音声キャプチャ</string>
     <string name="notification_text">音を可視化しています。</string>
-    <string name="notification_title_external">SoundVisualizer · 周囲の音</string>
+    <string name="notification_title_external">周囲の音 · SoundVisualizer</string>
     <string name="notification_text_external">周囲の音を聞き取って可視化しています。</string>
     <string name="notification_text_mic_silenced">マイクから音が入ってきません。通話中か、マイクがブロックされている可能性があります。</string>
     <string name="notification_stop">停止</string>

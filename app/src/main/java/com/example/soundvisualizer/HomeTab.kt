@@ -38,6 +38,9 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
     val captureBlocked by SettingsManager.isCaptureBlocked.collectAsState()
     val lastUnexpectedStop by SettingsManager.lastUnexpectedStop.collectAsState()
     val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+    // 실행 중에는 설정값이 아니라 서비스가 실제로 연 소스를 적는다. 둘이 어긋나면 방을 듣지 않는데도 듣는다고 믿게 된다.
+    val runningSource by SettingsManager.runningCaptureSource.collectAsState()
+    val listeningAround = runningSource == CaptureSource.Microphone
     val dangerShown by SettingsManager.showDanger.collectAsState()
     val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
     val context = LocalContext.current
@@ -75,7 +78,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                             when {
                                 !isRunning -> R.string.home_status_idle
                                 // 마이크로 듣는 중이면 상태에 적는다. 방 소리를 들어 확인할 수 없는 사람에게 필요하다(#226).
-                                externalSoundMode -> R.string.home_status_running_external
+                                listeningAround -> R.string.home_status_running_external
                                 else -> R.string.home_status_running
                             }
                         ),
@@ -97,7 +100,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                         stringResource(
                             when {
                                 !captureBlocked -> AiUnavailableNotice.home(loudAlerts)
-                                externalSoundMode -> R.string.home_mic_silenced
+                                listeningAround -> R.string.home_mic_silenced
                                 else -> R.string.home_capture_blocked
                             }
                         ),

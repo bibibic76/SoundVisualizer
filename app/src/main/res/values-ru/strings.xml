@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Захват звука</string>
     <string name="notification_text">Идёт визуализация звука.</string>
-    <string name="notification_title_external">SoundVisualizer · Внешние звуки</string>
+    <string name="notification_title_external">Внешние звуки · SoundVisualizer</string>
     <string name="notification_text_external">Идёт прослушивание и визуализация звуков вокруг вас.</string>
     <string name="notification_text_mic_silenced">Через микрофон не поступает никакой звук. Возможно, вы разговариваете по телефону или микрофон заблокирован.</string>
     <string name="notification_stop">Остановить</string>

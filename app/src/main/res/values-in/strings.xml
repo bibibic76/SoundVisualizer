@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Penangkapan audio</string>
     <string name="notification_text">Memvisualisasikan suara.</string>
-    <string name="notification_title_external">SoundVisualizer · Suara luar</string>
+    <string name="notification_title_external">Suara luar · SoundVisualizer</string>
     <string name="notification_text_external">Mendengarkan suara di sekitar Anda dan memvisualisasikannya.</string>
     <string name="notification_text_mic_silenced">Tidak ada suara yang masuk melalui mikrofon. Anda mungkin sedang dalam panggilan, atau mikrofon mungkin diblokir.</string>
     <string name="notification_stop">Hentikan</string>

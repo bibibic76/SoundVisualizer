@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Captura de áudio</string>
     <string name="notification_text">Visualizando os sons.</string>
-    <string name="notification_title_external">SoundVisualizer · Som externo</string>
+    <string name="notification_title_external">Som externo · SoundVisualizer</string>
     <string name="notification_text_external">Ouvindo e visualizando os sons ao seu redor.</string>
     <string name="notification_text_mic_silenced">Nenhum som está chegando pelo microfone. Talvez você esteja em uma ligação ou o microfone esteja bloqueado.</string>
     <string name="notification_stop">Parar</string>

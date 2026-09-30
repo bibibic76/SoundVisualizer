@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">音频捕获</string>
     <string name="notification_text">正在进行声音可视化。</string>
-    <string name="notification_title_external">SoundVisualizer · 周围声音</string>
+    <string name="notification_title_external">周围声音 · SoundVisualizer</string>
     <string name="notification_text_external">正在收听并可视化您周围的声音。</string>
     <string name="notification_text_mic_silenced">麦克风没有收到任何声音。可能您正在通话，或者麦克风已被阻止。</string>
     <string name="notification_stop">停止</string>

@@ -203,7 +203,7 @@
     <string name="notification_channel_name">Audio capture</string>
     <string name="notification_title" translatable="false">SoundVisualizer</string>
     <string name="notification_text">Visualizing sound.</string>
-    <string name="notification_title_external">SoundVisualizer · Surrounding sound</string>
+    <string name="notification_title_external">Surrounding sound · SoundVisualizer</string>
     <string name="notification_text_external">Listening to the sounds around you and visualizing them.</string>
     <string name="notification_stop">Stop</string>
     <!-- %1$s is the mode name. Read out for the mode that is currently on, so it is not shown by colour alone. -->

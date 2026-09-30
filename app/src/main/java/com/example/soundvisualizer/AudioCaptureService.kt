@@ -369,6 +369,8 @@ class AudioCaptureService : Service() {
         }
         captureSource = source
         SettingsManager.init(applicationContext)
+        // 홈은 설정값이 아니라 이 값을 보고 "주변 소리"를 적는다. 실행 상태보다 먼저 알린다.
+        SettingsManager.setRunningCaptureSource(source)
         instance = this
         // 지난 실행에서 눌린 끄기는 이번 실행과 상관없다.
         stopRequested = false

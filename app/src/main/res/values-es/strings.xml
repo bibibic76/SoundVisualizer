@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Captura de audio</string>
     <string name="notification_text">Visualizando el sonido.</string>
-    <string name="notification_title_external">SoundVisualizer · Sonido externo</string>
+    <string name="notification_title_external">Sonido externo · SoundVisualizer</string>
     <string name="notification_text_external">Escuchando los sonidos de tu entorno y visualizándolos.</string>
     <string name="notification_text_mic_silenced">No entra ningún sonido por el micrófono. Puede que estés en una llamada o que el micrófono esté bloqueado.</string>
     <string name="notification_stop">Detener</string>

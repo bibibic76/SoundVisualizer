@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">ऑडियो कैप्चर</string>
     <string name="notification_text">आवाज़ें स्क्रीन पर दिखाई जा रही हैं।</string>
-    <string name="notification_title_external">SoundVisualizer · बाहरी आवाज़</string>
+    <string name="notification_title_external">बाहरी आवाज़ · SoundVisualizer</string>
     <string name="notification_text_external">आपके आस-पास की आवाज़ें सुनी जा रही हैं और स्क्रीन पर दिखाई जा रही हैं।</string>
     <string name="notification_text_mic_silenced">माइक्रोफ़ोन से कोई आवाज़ नहीं आ रही है। हो सकता है कि आप कॉल पर हों या माइक्रोफ़ोन ब्लॉक हो।</string>
     <string name="notification_stop">रोकें</string>

@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Thu âm thanh</string>
     <string name="notification_text">Đang trực quan hóa âm thanh.</string>
-    <string name="notification_title_external">SoundVisualizer · Âm thanh bên ngoài</string>
+    <string name="notification_title_external">Âm thanh bên ngoài · SoundVisualizer</string>
     <string name="notification_text_external">Đang nghe và trực quan hóa âm thanh xung quanh bạn.</string>
     <string name="notification_text_mic_silenced">Không có âm thanh nào đi vào qua micrô. Có thể bạn đang trong cuộc gọi hoặc micrô đang bị chặn.</string>
     <string name="notification_stop">Dừng</string>

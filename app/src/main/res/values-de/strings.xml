@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">Audioerfassung</string>
     <string name="notification_text">Geräusche werden visualisiert.</string>
-    <string name="notification_title_external">SoundVisualizer · Außengeräusche</string>
+    <string name="notification_title_external">Außengeräusche · SoundVisualizer</string>
     <string name="notification_text_external">Geräusche in Ihrer Umgebung werden gehört und visualisiert.</string>
     <string name="notification_text_mic_silenced">Über das Mikrofon kommt kein Ton an. Möglicherweise telefonieren Sie gerade oder das Mikrofon ist blockiert.</string>
     <string name="notification_stop">Stopp</string>

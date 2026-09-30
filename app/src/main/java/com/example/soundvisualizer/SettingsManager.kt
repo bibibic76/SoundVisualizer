@@ -135,6 +135,13 @@ object SettingsManager {
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
 
+    /**
+     * 이번 실행(꺼져 있으면 마지막 실행)이 실제로 연 소리 소스. 캡처 서비스가 켤 때마다 덮어쓴다.
+     * 실행 중인 화면은 설정값([externalSoundMode])이 아니라 이 값을 따라 "주변 소리"를 적는다. 설정은 다음 실행의 소스다.
+     */
+    private val _runningCaptureSource = MutableStateFlow(CaptureSource.InternalPlayback)
+    val runningCaptureSource: StateFlow<CaptureSource> = _runningCaptureSource
+
     // 빠른 설정 타일이 알림창에 추가돼 있는지. 타일 서비스가 추가·제거될 때 알려준다.
     private val _tileAdded = MutableStateFlow(false)
     val tileAdded: StateFlow<Boolean> = _tileAdded
@@ -530,6 +537,10 @@ object SettingsManager {
 
     fun setServiceRunning(isRunning: Boolean) {
         _isServiceRunning.value = isRunning
+    }
+
+    fun setRunningCaptureSource(source: CaptureSource) {
+        _runningCaptureSource.value = source
     }
 
     fun setTileAdded(added: Boolean) {

@@ -174,7 +174,7 @@
     <!-- Notification -->
     <string name="notification_channel_name">การจับเสียง</string>
     <string name="notification_text">กำลังแสดงภาพเสียง</string>
-    <string name="notification_title_external">SoundVisualizer · เสียงภายนอก</string>
+    <string name="notification_title_external">เสียงภายนอก · SoundVisualizer</string>
     <string name="notification_text_external">กำลังฟังเสียงรอบตัวคุณและแสดงเป็นภาพ</string>
     <string name="notification_text_mic_silenced">ไม่มีเสียงเข้ามาทางไมโครโฟน คุณอาจกำลังใช้สายอยู่ หรือไมโครโฟนอาจถูกบล็อก</string>
     <string name="notification_stop">หยุด</string>
