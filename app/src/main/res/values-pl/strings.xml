@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">Szybkie</string>
     <string name="haptic_mode_continuous">Ciągłe</string>
     <string name="haptic_preview_hint">Naciśnij tryb lub zmień siłę, aby przez 2 sekundy poczuć próbną wibrację.</string>
+    <string name="haptic_preview_hint_running">Gdy wizualizacja działa, próbna wibracja się nie włącza, żeby nie pomylić jej z prawdziwą.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Wybierz kolor</string>

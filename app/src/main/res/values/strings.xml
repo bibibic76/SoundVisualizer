@@ -157,6 +157,7 @@
     <string name="haptic_mode_fast">Fast</string>
     <string name="haptic_mode_continuous">Continuous</string>
     <string name="haptic_preview_hint">Tap a mode or change the strength to feel it for 2 seconds.</string>
+    <string name="haptic_preview_hint_running">While the visualizer is running, previews don\'t play, so they aren\'t mixed up with real alerts.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>

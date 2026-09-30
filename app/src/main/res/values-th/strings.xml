@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">เร็ว</string>
     <string name="haptic_mode_continuous">ต่อเนื่อง</string>
     <string name="haptic_preview_hint">แตะโหมดหรือเปลี่ยนความแรงเพื่อลองสัมผัสการสั่น 2 วินาที</string>
+    <string name="haptic_preview_hint_running">ขณะที่การแสดงภาพเสียงกำลังทำงาน จะไม่สั่นตัวอย่าง เพื่อไม่ให้สับสนกับการสั่นจริง</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">เลือกสี</string>

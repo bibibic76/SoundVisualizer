@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">سريع</string>
     <string name="haptic_mode_continuous">مستمر</string>
     <string name="haptic_preview_hint">انقر على أحد الأوضاع أو غيّر القوة لتجربة الاهتزاز لمدة ثانيتين.</string>
+    <string name="haptic_preview_hint_running">أثناء التشغيل لا تعمل المعاينة، حتى لا تختلط بالاهتزاز الفعلي.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">اختيار لون</string>

@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">快</string>
     <string name="haptic_mode_continuous">連續</string>
     <string name="haptic_preview_hint">輕觸一種震動方式或調整強度，即可預覽 2 秒震動效果。</string>
+    <string name="haptic_preview_hint_running">聲音視覺化執行時不會播放預覽震動，以免與真正的震動混淆。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">選擇顏色</string>

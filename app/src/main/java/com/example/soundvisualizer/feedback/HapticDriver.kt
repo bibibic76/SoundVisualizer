@@ -4,8 +4,9 @@ package com.example.soundvisualizer.feedback
  * 울려야 할 진동([HapticPolicy.Vibe])을 시각에 맞춘 진동기 명령으로 바꾼다. 안드로이드에 의존하지 않아 JVM 에서 테스트한다.
  *
  * - 느림·중간·빠름: 박자마다 울림 하나([HapticShapes.steady])를 보낸다. 모터가 쉬는 사이에만 보내므로 끊김이 없다.
- *   소리가 끝나면 다음 울림을 보내지 않는다. 울리던 것은 제 길이만큼(가장 길어도 0.4초) 울리고 멈춘다.
- * - 연속: [HapticTuning.CONTINUOUS_CHUNK_MS] 짜리 울림을 보내고 끝나기 전에 다시 보낸다. 소리가 끝나면 [Command.Cancel].
+ * - 연속: [HapticTuning.CONTINUOUS_CHUNK_MS] 짜리 울림을 보내고 끝나기 전에 다시 보낸다.
+ * - 울리지 않아야 하면(소리가 끝났거나 꺼진 종류로 바뀌었으면) 울리던 울림도 [Command.Cancel] 로 바로 끊는다.
+ *   박자 방식의 울림을 끝까지 두면 느림은 0.4초까지 앞 종류가 더 울린다(#244).
  *
  * 박자는 처음 울린 시각에서 센다. 틱이 늦어 한 박자의 울림 시간을 통째로 놓쳤으면 그 박자는 건너뛴다. 몰아서 울리면
  * 두 울림이 붙어 한 번의 긴 울림이 된다.
@@ -31,6 +32,9 @@ class HapticDriver(private val amplitudeControl: Boolean) {
     /** 보낸 연속 울림이 끝나는 시각. 보낸 것이 없거나 잊었으면 [Long.MIN_VALUE]. */
     private var continuousUntilMs = Long.MIN_VALUE
 
+    /** 마지막으로 보낸 박자 울림이 끝나는 시각. 보낸 것이 없거나 잊었으면 [Long.MIN_VALUE]. */
+    private var beatUntilMs = Long.MIN_VALUE
+
     /**
      * @param vibe 지금 울려야 할 진동. 없으면 null.
      * @return 지금 진동기에 할 일.
@@ -41,13 +45,16 @@ class HapticDriver(private val amplitudeControl: Boolean) {
         val prev = current
         current = want
         if (want == null) {
+            val running = (continuousUntilMs != Long.MIN_VALUE && nowMs < continuousUntilMs) ||
+                (beatUntilMs != Long.MIN_VALUE && nowMs < beatUntilMs)
             nextBeatMs = Long.MIN_VALUE
-            val running = continuousUntilMs != Long.MIN_VALUE && nowMs < continuousUntilMs
             continuousUntilMs = Long.MIN_VALUE
-            return if (prev?.mode == HapticMode.Continuous && running) Command.Cancel else Command.None
+            beatUntilMs = Long.MIN_VALUE
+            return if (prev != null && running) Command.Cancel else Command.None
         }
         if (want.mode == HapticMode.Continuous) {
             nextBeatMs = Long.MIN_VALUE
+            beatUntilMs = Long.MIN_VALUE
             val stale = prev != want || continuousUntilMs == Long.MIN_VALUE ||
                 continuousUntilMs - nowMs <= HapticTuning.CONTINUOUS_REFILL_MS
             if (!stale) return Command.None
@@ -68,6 +75,7 @@ class HapticDriver(private val amplitudeControl: Boolean) {
         }
         if (nowMs < nextBeatMs - EARLY_MS) return Command.None
         nextBeatMs += period
+        beatUntilMs = nowMs + on
         return Command.Play(HapticShapes.steady(want.level, on, amplitudeControl))
     }
 
@@ -92,6 +100,7 @@ class HapticDriver(private val amplitudeControl: Boolean) {
      */
     fun onPreempted() {
         continuousUntilMs = Long.MIN_VALUE
+        beatUntilMs = Long.MIN_VALUE
     }
 
     private companion object {

@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">तेज़</string>
     <string name="haptic_mode_continuous">लगातार</string>
     <string name="haptic_preview_hint">किसी मोड पर टैप करके या तीव्रता बदलकर 2 सेकंड तक वाइब्रेशन आज़माकर देखें।</string>
+    <string name="haptic_preview_hint_running">विज़ुअलाइज़र चालू रहते हुए झलक वाला वाइब्रेशन नहीं होता, ताकि वह असली वाइब्रेशन से न मिल जाए।</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">रंग चुनें</string>

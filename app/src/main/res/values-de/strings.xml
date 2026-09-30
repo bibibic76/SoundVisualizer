@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">Schnell</string>
     <string name="haptic_mode_continuous">Dauerhaft</string>
     <string name="haptic_preview_hint">Tippen Sie auf einen Modus oder ändern Sie die Stärke, um die Vibration 2 Sekunden lang zu spüren.</string>
+    <string name="haptic_preview_hint_running">Während die Tonvisualisierung läuft, wird die Vorschau nicht abgespielt, damit sie nicht mit echten Vibrationen verwechselt wird.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Farbe auswählen</string>
