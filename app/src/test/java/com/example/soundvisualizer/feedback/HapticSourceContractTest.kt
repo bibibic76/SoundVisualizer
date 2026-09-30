@@ -56,6 +56,25 @@ class HapticSourceContractTest {
     }
 
     @Test
+    fun `첫 틱은 handler 를 둔 뒤에 보낸다`() {
+        // 틱은 handler 로만 다음 틱을 잡는다. 첫 틱을 먼저 보내면 진동 스레드가 그 틈에 먼저 돌 때 틱이 끊겨 진동이 멈춘다(#232).
+        val start = body(notifier, "fun start()")
+        val assign = start.indexOf("handler = ")
+        val post = start.indexOf(".post(tick)")
+        assertTrue("start() 가 handler 를 두기 전에 첫 틱을 보낸다", assign >= 0 && post > assign)
+        assertFalse("also 블록 안에서 보내면 handler 를 두기 전에 보낸다", start.contains(".also"))
+    }
+
+    @Test
+    fun `미리보기가 진동기를 잡은 동안에는 계획이 없는 틱에도 보낸 계획을 잊는다`() {
+        // 미리보기가 끊은 계획을 아직 울리는 중으로 알면, 미리보기가 끝난 뒤에도 그 계획이 끝날 때까지 조용하다(#232).
+        val tick = body(notifier, "override fun run()")
+        val gate = tick.indexOf("HapticPreviewGate.busyUntilMs")
+        assertTrue("틱이 미리보기가 진동기를 잡았는지 보지 않는다", gate >= 0)
+        assertTrue("미리보기 중에 보낸 계획을 잊지 않는다", tick.indexOf("loop.onIssueSkipped(", gate) > gate)
+    }
+
+    @Test
     fun `계획은 한 곳에서만 보내고 멈춘 뒤와 미리보기 중에는 보내지 않는다`() {
         assertTrue("playPlan 을 여러 곳에서 부른다", notifier.split("player.playPlan(").size == 2)
         val issue = body(notifier, "private fun issue(")

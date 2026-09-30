@@ -10,6 +10,7 @@
     <string name="home_status_idle">स्थिति: तैयार</string>
     <string name="home_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है, इसलिए स्क्रीन पर कुछ भी नहीं बनाया जा सकता। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो (सुरक्षित वीडियो के साथ ऐसा ही होता है), या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
     <string name="home_ai_unavailable_loud">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं और सिर्फ़ तेज़ आवाज़ों पर, खतरे की आवाज़ों की वाइब्रेशन सेटिंग के हिसाब से वाइब्रेशन होता है। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
+    <string name="home_ai_unavailable">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं और वाइब्रेशन भी नहीं हो रहा। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
     <string name="home_stopped_dismiss">जानकारी हटाएं</string>
     <string name="home_start">शुरू करें</string>
     <string name="home_stop">बंद करें</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">वाइब्रेशन तभी होगा, जब यह प्रकार स्क्रीन पर दिखाया जा रहा हो।</string>
     <string name="haptic_ai_unavailable_danger">जब तक आवाज़ का प्रकार नहीं पहचाना जा रहा, तब तक हर तेज़ आवाज़ पर, चाहे वह किसी भी प्रकार की हो, इसी सेटिंग से वाइब्रेशन होगा। “आवाज़ के साथ” की जगह “दो बार” वाइब्रेशन होगा।</string>
     <string name="haptic_ai_unavailable_other">जब तक आवाज़ का प्रकार नहीं पहचाना जा रहा, तब तक इस प्रकार के लिए वाइब्रेशन नहीं होगा। तेज़ आवाज़ों पर खतरे की आवाज़ों की सेटिंग से वाइब्रेशन होगा।</string>
+    <string name="haptic_ai_unavailable">जब तक आवाज़ का प्रकार नहीं पहचाना जा रहा, तब तक वाइब्रेशन नहीं होगा।</string>
     <string name="haptic_unsupported">इस डिवाइस पर वाइब्रेशन की सुविधा नहीं है।</string>
     <string name="haptic_no_amplitude">इस डिवाइस पर वाइब्रेशन की तीव्रता नहीं बदली जा सकती, इसलिए डिफ़ॉल्ट तीव्रता पर वाइब्रेशन होगा।</string>
     <string name="haptic_strength">तीव्रता</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">रोकें</string>
     <string name="notification_mode_selected">%1$s, चुना गया</string>
     <string name="notification_text_ai_unavailable_loud">आवाज़ें स्क्रीन पर दिखाई जा रही हैं। आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सिर्फ़ तेज़ आवाज़ों पर वाइब्रेशन होगा।</string>
+    <string name="notification_text_ai_unavailable">आवाज़ें स्क्रीन पर दिखाई जा रही हैं। आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए वाइब्रेशन बंद है।</string>
     <string name="notification_text_capture_blocked">विज़ुअलाइज़र तक कोई आवाज़ नहीं पहुंच रही है। हो सकता है कि जिस ऐप में आवाज़ चल रही है, वह अपनी आवाज़ शेयर करने की अनुमति न देता हो, या फिर उसी ऐप की अपनी आवाज़ बंद हो।</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

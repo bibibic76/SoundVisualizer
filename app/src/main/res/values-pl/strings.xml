@@ -10,6 +10,7 @@
     <string name="home_status_idle">Stan: w gotowości</string>
     <string name="home_capture_blocked">Do wizualizacji nie dociera żaden dźwięk, więc nie ma czego rysować. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie (tak działają filmy chronione przed nagrywaniem) lub dźwięk może być w niej wyciszony.</string>
     <string name="home_ai_unavailable_loud">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia, a wibrują tylko głośne dźwięki – z ustawieniem wibracji dla dźwięków zagrożenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
+    <string name="home_ai_unavailable">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia, a wibracje są wyłączone. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
     <string name="home_stopped_dismiss">Zamknij komunikat</string>
     <string name="home_start">Uruchom</string>
     <string name="home_stop">Zatrzymaj</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Wibracje działają tylko wtedy, gdy ten rodzaj dźwięku jest pokazywany.</string>
     <string name="haptic_ai_unavailable_danger">Gdy rozpoznawanie rodzaju dźwięku nie działa, każdy głośny dźwięk wywołuje wibrację z tym ustawieniem, niezależnie od rodzaju. Zamiast wzoru „Za dźwiękiem” używany jest wtedy wzór „Dwa razy”.</string>
     <string name="haptic_ai_unavailable_other">Gdy rozpoznawanie rodzaju dźwięku nie działa, ten rodzaj nie wywołuje wibracji. Głośne dźwięki wibrują z ustawieniem dla dźwięków zagrożenia.</string>
+    <string name="haptic_ai_unavailable">Gdy rozpoznawanie rodzaju dźwięku nie działa, telefon nie wibruje.</string>
     <string name="haptic_unsupported">To urządzenie nie obsługuje wibracji.</string>
     <string name="haptic_no_amplitude">To urządzenie nie pozwala regulować siły wibracji, więc wibruje z domyślną siłą.</string>
     <string name="haptic_strength">Siła</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Zatrzymaj</string>
     <string name="notification_mode_selected">%1$s, wybrano</string>
     <string name="notification_text_ai_unavailable_loud">Trwa wizualizacja dźwięku. Rozpoznawanie rodzaju dźwięku nie działa, więc wibrują tylko głośne dźwięki.</string>
+    <string name="notification_text_ai_unavailable">Trwa wizualizacja dźwięku. Rozpoznawanie rodzaju dźwięku nie działa, więc wibracje są wyłączone.</string>
     <string name="notification_text_capture_blocked">Do wizualizacji nie dociera żaden dźwięk. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie lub dźwięk może być w niej wyciszony.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

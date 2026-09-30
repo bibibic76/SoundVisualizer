@@ -70,6 +70,10 @@ class FollowEngine(private val limits: PlanLimits, private val amplitudeMode: Bo
     /** 미리보기가 진동기를 잡고 있어 계획을 보내지 못했다. 보낸 셈 치지 않는다. 다음 틱에 멈춘 곳에서 다시 낸다. */
     fun forgetPlan() {
         plan = null
+        // 그 계획이 남긴 표시도 지운다. 떨림 표시가 남으면 음높이 갱신이 아직 울리는 중으로 보고, 그 계획이 끝날 때까지
+        // 다시 내지 않는다(#232).
+        planIsFastThrob = false
+        planHasHold = false
     }
 
     /** 한 번·두 번·길게가 끼어들었다. 그 모양이 끝날 때까지 아무것도 보내지 않는다. */

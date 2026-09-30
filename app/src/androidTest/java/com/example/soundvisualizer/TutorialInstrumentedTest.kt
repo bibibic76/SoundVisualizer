@@ -3,11 +3,14 @@ package com.example.soundvisualizer
 import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -94,6 +97,30 @@ class TutorialInstrumentedTest {
 
             rule.onNodeWithText(text(R.string.tutorial_done)).performClick()
             rule.onNodeWithText(text(R.string.tab_home)).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun doubleTapOnDoneDoesNotReopenTutorial() {
+        // 튜토리얼이 사라지는 동안 탭 화면이 투명한 채 맨 위에서 누름을 받는다. ‘확인’을 빠르게 두 번 누르면 둘째 번이
+        // 그 자리의 ‘튜토리얼 보기’에 닿아 방금 닫은 튜토리얼이 다시 열렸다(#232).
+        setSeen(true)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
+            repeat(TutorialPage.entries.size - 1) {
+                rule.onNodeWithText(text(R.string.tutorial_next)).performClick()
+            }
+            val done = rule.onNodeWithText(text(R.string.tutorial_done)).fetchSemanticsNode().boundsInRoot.center
+
+            // 둘째 번이 전환(0.3초) 한가운데 닿도록 시계를 멈추고 0.1초만 흘린다.
+            rule.mainClock.autoAdvance = false
+            rule.onRoot().performTouchInput { click(done) }
+            rule.mainClock.advanceTimeBy(100)
+            rule.onRoot().performTouchInput { click(done) }
+            rule.mainClock.autoAdvance = true
+
+            rule.onNodeWithText(text(R.string.tab_home)).assertIsDisplayed()
+            rule.onNodeWithText(text(R.string.tutorial_start_title)).assertDoesNotExist()
         }
     }
 

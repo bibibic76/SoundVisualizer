@@ -10,6 +10,7 @@
     <string name="home_status_idle">Status: Bereit</string>
     <string name="home_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an, daher kann nichts dargestellt werden. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu (bei geschützten Videos ist das so), oder in dieser App ist der Ton ausgeschaltet.</string>
     <string name="home_ai_unavailable_loud">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und nur laute Geräusche lösen eine Vibration aus – mit der Vibrationseinstellung für Gefahrengeräusche. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
+    <string name="home_ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und Vibrationswarnungen sind aus. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
     <string name="home_stopped_dismiss">Hinweis ausblenden</string>
     <string name="home_start">Starten</string>
     <string name="home_stop">Beenden</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Vibriert nur, wenn diese Geräuschart angezeigt wird.</string>
     <string name="haptic_ai_unavailable_danger">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert jedes laute Geräusch mit dieser Einstellung, egal welcher Art. Statt „Folgt dem Ton“ wird dann „Zweimal“ verwendet.</string>
     <string name="haptic_ai_unavailable_other">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert diese Art nicht. Laute Geräusche vibrieren mit der Einstellung für Gefahrengeräusche.</string>
+    <string name="haptic_ai_unavailable">Solange die Erkennung der Geräuscharten nicht funktioniert, wird nicht vibriert.</string>
     <string name="haptic_unsupported">Dieses Gerät unterstützt keine Vibration.</string>
     <string name="haptic_no_amplitude">Dieses Gerät kann die Vibrationsstärke nicht anpassen und vibriert daher mit der Standardstärke.</string>
     <string name="haptic_strength">Stärke</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Stopp</string>
     <string name="notification_mode_selected">%1$s, ausgewählt</string>
     <string name="notification_text_ai_unavailable_loud">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher vibrieren nur laute Geräusche.</string>
+    <string name="notification_text_ai_unavailable">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher sind Vibrationswarnungen aus.</string>
     <string name="notification_text_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu, oder in dieser App ist der Ton ausgeschaltet.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

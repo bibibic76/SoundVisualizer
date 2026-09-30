@@ -10,6 +10,7 @@
     <string name="home_status_idle">Durum: Hazır</string>
     <string name="home_capture_blocked">Görselleştirmeye hiç ses ulaşmıyor; bu yüzden hiçbir şey çizilemiyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir (korumalı videolarda durum böyledir) veya o uygulamanın kendi sesi kapalı olabilir.</string>
     <string name="home_ai_unavailable_loud">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve yalnızca yüksek sesler, tehlike seslerinin titreşim ayarıyla titreşiyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
+    <string name="home_ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve titreşim uyarıları kapalı. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
     <string name="home_stopped_dismiss">Uyarıyı kapat</string>
     <string name="home_start">Başlat</string>
     <string name="home_stop">Durdur</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Titreşim yalnızca bu ses türü ekranda gösterildiğinde çalışır.</string>
     <string name="haptic_ai_unavailable_danger">Ses türü algılama çalışmadığı sürece, türü ne olursa olsun her yüksek ses bu ayarla titreşir. “Sesi izle” yerine “İki kez” kullanılır.</string>
     <string name="haptic_ai_unavailable_other">Ses türü algılama çalışmadığı sürece bu tür için titreşim olmaz. Yüksek sesler, tehlike seslerinin ayarıyla titreşir.</string>
+    <string name="haptic_ai_unavailable">Ses türü algılama çalışmadığı sürece telefon titreşmez.</string>
     <string name="haptic_unsupported">Bu cihaz titreşimi desteklemiyor.</string>
     <string name="haptic_no_amplitude">Bu cihaz titreşim yoğunluğunun ayarlanmasını desteklemediği için varsayılan yoğunlukta titreşir.</string>
     <string name="haptic_strength">Yoğunluk</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Durdur</string>
     <string name="notification_mode_selected">%1$s, seçili</string>
     <string name="notification_text_ai_unavailable_loud">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için yalnızca yüksek sesler titreşir.</string>
+    <string name="notification_text_ai_unavailable">Ses görselleştiriliyor. Ses türü algılama çalışmadığı için titreşim uyarıları kapalı.</string>
     <string name="notification_text_capture_blocked">Görselleştirmeye ses ulaşmıyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir veya o uygulamanın kendi sesi kapalı olabilir.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

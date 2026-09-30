@@ -10,6 +10,7 @@
     <string name="home_status_idle">الحالة: جاهز للتشغيل</string>
     <string name="home_capture_blocked">لا يصل أي صوت إلى «الصوت المرئي»، لذا لا يمكن رسم أي شيء. قد لا يسمح التطبيق الذي يشغّل الصوت الآن بمشاركة صوته (هذا ما يحدث مع مقاطع الفيديو المحمية)، أو قد يكون صوت ذلك التطبيق نفسه مكتومًا.</string>
     <string name="home_ai_unavailable_loud">لا يمكن تحديد نوع الصوت حاليًا، لذا تظهر جميع الأصوات بلون الأصوات المحيطة، ولا يهتز الجهاز إلا للأصوات العالية وفق إعداد اهتزاز أصوات الخطر. جرّب إيقاف الصوت المرئي ثم تشغيله مرة أخرى.</string>
+    <string name="home_ai_unavailable">لا يمكن تحديد نوع الصوت حاليًا، لذا تظهر جميع الأصوات بلون الأصوات المحيطة وتنبيهات الاهتزاز معطّلة. جرّب إيقاف الصوت المرئي ثم تشغيله مرة أخرى.</string>
     <string name="home_stopped_dismiss">إخفاء التنبيه</string>
     <string name="home_start">تشغيل</string>
     <string name="home_stop">إيقاف</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">لا يعمل الاهتزاز إلا عند إظهار هذا النوع من الأصوات.</string>
     <string name="haptic_ai_unavailable_danger">ما دام تحديد نوع الصوت لا يعمل، يهتز الجهاز بهذا الإعداد لأي صوت عالٍ مهما كان نوعه. ويُستبدل نمط «مع الصوت» بنمط «مرتان».</string>
     <string name="haptic_ai_unavailable_other">ما دام تحديد نوع الصوت لا يعمل، لا يهتز الجهاز لهذا النوع. أما الأصوات العالية فتهتز وفق إعداد أصوات الخطر.</string>
+    <string name="haptic_ai_unavailable">لن يهتز الجهاز ما دام تحديد نوع الصوت غير متاح.</string>
     <string name="haptic_unsupported">لا يدعم هذا الجهاز الاهتزاز.</string>
     <string name="haptic_no_amplitude">لا يمكن ضبط قوة الاهتزاز على هذا الجهاز، لذا سيهتز بالقوة التلقائية.</string>
     <string name="haptic_strength">القوة</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">إيقاف</string>
     <string name="notification_mode_selected">%1$s، محدّد</string>
     <string name="notification_text_ai_unavailable_loud">جارٍ عرض الأصوات على الشاشة. لا يمكن تحديد نوع الصوت، لذا لا يهتز الجهاز إلا للأصوات العالية.</string>
+    <string name="notification_text_ai_unavailable">جارٍ عرض الأصوات على الشاشة. لا يمكن تحديد نوع الصوت، لذا تنبيهات الاهتزاز معطّلة.</string>
     <string name="notification_text_capture_blocked">لا يصل أي صوت إلى «الصوت المرئي». قد لا يسمح التطبيق الذي يشغّل الصوت الآن بمشاركة صوته، أو قد يكون صوت ذلك التطبيق نفسه مكتومًا.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

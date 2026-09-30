@@ -10,6 +10,7 @@
     <string name="home_status_idle">Статус: ожидает запуска</string>
     <string name="home_capture_blocked">Звук не доходит до визуализатора, поэтому рисовать нечего. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука (так устроены защищённые видео), или звук в нём выключен.</string>
     <string name="home_ai_unavailable_loud">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков, а вибрация срабатывает только на громкие звуки — с настройкой вибрации для опасных звуков. Попробуйте выключить и снова включить визуализатор.</string>
+    <string name="home_ai_unavailable">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков, а вибрация отключена. Попробуйте выключить и снова включить визуализатор.</string>
     <string name="home_stopped_dismiss">Скрыть</string>
     <string name="home_start">Запустить</string>
     <string name="home_stop">Остановить</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Вибрация работает, только когда показ этого типа звука включён.</string>
     <string name="haptic_ai_unavailable_danger">Пока определение типа звука не работает, любой громкий звук вызывает вибрацию с этой настройкой, независимо от типа. Вместо шаблона «По звуку» используется «Два раза».</string>
     <string name="haptic_ai_unavailable_other">Пока определение типа звука не работает, этот тип не вызывает вибрацию. Громкие звуки вызывают вибрацию с настройкой для опасных звуков.</string>
+    <string name="haptic_ai_unavailable">Пока определение типа звука не работает, вибрации не будет.</string>
     <string name="haptic_unsupported">Это устройство не поддерживает вибрацию.</string>
     <string name="haptic_no_amplitude">На этом устройстве нельзя менять силу вибрации, поэтому она будет стандартной.</string>
     <string name="haptic_strength">Сила</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Остановить</string>
     <string name="notification_mode_selected">%1$s, выбрано</string>
     <string name="notification_text_ai_unavailable_loud">Идёт визуализация звука. Определение типа звука не работает, поэтому вибрация срабатывает только на громкие звуки.</string>
+    <string name="notification_text_ai_unavailable">Идёт визуализация звука. Определение типа звука не работает, поэтому вибрация отключена.</string>
     <string name="notification_text_capture_blocked">Звук не доходит до визуализатора. Возможно, приложение, в котором сейчас воспроизводится звук, запрещает захват своего звука, или звук в нём выключен.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

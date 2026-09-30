@@ -10,6 +10,7 @@
     <string name="home_status_idle">Status: Siap</string>
     <string name="home_capture_blocked">Aplikasi ini tidak menerima suara apa pun, sehingga tidak ada yang dapat digambar. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan (video yang dilindungi memang begitu), atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
     <string name="home_ai_unavailable_loud">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan hanya suara keras yang memicu getaran, dengan setelan getar suara bahaya. Coba matikan lalu nyalakan lagi visualisasinya.</string>
+    <string name="home_ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan peringatan getar dimatikan. Coba matikan lalu nyalakan lagi visualisasinya.</string>
     <string name="home_stopped_dismiss">Tutup info</string>
     <string name="home_start">Mulai</string>
     <string name="home_stop">Hentikan</string>
@@ -122,6 +123,7 @@
     <string name="haptic_requires_display">Getaran hanya aktif jika jenis suara ini ditampilkan.</string>
     <string name="haptic_ai_unavailable_danger">Selama deteksi jenis suara tidak berfungsi, setiap suara keras memicu getaran dengan setelan ini, apa pun jenisnya. “Ikuti suara” diganti dengan “Dua kali”.</string>
     <string name="haptic_ai_unavailable_other">Selama deteksi jenis suara tidak berfungsi, jenis ini tidak memicu getaran. Suara keras bergetar dengan setelan suara bahaya.</string>
+    <string name="haptic_ai_unavailable">Ponsel tidak akan bergetar selama deteksi jenis suara tidak berfungsi.</string>
     <string name="haptic_unsupported">Perangkat ini tidak mendukung getaran.</string>
     <string name="haptic_no_amplitude">Perangkat ini tidak dapat mengatur kekuatan getaran, sehingga bergetar dengan kekuatan default.</string>
     <string name="haptic_strength">Kekuatan</string>
@@ -165,6 +167,7 @@
     <string name="notification_stop">Hentikan</string>
     <string name="notification_mode_selected">%1$s, dipilih</string>
     <string name="notification_text_ai_unavailable_loud">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga hanya suara keras yang memicu getaran.</string>
+    <string name="notification_text_ai_unavailable">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga peringatan getar dimatikan.</string>
     <string name="notification_text_capture_blocked">Aplikasi ini tidak menerima suara apa pun. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan, atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
 
     <!-- Alert when the visualizer turns off without the user stopping it -->

@@ -62,11 +62,14 @@ class HapticPolicy(
     /** 쿨다운에 막혀 아직 울리지 못한 사건. 쿨다운이 끝났을 때 소리가 이어지고 있으면 그때 울린다(#174). */
     private var waitingForCooldown = false
 
-    /** 종류를 모르는 큰 소리로 이미 울린 사건이 이어지는 중인지. 소리가 끊기면 끝난다. */
+    /** 종류를 모르는 큰 소리로 이미 울린 사건이 이어지는 중인지. 큰 소리가 끝나거나 소리가 끊기면 끝난다. */
     private var unlabeledEvent = false
 
     /** 종류를 모르는 큰 소리로 마지막에 울린 시각. 아직 없으면 [Long.MIN_VALUE]. */
     private var lastUnlabeledFireMs = Long.MIN_VALUE
+
+    /** 피크가 큰 소리 기준의 [HapticTuning.UNLABELED_RELEASE_RATIO] 이상이던 마지막 시각. 아직 없으면 [Long.MIN_VALUE]. */
+    private var lastUnlabeledHotMs = Long.MIN_VALUE
 
     /**
      * @param nowMs 단조 증가하는 시각 (elapsedRealtime)
@@ -178,6 +181,10 @@ class HapticPolicy(
      * 종류를 모르는 동안의 한 틱(#225). 큰 소리가 시작되면 위협음 설정으로 한 번 울리고, 그 소리가 이어지는 동안은
      * 다시 울리지 않는다. 위협음의 표시나 진동을 꺼 두었으면 울리지 않는다.
      *
+     * 사건은 큰 소리가 끝나야 끝난다(#232). 소리가 난다는 기준으로만 끝내면 게임 음악처럼 끊기지 않는 배경음 사이의
+     * 폭발음·사이렌을 모두 놓친다. 기준 근처를 오르내리는 음악에 2초마다 울리지 않도록, 피크가 기준의
+     * [HapticTuning.UNLABELED_RELEASE_RATIO] 아래로 [releaseMs] 넘게 내려가야 끝난다.
+     *
      * 소리 따라는 쓰지 않는다. 종류를 모르면 게임·영상의 모든 소리를 따라 울리게 되기 때문이다.
      * 위협음을 소리 따라로 골라 두었으면 두 번으로 울린다(위협음의 기본 모양).
      */
@@ -187,10 +194,10 @@ class HapticPolicy(
         soundShort: Boolean,
         config: (String) -> ClassConfig
     ): Decision? {
-        if (!soundShort) {
-            unlabeledEvent = false
-            return null
-        }
+        if (level >= unlabeledLoudLevel * HapticTuning.UNLABELED_RELEASE_RATIO) lastUnlabeledHotMs = nowMs
+        val hot = lastUnlabeledHotMs != Long.MIN_VALUE && nowMs - lastUnlabeledHotMs <= releaseMs
+        if (!soundShort || !hot) unlabeledEvent = false
+        if (!soundShort) return null
         if (unlabeledEvent || level < unlabeledLoudLevel) return null
         val danger = config(AiClassification.DANGER)
         if (!danger.shown || !danger.haptic.enabled) return null
@@ -218,5 +225,6 @@ class HapticPolicy(
         lastTickMs = Long.MIN_VALUE
         unlabeledEvent = false
         lastUnlabeledFireMs = Long.MIN_VALUE
+        lastUnlabeledHotMs = Long.MIN_VALUE
     }
 }
