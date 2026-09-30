@@ -62,7 +62,7 @@ jobs:
       # 처음 한 번 부팅한 에뮬레이터를 스냅숏으로 남겨 두면, 다음부터는 부팅을 건너뛴다.
       - name: 에뮬레이터 캐시
         id: avd-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.android/avd/*
@@ -98,9 +98,43 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none
           disable-animations: true
+          # 두 번째 실행이 결과 폴더를 덮으므로 첫 실행의 결과를 옮겨 둔다(아래 요약이 읽는다).
           script: |
             ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.notClass=$FLAKY_AI_TEST
+            mkdir -p ci-results && cp -r app/build/outputs/androidTest-results/connected ci-results/main
             ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=$FLAKY_AI_TEST || echo "::warning title=AI 스케줄러 close 테스트::$FLAKY_AI_TEST 가 실패했습니다. 이 job 은 막지 않습니다. 결과는 AI 담당에게 알려 주세요."
+            cp -r app/build/outputs/androidTest-results/connected ci-results/ai-close
+
+      # Gradle 은 계측 테스트가 몇 개 돌았는지 찍지 않는다. 0개가 돌고 통과한 것처럼 보이지 않게 개수를 남긴다.
+      - name: 계측 테스트 결과 요약
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'PY'
+          import glob, os
+          import xml.etree.ElementTree as ET
+
+          lines = []
+          for part, title in (("main", "계측 테스트"), ("ai-close", "AI 스케줄러 close 테스트 (막지 않음)")):
+              files = glob.glob(f"ci-results/{part}/**/*.xml", recursive=True)
+              if not files and part == "main":
+                  # 첫 실행이 실패하면 결과를 옮기기 전에 멈추므로 원래 폴더에 남아 있다.
+                  files = glob.glob("app/build/outputs/androidTest-results/connected/**/*.xml", recursive=True)
+              cases = failed = skipped = 0
+              for f in files:
+                  for case in ET.parse(f).getroot().iter("testcase"):
+                      cases += 1
+                      if case.find("failure") is not None or case.find("error") is not None:
+                          failed += 1
+                      elif case.find("skipped") is not None:
+                          skipped += 1
+              if not files:
+                  lines.append(f"- {title}: 결과 없음")
+                  continue
+              lines.append(f"- {title}: {cases}개 중 {cases - failed - skipped}개 통과, 실패 {failed}, 건너뜀 {skipped}")
+              print(f"::notice title={title}::{cases}개 중 실패 {failed}, 건너뜀 {skipped}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as out:
+              out.write("### 계측 테스트 (에뮬레이터 API " + os.environ.get("API_LEVEL", "?") + ")\n" + "\n".join(lines) + "\n")
+          PY
 
       - name: 테스트 결과 올리기 (실패했을 때)
         if: failure()
@@ -110,5 +144,6 @@ jobs:
           path: |
             app/build/reports/androidTests/connected/
             app/build/outputs/androidTest-results/connected/
+            ci-results/
           if-no-files-found: ignore
           retention-days: 14
