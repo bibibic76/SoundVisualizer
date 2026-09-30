@@ -1,0 +1,105 @@
+# develop·main 으로 가는 PR 과 develop push 마다 에뮬레이터를 띄워 계측 테스트(connectedDebugAndroidTest)를 돌린다.
+#
+# 유닛 테스트로는 닿지 않는 것들을 이 테스트들이 본다: 화면 전환 중의 누름, 서비스 시작 표, 알림 버튼, 오디오 엔진,
+# AI 모델 로딩. 전에는 사람이 에뮬레이터에서 손으로 돌려야 해서, 돌리지 않은 PR 에서는 깨져도 몰랐다(#234).
+#
+# - 에뮬레이터를 띄우는 데 시간이 들어 모든 브랜치 push 가 아니라 PR 에만 돈다(android.yml 은 모든 push).
+# - 아직 보호 규칙의 필수 체크가 아니다. 러너 속도에 흔들리지 않는지 한동안 본 뒤에 필수로 올린다.
+#   필수로 올리면 job 이름을 보호 규칙에 적어야 하므로, 그 뒤에는 이름을 바꾸지 않는다.
+# - 사람의 폰에서는 gradle 계측 테스트를 쓰지 않는다. 끝날 때 앱을 지워 설정이 사라진다(CONTRIBUTING).
+#   CI 에뮬레이터는 매번 새로 만들어지므로 상관없다.
+
+name: 계측 테스트
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: instrumented-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # 팀 폰(Android 16)과 같은 판. minSdk(29) 쪽은 사람이 API29 에뮬레이터에서 확인한다.
+  API_LEVEL: 36
+
+jobs:
+  instrumented:
+    name: 계측 테스트 (에뮬레이터)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: 코드 받기
+        uses: actions/checkout@v7
+
+      - name: JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Gradle 설정 (의존성 캐시)
+        uses: gradle/actions/setup-gradle@v6
+
+      # 리눅스 러너는 KVM 을 쓸 수 있지만 기본 권한으로는 막혀 있다. 없으면 에뮬레이터가 소프트웨어로 돌아 수십 배 느리다.
+      - name: KVM 켜기
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # 에뮬레이터를 띄우기 전에 빌드해 둔다. 에뮬레이터가 뜬 채로 빌드하면 러너의 메모리와 CPU 를 나눠 쓴다.
+      - name: 앱·테스트 APK 빌드
+        run: ./gradlew assembleDebug assembleDebugAndroidTest
+
+      # 처음 한 번 부팅한 에뮬레이터를 스냅숏으로 남겨 두면, 다음부터는 부팅을 건너뛴다.
+      - name: 에뮬레이터 캐시
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.API_LEVEL }}-google_apis-x86_64
+
+      - name: 에뮬레이터 스냅숏 만들기 (캐시가 없을 때)
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "에뮬레이터 스냅숏을 만들었습니다."
+
+      # 소리는 내지 않는다(-no-audio). 오디오·AI 테스트는 저장소의 픽스처를 코드로 넣어 본다.
+      - name: 계측 테스트
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.API_LEVEL }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew connectedDebugAndroidTest
+
+      - name: 테스트 결과 올리기 (실패했을 때)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: instrumented-test-reports
+          path: |
+            app/build/reports/androidTests/connected/
+            app/build/outputs/androidTest-results/connected/
+          if-no-files-found: ignore
+          retention-days: 14
