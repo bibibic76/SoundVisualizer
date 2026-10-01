@@ -1,6 +1,7 @@
 package com.example.soundvisualizer
 
 import android.content.Context
+import android.os.SystemClock
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
@@ -112,10 +113,12 @@ class TutorialInstrumentedTest {
             }
             val done = rule.onNodeWithText(text(R.string.tutorial_done)).fetchSemanticsNode().boundsInRoot.center
 
-            // 둘째 번이 전환(0.3초) 한가운데 닿도록 시계를 멈추고 0.1초만 흘린다.
+            // 둘째 번이 전환(0.3초) 한가운데 닿도록 시계를 멈추고 0.1초만 흘린다. 그사이 실제 시간은 0.7초 흘린다.
+            // 느린 기기에서는 화면이 멈춰 전환이 그만큼 늦어진다. 실제 시계로 막으면 이때 튜토리얼이 다시 열렸다(#249).
             rule.mainClock.autoAdvance = false
             rule.onRoot().performTouchInput { click(done) }
             rule.mainClock.advanceTimeBy(100)
+            SystemClock.sleep(700)
             rule.onRoot().performTouchInput { click(done) }
             rule.mainClock.autoAdvance = true
 
