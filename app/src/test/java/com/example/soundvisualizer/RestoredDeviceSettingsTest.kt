@@ -66,6 +66,43 @@ class RestoredDeviceSettingsTest {
         assertEquals("표시를 남겨야 다음에 옮겨 온 것을 가릴 수 있다", "this-phone", prefs.getString(DEVICE_KEY, null))
     }
 
+    @Test
+    fun `같은 기기에 다시 깔면 그 설치에만 뜻이 있는 값을 비운다`() {
+        // 앱을 지우면 시스템이 빠른 설정 타일도 지우는데, 자동 백업이 "타일 추가됨" 을 되살려 설정 탭이 타일이 있다고
+        // 말하고 추가 버튼을 숨겼다(#266). 기기 표시는 같아서 다른 기기에서 옮겨 온 경우로는 걸러지지 않는다.
+        val prefs = usedPrefs()
+        SettingsManager.load(prefs, deviceTag = "same-phone", installStamp = 1_000L)
+        SettingsManager.load(prefs, deviceTag = "same-phone", installStamp = 2_000L)
+
+        assertFalse("다시 깐 앱에는 타일이 없다", SettingsManager.tileAdded.value)
+        assertNull("지난 설치의 꺼짐 안내가 떴다", SettingsManager.lastUnexpectedStop.value)
+        assertEquals(0, SettingsManager.lastUnexpectedStopSeq.value)
+        assertEquals("같은 폰의 마이크라 감도는 그대로 둔다", 400, SettingsManager.micSensitivity.value)
+        assertEquals("사용자 설정은 그대로다", 0x112233, SettingsManager.colorAmbient.value)
+    }
+
+    @Test
+    fun `같은 설치면 그대로 둔다`() {
+        val prefs = usedPrefs()
+        SettingsManager.load(prefs, deviceTag = "same-phone", installStamp = 1_000L)
+        // 업데이트하거나 프로세스가 죽었다 다시 뜬 경우
+        SettingsManager.load(prefs, deviceTag = "same-phone", installStamp = 1_000L)
+
+        assertTrue(SettingsManager.tileAdded.value)
+        assertEquals(StopReason.ProjectionStopped, SettingsManager.lastUnexpectedStop.value)
+    }
+
+    @Test
+    fun `설치 표시가 없던 예전 설치는 지우지 않고 표시만 남긴다`() {
+        // 이 표시가 생기기 전 버전에서 업데이트한 사용자. 지우면 멀쩡한 타일 설정과 안내가 사라진다(#204 와 같은 이유).
+        val prefs = usedPrefs()
+        SettingsManager.load(prefs, deviceTag = "this-phone", installStamp = 1_000L)
+
+        assertTrue(SettingsManager.tileAdded.value)
+        assertEquals(StopReason.ProjectionStopped, SettingsManager.lastUnexpectedStop.value)
+        assertEquals("표시를 남겨야 다음에 다시 깐 것을 가릴 수 있다", 1_000L, prefs.getLong(INSTALL_KEY, 0L))
+    }
+
     @After
     fun restoreSingleton() {
         // SettingsManager 는 싱글턴이라 테스트끼리 상태를 공유한다 (ScreenOffPauseTest 와 같은 이유).
@@ -78,6 +115,7 @@ class RestoredDeviceSettingsTest {
         const val TILE_KEY = "tile_added"
         const val MIC_KEY = "mic_sensitivity"
         const val COLOR_KEY = "color_ambient"
+        const val INSTALL_KEY = "install_stamp"
         const val DEVICE_KEY = "device_tag"
     }
 }

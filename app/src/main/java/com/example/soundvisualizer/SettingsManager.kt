@@ -2,6 +2,7 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.edit
@@ -91,6 +92,7 @@ object SettingsManager {
 
     /** 이 설정을 쓴 기기 표시. 백업으로 옮겨 온 값인지 가리는 데만 쓴다. */
     private const val KEY_DEVICE_TAG = "device_tag"
+    private const val KEY_INSTALL_STAMP = "install_stamp"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
@@ -242,7 +244,19 @@ object SettingsManager {
     fun init(context: Context) {
         if (::prefs.isInitialized) return
         val app = context.applicationContext
-        load(app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), deviceTagOf(app))
+        load(app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), deviceTagOf(app), installStampOf(app))
+    }
+
+    /**
+     * 이 설치를 가리키는 표시. 같은 기기에서 지웠다 다시 깐 것을 가려내는 데만 쓴다([dropReinstalledValues]).
+     *
+     * 처음 설치한 시각(`firstInstallTime`)이다. 다시 깔면 바뀌고, 업데이트로는 바뀌지 않는다. 못 읽으면 null 이고,
+     * 그때는 확인하지 않는다.
+     */
+    internal fun installStampOf(context: Context): Long? = try {
+        context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime
+    } catch (e: PackageManager.NameNotFoundException) {
+        null
     }
 
     /**
@@ -293,18 +307,45 @@ object SettingsManager {
     }
 
     /**
+     * 같은 기기에서 지웠다 다시 깔았을 때 백업이 되살린 값 중 **그 설치에만 뜻이 있는 것**을 비운다(#266).
+     *
+     * 자동 백업은 같은 기기에 다시 깔아도 설치할 때 프리퍼런스를 되살린다. 기기 표시([deviceTagOf])는 같은 서명·사용자·
+     * 기기면 그대로라 [dropOtherDeviceValues] 는 이것을 가리지 못한다. 앱을 지우면 시스템이 빠른 설정 타일도 지우는데,
+     * 되살아난 "타일 추가됨" 때문에 설정 탭이 "빠른 설정에 들어 있다" 고 말하고 추가 버튼을 숨겼다. 지난 설치의 꺼짐
+     * 안내도 이번 설치와 상관없다. 마이크 감도는 같은 기기의 마이크에 맞춘 값이라 그대로 둔다.
+     *
+     * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 값이 사라진다(#204).
+     *
+     * @param installStamp 지금 설치의 표시([installStampOf]). null 이면 확인하지 않는다.
+     */
+    private fun dropReinstalledValues(source: SharedPreferences, installStamp: Long?) {
+        if (installStamp == null) return
+        val saved = if (source.contains(KEY_INSTALL_STAMP)) source.getLong(KEY_INSTALL_STAMP, 0L) else null
+        if (saved == installStamp) return
+        source.edit {
+            if (saved != null) {
+                remove(KEY_LAST_UNEXPECTED_STOP)
+                remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
+                remove(KEY_TILE_ADDED)
+            }
+            putLong(KEY_INSTALL_STAMP, installStamp)
+        }
+    }
+
+    /**
      * 저장된 값을 흐름에 싣는다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다
      * ([loadPauseWhenScreenOff] 와 같은 이유. LiveVisualizerInputsTest 가 쓴다).
      *
      * [init] 의 "최초 한 번만" 규칙은 여기 없다. 테스트는 값을 달리 세운 가짜 프리퍼런스로 여러 번 부른다.
      */
-    internal fun load(source: SharedPreferences, deviceTag: String? = null) {
+    internal fun load(source: SharedPreferences, deviceTag: String? = null, installStamp: Long? = null) {
         prefs = source
         // 기기 표시를 적기 전에 정한다. 적고 나면 새로 설치한 앱도 "저장된 값이 있는" 상태가 된다.
         val tutorialSeen = loadTutorialSeen(source)
         if (!source.contains(KEY_TUTORIAL_SEEN)) source.edit { putBoolean(KEY_TUTORIAL_SEEN, tutorialSeen) }
         _tutorialSeen.value = tutorialSeen
         dropOtherDeviceValues(source, deviceTag)
+        dropReinstalledValues(source, installStamp)
 
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
