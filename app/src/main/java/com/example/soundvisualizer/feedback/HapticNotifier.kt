@@ -72,7 +72,7 @@ class HapticNotifier(
             val command = driver.onTick(now, vibe)
             if (now < HapticPreviewGate.busyUntilMs) {
                 // 미리보기가 진동기를 잡고 있다. 보내지 않고, 이 알림이 보낸 연속 울림도 끊긴 것으로 잊는다. 잊지 않으면
-                // 미리보기가 끝난 뒤에도 그 울림이 끝날 때까지(최대 5초) 조용하다(#232).
+                // 미리보기가 끝난 뒤에도 그 울림이 끝날 때까지([HapticTuning.CONTINUOUS_CHUNK_MS]) 조용하다(#232).
                 driver.onPreempted()
                 if (command != HapticDriver.Command.None) skipped++
             } else {
