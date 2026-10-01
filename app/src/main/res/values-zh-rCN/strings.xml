@@ -14,9 +14,11 @@
     <string name="home_stopped_dismiss">关闭提示</string>
     <string name="home_start">启动</string>
     <string name="home_stop">停止</string>
-    <string name="home_add_tile">添加到快捷设置</string>
-    <string name="home_add_tile_desc">下拉通知栏，即可在游戏或视频画面上直接开启或关闭。</string>
-    <string name="home_add_tile_manual">下拉通知栏，点按“修改”（铅笔图标）并添加“声音可视化”，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="tile_add">添加到快捷设置</string>
+    <string name="tile_add_desc">下拉通知栏，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="tile_add_manual">下拉通知栏，点按“修改”（铅笔图标）并添加“声音可视化”，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="settings_tile_title">在通知栏中开启和关闭</string>
+    <string name="tile_added">通知栏的快捷设置中已有“声音可视化”按钮。</string>
     <string name="home_tutorial">查看教程</string>
 
     <!-- Tutorial -->
@@ -193,7 +195,7 @@
     <string name="help_start_4">如需关闭，请在“首页”或通知中点按“停止”。</string>
 
     <string name="help_tile_title">在通知栏中开启和关闭</string>
-    <string name="help_tile_body">在“首页”点按“添加到快捷设置”，通知栏中就会出现“声音可视化”按钮。无需切换应用，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="help_tile_body">在“设置”中点按“添加到快捷设置”，通知栏中就会出现“声音可视化”按钮。无需切换应用，即可在游戏或视频画面上直接开启或关闭。</string>
     <string name="help_tile_use">点按即可开启，开启后再次点按即可关闭。长按可打开本应用的设置。</string>
     <string name="help_tile_old">在 Android 12 及更低版本中，请打开通知栏，点按“修改”（铅笔图标），然后手动将“声音可视化”拖入。</string>
 

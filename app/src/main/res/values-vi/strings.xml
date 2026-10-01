@@ -14,9 +14,11 @@
     <string name="home_stopped_dismiss">Đóng thông báo</string>
     <string name="home_start">Bắt đầu</string>
     <string name="home_stop">Dừng</string>
-    <string name="home_add_tile">Thêm vào Cài đặt nhanh</string>
-    <string name="home_add_tile_desc">Bật hoặc tắt ngay từ bảng thông báo khi đang chơi trò chơi hoặc xem video.</string>
-    <string name="home_add_tile_manual">Kéo bảng thông báo xuống, nhấn Chỉnh sửa (biểu tượng bút chì) rồi thêm “Âm thanh trực quan” để bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video.</string>
+    <string name="tile_add">Thêm vào Cài đặt nhanh</string>
+    <string name="tile_add_desc">Bật hoặc tắt ngay từ bảng thông báo khi đang chơi trò chơi hoặc xem video.</string>
+    <string name="tile_add_manual">Kéo bảng thông báo xuống, nhấn Chỉnh sửa (biểu tượng bút chì) rồi thêm “Âm thanh trực quan” để bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video.</string>
+    <string name="settings_tile_title">Bật và tắt từ bảng thông báo</string>
+    <string name="tile_added">“Âm thanh trực quan” đã có trong Cài đặt nhanh ở bảng thông báo.</string>
     <string name="home_tutorial">Xem hướng dẫn</string>
 
     <!-- Tutorial -->
@@ -193,7 +195,7 @@
     <string name="help_start_4">Để tắt, hãy nhấn “Dừng” ở thẻ Trang chủ hoặc trong thông báo.</string>
 
     <string name="help_tile_title">Bật và tắt từ bảng thông báo</string>
-    <string name="help_tile_body">Nhấn “Thêm vào Cài đặt nhanh” ở thẻ Trang chủ để thêm nút “Âm thanh trực quan” vào bảng thông báo. Sau đó, bạn có thể bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video mà không cần chuyển ứng dụng.</string>
+    <string name="help_tile_body">Nhấn “Thêm vào Cài đặt nhanh” ở thẻ Cài đặt để thêm nút “Âm thanh trực quan” vào bảng thông báo. Sau đó, bạn có thể bật hoặc tắt ngay khi đang chơi trò chơi hoặc xem video mà không cần chuyển ứng dụng.</string>
     <string name="help_tile_use">Nhấn để bật, nhấn lần nữa để tắt. Nhấn và giữ để mở phần cài đặt của ứng dụng này.</string>
     <string name="help_tile_old">Trên Android 12 trở xuống, hãy mở bảng thông báo, nhấn Chỉnh sửa (biểu tượng bút chì) rồi tự kéo “Âm thanh trực quan” vào.</string>
 

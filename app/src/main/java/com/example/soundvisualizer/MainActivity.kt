@@ -188,7 +188,7 @@ class MainActivity : ComponentActivity() {
     private fun requestAddTile() {
         val statusBar = getSystemService(StatusBarManager::class.java)
         if (statusBar == null) {
-            Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.tile_add_manual, Toast.LENGTH_LONG).show()
             return
         }
         statusBar.requestAddTileService(
@@ -198,14 +198,14 @@ class MainActivity : ComponentActivity() {
             ContextCompat.getMainExecutor(this)
         ) { result ->
             when (result) {
-                // 이미 있는 경우도 추가된 것으로 기록해 홈의 권유 버튼을 숨긴다.
+                // 이미 있는 경우도 추가된 것으로 기록해 설정 탭의 추가 버튼을 "추가되어 있음" 으로 바꾼다.
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED,
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> SettingsManager.setTileAdded(true)
                 // 추가되지 않았다: "추가 안 함"(TILE_NOT_ADDED), 창을 그냥 닫음, 요청 실패(TILE_ADD_REQUEST_ERROR_*).
                 // 세 번 거절하면 시스템이 그다음부터는 창을 띄우지 않고 바로 거절만 돌려주는데, 그대로 두면
                 // 버튼을 눌러도 아무 일도 일어나지 않는다. 어느 경우인지 결과로는 알 수 없으므로
                 // 모두 직접 추가하는 방법을 알린다.
-                else -> Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+                else -> Toast.makeText(this, R.string.tile_add_manual, Toast.LENGTH_LONG).show()
             }
         }
     }
