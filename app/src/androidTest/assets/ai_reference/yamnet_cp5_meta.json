@@ -102,7 +102,7 @@
       "has_gunshot_cue": false,
       "has_strong_danger_cue": false,
       "pre": {
-        "coarse": "ambient",
+        "coarse": "danger",
         "display": "Air horn, truck horn",
         "confidence": 0.13773442804813385,
         "yamnet_class_index": 312,
@@ -135,7 +135,7 @@
         ]
       },
       "post": {
-        "coarse": "ambient",
+        "coarse": "danger",
         "display": "Air horn, truck horn",
         "confidence": 0.13773442804813385,
         "yamnet_class_index": 312

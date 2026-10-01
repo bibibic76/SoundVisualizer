@@ -148,6 +148,16 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
+    fun approvedFootstepAndVehicleHornPolicy() {
+        listOf("Footstep", "Footsteps").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Vehicle horn, car horn, honking", "Air horn, truck horn").forEach { displayName ->
+            assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
     fun waterSoundsDoNotProduceDangerCoarseClassification() {
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             val probabilities = FloatArray(classNames.size)

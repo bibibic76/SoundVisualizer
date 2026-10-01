@@ -29,7 +29,10 @@ object YamnetThreeClassMapper {
 
     private fun matchesDanger(s: String): Boolean {
         if (matchesTemporaryGunshotProxyDanger(s)) return true
-        if ("footstep" in s || "footsteps" in s) return true
+        // Product policy: footsteps are Ambient; only explicit vehicle-horn
+        // YAMNet classes are promoted to Danger (not every generic "horn").
+        if (s == "vehicle horn, car horn, honking") return true
+        if (s == "air horn, truck horn") return true
         if (
             "gunshot" in s || "gunfire" in s || "machine gun" in s ||
             "artillery" in s || "fusillade" in s || "cap gun" in s
