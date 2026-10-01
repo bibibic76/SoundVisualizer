@@ -169,9 +169,17 @@ class HapticDriverTest {
     }
 
     @Test
-    fun `소리가 끝나면 박자 방식은 끊지 않고 다음 울림을 보내지 않는다`() {
-        // 울리던 울림은 제 길이만큼 울리고 멈춘다. 끊으면 울림 도중에 뚝 잘린다.
+    fun `울리지 않아야 하면 울리던 박자 울림도 바로 끊는다`() {
+        // 끝까지 두면 느림은 0.4초까지 앞 종류가 더 울린다(#244).
         val sent = HapticDriver(true).run(0, 3000) { t -> if (t < 1100) vibe(HapticMode.Medium) else null }
+        assertEquals(listOf(0L, 500L, 1000L, 1100L), sent.map { it.atMs })
+        assertEquals(HapticDriver.Command.Cancel, sent.last().command)
+    }
+
+    @Test
+    fun `이미 끝난 박자 울림은 끊지 않는다`() {
+        // 1000ms 에 보낸 0.2초 울림은 1200ms 에 끝났다. 쉬는 중에 소리가 끝나면 보낼 것이 없다.
+        val sent = HapticDriver(true).run(0, 3000) { t -> if (t < 1300) vibe(HapticMode.Medium) else null }
         assertEquals(listOf(0L, 500L, 1000L), sent.map { it.atMs })
         assertTrue(sent.all { it.command is Play })
     }

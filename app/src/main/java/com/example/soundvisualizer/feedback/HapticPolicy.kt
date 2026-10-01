@@ -11,8 +11,8 @@ import com.example.soundvisualizer.AiClassification
  * 그대로 두기 때문에, 조용해져도 마지막 라벨이 남는다. 라벨만 보면 무음 속에서 끝없이 울린다.
  * 그래서 "실제로 소리가 나는 중" 과 "라벨" 이 함께 켜진 동안만 울린다. 말 사이처럼 [releaseMs] 안의 쉼은 이어진 것으로 본다.
  *
- * 울리는 중에 라벨이 다른 종류로 바뀌면 [labelGraceMs] 동안 이어져야 넘어간다. AI 결과가 한두 번 흔들렸다고 박자가
- * 바뀌거나 끊기지 않게 하기 위해서다. 위협음은 기다리지 않는다.
+ * 라벨이 다른 종류로 바뀌면 같은 틱에 그 종류의 진동으로 바뀐다. 화면 색도 같은 라벨을 곧바로 따르므로, 진동만 따로
+ * 기다리면 앞 종류의 진동이 화면보다 늦게까지 남는다(#244). AI 결과의 흔들림은 AI 후처리가 이미 걸러 낸다.
  *
  * 이번 실행에서 AI 를 쓸 수 없으면(모델 로딩 실패 등) 라벨이 끝내 오지 않는다. 그때는 종류를 가리지 않고
  * **큰 소리**가 이어지는 동안 위협음 설정으로 울린다([onTick] 의 `unlabeledAlerts`, #225). 화면을 볼 수 없을 때 진동이
@@ -23,7 +23,6 @@ import com.example.soundvisualizer.AiClassification
 class HapticPolicy(
     private val levelThreshold: Float = LEVEL_THRESHOLD,
     private val releaseMs: Long = RELEASE_MS,
-    private val labelGraceMs: Long = HapticTuning.LABEL_GRACE_MS,
     private val unlabeledLoudLevel: Float = HapticTuning.UNLABELED_LOUD_LEVEL
 ) {
     companion object {
@@ -43,13 +42,6 @@ class HapticPolicy(
     data class Vibe(val mode: HapticMode, val level: Int)
 
     private var lastLoudMs = Long.MIN_VALUE
-    private var lastTickMs = Long.MIN_VALUE
-
-    /** 지금 울리고 있는 종류. 울리지 않으면 null. */
-    private var active: String? = null
-
-    /** 울리는 중에 다른 종류로 판정된 소리가 이어진 시간. */
-    private var mismatchMs = 0L
 
     /** 종류를 모르는 큰 소리가 이어지는 중인지. 큰 소리가 끝나거나 소리가 끊기면 끝난다. */
     private var unlabeledEvent = false
@@ -75,43 +67,14 @@ class HapticPolicy(
     ): Vibe? {
         if (level > levelThreshold) lastLoudMs = nowMs
         val sounding = lastLoudMs != Long.MIN_VALUE && nowMs - lastLoudMs <= releaseMs
-        val dt = if (lastTickMs == Long.MIN_VALUE) 0L else nowMs - lastTickMs
-        lastTickMs = nowMs
 
-        if (label == null && unlabeledAlerts) {
-            active = null
-            mismatchMs = 0L
-            return onUnlabeled(nowMs, level, sounding, config)
-        }
+        if (label == null && unlabeledAlerts) return onUnlabeled(nowMs, level, sounding, config)
         unlabeledEvent = false
 
-        if (!sounding) {
-            active = null
-            mismatchMs = 0L
-            return null
-        }
-
-        // 울리던 종류의 진동이나 표시를 끄면 같은 틱에 멈춘다.
-        active?.let { if (!config(it).vibrates) active = null }
-
-        val current = active
-        if (current != null && label != null && label != current) {
-            val dangerPreempts = label == AiClassification.DANGER && config(AiClassification.DANGER).vibrates
-            mismatchMs += dt
-            // 다른 종류가 충분히 이어졌거나 위협음이 끼어들었다. 아래에서 새 라벨을 바로 다룬다.
-            if (dangerPreempts || mismatchMs >= labelGraceMs) active = null
-        } else {
-            mismatchMs = 0L
-        }
-
-        if (active == null) {
-            active = label?.takeIf { config(it).vibrates }
-            mismatchMs = 0L
-        }
-        // 설정은 다른 스레드(설정 화면)가 바꾼다. 위에서 본 뒤 그 사이에 꺼졌을 수 있으므로 돌려줄 설정을 한 번 더 확인한다.
-        // 확인 없이 돌려주면 꺼짐 방식의 진동을 내보낸다.
-        val chosen = active ?: return null
-        val cfg = config(chosen)
+        if (!sounding || label == null) return null
+        // 설정은 다른 스레드(설정 화면)가 바꾼다. 한 틱에 한 번만 읽어, 읽는 사이에 꺼져 꺼짐 방식을 돌려주는 일이 없게 한다.
+        // 진동이나 표시를 끄면 같은 틱에 멈추고, 방식이나 세기를 바꾸면 바로 따른다.
+        val cfg = config(label)
         return if (cfg.vibrates) vibeOf(cfg.haptic) else null
     }
 
@@ -144,9 +107,6 @@ class HapticPolicy(
     /** 모든 상태를 지운다. */
     fun reset() {
         lastLoudMs = Long.MIN_VALUE
-        lastTickMs = Long.MIN_VALUE
-        active = null
-        mismatchMs = 0L
         unlabeledEvent = false
         lastUnlabeledHotMs = Long.MIN_VALUE
     }

@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">Hinweis ausblenden</string>
     <string name="home_start">Starten</string>
     <string name="home_stop">Beenden</string>
-    <string name="home_add_tile">Schnelleinstellung hinzufügen</string>
-    <string name="home_add_tile_desc">Schalten Sie die Funktion in der Benachrichtigungsleiste ein und aus – direkt über Ihrem Spiel oder Video.</string>
-    <string name="home_add_tile_manual">Ziehen Sie die Benachrichtigungsleiste herunter, tippen Sie auf „Bearbeiten“ (Stiftsymbol) und fügen Sie „Tonvisualisierung“ hinzu. So können Sie die Funktion direkt über Ihrem Spiel oder Video ein- und ausschalten.</string>
+    <string name="tile_add">Schnelleinstellung hinzufügen</string>
+    <string name="tile_add_desc">Schalten Sie die Funktion in der Benachrichtigungsleiste ein und aus – direkt über Ihrem Spiel oder Video.</string>
+    <string name="tile_add_manual">Ziehen Sie die Benachrichtigungsleiste herunter, tippen Sie auf „Bearbeiten“ (Stiftsymbol) und fügen Sie „Tonvisualisierung“ hinzu. So können Sie die Funktion direkt über Ihrem Spiel oder Video ein- und ausschalten.</string>
+    <string name="settings_tile_title">Ein/Aus über die Benachrichtigungsleiste</string>
+    <string name="tile_added">„Tonvisualisierung“ ist in den Schnelleinstellungen der Benachrichtigungsleiste.</string>
     <string name="home_tutorial">Tutorial ansehen</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">Schnell</string>
     <string name="haptic_mode_continuous">Dauerhaft</string>
     <string name="haptic_preview_hint">Tippen Sie auf einen Modus oder ändern Sie die Stärke, um die Vibration 2 Sekunden lang zu spüren.</string>
+    <string name="haptic_preview_hint_running">Während die Tonvisualisierung läuft, wird die Vorschau nicht abgespielt, damit sie nicht mit echten Vibrationen verwechselt wird.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Farbe auswählen</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">Zum Ausschalten tippen Sie im Tab „Startseite“ auf „Beenden“ oder in der Benachrichtigung auf „Stopp“.</string>
 
     <string name="help_tile_title">Ein/Aus über die Benachrichtigungsleiste</string>
-    <string name="help_tile_body">Tippen Sie im Tab „Startseite“ auf „Schnelleinstellung hinzufügen“. Dann erscheint in Ihrer Benachrichtigungsleiste die Schaltfläche „Tonvisualisierung“. Damit schalten Sie die Funktion direkt über Ihrem Spiel oder Video ein und aus, ohne die App zu wechseln.</string>
+    <string name="help_tile_body">Tippen Sie im Tab „Einstellungen“ auf „Schnelleinstellung hinzufügen“. Dann erscheint in Ihrer Benachrichtigungsleiste die Schaltfläche „Tonvisualisierung“. Damit schalten Sie die Funktion direkt über Ihrem Spiel oder Video ein und aus, ohne die App zu wechseln.</string>
     <string name="help_tile_use">Tippen Sie darauf, um die Funktion einzuschalten, und tippen Sie erneut, um sie auszuschalten. Durch langes Drücken öffnen Sie die Einstellungen dieser App.</string>
     <string name="help_tile_old">Unter Android 12 und älter öffnen Sie die Benachrichtigungsleiste, tippen auf „Bearbeiten“ (Stiftsymbol) und ziehen „Tonvisualisierung“ selbst in die Schnelleinstellungen.</string>
 

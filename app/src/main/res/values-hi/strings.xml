@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">जानकारी हटाएं</string>
     <string name="home_start">शुरू करें</string>
     <string name="home_stop">बंद करें</string>
-    <string name="home_add_tile">फटाफट सेटिंग में जोड़ें</string>
-    <string name="home_add_tile_desc">गेम खेलते या वीडियो देखते हुए ही, सूचना पैनल से इसे चालू या बंद करें।</string>
-    <string name="home_add_tile_manual">सूचना पैनल नीचे खींचें, बदलाव करें (पेंसिल) पर टैप करें और “आवाज़ विज़ुअलाइज़र” जोड़ें। इसके बाद, गेम खेलते या वीडियो देखते हुए ही इसे चालू या बंद किया जा सकता है।</string>
+    <string name="tile_add">फटाफट सेटिंग में जोड़ें</string>
+    <string name="tile_add_desc">गेम खेलते या वीडियो देखते हुए ही, सूचना पैनल से इसे चालू या बंद करें।</string>
+    <string name="tile_add_manual">सूचना पैनल नीचे खींचें, बदलाव करें (पेंसिल) पर टैप करें और “आवाज़ विज़ुअलाइज़र” जोड़ें। इसके बाद, गेम खेलते या वीडियो देखते हुए ही इसे चालू या बंद किया जा सकता है।</string>
+    <string name="settings_tile_title">सूचना पैनल से चालू और बंद करें</string>
+    <string name="tile_added">“आवाज़ विज़ुअलाइज़र” सूचना पैनल की फटाफट सेटिंग में जुड़ा हुआ है।</string>
     <string name="home_tutorial">ट्यूटोरियल देखें</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">तेज़</string>
     <string name="haptic_mode_continuous">लगातार</string>
     <string name="haptic_preview_hint">किसी मोड पर टैप करके या तीव्रता बदलकर 2 सेकंड तक वाइब्रेशन आज़माकर देखें।</string>
+    <string name="haptic_preview_hint_running">विज़ुअलाइज़र चालू रहते हुए झलक वाला वाइब्रेशन नहीं होता, ताकि वह असली वाइब्रेशन से न मिल जाए।</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">रंग चुनें</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">बंद करने के लिए, “होम” टैब में “बंद करें” या सूचना में “रोकें” पर टैप करें।</string>
 
     <string name="help_tile_title">सूचना पैनल से चालू और बंद करें</string>
-    <string name="help_tile_body">“होम” टैब में “फटाफट सेटिंग में जोड़ें” पर टैप करने से सूचना पैनल में “आवाज़ विज़ुअलाइज़र” बटन जुड़ जाता है। इसके बाद, ऐप खोले बिना गेम खेलते या वीडियो देखते हुए ही इसे चालू या बंद किया जा सकता है।</string>
+    <string name="help_tile_body">“सेटिंग” टैब में “फटाफट सेटिंग में जोड़ें” पर टैप करने से सूचना पैनल में “आवाज़ विज़ुअलाइज़र” बटन जुड़ जाता है। इसके बाद, ऐप खोले बिना गेम खेलते या वीडियो देखते हुए ही इसे चालू या बंद किया जा सकता है।</string>
     <string name="help_tile_use">चालू करने के लिए टैप करें और बंद करने के लिए फिर से टैप करें। इस ऐप की सेटिंग खोलने के लिए दबाकर रखें।</string>
     <string name="help_tile_old">Android 12 और उससे पहले के वर्शन पर, सूचना पैनल खोलें, बदलाव करें (पेंसिल) पर टैप करें और “आवाज़ विज़ुअलाइज़र” को खुद खींचकर जोड़ें।</string>
 

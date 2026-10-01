@@ -25,9 +25,11 @@
     <string name="home_stopped_dismiss">Dismiss notice</string>
     <string name="home_start">Start</string>
     <string name="home_stop">Stop</string>
-    <string name="home_add_tile">Add to Quick Settings</string>
-    <string name="home_add_tile_desc">Turn it on or off from the notification shade, right over your game or video.</string>
-    <string name="home_add_tile_manual">Pull down the notification shade, tap Edit (pencil) and add “Sound visualizer” to turn it on or off right over your game or video.</string>
+    <string name="tile_add">Add to Quick Settings</string>
+    <string name="tile_add_desc">Turn it on or off from the notification shade, right over your game or video.</string>
+    <string name="tile_add_manual">Pull down the notification shade, tap Edit (pencil) and add “Sound visualizer” to turn it on or off right over your game or video.</string>
+    <string name="settings_tile_title">Turn on and off from the notification shade</string>
+    <string name="tile_added">“Sound visualizer” is in your Quick Settings in the notification shade.</string>
     <string name="home_tutorial">View tutorial</string>
 
     <!-- Tutorial shown the first time the app opens, and again from Home -->
@@ -168,6 +170,7 @@
     <string name="haptic_mode_fast">Fast</string>
     <string name="haptic_mode_continuous">Continuous</string>
     <string name="haptic_preview_hint">Tap a mode or change the strength to feel it for 2 seconds.</string>
+    <string name="haptic_preview_hint_running">While the visualizer is running, previews don\'t play, so they aren\'t mixed up with real alerts.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
@@ -235,7 +238,7 @@
     <string name="help_start_4">To turn it off, tap “Stop” on Home or in the notification.</string>
 
     <string name="help_tile_title">Turn on and off from the notification shade</string>
-    <string name="help_tile_body">Tap “Add to Quick Settings” on Home to add a “Sound visualizer” button to your notification shade. You can then turn it on or off right over your game or video without switching apps.</string>
+    <string name="help_tile_body">Tap “Add to Quick Settings” in the Settings tab to add a “Sound visualizer” button to your notification shade. You can then turn it on or off right over your game or video without switching apps.</string>
     <string name="help_tile_use">Tap to turn it on, and tap again to turn it off. Long-press to open this app\'s settings.</string>
     <string name="help_tile_old">On Android 12 and earlier, open the notification shade, tap Edit (pencil) and drag “Sound visualizer” in yourself.</string>
 

@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">Tutup info</string>
     <string name="home_start">Mulai</string>
     <string name="home_stop">Hentikan</string>
-    <string name="home_add_tile">Tambahkan ke Setelan Cepat</string>
-    <string name="home_add_tile_desc">Nyalakan atau matikan dari panel notifikasi, langsung di atas game atau video Anda.</string>
-    <string name="home_add_tile_manual">Buka panel notifikasi, ketuk Edit (ikon pensil), lalu tambahkan “Visualisasi suara” untuk menyalakan atau mematikannya langsung di atas game atau video.</string>
+    <string name="tile_add">Tambahkan ke Setelan Cepat</string>
+    <string name="tile_add_desc">Nyalakan atau matikan dari panel notifikasi, langsung di atas game atau video Anda.</string>
+    <string name="tile_add_manual">Buka panel notifikasi, ketuk Edit (ikon pensil), lalu tambahkan “Visualisasi suara” untuk menyalakan atau mematikannya langsung di atas game atau video.</string>
+    <string name="settings_tile_title">Nyalakan/matikan dari panel notifikasi</string>
+    <string name="tile_added">“Visualisasi suara” sudah ada di Setelan Cepat pada panel notifikasi.</string>
     <string name="home_tutorial">Lihat tutorial</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">Cepat</string>
     <string name="haptic_mode_continuous">Terus-menerus</string>
     <string name="haptic_preview_hint">Ketuk salah satu mode atau ubah kekuatannya untuk merasakan getarannya selama 2 detik.</string>
+    <string name="haptic_preview_hint_running">Saat visualisasi berjalan, contoh getaran tidak diputar agar tidak tertukar dengan getaran yang sebenarnya.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pilih warna</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">Untuk mematikannya, ketuk “Hentikan” di Beranda atau di notifikasi.</string>
 
     <string name="help_tile_title">Nyalakan/matikan dari panel notifikasi</string>
-    <string name="help_tile_body">Ketuk “Tambahkan ke Setelan Cepat” di Beranda untuk menambahkan tombol “Visualisasi suara” ke panel notifikasi. Setelah itu, Anda bisa menyalakan atau mematikannya langsung di atas game atau video tanpa berpindah aplikasi.</string>
+    <string name="help_tile_body">Ketuk “Tambahkan ke Setelan Cepat” di tab Setelan untuk menambahkan tombol “Visualisasi suara” ke panel notifikasi. Setelah itu, Anda bisa menyalakan atau mematikannya langsung di atas game atau video tanpa berpindah aplikasi.</string>
     <string name="help_tile_use">Ketuk untuk menyalakan, lalu ketuk lagi untuk mematikan. Tekan lama untuk membuka setelan aplikasi ini.</string>
     <string name="help_tile_old">Di Android 12 dan versi sebelumnya, buka panel notifikasi, ketuk Edit (ikon pensil), lalu tarik sendiri “Visualisasi suara” ke dalam panel.</string>
 

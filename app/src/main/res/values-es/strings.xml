@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">Cerrar aviso</string>
     <string name="home_start">Iniciar</string>
     <string name="home_stop">Detener</string>
-    <string name="home_add_tile">Añadir a Ajustes rápidos</string>
-    <string name="home_add_tile_desc">Enciéndelo o apágalo desde el panel de notificaciones, sin salir de tu juego o video.</string>
-    <string name="home_add_tile_manual">Desliza hacia abajo el panel de notificaciones, toca Editar (lápiz) y añade “Visor de sonido” para encenderlo o apagarlo sin salir de tu juego o video.</string>
+    <string name="tile_add">Añadir a Ajustes rápidos</string>
+    <string name="tile_add_desc">Enciéndelo o apágalo desde el panel de notificaciones, sin salir de tu juego o video.</string>
+    <string name="tile_add_manual">Desliza hacia abajo el panel de notificaciones, toca Editar (lápiz) y añade “Visor de sonido” para encenderlo o apagarlo sin salir de tu juego o video.</string>
+    <string name="settings_tile_title">Encender y apagar desde Ajustes rápidos</string>
+    <string name="tile_added">“Visor de sonido” ya está en los Ajustes rápidos del panel de notificaciones.</string>
     <string name="home_tutorial">Ver tutorial</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">Rápida</string>
     <string name="haptic_mode_continuous">Continua</string>
     <string name="haptic_preview_hint">Toca un modo o cambia la intensidad para sentir la vibración durante 2 segundos.</string>
+    <string name="haptic_preview_hint_running">Mientras la visualización está en marcha, la vista previa no vibra, para que no se confunda con los avisos reales.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Elige un color</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">Para apagarlo, toca “Detener” en la pestaña Inicio o en la notificación.</string>
 
     <string name="help_tile_title">Encender y apagar desde Ajustes rápidos</string>
-    <string name="help_tile_body">Toca “Añadir a Ajustes rápidos” en la pestaña Inicio para colocar el botón “Visor de sonido” en tu panel de notificaciones. Así podrás encenderlo o apagarlo sin salir de tu juego o video.</string>
+    <string name="help_tile_body">Toca “Añadir a Ajustes rápidos” en la pestaña Ajustes para colocar el botón “Visor de sonido” en tu panel de notificaciones. Así podrás encenderlo o apagarlo sin salir de tu juego o video.</string>
     <string name="help_tile_use">Tócalo para encenderlo y vuelve a tocarlo para apagarlo. Mantenlo presionado para abrir los ajustes de esta app.</string>
     <string name="help_tile_old">En Android 12 y versiones anteriores, abre el panel de notificaciones, toca Editar (lápiz) y arrastra manualmente “Visor de sonido” para añadirlo.</string>
 

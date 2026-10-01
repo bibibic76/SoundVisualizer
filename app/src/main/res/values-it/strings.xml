@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">Chiudi avviso</string>
     <string name="home_start">Avvia</string>
     <string name="home_stop">Interrompi</string>
-    <string name="home_add_tile">Aggiungi a Impostazioni rapide</string>
-    <string name="home_add_tile_desc">Attiva o disattiva la visualizzazione dall\'area notifiche, direttamente sopra il gioco o il video.</string>
-    <string name="home_add_tile_manual">Apri l\'area notifiche, tocca Modifica (matita) e aggiungi “Visualizza suoni” per attivare o disattivare la visualizzazione direttamente sopra il gioco o il video.</string>
+    <string name="tile_add">Aggiungi a Impostazioni rapide</string>
+    <string name="tile_add_desc">Attiva o disattiva la visualizzazione dall\'area notifiche, direttamente sopra il gioco o il video.</string>
+    <string name="tile_add_manual">Apri l\'area notifiche, tocca Modifica (matita) e aggiungi “Visualizza suoni” per attivare o disattivare la visualizzazione direttamente sopra il gioco o il video.</string>
+    <string name="settings_tile_title">Attiva e disattiva dall\'area notifiche</string>
+    <string name="tile_added">“Visualizza suoni” è già nelle Impostazioni rapide dell\'area notifiche.</string>
     <string name="home_tutorial">Guarda il tutorial</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">Veloce</string>
     <string name="haptic_mode_continuous">Continua</string>
     <string name="haptic_preview_hint">Tocca una modalità o cambia l\'intensità per sentire la vibrazione per 2 secondi.</string>
+    <string name="haptic_preview_hint_running">Mentre la visualizzazione è in esecuzione, l\'anteprima non vibra, così non si confonde con le vibrazioni reali.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Scegli un colore</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">Per disattivare la visualizzazione, tocca “Interrompi” nella scheda Home o nella notifica.</string>
 
     <string name="help_tile_title">Attiva e disattiva dall\'area notifiche</string>
-    <string name="help_tile_body">Tocca “Aggiungi a Impostazioni rapide” nella scheda Home per aggiungere il pulsante “Visualizza suoni” all\'area notifiche. Potrai attivare o disattivare la visualizzazione direttamente sopra il gioco o il video, senza cambiare app.</string>
+    <string name="help_tile_body">Tocca “Aggiungi a Impostazioni rapide” nella scheda Impostazioni per aggiungere il pulsante “Visualizza suoni” all\'area notifiche. Potrai attivare o disattivare la visualizzazione direttamente sopra il gioco o il video, senza cambiare app.</string>
     <string name="help_tile_use">Tocca il pulsante per attivare la visualizzazione e toccalo di nuovo per disattivarla. Tieni premuto per aprire le impostazioni di questa app.</string>
     <string name="help_tile_old">Su Android 12 e versioni precedenti, apri l\'area notifiche, tocca Modifica (matita) e trascina manualmente “Visualizza suoni” tra i riquadri.</string>
 

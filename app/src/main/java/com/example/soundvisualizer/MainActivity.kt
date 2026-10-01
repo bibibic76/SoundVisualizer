@@ -8,7 +8,6 @@ import android.graphics.drawable.Icon
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
 import android.provider.Settings
 import android.service.quicksettings.TileService
 import android.widget.Toast
@@ -73,9 +72,6 @@ class MainActivity : ComponentActivity() {
      */
     private val tutorialRequested = mutableStateOf(false)
 
-    /** 튜토리얼을 마지막으로 닫은 시각(uptimeMillis). 닫은 적이 없으면 null. */
-    private var tutorialClosedAt: Long? = null
-
     // Android 12 이하에서는 고른 앱 언어를 여기서 입힌다. 13 이상은 시스템이 적용한다.
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLanguage.wrap(newBase))
@@ -120,9 +116,16 @@ class MainActivity : ComponentActivity() {
                     // 본 적이 없으면 저절로, 홈에서 누르면 다시 연다.
                     val tutorialSeen by SettingsManager.tutorialSeen.collectAsState()
                     val tutorialOpen = tutorialRequested.value || !tutorialSeen
+                    // 튜토리얼이 아직 화면에 있는지. 닫으면 사라지는 전환(0.3초)이 끝나야 거짓이 된다.
+                    var tutorialOnScreen by remember { mutableStateOf(false) }
                     // 튜토리얼과 탭 화면을 겹쳐 두지 않고 바꿔 끼운다. 겹쳐 두면 화면 읽어주기가 가려진 탭 화면까지 읽는다.
                     Crossfade(targetState = tutorialOpen, label = "tutorial") { open ->
                         if (open) {
+                            // Crossfade 는 사라지는 쪽을 전환이 끝날 때까지 남겨 두므로, 여기서 빠지는 순간이 전환이 끝난 때다.
+                            DisposableEffect(Unit) {
+                                tutorialOnScreen = true
+                                onDispose { tutorialOnScreen = false }
+                            }
                             TutorialScreen(onClose = ::closeTutorial)
                         } else {
                             LauncherApp(
@@ -138,12 +141,12 @@ class MainActivity : ComponentActivity() {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
                                 },
                                 onOpenTutorial = {
-                                    // 튜토리얼이 사라지는 0.3초 동안 탭 화면은 투명한 채 맨 위에서 누름을 받는다. ‘확인’을 빠르게
-                                    // 두 번 누르면 둘째 번이 그 자리의 ‘튜토리얼 보기’에 닿아 방금 닫은 튜토리얼이 다시 열렸다(#232).
-                                    val closedAt = tutorialClosedAt
-                                    if (closedAt == null || SystemClock.uptimeMillis() - closedAt >= TUTORIAL_REOPEN_GUARD_MS) {
-                                        tutorialRequested.value = true
-                                    }
+                                    // 튜토리얼이 사라지는 동안 탭 화면은 투명한 채 맨 위에서 누름을 받는다. ‘확인’을 빠르게 두 번
+                                    // 누르면 둘째 번이 그 자리의 ‘튜토리얼 보기’에 닿아 방금 닫은 튜토리얼이 다시 열렸다(#232).
+                                    // 튜토리얼이 화면에서 빠지기 전의 누름은 받지 않는다. 처음에는 닫은 뒤 0.5초를 실제 시계로
+                                    // 쟀는데, 화면이 멈추는 느린 기기에서는 전환이 그보다 길어 막지 못했다(#249). 전환은 화면
+                                    // 시계를 따르므로 기기 속도와 상관없다.
+                                    if (!tutorialOnScreen) tutorialRequested.value = true
                                 }
                             )
                         }
@@ -165,7 +168,6 @@ class MainActivity : ComponentActivity() {
     private fun closeTutorial() {
         tutorialRequested.value = false
         SettingsManager.setTutorialSeen(true)
-        tutorialClosedAt = SystemClock.uptimeMillis()
     }
 
     /** 화면 회전으로 다시 만들어지는 동안만 [pendingStart] 를 넘긴다. 프로세스가 죽으면 함께 사라져야 한다. */
@@ -186,7 +188,7 @@ class MainActivity : ComponentActivity() {
     private fun requestAddTile() {
         val statusBar = getSystemService(StatusBarManager::class.java)
         if (statusBar == null) {
-            Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.tile_add_manual, Toast.LENGTH_LONG).show()
             return
         }
         statusBar.requestAddTileService(
@@ -196,14 +198,14 @@ class MainActivity : ComponentActivity() {
             ContextCompat.getMainExecutor(this)
         ) { result ->
             when (result) {
-                // 이미 있는 경우도 추가된 것으로 기록해 홈의 권유 버튼을 숨긴다.
+                // 이미 있는 경우도 추가된 것으로 기록해 설정 탭의 추가 버튼을 "추가되어 있음" 으로 바꾼다.
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED,
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> SettingsManager.setTileAdded(true)
                 // 추가되지 않았다: "추가 안 함"(TILE_NOT_ADDED), 창을 그냥 닫음, 요청 실패(TILE_ADD_REQUEST_ERROR_*).
                 // 세 번 거절하면 시스템이 그다음부터는 창을 띄우지 않고 바로 거절만 돌려주는데, 그대로 두면
                 // 버튼을 눌러도 아무 일도 일어나지 않는다. 어느 경우인지 결과로는 알 수 없으므로
                 // 모두 직접 추가하는 방법을 알린다.
-                else -> Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+                else -> Toast.makeText(this, R.string.tile_add_manual, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -263,8 +265,5 @@ class MainActivity : ComponentActivity() {
         const val KEY_SELECTED_TAB = "selected_tab"
         const val KEY_ROUTED_STOP_NOTICE = "routed_stop_notice"
         const val KEY_TUTORIAL_REQUESTED = "tutorial_requested"
-
-        /** 튜토리얼을 닫은 뒤 이 시간 안의 ‘튜토리얼 보기’는 닫을 때의 두 번 누름으로 보고 거른다. 닫는 전환(0.3초)보다 길다. */
-        const val TUTORIAL_REOPEN_GUARD_MS = 500L
     }
 }

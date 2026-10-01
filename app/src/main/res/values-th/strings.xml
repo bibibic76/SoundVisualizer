@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">ปิดข้อความแจ้ง</string>
     <string name="home_start">เริ่ม</string>
     <string name="home_stop">หยุด</string>
-    <string name="home_add_tile">เพิ่มลงในการตั้งค่าด่วน</string>
-    <string name="home_add_tile_desc">เปิดหรือปิดได้ทันทีจากแผงการแจ้งเตือน ขณะเล่นเกมหรือดูวิดีโอ</string>
-    <string name="home_add_tile_manual">ดึงแผงการแจ้งเตือนลงมา แตะแก้ไข (รูปดินสอ) แล้วเพิ่ม “แสดงภาพเสียง” เพื่อเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอ</string>
+    <string name="tile_add">เพิ่มลงในการตั้งค่าด่วน</string>
+    <string name="tile_add_desc">เปิดหรือปิดได้ทันทีจากแผงการแจ้งเตือน ขณะเล่นเกมหรือดูวิดีโอ</string>
+    <string name="tile_add_manual">ดึงแผงการแจ้งเตือนลงมา แตะแก้ไข (รูปดินสอ) แล้วเพิ่ม “แสดงภาพเสียง” เพื่อเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอ</string>
+    <string name="settings_tile_title">เปิดและปิดจากแผงการแจ้งเตือน</string>
+    <string name="tile_added">เพิ่ม “แสดงภาพเสียง” ไว้ในการตั้งค่าด่วนของแผงการแจ้งเตือนแล้ว</string>
     <string name="home_tutorial">ดูบทแนะนำ</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">เร็ว</string>
     <string name="haptic_mode_continuous">ต่อเนื่อง</string>
     <string name="haptic_preview_hint">แตะโหมดหรือเปลี่ยนความแรงเพื่อลองสัมผัสการสั่น 2 วินาที</string>
+    <string name="haptic_preview_hint_running">ขณะที่การแสดงภาพเสียงกำลังทำงาน จะไม่สั่นตัวอย่าง เพื่อไม่ให้สับสนกับการสั่นจริง</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">เลือกสี</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">หากต้องการปิด ให้แตะ “หยุด” ในแท็บหน้าแรกหรือในการแจ้งเตือน</string>
 
     <string name="help_tile_title">เปิดและปิดจากแผงการแจ้งเตือน</string>
-    <string name="help_tile_body">แตะ “เพิ่มลงในการตั้งค่าด่วน” ในแท็บหน้าแรกเพื่อเพิ่มปุ่ม “แสดงภาพเสียง” ลงในแผงการแจ้งเตือน จากนั้นคุณจะเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอโดยไม่ต้องสลับแอป</string>
+    <string name="help_tile_body">แตะ “เพิ่มลงในการตั้งค่าด่วน” ในแท็บการตั้งค่าเพื่อเพิ่มปุ่ม “แสดงภาพเสียง” ลงในแผงการแจ้งเตือน จากนั้นคุณจะเปิดหรือปิดได้ทันทีขณะเล่นเกมหรือดูวิดีโอโดยไม่ต้องสลับแอป</string>
     <string name="help_tile_use">แตะเพื่อเปิด และแตะอีกครั้งเพื่อปิด แตะค้างไว้เพื่อเปิดการตั้งค่าของแอปนี้</string>
     <string name="help_tile_old">ใน Android 12 และเวอร์ชันก่อนหน้า ให้เปิดแผงการแจ้งเตือน แตะแก้ไข (รูปดินสอ) แล้วลาก “แสดงภาพเสียง” มาวางเอง</string>
 

@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">Uyarıyı kapat</string>
     <string name="home_start">Başlat</string>
     <string name="home_stop">Durdur</string>
-    <string name="home_add_tile">Hızlı Ayarlar\'a ekle</string>
-    <string name="home_add_tile_desc">Bildirim panelini aşağı çekerek oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
-    <string name="home_add_tile_manual">Bildirim panelini aşağı çekin, Düzenle (kalem) simgesine dokunun ve “Ses görselleştirme” düğmesini ekleyin. Böylece oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
+    <string name="tile_add">Hızlı Ayarlar\'a ekle</string>
+    <string name="tile_add_desc">Bildirim panelini aşağı çekerek oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
+    <string name="tile_add_manual">Bildirim panelini aşağı çekin, Düzenle (kalem) simgesine dokunun ve “Ses görselleştirme” düğmesini ekleyin. Böylece oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
+    <string name="settings_tile_title">Bildirim panelinden açıp kapatma</string>
+    <string name="tile_added">“Ses görselleştirme”, bildirim panelindeki Hızlı Ayarlar\'da duruyor.</string>
     <string name="home_tutorial">Tanıtımı göster</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">Hızlı</string>
     <string name="haptic_mode_continuous">Sürekli</string>
     <string name="haptic_preview_hint">Titreşimi 2 saniye boyunca denemek için bir moda dokunun veya yoğunluğu değiştirin.</string>
+    <string name="haptic_preview_hint_running">Görselleştirme çalışırken önizleme titreşimi çalınmaz; böylece gerçek titreşimle karışmaz.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">Kapatmak için “Ana sayfa” sekmesindeki ya da bildirimdeki “Durdur” düğmesine dokunun.</string>
 
     <string name="help_tile_title">Bildirim panelinden açıp kapatma</string>
-    <string name="help_tile_body">“Ana sayfa” sekmesindeki “Hızlı Ayarlar\'a ekle” düğmesine dokunduğunuzda bildirim panelinize “Ses görselleştirme” düğmesi eklenir. Böylece uygulamaya geçmeden oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
+    <string name="help_tile_body">“Ayarlar” sekmesindeki “Hızlı Ayarlar\'a ekle” düğmesine dokunduğunuzda bildirim panelinize “Ses görselleştirme” düğmesi eklenir. Böylece uygulamaya geçmeden oyununuzun veya videonuzun üzerinde anında açıp kapatabilirsiniz.</string>
     <string name="help_tile_use">Açmak için dokunun, kapatmak için yeniden dokunun. Bu uygulamanın ayarlarını açmak için basılı tutun.</string>
     <string name="help_tile_old">Android 12 ve önceki sürümlerde bildirim panelini açın, Düzenle (kalem) simgesine dokunun ve “Ses görselleştirme” düğmesini kendiniz sürükleyip ekleyin.</string>
 

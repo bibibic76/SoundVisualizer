@@ -21,9 +21,11 @@
     <string name="home_stopped_dismiss">Fechar aviso</string>
     <string name="home_start">Iniciar</string>
     <string name="home_stop">Parar</string>
-    <string name="home_add_tile">Pôr nas Configurações rápidas</string>
-    <string name="home_add_tile_desc">Ligue ou desligue pelo painel de notificações, direto por cima do jogo ou vídeo.</string>
-    <string name="home_add_tile_manual">Deslize o painel de notificações para baixo, toque em Editar (lápis) e adicione “Visualizar sons” para ligar ou desligar direto por cima do jogo ou vídeo.</string>
+    <string name="tile_add">Pôr nas Configurações rápidas</string>
+    <string name="tile_add_desc">Ligue ou desligue pelo painel de notificações, direto por cima do jogo ou vídeo.</string>
+    <string name="tile_add_manual">Deslize o painel de notificações para baixo, toque em Editar (lápis) e adicione “Visualizar sons” para ligar ou desligar direto por cima do jogo ou vídeo.</string>
+    <string name="settings_tile_title">Liga/desliga no painel de notificações</string>
+    <string name="tile_added">“Visualizar sons” já está nas Configurações rápidas do painel de notificações.</string>
     <string name="home_tutorial">Ver tutorial</string>
 
     <!-- Tutorial -->
@@ -145,6 +147,7 @@
     <string name="haptic_mode_fast">Rápida</string>
     <string name="haptic_mode_continuous">Contínua</string>
     <string name="haptic_preview_hint">Toque em um modo ou mude a intensidade para sentir a vibração por 2 segundos.</string>
+    <string name="haptic_preview_hint_running">Enquanto a visualização está em execução, a prévia não vibra, para não se confundir com os avisos reais.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Escolha uma cor</string>
@@ -207,7 +210,7 @@
     <string name="help_start_4">Para desligar, toque em “Parar” na aba Início ou na notificação.</string>
 
     <string name="help_tile_title">Liga/desliga no painel de notificações</string>
-    <string name="help_tile_body">Toque em “Pôr nas Configurações rápidas” na aba Início para adicionar o botão “Visualizar sons” ao painel de notificações. Assim, você liga ou desliga direto por cima do jogo ou vídeo, sem trocar de app.</string>
+    <string name="help_tile_body">Toque em “Pôr nas Configurações rápidas” na aba Ajustes para adicionar o botão “Visualizar sons” ao painel de notificações. Assim, você liga ou desliga direto por cima do jogo ou vídeo, sem trocar de app.</string>
     <string name="help_tile_use">Toque para ligar e toque de novo para desligar. Toque e mantenha pressionado para abrir a aba Ajustes deste app.</string>
     <string name="help_tile_old">No Android 12 e versões anteriores, abra o painel de notificações, toque em Editar (lápis) e arraste você mesmo “Visualizar sons” para o painel.</string>
 

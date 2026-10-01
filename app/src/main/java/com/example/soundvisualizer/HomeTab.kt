@@ -1,7 +1,5 @@
 package com.example.soundvisualizer
 
-import android.os.Build
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -35,9 +33,8 @@ import kotlin.math.roundToInt
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
 
 @Composable
-fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOpenTutorial: () -> Unit) {
+fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit) {
     val isRunning by SettingsManager.isServiceRunning.collectAsState()
-    val tileAdded by SettingsManager.tileAdded.collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
     val captureBlocked by SettingsManager.isCaptureBlocked.collectAsState()
     val lastUnexpectedStop by SettingsManager.lastUnexpectedStop.collectAsState()
@@ -51,7 +48,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
     val hasVibrator = remember { HapticPlayer(context).hasVibrator }
 
     // 글자 크기나 화면 확대를 크게 쓰면 안내와 버튼이 화면보다 길어진다. Column 은 남은 높이만 나눠 주므로
-    // 마지막 자식(실행·실행 종료 버튼, 타일 안내)이 눌려 사라진다. 스크롤을 열고 최소 높이를 화면 높이로 잡아
+    // 마지막 자식(실행·실행 종료 버튼)이 눌려 사라진다. 스크롤을 열고 최소 높이를 화면 높이로 잡아
     // 짧을 때는 가운데 정렬로, 길면 밀어 볼 수 있게 한다.
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -189,28 +186,6 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                     modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
                 ) {
                     Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (!isRunning) SecondaryTextColor else Color.White)
-                }
-            }
-
-            // 빠른 설정 타일은 사용자가 알림창에 직접 추가해야 보인다. 추가했으면 숨긴다.
-            if (!tileAdded) {
-                Spacer(modifier = Modifier.height(24.dp))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    OutlinedButton(
-                        onClick = onAddTile,
-                        border = BorderStroke(1.dp, AccentColor),
-                        shape = RoundedCornerShape(14.dp),
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
-                    ) {
-                        Text(stringResource(R.string.home_add_tile), fontSize = 16.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = AccentColor)
-                    }
-                    Text(
-                        stringResource(R.string.home_add_tile_desc),
-                        fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 8.dp)
-                    )
-                } else {
-                    // Android 12 이하는 앱에서 추가 창을 띄울 수 없어 방법만 안내한다.
-                    Text(stringResource(R.string.home_add_tile_manual), fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp)
                 }
             }
 

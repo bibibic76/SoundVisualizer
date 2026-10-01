@@ -138,14 +138,15 @@ class HapticPolicyTest {
     }
 
     @Test
-    fun `판단하는 사이에 진동을 끄면 꺼짐 방식을 돌려주지 않는다`() {
-        // 설정 화면(메인 스레드)이 틱 도중에 바꿀 수 있다. 처음 몇 번은 켜짐, 그 뒤로는 꺼짐으로 읽히게 한다.
+    fun `한 틱에 설정을 한 번만 읽는다`() {
+        // 설정 화면(메인 스레드)이 틱 도중에 바꿀 수 있다. 두 번 읽으면 켜짐으로 고른 뒤 꺼짐 설정을 돌려줄 수 있다.
         var reads = 0
-        val flipping: (String) -> HapticPolicy.ClassConfig = {
+        val counting: (String) -> HapticPolicy.ClassConfig = {
             reads++
-            HapticPolicy.ClassConfig(true, HapticSettings(if (reads <= 1) HapticMode.Medium else HapticMode.Off, 60))
+            HapticPolicy.ClassConfig(true, HapticSettings(HapticMode.Medium, 60))
         }
-        assertNull(HapticPolicy().onTick(0, DANGER, LOUD, flipping))
+        assertNotNull(HapticPolicy().onTick(0, DANGER, LOUD, counting))
+        assertEquals(1, reads)
     }
 
     @Test
@@ -167,53 +168,22 @@ class HapticPolicyTest {
     )
 
     @Test
-    fun `600ms 안에 돌아온 라벨 흔들림은 진동을 바꾸지 않는다`() {
+    fun `라벨이 바뀌면 같은 틱에 새 종류로 바뀐다`() {
+        // 화면 색도 같은 라벨을 곧바로 따른다. 진동만 기다리면 앞 종류가 화면보다 늦게까지 남는다(#244).
         val policy = HapticPolicy()
-        policy.feed(0, 1000, SPEECH, LOUD, speechSlowAmbientFast)
-        val flicker = policy.feed(1100, 1400, AMBIENT, LOUD, speechSlowAmbientFast)
-        val back = policy.feed(1500, 2500, SPEECH, LOUD, speechSlowAmbientFast)
-
-        assertTrue(flicker.all { it.second == vibe(HapticMode.Slow, 40) })
-        assertTrue(back.all { it.second == vibe(HapticMode.Slow, 40) })
+        assertEquals(vibe(HapticMode.Slow, 40), policy.onTick(0, SPEECH, LOUD, speechSlowAmbientFast))
+        assertEquals(vibe(HapticMode.Fast, 70), policy.onTick(100, AMBIENT, LOUD, speechSlowAmbientFast))
+        assertEquals(vibe(HapticMode.Continuous, 100), policy.onTick(200, DANGER, LOUD, speechSlowAmbientFast))
+        assertEquals(vibe(HapticMode.Slow, 40), policy.onTick(300, SPEECH, LOUD, speechSlowAmbientFast))
     }
 
     @Test
-    fun `다른 종류가 600ms 이어지면 그 종류로 넘어간다`() {
-        val policy = HapticPolicy()
-        policy.feed(0, 1000, SPEECH, LOUD, speechSlowAmbientFast)
-        val next = policy.feed(1100, 3000, AMBIENT, LOUD, speechSlowAmbientFast)
-
-        // 다른 라벨을 처음 본 틱은 앞 틱과의 간격(100ms)부터 센다.
-        val switchedAt = next.first { it.second == vibe(HapticMode.Fast, 70) }.first
-        assertEquals(1000L + HapticTuning.LABEL_GRACE_MS, switchedAt)
-        assertTrue(next.filter { it.first < switchedAt }.all { it.second == vibe(HapticMode.Slow, 40) })
-        assertTrue(next.filter { it.first >= switchedAt }.all { it.second == vibe(HapticMode.Fast, 70) })
-    }
-
-    @Test
-    fun `진동이 꺼진 종류로 바뀌어 이어지면 멈춘다`() {
+    fun `꺼진 종류로 바뀌면 같은 틱에 멈추고 다시 바뀌면 바로 울린다`() {
         val cfg = perLabel(DANGER to HapticSettings(HapticMode.Medium, 100))
         val policy = HapticPolicy()
-        policy.feed(0, 1000, DANGER, LOUD, cfg)
-        val next = policy.feed(1100, 3000, SPEECH, LOUD, cfg)
-
-        assertEquals(vibe(HapticMode.Medium, 100), next.first().second)
-        assertNull("꺼진 종류가 이어지는데 계속 울린다", next.last().second)
-    }
-
-    @Test
-    fun `위협음은 기다리지 않고 바로 넘어간다`() {
-        val policy = HapticPolicy()
-        policy.feed(0, 1000, SPEECH, LOUD, speechSlowAmbientFast)
-        assertEquals(vibe(HapticMode.Continuous, 100), policy.onTick(1100, DANGER, LOUD, speechSlowAmbientFast))
-    }
-
-    @Test
-    fun `울리지 않던 중에 진동하는 종류가 들리면 바로 울린다`() {
-        val cfg = perLabel(SPEECH to HapticSettings(HapticMode.Slow, 40))
-        val policy = HapticPolicy()
-        assertTrue(policy.feed(0, 1000, AMBIENT, LOUD, cfg).all { it.second == null })
-        assertEquals(vibe(HapticMode.Slow, 40), policy.onTick(1100, SPEECH, LOUD, cfg))
+        assertEquals(vibe(HapticMode.Medium, 100), policy.onTick(0, DANGER, LOUD, cfg))
+        assertNull(policy.onTick(100, SPEECH, LOUD, cfg))
+        assertEquals(vibe(HapticMode.Medium, 100), policy.onTick(200, DANGER, LOUD, cfg))
     }
 
     // ---------------------------------------------------------------
