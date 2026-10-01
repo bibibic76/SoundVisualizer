@@ -7,6 +7,13 @@
     <!-- Home -->
     <string name="home_subtitle">目に見えない音を画面に描き出します。\nゲームも映画も、新しい体験をどうぞ。</string>
     <string name="home_status_running">状態：実行中</string>
+    <string name="home_status_running_external">状態：実行中 · 周囲の音</string>
+    <string name="home_mic_silenced">マイクから音が入ってきません。通話中か、ほかのアプリがマイクを使っているか、クイック設定でマイクへのアクセスがオフになっている可能性があります。</string>
+    <string name="home_external_mode">外部音モード</string>
+    <string name="home_external_mode_desc">スマートフォンで再生中の音の代わりに、マイクで周囲の音を聞き取ります。音そのものを保存したり、外部に送信したりすることはありません。</string>
+    <string name="home_external_mode_locked">実行中は変更できません。可視化を停止してから変更すると、次回の開始時から適用されます。</string>
+    <string name="home_mic_sensitivity">マイクの感度</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">状態：待機中</string>
     <string name="home_capture_blocked">音を受け取れていないため、何も描けません。再生中のアプリが音の共有を許可していないか（保護された動画がそうです）、そのアプリの音がオフになっている可能性があります。</string>
     <string name="home_ai_unavailable_loud">音の種類を判別できないため、すべての音が環境音の色で表示され、振動は種類に関係なく大きな音にだけ、危険音の振動設定で起こります。可視化を一度オフにして、もう一度オンにしてみてください。</string>
@@ -32,6 +39,7 @@
     <string name="tutorial_play">アニメーションを再生</string>
     <string name="tutorial_sound_title">音を画面で見られます</string>
     <string name="tutorial_sound_body">ゲームや動画の音が、画面の端に沿って描かれます。音が大きいほど、大きく描かれます。表示するのは、スマートフォンで再生中の音だけです。周囲の音は拾いません。</string>
+    <string name="tutorial_sound_body_external">外部音モードがオンなので、マイクで聞き取った周囲の音が画面の端に沿って描かれます。音が大きいほど、大きく描かれます。このモードでは、スマートフォンで再生中の音は表示しません。</string>
     <string name="tutorial_direction_title">左右を区別できます</string>
     <string name="tutorial_direction_body">左からの音は画面の左側が、右からの音は右側が大きく描かれます。前後は区別できません。</string>
     <string name="tutorial_types_title">音の種類を色で区別します</string>
@@ -46,6 +54,7 @@
     <string name="tutorial_vibration_body">ゲームや動画で危険音が鳴ると、スマートフォンが振動します。画面を見ていなくても気づけます。初期設定では危険音だけが振動します。振動は「設定」タブで種類ごとにオン/オフできます。</string>
     <string name="tutorial_start_title">オン/オフの方法</string>
     <string name="tutorial_privacy_note">「マイク」と「画面の録画」の権限は、スマートフォンで再生中の音を取得するためだけに使います。周囲の音は録音せず、画面も録画しません。</string>
+    <string name="tutorial_privacy_note_external">外部音モードでは、マイクで周囲の音を聞き取ります。音そのものをファイルに保存したり外部に送信したりすることはなく、画面も録画しません。</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">「他のアプリの上に重ねて表示」を許可してください</string>
@@ -53,8 +62,10 @@
     <string name="permission_record_audio_required">音声をキャプチャするには、マイク（音声の録音）の権限が必要です。</string>
     <string name="permission_mic_rationale_title">マイクの権限が必要な理由</string>
     <string name="permission_mic_rationale_message">スマートフォンで再生中の音を取得するには、Android の仕様上、マイクの権限が必要です。周囲の音は録音しません。</string>
+    <string name="permission_mic_rationale_message_external">外部音モードでは、マイクで周囲の音を聞き取り、画面と振動でお知らせします。Android 12 以降では、聞き取っている間はステータスバーにマイクのマークが表示されます。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
     <string name="permission_mic_settings_title">設定でマイクを許可してください</string>
     <string name="permission_mic_settings_message">マイクの権限が許可されていません。権限の確認画面が再び表示されない場合は、「設定を開く」をタップし、「権限」で「マイク」を許可してください。この権限は、スマートフォンで再生中の音の取得にのみ使用します。周囲の音は録音しません。</string>
+    <string name="permission_mic_settings_message_external">マイクの権限が許可されていません。権限の確認画面が再び表示されない場合は、「設定を開く」をタップし、「権限」で「マイク」を許可してください。外部音モードでは、マイクで周囲の音を聞き取ります。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
     <string name="permission_continue">続行</string>
     <string name="permission_cancel">キャンセル</string>
     <string name="permission_open_settings">設定を開く</string>
@@ -164,6 +175,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">音声キャプチャ</string>
     <string name="notification_text">音を可視化しています。</string>
+    <string name="notification_title_external">周囲の音 · SoundVisualizer</string>
+    <string name="notification_text_external">周囲の音を聞き取って可視化しています。</string>
+    <string name="notification_text_mic_silenced">マイクから音が入ってきません。通話中か、マイクがブロックされている可能性があります。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s、選択済み</string>
     <string name="notification_text_ai_unavailable_loud">音を可視化しています。音の種類を判別できないため、大きな音にだけ振動します。</string>
@@ -191,6 +205,7 @@
     <string name="help_start_title">はじめに</string>
     <string name="help_start_1">「ホーム」タブで「開始」をタップします。</string>
     <string name="help_start_2">権限を許可します。Android の仕様により、オンにするたびに画面の録画への同意を求められます。</string>
+    <string name="help_start_2_external">権限を許可します。外部音モードでは、画面の録画への同意は求められません。</string>
     <string name="help_start_3">ゲームや動画を開くと、画面の端に沿って音が描かれます。</string>
     <string name="help_start_4">オフにするには、「ホーム」タブまたは通知で「停止」をタップします。</string>
 
@@ -204,6 +219,7 @@
     <string name="help_perm_overlay_desc">ゲームや動画の上にグラフィックを表示するために必要です。</string>
     <string name="help_perm_mic">マイク（音声の録音）</string>
     <string name="help_perm_mic_desc">スマートフォンで再生中の音を取得するには、Android の仕様上、この権限が必要です。周囲の音は録音しません。</string>
+    <string name="help_perm_mic_desc_external">スマートフォンで再生中の音を取得するには、Android の仕様上、この権限が必要です。外部音モードをオンにすると、この権限で周囲の音も聞き取ります。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
     <string name="help_perm_capture">画面の録画</string>
     <string name="help_perm_capture_desc">Android では、この同意がないとアプリはスマートフォンで再生中の音を取得できません。画面の映像は取得しません。</string>
     <string name="help_perm_notification">通知（Android 13 以降）</string>

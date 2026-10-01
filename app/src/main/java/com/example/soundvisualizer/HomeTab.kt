@@ -16,14 +16,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticPlayer
+import kotlin.math.roundToInt
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -34,6 +38,10 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
     val captureBlocked by SettingsManager.isCaptureBlocked.collectAsState()
     val lastUnexpectedStop by SettingsManager.lastUnexpectedStop.collectAsState()
+    val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+    // 실행 중에는 설정값이 아니라 서비스가 실제로 연 소스를 적는다. 둘이 어긋나면 방을 듣지 않는데도 듣는다고 믿게 된다.
+    val runningSource by SettingsManager.runningCaptureSource.collectAsState()
+    val listeningAround = runningSource == CaptureSource.Microphone
     val dangerShown by SettingsManager.showDanger.collectAsState()
     val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
     val context = LocalContext.current
@@ -67,13 +75,21 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                     Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(if (isRunning) AccentColor else SecondaryTextColor))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        stringResource(if (isRunning) R.string.home_status_running else R.string.home_status_idle),
+                        stringResource(
+                            when {
+                                !isRunning -> R.string.home_status_idle
+                                // 마이크로 듣는 중이면 상태에 적는다. 방 소리를 들어 확인할 수 없는 사람에게 필요하다(#226).
+                                listeningAround -> R.string.home_status_running_external
+                                else -> R.string.home_status_running
+                            }
+                        ),
                         fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
                     )
                 }
                 // 돌고 있는데도 화면에 아무 일이 없어 보이는 두 경우를 상태 바로 아래에 알린다.
                 // - 재생 중인데 아무것도 받지 못함: 소리 공유를 막은 앱이거나 그 앱이 음소거된 경우다. 청각장애
-                //   사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다.
+                //   사용자는 "조용한 장면"과 구분할 수 없어 앱이 고장 난 줄 안다. 외부 사운드 모드에서는 마이크로
+                //   아무것도 들어오지 않는 경우다(통화 중, 다른 앱이 마이크를 씀, 마이크 차단).
                 // - AI 모델 실패: 위협음 색과 종류별 진동이 그대로인 줄 믿게 된다. 진동은 큰 소리에만 울리고,
                 //   위협음의 표시나 진동을 꺼 두었으면 그것도 울리지 않는다(#232).
                 // 둘 다 해당하면 받지 못한다는 쪽만 말한다. 받는 소리가 없으면 분류할 소리도 없어서 AI 안내는
@@ -82,7 +98,13 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                 if (isRunning && (captureBlocked || !aiAvailable)) {
                     val loudAlerts = AiUnavailableNotice.loudAlerts(dangerShown, dangerHaptic.enabled, hasVibrator)
                     Text(
-                        stringResource(if (captureBlocked) R.string.home_capture_blocked else AiUnavailableNotice.home(loudAlerts)),
+                        stringResource(
+                            when {
+                                !captureBlocked -> AiUnavailableNotice.home(loudAlerts)
+                                listeningAround -> R.string.home_mic_silenced
+                                else -> R.string.home_capture_blocked
+                            }
+                        ),
                         fontSize = 14.sp, color = WarningColor, lineHeight = 21.sp,
                         // 홈을 보는 중에 안내가 생길 수 있으므로 화면 읽어주기가 읽고 지나가게 한다.
                         modifier = Modifier.padding(start = 20.dp, top = 8.dp)
@@ -114,6 +136,29 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                         ) {
                             Text(stringResource(R.string.home_stopped_dismiss), color = SecondaryTextColor, fontWeight = FontWeight.Bold)
                         }
+                    }
+                }
+            }
+
+            // 외부 사운드 모드(#226). 켜기 전에 고르고, 실행 중에는 잠근다. 소스는 켤 때 정해져 돌고 있는 실행에는
+            // 적용되지 않으므로, 바꿀 수 있는 것처럼 두면 스위치와 실제로 듣는 곳이 어긋난다.
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardColor),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+            ) {
+                Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp)) {
+                    ModernSwitch(
+                        stringResource(R.string.home_external_mode),
+                        stringResource(if (isRunning) R.string.home_external_mode_locked else R.string.home_external_mode_desc),
+                        externalSoundMode,
+                        enabled = !isRunning
+                    ) {
+                        SettingsManager.setExternalSoundMode(it)
+                    }
+                    // 감도는 모드를 켰을 때만 보인다. 잰 크기에만 곱하므로 도는 실행에도 바로 먹어, 실행 중에 그림을 보며 맞출 수 있다.
+                    DependentSettings(externalSoundMode) {
+                        MicSensitivitySlider()
                     }
                 }
             }
@@ -160,5 +205,43 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                 )
             }
         }
+    }
+}
+
+/**
+ * 외부 사운드 모드의 마이크 감도(#226). 칸마다 약 3dB 이고, 끄는 동안 바로 적용한다.
+ *
+ * 올리면 작은 소리도 그리지만 조용하지 않은 곳의 잡음도 그리므로, 기본은 감도를 조절하기 전과 같은 100% 다.
+ * 오버레이·진동이 보는 크기에만 곱하고 AI 가 받는 소리는 그대로다([MicSensitivity]).
+ */
+@Composable
+private fun MicSensitivitySlider() {
+    val percent by SettingsManager.micSensitivity.collectAsState()
+    val name = stringResource(R.string.home_mic_sensitivity)
+    val value = stringResource(R.string.home_mic_sensitivity_value, percent)
+    val last = MicSensitivity.STEPS.size - 1
+    Column(modifier = Modifier.padding(bottom = 20.dp)) {
+        // 이름과 값은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clearAndSetSemantics { }) {
+            Text(name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor)
+        }
+        Slider(
+            value = MicSensitivity.indexOf(percent).toFloat(),
+            onValueChange = { SettingsManager.setMicSensitivity(MicSensitivity.STEPS[it.roundToInt().coerceIn(0, last)]) },
+            valueRange = 0f..last.toFloat(),
+            steps = last - 1,
+            colors = SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = AccentColor,
+                inactiveTrackColor = Color(0xFF333A44)
+            ),
+            // 값을 화면 글자 그대로 읽힌다. 두지 않으면 슬라이더 위치(칸 번호)를 퍼센트로 읽는다.
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = name
+                stateDescription = value
+            }
+        )
     }
 }

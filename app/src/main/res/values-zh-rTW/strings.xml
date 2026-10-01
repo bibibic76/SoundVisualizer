@@ -7,6 +7,13 @@
     <!-- Home -->
     <string name="home_subtitle">將看不見的聲音直接描繪在螢幕上。\n從遊戲到電影，開啟全新的體驗。</string>
     <string name="home_status_running">狀態：執行中</string>
+    <string name="home_status_running_external">狀態：執行中 · 周遭聲音</string>
+    <string name="home_mic_silenced">麥克風沒有收到任何聲音。可能你正在通話、其他應用程式正在使用麥克風，或是在快速設定中關閉了麥克風存取權。</string>
+    <string name="home_external_mode">外部聲音模式</string>
+    <string name="home_external_mode_desc">透過麥克風聆聽你周遭的聲音，而不是手機內播放的聲音。聲音本身不會被儲存，也不會傳送到任何地方。</string>
+    <string name="home_external_mode_locked">執行時無法變更。請先停止聲音視覺化再變更，變更會在下次開啟時生效。</string>
+    <string name="home_mic_sensitivity">麥克風靈敏度</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">狀態：準備就緒</string>
     <string name="home_capture_blocked">目前接收不到聲音，因此無法繪製任何圖形。可能是正在播放的應用程式不允許分享聲音 (受保護的影片就是這樣)，也可能是該應用程式本身的聲音已靜音。</string>
     <string name="home_ai_unavailable_loud">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示，而且只有較大的聲音會依危險音的震動設定震動。請試著關閉聲音視覺化後再重新開啟。</string>
@@ -32,6 +39,7 @@
     <string name="tutorial_play">播放動畫</string>
     <string name="tutorial_sound_title">在螢幕上看見聲音</string>
     <string name="tutorial_sound_body">遊戲或影片的聲音會沿著螢幕邊緣描繪出來。聲音越大，圖形就越大。只會顯示手機內播放的聲音。這個應用程式不會擷取你周遭的聲音。</string>
+    <string name="tutorial_sound_body_external">外部聲音模式已開啟，因此麥克風聽到的周遭聲音會沿著螢幕邊緣描繪出來。聲音越大，圖形就越大。在這個模式下，不會顯示手機內播放的聲音。</string>
     <string name="tutorial_direction_title">可以分辨左右</string>
     <string name="tutorial_direction_body">來自左邊的聲音會在左側顯示得更大，來自右邊的聲音會在右側顯示得更大。無法分辨前後。</string>
     <string name="tutorial_types_title">用顏色區分聲音類型</string>
@@ -46,6 +54,7 @@
     <string name="tutorial_vibration_body">遊戲或影片中出現危險音時，手機會震動。即使沒有看著螢幕，也能察覺到。預設只有危險音會震動。你可以在「設定」分頁中為每種類型開啟或關閉震動。</string>
     <string name="tutorial_start_title">如何開啟和關閉</string>
     <string name="tutorial_privacy_note">麥克風和螢幕錄影權限只會用來擷取手機內播放的聲音。你周遭的聲音和螢幕畫面都不會被錄下。</string>
+    <string name="tutorial_privacy_note_external">外部聲音模式會透過麥克風聆聽你周遭的聲音。聲音本身不會存成檔案，也不會傳送到任何地方，螢幕畫面也不會被錄下。</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">請允許「在其他應用程式上層顯示」</string>
@@ -53,8 +62,10 @@
     <string name="permission_record_audio_required">需要麥克風 (錄音) 權限才能擷取音訊。</string>
     <string name="permission_mic_rationale_title">為什麼需要麥克風權限？</string>
     <string name="permission_mic_rationale_message">Android 規定必須取得麥克風權限，才能擷取手機內正在播放的聲音。這個應用程式不會錄下你周遭的聲音。</string>
+    <string name="permission_mic_rationale_message_external">外部聲音模式會透過麥克風聆聽你周遭的聲音，並用螢幕和震動告訴你。在 Android 12 以上版本中，聆聽期間狀態列會顯示麥克風圖示。聲音本身不會存成檔案，也不會傳送到任何地方。</string>
     <string name="permission_mic_settings_title">請在設定中允許使用麥克風</string>
     <string name="permission_mic_settings_message">尚未取得麥克風權限。如果權限要求視窗沒有再次出現，請輕觸「開啟設定」，然後在「權限」中允許「麥克風」。這項權限只會用來擷取手機內播放的聲音，不會錄下你周遭的聲音。</string>
+    <string name="permission_mic_settings_message_external">尚未取得麥克風權限。如果權限要求視窗沒有再次出現，請輕觸「開啟設定」，然後在「權限」中允許「麥克風」。外部聲音模式會透過麥克風聆聽你周遭的聲音。聲音本身不會存成檔案，也不會傳送到任何地方。</string>
     <string name="permission_continue">繼續</string>
     <string name="permission_cancel">取消</string>
     <string name="permission_open_settings">開啟設定</string>
@@ -164,6 +175,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">音訊擷取</string>
     <string name="notification_text">正在將聲音視覺化。</string>
+    <string name="notification_title_external">周遭聲音 · SoundVisualizer</string>
+    <string name="notification_text_external">正在聆聽並將你周遭的聲音視覺化。</string>
+    <string name="notification_text_mic_silenced">麥克風沒有收到任何聲音。可能你正在通話，或是麥克風已遭封鎖。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s，已選取</string>
     <string name="notification_text_ai_unavailable_loud">正在將聲音視覺化。由於無法辨識聲音類型，只有較大的聲音會震動。</string>
@@ -191,6 +205,7 @@
     <string name="help_start_title">開始使用</string>
     <string name="help_start_1">在「首頁」輕觸「開始」。</string>
     <string name="help_start_2">允許所需權限。基於 Android 政策，每次開啟這項功能時都會詢問你是否同意螢幕錄影。</string>
+    <string name="help_start_2_external">允許所需權限。外部聲音模式不會詢問你是否同意螢幕錄影。</string>
     <string name="help_start_3">開啟遊戲或影片後，聲音就會沿著螢幕邊緣描繪出來。</string>
     <string name="help_start_4">如要關閉，請在「首頁」或通知中輕觸「停止」。</string>
 
@@ -204,6 +219,7 @@
     <string name="help_perm_overlay_desc">用來在遊戲和影片上層顯示圖形。</string>
     <string name="help_perm_mic">麥克風 (錄音)</string>
     <string name="help_perm_mic_desc">Android 規定必須取得這項權限，才能擷取手機內播放的聲音。這個應用程式不會錄下你周遭的聲音。</string>
+    <string name="help_perm_mic_desc_external">Android 規定必須取得這項權限，才能擷取手機內播放的聲音。開啟外部聲音模式後，也會用這項權限聆聽你周遭的聲音。聲音本身不會存成檔案，也不會傳送到任何地方。</string>
     <string name="help_perm_capture">螢幕錄影</string>
     <string name="help_perm_capture_desc">Android 只允許應用程式在取得這項同意後，擷取手機內的聲音。這個應用程式不會擷取你的螢幕畫面。</string>
     <string name="help_perm_notification">通知 (Android 13 以上版本)</string>

@@ -22,15 +22,15 @@ class AudioEngineInstrumentedTest {
         AudioEngine.reset()
     }
 
-    /** 좌우에 같은 값을 넣은 버퍼 하나를 캡처 스레드처럼 넘긴다. */
-    private fun push(peak: Float, frames: Int = 8) {
+    /** 좌 = 0.5p, 우 = -p 인 버퍼 하나를 캡처 스레드처럼 넘긴다. [gain] 은 마이크 감도(크기에만 곱함). */
+    private fun push(peak: Float, frames: Int = 8, gain: Float = 1f) {
         val buffer = ByteBuffer.allocateDirect(frames * 2 * 4).order(ByteOrder.nativeOrder())
         val floats = buffer.asFloatBuffer()
         repeat(frames) {
             floats.put(peak * 0.5f)
             floats.put(-peak)   // 부호와 상관없이 크기로 본다
         }
-        AudioEngine.pushAudioBuffer(buffer, frames * 2)
+        AudioEngine.pushAudioBuffer(buffer, frames * 2, gain)
     }
 
     @Test
@@ -65,6 +65,32 @@ class AudioEngineInstrumentedTest {
         AudioEngine.takePeakSinceLastCheck(check)
         assertEquals(0.40f, check[0], 0.0001f)
         assertEquals("버퍼 수", 1f, check[1], 0.0001f)
+    }
+
+    @Test
+    fun 마이크_감도는_모든_소비자의_크기에_곱한다() {
+        // 좌 0.1, 우 0.2 를 두 배로. 오버레이·진동·막힘 안내가 같은 크기를 본다(#226).
+        push(0.20f, gain = 2f)
+        val overlay = FloatArray(3)
+        AudioEngine.readPeaks(overlay)
+        assertEquals(0.20f, overlay[0], 0.0001f)
+        assertEquals(0.40f, overlay[1], 0.0001f)
+        assertEquals(0.40f, AudioEngine.takeHapticPeak(), 0.0001f)
+        val check = FloatArray(2)
+        AudioEngine.takePeakSinceLastCheck(check)
+        assertEquals(0.40f, check[0], 0.0001f)
+    }
+
+    @Test
+    fun 마이크_감도를_곱한_크기는_1_에서_자른다() {
+        push(0.80f, gain = 2f)
+        assertEquals(1f, AudioEngine.takeHapticPeak(), 0.0001f)
+    }
+
+    @Test
+    fun 마이크_감도를_낮추면_크기도_줄어든다() {
+        push(0.40f, gain = 0.5f)
+        assertEquals(0.20f, AudioEngine.takeHapticPeak(), 0.0001f)
     }
 
     @Test

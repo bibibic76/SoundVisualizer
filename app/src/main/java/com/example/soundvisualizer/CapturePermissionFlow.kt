@@ -13,6 +13,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -176,6 +177,9 @@ class CapturePermissionFlow(
 /** [CapturePermissionFlow] 의 안내 창. 떠 있는 창이 없으면 아무것도 그리지 않는다. */
 @Composable
 fun CapturePermissionDialogs(flow: CapturePermissionFlow) {
+    // 폰 안의 소리만 받을 때는 "주변 소리는 녹음하지 않는다" 가 사실이지만, 외부 사운드 모드는 바로 그것을 한다.
+    // 그 약속을 믿고 허용하게 두면 안 되므로 모드에 따라 문구를 고른다(#226).
+    val external by SettingsManager.externalSoundMode.collectAsState()
     when (flow.dialog) {
         CapturePermissionDialog.None -> Unit
         CapturePermissionDialog.Overlay -> PermissionAlert(
@@ -188,7 +192,9 @@ fun CapturePermissionDialogs(flow: CapturePermissionFlow) {
         )
         CapturePermissionDialog.MicRationale -> PermissionAlert(
             title = stringResource(R.string.permission_mic_rationale_title),
-            message = stringResource(R.string.permission_mic_rationale_message),
+            message = stringResource(
+                if (external) R.string.permission_mic_rationale_message_external else R.string.permission_mic_rationale_message
+            ),
             confirmLabel = stringResource(R.string.permission_continue),
             dismissLabel = stringResource(R.string.permission_cancel),
             onConfirm = flow::continueRequest,
@@ -196,7 +202,9 @@ fun CapturePermissionDialogs(flow: CapturePermissionFlow) {
         )
         CapturePermissionDialog.MicSettings -> PermissionAlert(
             title = stringResource(R.string.permission_mic_settings_title),
-            message = stringResource(R.string.permission_mic_settings_message),
+            message = stringResource(
+                if (external) R.string.permission_mic_settings_message_external else R.string.permission_mic_settings_message
+            ),
             confirmLabel = stringResource(R.string.permission_open_settings),
             dismissLabel = stringResource(R.string.permission_close),
             onConfirm = flow::openAppSettings,

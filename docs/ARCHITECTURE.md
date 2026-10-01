@@ -20,8 +20,8 @@ graph TD
 | 단계 | 코드 | 언어 |
 |---|---|---|
 | 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors`·`UiFonts` (화면), `SettingsManager`, `help/`, `language/` (앱 언어), `tutorial/` (처음 열 때의 튜토리얼) | Kotlin (Compose) |
-| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `CaptureStartToken` (사용자가 켠 시작만 받기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
-| 캡처 | `AudioCaptureService`, `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
+| 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `CaptureStartToken` (사용자가 켠 시작만 받고, 어디서 받을지 전하기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
+| 캡처 | `AudioCaptureService`, `CaptureSource` (폰 안의 소리인지 마이크인지), `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `MicSilenceNotice` (마이크가 막혔다는 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
 | AI 분류 | `ai/` | Kotlin + ONNX Runtime |
 | 분류 결과 연결 | `AiClassification` | Kotlin |
@@ -42,9 +42,10 @@ graph TD
    - 녹음 권한이 필요하면 시스템 창보다 먼저 이유를 설명하는 창을 띄웁니다. 시스템 창에는 "마이크"라고만 떠서 녹음 앱으로 오해하고 거부하기 쉽기 때문입니다. 알림 권한만 필요하면 바로 묻습니다.
    - 녹음 권한이 거부됐는데 `shouldShowRequestPermissionRationale`이 `false`면 시스템이 더는 창을 띄우지 않는 상태로 보고, 앱 정보 화면(`ACTION_APPLICATION_DETAILS_SETTINGS`)을 여는 안내 창을 띄웁니다. 그 밖의 거부는 토스트로 알리고 멈춥니다.
    - 안내 창 상태는 액티비티의 저장 상태(`SavedStateRegistry`)에 두어 화면을 돌려도 남습니다. 창을 다시 그릴 뿐 권한 요청이나 동의 창을 다시 띄우지 않습니다.
-3. 화면 녹화 동의 창(`MediaProjection`)을 띄웁니다. 오디오 캡처에도 이 동의가 필요합니다.
-4. 동의하면 `AudioCaptureService`(포그라운드 서비스)와 `OverlayService`를 함께 시작합니다.
+3. 화면 녹화 동의 창(`MediaProjection`)을 띄웁니다. 오디오 캡처에도 이 동의가 필요합니다. 홈에서 **외부 사운드 모드**를 켜 두었으면 이 창 없이 바로 4로 갑니다(2장 외부 사운드 모드).
+4. 동의하면 `AudioCaptureService`(포그라운드 서비스)와 `OverlayService`를 함께 시작합니다(`VisualizerController.start`, 마이크는 `startMicrophone`).
    - 서비스를 띄우기 바로 앞에서 **시작 표**(`CaptureStartToken`)를 발급합니다. 서비스의 `onCreate`는 인텐트를 보기 전에 포그라운드를 시작해야 해서(Android 14 이상은 캡처를 열기 전에 포그라운드가 떠 있어야 함) 누가 띄웠는지 모릅니다. 그래서 표를 한 번 쓰고, 표가 없거나 10초보다 오래됐으면 사용자가 켠 것이 아니라고 보고 포그라운드도 캡처도 시작하지 않고 내립니다. 켜진 적이 없으니 꺼짐 알림도 없습니다.
+   - 표에는 **어디서 소리를 받을지**(`CaptureSource`)도 실어 보냅니다. 포그라운드 타입은 `onCreate`에서 정해야 하는데, 거기서 설정을 다시 읽으면 켜기를 누른 쪽이 동의 창을 건너뛸지 정한 값과 어긋날 수 있기 때문입니다.
    - 표는 프로세스 메모리에만 둡니다. 프로세스가 새로 떠서 서비스를 만든 경우(옛 알림 버튼)에는 표가 있을 수 없습니다. 10초는 시스템이 `startForegroundService` 뒤에 포그라운드 시작을 기다려 주는 시간과 같습니다. 표를 받지 못한 서비스가 포그라운드 없이 내려가면 시스템이 앱을 죽이는데, `startForegroundService`로 띄우는 곳은 표를 발급한 직후뿐이라 그럴 일이 없습니다.
    - 판단 규칙은 `CaptureStartTokenTest`가, 표 없이 띄운 서비스가 실제로 걸러져 내려가는지는 계측 테스트(`UnrequestedStartInstrumentedTest`)가 봅니다.
 
@@ -111,6 +112,24 @@ graph TD
   1. **시각화용**: `AudioRecord`가 채운 direct `ByteBuffer`를 `AudioEngine.pushAudioBuffer`로 넘깁니다. JNI가 버퍼 주소를 그대로 읽으므로 복사와 할당이 없습니다.
   2. **AI용**: 재사용하는 `FloatArray`에 복사해 `AiAudioBuffer`에 넣습니다. 여기서 좌우를 평균해 모노로 합칩니다. 추론은 캡처 스레드에서 하지 않습니다.
 
+### 외부 사운드 모드 (마이크, `CaptureSource`, #226)
+
+홈의 **외부 사운드 모드** 스위치(기본 꺼짐)를 켜고 실행하면, 폰에서 재생되는 소리 대신 **마이크로 주변 소리**를 받아 같은 오버레이와 진동으로 알립니다. 초인종·화재경보·부르는 소리처럼 폰 밖의 소리를 알기 위해서입니다. 스위치를 끈 동작은 예전과 같습니다.
+
+- **소스 하나가 정하는 것**(`CaptureSource`): 화면 녹화 동의가 필요한지, 포그라운드 서비스 타입(`mediaProjection` 또는 `microphone`, 하나만), 받을 수 없는 소리 안내를 돌릴지. 흩어 두면 동의 없이 `mediaProjection` 포그라운드를 시작하는 조합이 생길 수 있어 한곳에 모았고, `CaptureSourceTest`가 어긋난 조합이 없는지 봅니다.
+- **소스는 켤 때 정합니다.** 켜기를 누른 쪽이 시작 표에 실어 보내고(1장), 서비스는 `onCreate`에서 받아 그 실행이 끝날 때까지 바꾸지 않습니다. 그래서 홈의 스위치는 **실행 중에는 잠급니다**. 바꿀 수 있게 두면 스위치와 실제로 듣는 곳이 어긋납니다.
+- **포그라운드 타입**: 매니페스트에 `mediaProjection|microphone`과 `FOREGROUND_SERVICE_MICROPHONE`을 두고, 실행마다 한 타입만 넘깁니다. Android 11 이상은 `microphone` 타입이 아니면 다른 앱으로 나가 있는 동안 마이크를 막습니다(0만 들어옴). 에뮬레이터(API 37)에서 홈으로 나가 있는 동안 `dumpsys audio`의 녹음이 `silenced:false`로 남는 것을 확인했습니다. 빠른 설정 타일로 켤 때는 투명 화면이 앞에 있는 동안 서비스를 띄우므로, 화면을 바로 닫아도 앱이 사용자 앞에 있는 것으로 판정됩니다.
+- **소스**: `VOICE_RECOGNITION`. 안드로이드가 자동 음량 조절과 잡음 제거를 끄고 주파수 응답을 고르게 두도록 정한 소스라 AI 가 가공되지 않은 소리를 듣습니다. 형식은 내부 소리와 같은 스테레오 float 이고, 레이트 후보도 같습니다(`openAudioRecord`).
+- **좌우를 늘 같게 만듭니다**(`toDualMono`). Galaxy S25+ 에서 재 보니 `VOICE_RECOGNITION`은 아래쪽 마이크 하나를 두 채널로 복제해 주었지만, `MIC`·`CAMCORDER`는 아래쪽(0.027, 0.006m)과 뒷면 위쪽(0.055, 0.146m) 마이크를 따로 주어 크기가 약 4dB 달랐습니다. 두 마이크는 폰의 긴 축으로 약 14cm 떨어져 있어 **그 축의 도착 시간차만 잴 수 있습니다.** 세로로 들면 그 축이 위아래라 좌우를 가릴 수 없고, 가로로 들면 좌우가 되어 가릴 수 있습니다(앞뒤는 어느 쪽이든 가릴 수 없습니다). 가로의 좌우 표시는 #248 에서 합니다. 좌우 크기 차이로 방향을 그리는 오버레이에 그대로 넘기면 마이크 감도 차이만으로 한쪽으로 기운 그림이 나오므로, 캡처 스레드가 버퍼마다 좌우를 평균해 두 채널에 같이 넣습니다(할당 없음). 그래서 마이크 모드의 그림은 늘 가운데이고 틀린 방향이 나오지 않습니다. 기기별 측정은 `MicProbeInstrumentedTest`(기본으로는 건너뜀, `-e micProbe true`)로 소리 없이 다시 할 수 있습니다.
+- **기본 입력 이득은 걸지 않고, 감도는 사용자가 맞춥니다.** 같은 폰의 사무실 잡음이 `VOICE_RECOGNITION`으로 RMS -52dBFS, 피크 -40dBFS 안팎이라 오버레이가 깨어나는 기준(0.01)에 이미 닿습니다. 기본으로 이득을 걸면 조용한 곳이 아니면 늘 그림이 켜져 있게 됩니다. 대신 홈의 외부 사운드 모드 카드에 **마이크 감도**(50~800%, 한 칸 약 3dB, 기본 100%, `MicSensitivity`)를 둡니다. 감도는 캡처 스레드가 버퍼마다 읽어 네이티브의 `pushAudioBuffer(…, levelGain)`로 넘기고, 네이티브는 **잰 크기에만** 곱해 1에서 자릅니다. 오버레이·진동·"마이크가 막혔다" 안내가 같은 크기를 보고, PCM 은 그대로라 같은 버퍼를 읽는 AI 의 입력은 바뀌지 않습니다. 실행 중에도 바로 먹습니다. 기기의 마이크에 맞춘 값이라 다른 기기로 복원하면 지웁니다(`dropOtherDeviceValues`).
+- **통화 중에는 버립니다.** 확인 틱(0.5초)이 `AudioManager.mode`가 `MODE_NORMAL`이 아니면 캡처 스레드에 알려 입력을 0으로 버립니다. 안드로이드도 통화 중 다른 앱의 녹음을 막지만, 막지 않는 기기에서도 통화 소리가 오버레이·진동·AI 에 닿지 않게 하기 위해서입니다. `addOnModeChangedListener`는 Android 12부터라 틱에서 봅니다.
+- **마이크가 막혔을 때**(`MicSilenceNotice`): 통화·다른 앱·빠른 설정의 마이크 차단이면 `AudioRecord`는 오류 없이 0만 돌려줍니다. 시스템이 막았다고 알려 주면(`isClientSilenced`) 바로, 아니면 틱 전체의 피크가 사실상 0(1e-6 이하)인 상태가 3초 이어지면 홈과 실행 중 알림에 "마이크로 아무 소리도 들어오지 않는다"고 알립니다. 샘플 몇 개가 정확히 0인 것은 흔해서(측정: 3초에 수백 개) 샘플이 아니라 피크로 봅니다. 에뮬레이터에서 마이크 차단(`cmd sensor_privacy enable 0 microphone`)을 켜면 바로 뜨고 풀면 바로 내려가는 것을 확인했습니다. 받을 수 없는 소리 안내(`BlockedCaptureNotice`)는 재생 중인 앱을 탓하므로 마이크 모드에서는 돌리지 않습니다.
+- **알림과 홈**: 실행 중 알림의 제목에 "주변 소리"를, 홈 상태에 "실행 중 · 주변 소리"를 적습니다. 방 소리를 들어 확인할 수 없는 사람에게는 지금 방을 듣고 있는지 알 수 있는 곳이 여기뿐입니다. 제목은 "주변 소리 · SoundVisualizer"처럼 모드를 앞에 둡니다. 접힌 알림은 제목과 모드 칩, 시각을 한 줄에 그려서, 긴 언어에서는 제목 뒤쪽이 잘립니다(러시아어에서 확인). 홈은 설정값이 아니라 서비스가 이번 실행에 실제로 연 소스(`SettingsManager.runningCaptureSource`)를 보고 적습니다. 설정은 다음 실행의 소스이므로, 둘이 어긋나면 방을 듣지 않는데도 듣는다고 믿게 됩니다.
+- **진동**: 내부 모드와 똑같이 울립니다(5장). 진동은 소리가 이어지는 동안 계속 울리므로, 폰이 자기 진동을 마이크로 다시 들으면 멈추지 않을 수 있습니다. 폰에서 확인하고(#241) 필요하면 따로 막습니다.
+- **문구**: 폰 안의 소리만 받을 때의 마이크 권한 문구("주변 소리는 녹음하지 않습니다")는 모드가 꺼져 있으면 여전히 사실이라 그대로 두고, 모드가 켜져 있으면 `_external` 문구(무엇을 듣는지, 안드로이드 12 이상에서 마이크 표시가 뜬다는 것, 소리 자체는 파일로 남기거나 밖으로 보내지 않는다는 것)를 씁니다. 마이크 표시는 안드로이드 12 부터라 그 앞 버전에서는 우리 실행 중 알림만 보이고, 개발자 모드의 결과 기록은 들은 소리의 이름과 시각을 CSV 로 남기므로 "소리 자체"로 한정합니다. 튜토리얼의 소리 쪽 설명, 켜고 끄는 순서의 2단계와 개인정보 안내, 도움말 시작하기의 2단계도 모드에 따라 고릅니다. 들은 소리는 크기를 재고 분류하는 데만 쓰고, 다음 버퍼가 덮어씁니다.
+- **다시 켜기**: 꺼짐 알림의 ‘다시 켜기’는 앱 프로세스가 죽은 뒤에도 타일용 투명 화면(`StartVisualizerActivity`)을 바로 엽니다. 그 화면은 모드를 고르기 전에 `SettingsManager.init`으로 저장된 설정을 읽습니다. 읽지 않으면 모드가 기본값(꺼짐)으로 보여 마이크 대신 폰 안의 소리로 켜고, 뒤이어 서비스가 읽은 설정 때문에 홈은 "주변 소리"라고 잘못 알립니다.
+- **이번에 하지 않은 것**: 방향 표시(가로에서 긴 축의 도착 시간차로 좌우, 화면 회전 — #248), 마이크 모드에 맞춘 AI 라벨 조정, 유선·블루투스 헤드셋 마이크 고르기, 배터리 측정.
+
 ### 좌우 피크 측정 (`native-lib.cpp`)
 
 C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합니다. 방향 계산은 오버레이 쪽 Kotlin에서 합니다.
@@ -145,6 +164,8 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 - 늦게 도착한 읽기 오류가 다시 켠 새 캡처를 내리지 않도록, 오류를 낸 스레드가 지금 캡처 스레드일 때만 멈춥니다.
 
 ### 받을 수 없는 소리 알리기 (`BlockedCaptureNotice`)
+
+폰 안의 소리를 받을 때만 돌립니다. 외부 사운드 모드에서는 `MicSilenceNotice`가 대신합니다(위 외부 사운드 모드).
 
 안드로이드는 앱이 자기 소리를 다른 앱에 넘기지 않도록 막을 수 있습니다(`android:allowAudioPlaybackCapture="false"`, DRM이 걸린 영상 등). 그런 앱의 소리는 우리 쪽 믹스에 **섞이지 않아** 오버레이가 아무것도 그리지 않습니다. 청각장애 사용자는 "조용한 장면"과 "받을 수 없는 소리"를 스스로 구분할 수 없어, 알리지 않으면 앱이 고장 났다고 여깁니다.
 
@@ -393,6 +414,7 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 - 캡처가 돌기 시작하면 캡처 서비스가 `HapticNotifier`를 시작합니다(`startHaptics`). 진동 모터가 없는 기기에서는 시작하지 않습니다. 화면이 꺼져 쉬면 멈추고, 켜지면 새로 만들어 시작합니다. 예전에는 AI 모델이 준비된 뒤에 시작해서, 모델을 못 불러온 실행에는 진동이 아예 없었습니다(#225). 화면을 볼 수 없을 때는 진동이 유일한 알림이라 AI 와 떼었습니다.
 - 라벨은 오버레이와 같은 `AiClassification.latest()`에서 읽습니다. AI 가 붙기 전(로딩 중, 화면을 켠 직후 300ms)에는 라벨이 없어 울리지 않습니다. 곧 올 라벨과 겹쳐 울리지 않게 하기 위해서입니다.
 - **AI 를 쓸 수 없는 실행**(`SettingsManager.aiAvailable`이 `false`)에서는 라벨이 끝내 오지 않으므로, 종류를 가리지 않고 **큰 소리**(`HapticTuning.UNLABELED_LOUD_LEVEL`, -12dBFS)가 이어지는 동안 위협음 설정으로 울립니다. 큰 소리는 피크가 기준의 절반(`HapticTuning.UNLABELED_RELEASE_RATIO`) 아래로 0.4초 넘게 내려가야 끝나므로(#232), 게임 음악처럼 끊기지 않는 배경음 동안은 멈추고 그 사이의 폭발음마다 울리며, 기준 근처를 오르내리는 음악에는 끊겼다 울렸다 하지 않습니다. 위협음의 표시나 진동을 꺼 두면 울리지 않습니다. 소리가 난다는 기준(0.01)으로 울리면 게임·영상이 켜져 있는 내내 울리기 때문에 따로 둔 기준이며, 폰 체감 확인에서 정합니다. 이 경우를 어떻게 할지는 나중에 따로 정합니다(#242). 규칙은 `HapticPolicyTest`가, 진동이 AI 가 아니라 캡처와 함께 켜지는지는 `HapticSourceContractTest`가 봅니다.
+- **외부 사운드 모드**(2장)도 똑같이 울립니다(#242). 폰이 자기 진동을 마이크로 다시 들으면 소리가 이어지는 것으로 알아 진동이 멈추지 않을 수 있어, 폰에서 확인합니다(#241).
 - 시각화가 뜻하지 않게 꺼졌을 때의 진동(`HapticPlayer.playStoppedAlert`)은 이 설정과 상관없이 울립니다(1장 꺼짐 알림).
 - `SV-Haptic` 스레드(`THREAD_PRIORITY_DISPLAY`)가 **100ms마다** 최근 분류 라벨과 `AudioEngine.takeHapticPeak()`(지난 틱 이후 구간 전체의 최대 피크)을 읽어 무엇을 울릴지 판단합니다. AI 결과가 250ms마다 나오므로 100ms로도 놓치지 않습니다. 느림·중간·빠름의 울림은 이 주기와 상관없이 제 시각에 깨어나 보냅니다(`HapticDriver.nextWakeMs`). 다음 틱은 절대 시각(`postAtTime`)으로 잡고, 배경 우선순위는 렌더·AI가 바쁠 때 늦게 깨어 박자가 흔들려 쓰지 않습니다. 틱은 `handler`로만 다음 틱을 잡으므로 첫 틱은 `handler`를 둔 뒤에 보냅니다. 먼저 보내면 진동 스레드가 그 틈에 먼저 돌 때 틱이 끊겨, 그 실행 내내 진동이 오류 없이 멈춥니다(#232).
 - `ai/` 코드에 콜백을 넣지 않고 결과를 읽어 가는 방식이라 AI 파트를 건드리지 않습니다.
@@ -438,6 +460,7 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 - 표현 모드(`VisualMode`)는 **순서(ordinal)로 저장**하므로 enum 순서를 바꾸면 기존 사용자 설정이 어긋납니다. 진동 설정의 enum은 이름으로 저장합니다.
 - 실행 상태(`isServiceRunning`), AI 사용 가능 여부(`aiAvailable`), 화면 꺼짐으로 쉬는 중(`isCapturePaused`), 소리를 받을 수 없는 중(`isCaptureBlocked`)은 캡처 서비스가 알려주는 값이라 저장하지 않습니다.
 - 마지막으로 뜻하지 않게 꺼진 이유(`lastUnexpectedStop`)는 캡처 서비스가 알려주지만, 프로세스가 끝난 뒤 앱을 열어도 홈에서 보이도록 이름으로 저장합니다. 모르는 이름(항목을 바꾼 뒤)이면 안내가 없는 것으로 봅니다. 읽기·쓰기(`loadLastUnexpectedStop`·`putLastUnexpectedStop`)는 `StopNoticeSettingsTest`가 확인합니다.
+- 외부 사운드 모드(`externalSoundMode`, 키 `external_sound_mode`, 2장)의 기본값은 `EXTERNAL_SOUND_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 마이크로 주변 소리를 듣는 일이라 사용자가 골라야 하고, `ExternalSoundModeSettingTest`가 지킵니다. 사용자의 선택이라 기기 전용 값처럼 복원할 때 비우지 않습니다.
 - "화면이 꺼지면 일시정지"의 기본값은 `PAUSE_WHEN_SCREEN_OFF_DEFAULT` 한 곳에만 둡니다. 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 모르고 지나갑니다(`ScreenOffPauseTest`).
 - 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다. frontend·Booster A/B 선택은 저장하지만 개발자 모드가 꺼져 있으면 `AiDiagnosticConfig.DEFAULT`만 파이프라인에 넘깁니다. `AiDiagnosticSettingTest`가 기본값·저장 복원·이 안전 복귀를 지킵니다.
 - 기록 스위치(`developerRecord`, 4장)는 개발자 모드와 따로 저장합니다(`DEVELOPER_RECORD_DEFAULT`=꺼짐). 개발자 모드를 껐다 켜도 기록 설정은 그대로 남고, 오버레이가 이 값을 구독하므로 켜면 파일이 새로 열리고 끄면 닫힙니다.

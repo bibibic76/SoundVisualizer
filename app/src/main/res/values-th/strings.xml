@@ -7,6 +7,13 @@
     <!-- Home -->
     <string name="home_subtitle">เปลี่ยนเสียงที่มองไม่เห็นให้เป็นภาพบนหน้าจอ\nตั้งแต่เล่นเกมไปจนถึงดูภาพยนตร์ มาสัมผัสประสบการณ์ใหม่กันเลย</string>
     <string name="home_status_running">สถานะ: กำลังทำงาน</string>
+    <string name="home_status_running_external">สถานะ: กำลังทำงาน · เสียงภายนอก</string>
+    <string name="home_mic_silenced">ไม่มีเสียงเข้ามาทางไมโครโฟน คุณอาจกำลังใช้สายอยู่ แอปอื่นอาจกำลังใช้ไมโครโฟน หรืออาจปิดสิทธิ์เข้าถึงไมโครโฟนไว้ในการตั้งค่าด่วน</string>
+    <string name="home_external_mode">โหมดเสียงภายนอก</string>
+    <string name="home_external_mode_desc">ฟังเสียงรอบตัวคุณผ่านไมโครโฟนแทนเสียงที่เล่นอยู่ในโทรศัพท์ ตัวเสียงเองจะไม่ถูกบันทึกหรือส่งไปที่ใด</string>
+    <string name="home_external_mode_locked">เปลี่ยนไม่ได้ขณะกำลังทำงาน ให้หยุดการแสดงภาพเสียงแล้วเปลี่ยน ค่าที่เปลี่ยนจะมีผลในครั้งถัดไปที่เริ่ม</string>
+    <string name="home_mic_sensitivity">ความไวของไมโครโฟน</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">สถานะ: พร้อมใช้งาน</string>
     <string name="home_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ จึงวาดอะไรไม่ได้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง (วิดีโอที่มีการป้องกันเนื้อหาจะเป็นแบบนี้) หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
     <string name="home_ai_unavailable_loud">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม และจะสั่นเฉพาะเสียงดังตามการตั้งค่าการสั่นของเสียงอันตราย ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
@@ -32,6 +39,7 @@
     <string name="tutorial_play">เล่นภาพเคลื่อนไหว</string>
     <string name="tutorial_sound_title">มองเห็นเสียงบนหน้าจอ</string>
     <string name="tutorial_sound_body">เสียงจากเกมหรือวิดีโอจะแสดงเป็นภาพตามขอบหน้าจอ ยิ่งเสียงดัง ภาพก็ยิ่งใหญ่ แสดงเฉพาะเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น แอปจะไม่จับเสียงรอบตัวคุณ</string>
+    <string name="tutorial_sound_body_external">โหมดเสียงภายนอกเปิดอยู่ เสียงรอบตัวคุณที่ไมโครโฟนได้ยินจึงแสดงเป็นภาพตามขอบหน้าจอ ยิ่งเสียงดัง ภาพก็ยิ่งใหญ่ ในโหมดนี้จะไม่แสดงเสียงที่เล่นอยู่ในโทรศัพท์</string>
     <string name="tutorial_direction_title">แยกเสียงซ้ายกับขวาได้</string>
     <string name="tutorial_direction_body">หากเสียงมาจากทางซ้าย ภาพฝั่งซ้ายของหน้าจอจะใหญ่กว่า หากมาจากทางขวา ภาพฝั่งขวาจะใหญ่กว่า แอปแยกด้านหน้ากับด้านหลังไม่ได้</string>
     <string name="tutorial_types_title">เสียงแต่ละประเภทมีสีของตัวเอง</string>
@@ -46,6 +54,7 @@
     <string name="tutorial_vibration_body">เมื่อมีเสียงอันตรายในเกมหรือวิดีโอ โทรศัพท์จะสั่น คุณจึงรู้ได้แม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะสั่นเฉพาะเสียงอันตราย คุณเปิดหรือปิดการสั่นของแต่ละประเภทได้ในแท็บการตั้งค่า</string>
     <string name="tutorial_start_title">วิธีเปิดและปิด</string>
     <string name="tutorial_privacy_note">แอปใช้สิทธิ์ไมโครโฟนและสิทธิ์การบันทึกหน้าจอเพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น แอปจะไม่บันทึกทั้งเสียงรอบตัวคุณและหน้าจอของคุณ</string>
+    <string name="tutorial_privacy_note_external">โหมดเสียงภายนอกจะฟังเสียงรอบตัวคุณผ่านไมโครโฟน ตัวเสียงเองจะไม่ถูกบันทึกเป็นไฟล์หรือส่งไปที่ใด และแอปจะไม่บันทึกหน้าจอของคุณ</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">โปรดอนุญาต “แสดงทับแอปอื่น”</string>
@@ -53,8 +62,10 @@
     <string name="permission_record_audio_required">ต้องมีสิทธิ์ไมโครโฟน (บันทึกเสียง) เพื่อจับเสียง</string>
     <string name="permission_mic_rationale_title">เหตุผลที่ต้องใช้สิทธิ์ไมโครโฟน</string>
     <string name="permission_mic_rationale_message">Android กำหนดให้ต้องมีสิทธิ์ไมโครโฟนเพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์ของคุณ แอปจะไม่บันทึกเสียงรอบตัวคุณ</string>
+    <string name="permission_mic_rationale_message_external">โหมดเสียงภายนอกจะฟังเสียงรอบตัวคุณผ่านไมโครโฟน แล้วแสดงให้เห็นบนหน้าจอและแจ้งด้วยการสั่น ใน Android 12 ขึ้นไป ระหว่างที่ฟังจะมีไอคอนไมโครโฟนแสดงในแถบสถานะ ตัวเสียงเองจะไม่ถูกบันทึกเป็นไฟล์หรือส่งไปที่ใด</string>
     <string name="permission_mic_settings_title">โปรดอนุญาตไมโครโฟนในการตั้งค่า</string>
     <string name="permission_mic_settings_message">ยังไม่ได้รับสิทธิ์ไมโครโฟน หากหน้าต่างขอสิทธิ์ไม่แสดงขึ้นอีก ให้แตะ “เปิดการตั้งค่า” ไปที่ “สิทธิ์” แล้วอนุญาต “ไมโครโฟน” แอปใช้สิทธิ์นี้เพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น และจะไม่บันทึกเสียงรอบตัวคุณ</string>
+    <string name="permission_mic_settings_message_external">ยังไม่ได้รับสิทธิ์ไมโครโฟน หากหน้าต่างขอสิทธิ์ไม่แสดงขึ้นอีก ให้แตะ “เปิดการตั้งค่า” ไปที่ “สิทธิ์” แล้วอนุญาต “ไมโครโฟน” โหมดเสียงภายนอกจะฟังเสียงรอบตัวคุณผ่านไมโครโฟน ตัวเสียงเองจะไม่ถูกบันทึกเป็นไฟล์หรือส่งไปที่ใด</string>
     <string name="permission_continue">ดำเนินการต่อ</string>
     <string name="permission_cancel">ยกเลิก</string>
     <string name="permission_open_settings">เปิดการตั้งค่า</string>
@@ -164,6 +175,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">การจับเสียง</string>
     <string name="notification_text">กำลังแสดงภาพเสียง</string>
+    <string name="notification_title_external">เสียงภายนอก · SoundVisualizer</string>
+    <string name="notification_text_external">กำลังฟังเสียงรอบตัวคุณและแสดงเป็นภาพ</string>
+    <string name="notification_text_mic_silenced">ไม่มีเสียงเข้ามาทางไมโครโฟน คุณอาจกำลังใช้สายอยู่ หรือไมโครโฟนอาจถูกบล็อก</string>
     <string name="notification_stop">หยุด</string>
     <string name="notification_mode_selected">%1$s, เลือกแล้ว</string>
     <string name="notification_text_ai_unavailable_loud">กำลังแสดงภาพเสียง ระบบแยกประเภทเสียงไม่ทำงาน จึงจะสั่นเฉพาะเสียงดัง</string>
@@ -191,6 +205,7 @@
     <string name="help_start_title">เริ่มต้นใช้งาน</string>
     <string name="help_start_1">ในแท็บหน้าแรก ให้แตะ “เริ่ม”</string>
     <string name="help_start_2">อนุญาตสิทธิ์ที่จำเป็น Android จะขอความยินยอมในการบันทึกหน้าจอทุกครั้งที่คุณเปิดใช้งาน</string>
+    <string name="help_start_2_external">อนุญาตสิทธิ์ที่จำเป็น โหมดเสียงภายนอกจะไม่ขอความยินยอมในการบันทึกหน้าจอ</string>
     <string name="help_start_3">เปิดเกมหรือวิดีโอ แล้วเสียงจะแสดงเป็นภาพตามขอบหน้าจอ</string>
     <string name="help_start_4">หากต้องการปิด ให้แตะ “หยุด” ในแท็บหน้าแรกหรือในการแจ้งเตือน</string>
 
@@ -204,6 +219,7 @@
     <string name="help_perm_overlay_desc">จำเป็นสำหรับการแสดงกราฟิกทับเกมและวิดีโอ</string>
     <string name="help_perm_mic">ไมโครโฟน (บันทึกเสียง)</string>
     <string name="help_perm_mic_desc">Android กำหนดให้ต้องมีสิทธิ์นี้เพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์ของคุณ แอปจะไม่บันทึกเสียงรอบตัวคุณ</string>
+    <string name="help_perm_mic_desc_external">Android กำหนดให้ต้องมีสิทธิ์นี้เพื่อจับเสียงที่เล่นอยู่ในโทรศัพท์ของคุณ เมื่อเปิดโหมดเสียงภายนอก แอปจะใช้สิทธิ์นี้ฟังเสียงรอบตัวคุณด้วย ตัวเสียงเองจะไม่ถูกบันทึกเป็นไฟล์หรือส่งไปที่ใด</string>
     <string name="help_perm_capture">การบันทึกหน้าจอ</string>
     <string name="help_perm_capture_desc">Android อนุญาตให้แอปจับเสียงในโทรศัพท์ได้ผ่านความยินยอมนี้เท่านั้น แอปจะไม่บันทึกภาพหน้าจอของคุณ</string>
     <string name="help_perm_notification">การแจ้งเตือน (Android 13 ขึ้นไป)</string>

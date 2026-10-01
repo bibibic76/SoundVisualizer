@@ -7,6 +7,13 @@
     <!-- Home -->
     <string name="home_subtitle">Dessine sur votre écran les sons que vous ne pouvez pas voir.\nDes jeux vidéo aux films, découvrez une toute nouvelle expérience.</string>
     <string name="home_status_running">État : actif</string>
+    <string name="home_status_running_external">État : actif · Son externe</string>
+    <string name="home_mic_silenced">Aucun son n\'arrive par le micro. Vous êtes peut-être en communication, une autre application utilise peut-être le micro, ou l\'accès au micro est désactivé dans les Réglages rapides.</string>
+    <string name="home_external_mode">Mode son externe</string>
+    <string name="home_external_mode_desc">Écoute les sons autour de vous avec le micro au lieu du son diffusé sur votre téléphone. Le son lui-même n\'est jamais enregistré ni envoyé où que ce soit.</string>
+    <string name="home_external_mode_locked">Impossible de le modifier pendant la visualisation. Arrêtez-la, modifiez ce réglage et il s\'appliquera au prochain démarrage.</string>
+    <string name="home_mic_sensitivity">Sensibilité du micro</string>
+    <string name="home_mic_sensitivity_value">%1$d %%</string>
     <string name="home_status_idle">État : prêt</string>
     <string name="home_capture_blocked">Aucun son ne parvient au visualiseur : rien ne peut donc être dessiné. Il se peut que l\'application qui diffuse le son n\'autorise pas son partage (c\'est le cas des vidéos protégées), ou que le son y soit coupé.</string>
     <string name="home_ai_unavailable_loud">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance et seuls les sons forts font vibrer, avec le réglage de vibration des sons de danger. Essayez de désactiver puis de réactiver la visualisation.</string>
@@ -32,6 +39,7 @@
     <string name="tutorial_play">Lire l\'animation</string>
     <string name="tutorial_sound_title">Voir le son sur votre écran</string>
     <string name="tutorial_sound_body">Le son de votre jeu ou de votre vidéo est dessiné le long des bords de l\'écran. Plus le son est fort, plus le dessin est grand. Seul le son diffusé sur votre téléphone est affiché. Les sons autour de vous ne sont pas captés.</string>
+    <string name="tutorial_sound_body_external">Le mode son externe est activé : les sons autour de vous, captés par le micro, sont dessinés le long des bords de l\'écran. Plus un son est fort, plus le dessin est grand. Dans ce mode, le son diffusé sur votre téléphone n\'est pas affiché.</string>
     <string name="tutorial_direction_title">Distingue la gauche de la droite</string>
     <string name="tutorial_direction_body">Un son venant de la gauche est dessiné plus grand à gauche, et un son venant de la droite, à droite. L\'application ne distingue pas l\'avant de l\'arrière.</string>
     <string name="tutorial_types_title">Chaque type de son a sa couleur</string>
@@ -46,6 +54,7 @@
     <string name="tutorial_vibration_body">Quand un son de danger retentit dans votre jeu ou votre vidéo, votre téléphone vibre. Vous le remarquez même si vous ne regardez pas l\'écran. Par défaut, seuls les sons de danger font vibrer. Dans l\'onglet Paramètres, vous pouvez activer ou désactiver la vibration pour chaque type.</string>
     <string name="tutorial_start_title">Activer et désactiver la visualisation</string>
     <string name="tutorial_privacy_note">Les autorisations « Micro » et « Enregistrement d\'écran » servent uniquement à capturer le son diffusé sur votre téléphone. Ni les sons autour de vous ni votre écran ne sont enregistrés.</string>
+    <string name="tutorial_privacy_note_external">Le mode son externe écoute les sons autour de vous avec le micro. Le son lui-même n\'est jamais enregistré dans un fichier ni envoyé où que ce soit, et votre écran n\'est pas enregistré.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Autoriser « Superposition sur d\'autres applis »</string>
@@ -53,8 +62,10 @@
     <string name="permission_record_audio_required">L\'autorisation d\'accès au micro (enregistrement audio) est nécessaire pour capturer le son.</string>
     <string name="permission_mic_rationale_title">Pourquoi autoriser l\'accès au micro ?</string>
     <string name="permission_mic_rationale_message">Android exige l\'autorisation d\'accès au micro pour capturer le son diffusé sur votre téléphone. Les sons autour de vous ne sont pas enregistrés.</string>
+    <string name="permission_mic_rationale_message_external">Le mode son externe écoute les sons autour de vous avec le micro et les affiche à l\'écran et par vibration. Sur Android 12 et versions ultérieures, un indicateur de micro s\'affiche dans la barre d\'état pendant l\'écoute. Le son lui-même n\'est jamais enregistré dans un fichier ni envoyé où que ce soit.</string>
     <string name="permission_mic_settings_title">Autorisez le micro dans les paramètres</string>
     <string name="permission_mic_settings_message">L\'autorisation d\'accès au micro n\'a pas été accordée. Si la demande ne s\'affiche plus, appuyez sur « Paramètres », ouvrez « Autorisations », puis autorisez « Micro ». Cette autorisation sert uniquement à capturer le son diffusé sur votre téléphone. Les sons autour de vous ne sont pas enregistrés.</string>
+    <string name="permission_mic_settings_message_external">L\'autorisation d\'accès au micro n\'a pas été accordée. Si la demande ne s\'affiche plus, appuyez sur « Paramètres », ouvrez « Autorisations », puis autorisez « Micro ». Le mode son externe écoute les sons autour de vous avec le micro. Le son lui-même n\'est jamais enregistré dans un fichier ni envoyé où que ce soit.</string>
     <string name="permission_continue">Continuer</string>
     <string name="permission_cancel">Annuler</string>
     <string name="permission_open_settings">Paramètres</string>
@@ -164,6 +175,9 @@
     <!-- Notification -->
     <string name="notification_channel_name">Capture audio</string>
     <string name="notification_text">Visualisation du son en cours.</string>
+    <string name="notification_title_external">Son externe · SoundVisualizer</string>
+    <string name="notification_text_external">Écoute et visualisation des sons autour de vous en cours.</string>
+    <string name="notification_text_mic_silenced">Aucun son n\'arrive par le micro. Vous êtes peut-être en communication, ou le micro est bloqué.</string>
     <string name="notification_stop">Arrêter</string>
     <string name="notification_mode_selected">%1$s, sélectionné</string>
     <string name="notification_text_ai_unavailable_loud">Visualisation du son en cours. La détection du type de son ne fonctionne pas, seuls les sons forts font donc vibrer.</string>
@@ -191,6 +205,7 @@
     <string name="help_start_title">Pour commencer</string>
     <string name="help_start_1">Dans l\'onglet Accueil, appuyez sur « Démarrer ».</string>
     <string name="help_start_2">Accordez les autorisations. Android vous demande d\'accepter l\'enregistrement d\'écran chaque fois que vous activez la visualisation.</string>
+    <string name="help_start_2_external">Accordez les autorisations. Le mode son externe ne demande pas d\'accepter l\'enregistrement d\'écran.</string>
     <string name="help_start_3">Lancez un jeu ou une vidéo : les sons s\'affichent le long des bords de l\'écran.</string>
     <string name="help_start_4">Pour désactiver la visualisation, appuyez sur « Arrêter » dans l\'onglet Accueil ou dans la notification.</string>
 
@@ -204,6 +219,7 @@
     <string name="help_perm_overlay_desc">Nécessaire pour afficher les graphismes par-dessus les jeux et les vidéos.</string>
     <string name="help_perm_mic">Micro (enregistrement audio)</string>
     <string name="help_perm_mic_desc">Android exige cette autorisation pour capturer le son diffusé sur votre téléphone. Les sons autour de vous ne sont pas enregistrés.</string>
+    <string name="help_perm_mic_desc_external">Android exige cette autorisation pour capturer le son diffusé sur votre téléphone. Quand le mode son externe est activé, elle sert aussi à écouter les sons autour de vous. Le son lui-même n\'est jamais enregistré dans un fichier ni envoyé où que ce soit.</string>
     <string name="help_perm_capture">Enregistrement d\'écran</string>
     <string name="help_perm_capture_desc">Android ne permet aux applications de capturer le son de votre téléphone qu\'avec cet accord. Votre écran n\'est pas capturé.</string>
     <string name="help_perm_notification">Notifications (Android 13+)</string>

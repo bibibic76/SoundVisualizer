@@ -42,6 +42,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -76,6 +77,7 @@ import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
+import com.example.soundvisualizer.SettingsManager
 import kotlinx.coroutines.launch
 
 /**
@@ -88,7 +90,15 @@ enum class TutorialPage(@StringRes val title: Int, @StringRes val body: Int?, va
     Direction(R.string.tutorial_direction_title, R.string.tutorial_direction_body, TutorialScene.Direction),
     Types(R.string.tutorial_types_title, R.string.tutorial_types_body, TutorialScene.Types),
     Vibration(R.string.tutorial_vibration_title, R.string.tutorial_vibration_body, TutorialScene.Vibration),
-    Start(R.string.tutorial_start_title, null, null)
+    Start(R.string.tutorial_start_title, null, null);
+
+    /**
+     * 지금 모드에 맞는 설명. 외부 사운드 모드면 소리 쪽은 마이크로 주변 소리를 그린다고 설명한다(#226).
+     * "폰에서 재생되는 소리만, 주변 소리는 듣지 않는다" 는 그 모드에서 거짓이다.
+     */
+    @StringRes
+    fun bodyFor(externalSoundMode: Boolean): Int? =
+        if (this == Sound && externalSoundMode) R.string.tutorial_sound_body_external else body
 }
 
 /**
@@ -365,7 +375,8 @@ private fun PageText(page: TutorialPage, time: MutableFloatState, titleFocus: Fo
                 .focusRequester(titleFocus)
                 .focusable()
         )
-        page.body?.let { body ->
+        val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+        page.bodyFor(externalSoundMode)?.let { body ->
             Spacer(Modifier.height(12.dp))
             Text(
                 stringResource(body),
@@ -397,9 +408,11 @@ private fun PageText(page: TutorialPage, time: MutableFloatState, titleFocus: Fo
  * 켜고 끄는 순서. 도움말 탭 ‘시작하기’의 네 단계를 그대로 쓴다(이미 모든 언어로 번역돼 있다).
  * 권한 이름을 늘어놓지 않는 것은, 실행을 누르면 앱이 권한마다 이유를 먼저 설명하기 때문이다. 대신 설명 없이
  * 뜨는 화면 녹화 동의가 켤 때마다 묻는다는 것(2단계)과, 그 권한으로 무엇을 하지 않는지를 적어 둔다.
+ * 외부 사운드 모드면 동의를 묻지 않고 마이크로 주변 소리를 들으므로, 그 모드에 맞는 문구로 바꾼다(#226).
  */
 @Composable
 private fun OnOffSteps(modifier: Modifier = Modifier) {
+    val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -408,11 +421,11 @@ private fun OnOffSteps(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Step(1, R.string.help_start_1)
-        Step(2, R.string.help_start_2)
+        Step(2, if (externalSoundMode) R.string.help_start_2_external else R.string.help_start_2)
         Step(3, R.string.help_start_3)
         Step(4, R.string.help_start_4)
         Text(
-            stringResource(R.string.tutorial_privacy_note),
+            stringResource(if (externalSoundMode) R.string.tutorial_privacy_note_external else R.string.tutorial_privacy_note),
             fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor,
             modifier = Modifier.padding(top = 4.dp)
         )

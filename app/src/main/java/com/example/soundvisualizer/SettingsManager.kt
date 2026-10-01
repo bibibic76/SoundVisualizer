@@ -49,6 +49,14 @@ object SettingsManager {
     internal const val PAUSE_WHEN_SCREEN_OFF_DEFAULT = true
 
     /**
+     * 홈의 "외부 사운드 모드" 기본값(#226). 꺼 두면 지금까지처럼 폰에서 재생되는 소리만 받는다.
+     *
+     * 켜면 마이크로 주변 소리를 듣는다. 사용자가 직접 골라야 하는 일이라 기본은 꺼짐이다.
+     * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
+     */
+    internal const val EXTERNAL_SOUND_MODE_DEFAULT = false
+
+    /**
      * 개발자 모드의 기본값. 팀이 AI 분류를 채점하는 도구라 사용자에게는 꺼져 있어야 한다.
      *
      * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
@@ -69,6 +77,8 @@ object SettingsManager {
     internal const val REDUCED_FRAME_RATE_DEFAULT = false
 
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
+    private const val KEY_EXTERNAL_SOUND_MODE = "external_sound_mode"
+    private const val KEY_MIC_SENSITIVITY = "mic_sensitivity"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
     private const val KEY_DEVELOPER_RECORD = "developer_record"
     private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
@@ -126,6 +136,13 @@ object SettingsManager {
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
 
+    /**
+     * 이번 실행(꺼져 있으면 마지막 실행)이 실제로 연 소리 소스. 캡처 서비스가 켤 때마다 덮어쓴다.
+     * 실행 중인 화면은 설정값([externalSoundMode])이 아니라 이 값을 따라 "주변 소리"를 적는다. 설정은 다음 실행의 소스다.
+     */
+    private val _runningCaptureSource = MutableStateFlow(CaptureSource.InternalPlayback)
+    val runningCaptureSource: StateFlow<CaptureSource> = _runningCaptureSource
+
     // 빠른 설정 타일이 알림창에 추가돼 있는지. 타일 서비스가 추가·제거될 때 알려준다.
     private val _tileAdded = MutableStateFlow(false)
     val tileAdded: StateFlow<Boolean> = _tileAdded
@@ -142,6 +159,21 @@ object SettingsManager {
     // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
     private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
     val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
+
+    /**
+     * 마이크로 주변 소리를 들을지(#226). 켜기를 누를 때 읽어 그 실행의 소스를 정한다([CaptureSource]).
+     * 실행 중에는 홈이 스위치를 잠가, 돌고 있는 실행과 표시가 어긋나지 않게 한다.
+     * 사용자의 선택이라 기기 전용 값([dropOtherDeviceValues])이 아니다.
+     */
+    private val _externalSoundMode = MutableStateFlow(EXTERNAL_SOUND_MODE_DEFAULT)
+    val externalSoundMode: StateFlow<Boolean> = _externalSoundMode
+
+    /**
+     * 외부 사운드 모드의 마이크 감도(%, [MicSensitivity]). 실행 중에도 바꿀 수 있고, 캡처 스레드가 버퍼마다 읽는다.
+     * 마이크는 기기마다 달라 기기 전용 값이다([dropOtherDeviceValues]).
+     */
+    private val _micSensitivity = MutableStateFlow(MicSensitivity.DEFAULT)
+    val micSensitivity: StateFlow<Int> = _micSensitivity
 
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
@@ -237,7 +269,8 @@ object SettingsManager {
      *
      * 자동 백업은 프리퍼런스 파일을 통째로 옮기고, 백업 규칙은 파일 단위라 키 하나만 뺄 수 없다. 그대로 두면
      * 새 폰에서 앱을 처음 열었을 때 "꺼졌습니다" 안내가 뜬다. 그 기기에서는 켠 적도 없는데, 소리를 못 듣는
-     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다.
+     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다. 마이크 감도도 기기의
+     * 마이크에 맞춘 값이라, 새 기기에서는 기본값에서 다시 맞추는 편이 낫다.
      *
      * 색·진동·모드 같은 사용자 설정은 새 기기로 옮겨 가는 게 맞으므로 건드리지 않는다.
      * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 기기의 값이 사라진다.
@@ -253,6 +286,7 @@ object SettingsManager {
                 remove(KEY_LAST_UNEXPECTED_STOP)
                 remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
                 remove(KEY_TILE_ADDED)
+                remove(KEY_MIC_SENSITIVITY)
             }
             putString(KEY_DEVICE_TAG, deviceTag)
         }
@@ -291,6 +325,8 @@ object SettingsManager {
 
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
+        _externalSoundMode.value = loadExternalSoundMode(prefs)
+        _micSensitivity.value = loadMicSensitivity(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
         _developerRecord.value = loadDeveloperRecord(prefs)
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
@@ -354,6 +390,14 @@ object SettingsManager {
     /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+
+    /** 저장된 적이 없으면 [EXTERNAL_SOUND_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadExternalSoundMode(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_EXTERNAL_SOUND_MODE, EXTERNAL_SOUND_MODE_DEFAULT)
+
+    /** 저장된 적이 없으면 [MicSensitivity.DEFAULT]. 슬라이더에 없는 값은 가장 가까운 칸으로 맞춘다. */
+    internal fun loadMicSensitivity(source: SharedPreferences): Int =
+        MicSensitivity.clamp(source.getInt(KEY_MIC_SENSITIVITY, MicSensitivity.DEFAULT))
 
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
@@ -536,6 +580,10 @@ object SettingsManager {
         _isServiceRunning.value = isRunning
     }
 
+    fun setRunningCaptureSource(source: CaptureSource) {
+        _runningCaptureSource.value = source
+    }
+
     fun setTileAdded(added: Boolean) {
         _tileAdded.value = added
         prefs.edit { putBoolean(KEY_TILE_ADDED, added) }
@@ -549,6 +597,19 @@ object SettingsManager {
     fun setPauseWhenScreenOff(enabled: Boolean) {
         _pauseWhenScreenOff.value = enabled
         prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
+    }
+
+    /** 다음 실행부터 적용된다. 실행 중에는 홈이 스위치를 잠근다. */
+    fun setExternalSoundMode(enabled: Boolean) {
+        _externalSoundMode.value = enabled
+        prefs.edit { putBoolean(KEY_EXTERNAL_SOUND_MODE, enabled) }
+    }
+
+    /** 실행 중에도 바로 적용된다(캡처 스레드가 버퍼마다 읽는다). */
+    fun setMicSensitivity(percent: Int) {
+        val value = MicSensitivity.clamp(percent)
+        _micSensitivity.value = value
+        prefs.edit { putInt(KEY_MIC_SENSITIVITY, value) }
     }
 
     /** 오버레이가 프레임마다 읽으므로 켜고 끄면 실행 중에도 바로 적용된다. */
