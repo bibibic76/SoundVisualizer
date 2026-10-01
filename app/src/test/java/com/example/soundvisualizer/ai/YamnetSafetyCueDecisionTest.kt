@@ -18,6 +18,11 @@ class YamnetSafetyCueDecisionTest {
         val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
         probabilities[0] = .6f
         probabilities[1] = .2f
+        // Real softmax output has no exact-zero tail. Fill five non-gunshot top-k
+        // entries so the sparse fixture does not fabricate a zero-score gunshot cue.
+        probabilities[4] = .001f
+        probabilities[5] = .001f
+        probabilities[6] = .001f
         val decision = YamnetSafetyCueDecision.decide(names, classifier.classify(probabilities))
         assertEquals("danger", decision.postCoarse)
         assertEquals("Siren", decision.postDisplay)
