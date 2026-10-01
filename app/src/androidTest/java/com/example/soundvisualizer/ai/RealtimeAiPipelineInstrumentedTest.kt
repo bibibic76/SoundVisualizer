@@ -2,154 +2,32 @@ package com.example.soundvisualizer.ai
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import org.json.JSONObject
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.math.max
 
-/**
- * Full realtime input path on device:
- * 44.1k stereo float → AiAudioBuffer → resample → CP2..CP6 vs Python E2E goldens.
- */
+/** Production pipeline always uses the pinned Qualcomm-source frontend (#272). */
 @RunWith(AndroidJUnit4::class)
 class RealtimeAiPipelineInstrumentedTest {
-
     @Test
-    fun developerConfig_switchesFrontendAndBypassesBoosterOnNextTick() {
+    fun realtimePipeline_logMelMatchesQualcommFrontend() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
-        val test = InstrumentationRegistry.getInstrumentation().context
-        val stereo = loadF32(test.assets.open("ai_reference/e2e_gunshot_stereo44100.bin"))
-        var config = AiDiagnosticConfig.DEFAULT
-
-        RealtimeAiPipeline.create(
-            app,
-            captureSampleRate = 44100,
-            channels = 2,
-            diagnosticConfigProvider = { config }
-        ).use { pipeline ->
-            ingest(pipeline, stereo)
-            val current = requireNotNull(pipeline.runTickForTest())
-
-            config = AiDiagnosticConfig(
-                frontendMode = AiFrontendMode.QUALCOMM_SOURCE,
-                boosterEnabled = false
-            )
-            ingest(pipeline, stereo)
-            val qualcommWithoutBooster = requireNotNull(pipeline.runTickForTest())
-
-            assertEquals(AiFrontendMode.CURRENT, current.frontendMode)
-            assertTrue(current.boosterEnabled)
-            assertTrue(current.boosterAvailable)
-
-            assertEquals(AiFrontendMode.QUALCOMM_SOURCE, qualcommWithoutBooster.frontendMode)
-            assertEquals(false, qualcommWithoutBooster.boosterEnabled)
-            assertEquals(false, qualcommWithoutBooster.boosterAvailable)
-            assertTrue(qualcommWithoutBooster.gunshotScore.isNaN())
-            assertEquals(0.0, qualcommWithoutBooster.result.boosterMs, 0.0)
-            assertEquals("booster_disabled", qualcommWithoutBooster.boosterReason)
-            assertTrue(
-                "the two frontend contracts must not silently use the same output",
-                !current.logMel.contentEquals(qualcommWithoutBooster.logMel)
-            )
-        }
-    }
-
-    @Test
-    fun e2e_stereo44100_matchesPythonReference() {
-        val app = InstrumentationRegistry.getInstrumentation().targetContext
-        val test = InstrumentationRegistry.getInstrumentation().context
-        val meta = JSONObject(
-            test.assets.open("ai_reference/yamnet_e2e_meta.json").bufferedReader().readText()
-        )
-        val cases = meta.getJSONObject("cases")
-
-        RealtimeAiPipeline.create(app, captureSampleRate = 44100, channels = 2).use { pipeline ->
-            for (name in listOf("silence", "gunshot", "alarm")) {
-                pipeline.resetState()
-                val stereo = loadF32(test.assets.open("ai_reference/e2e_${name}_stereo44100.bin"))
-                val expectedMono16 = loadF32(test.assets.open("ai_reference/e2e_${name}_mono16k.bin"))
-                val expectedLogMel = loadF32(test.assets.open("ai_reference/e2e_${name}_logmel.bin"))
-                val expectedProbs = loadF32(test.assets.open("ai_reference/e2e_${name}_probs.bin"))
-                val exp = cases.getJSONObject(name)
-
-                ingest(pipeline, stereo)
-
-                val tick = pipeline.runTickForTest()
-                if (name == "silence") {
-                    assertEquals("silence must skip YAMNet and Booster", 0L, pipeline.inferenceStatsForTest().executed)
-                    assertEquals("silence skip count", 1L, pipeline.inferenceStatsForTest().skippedForSilence)
-                    assertEquals("silence tick", null, tick)
-                    continue
-                }
-                assertNotNull("$name tick", tick)
-                val d = tick!!
-
-                val monoErr = maxAbs(d.mono16k, expectedMono16)
-                val melErr = maxAbs(d.logMel, expectedLogMel)
-                val probErr = maxAbs(d.probabilities, expectedProbs)
-                val scoreErr = abs(d.gunshotScore - exp.getDouble("gunshot_score").toFloat())
-
-                println("=== E2E $name ===")
-                println("mono16k maxAbs=$monoErr logmel maxAbs=$melErr probs maxAbs=$probErr")
-                println(
-                    "pre=${d.preBoosterCoarse} boost=${d.boosterAccepted} " +
-                        "score=${d.gunshotScore} ui=${d.result.coarse}/${d.result.display}"
-                )
-                println(
-                    "timing ms pre=${d.result.preprocessMs} yam=${d.result.yamnetMs} " +
-                        "bst=${d.result.boosterMs} tot=${d.result.totalMs}"
-                )
-
-                assertTrue("$name mono16k", monoErr < 1e-4f)
-                assertTrue("$name logmel", melErr < 1e-3f)
-                assertTrue("$name probs", probErr < 1e-3f)
-                assertTrue("$name gunshotScore", scoreErr < 1e-3f)
-                assertTrue("$name booster available", d.boosterAvailable)
-                assertTrue("$name result booster available", d.result.boosterAvailable)
-
-                assertEquals(
-                    "$name pre-booster coarse",
-                    exp.getString("pre_booster_coarse"),
-                    d.preBoosterCoarse
-                )
-                assertEquals(
-                    "$name booster accepted",
-                    exp.getBoolean("booster_accepted"),
-                    d.boosterAccepted
-                )
-                assertEquals("$name ui coarse", exp.getString("ui_coarse"), d.result.coarse)
-                if (exp.optBoolean("assert_ui_display", true)) {
-                    assertEquals("$name ui display", exp.getString("ui_display"), d.result.display)
-                }
-            }
-        }
-    }
-
-    private fun loadF32(input: java.io.InputStream): FloatArray {
-        val bytes = input.use { it.readBytes() }
-        val out = FloatArray(bytes.size / 4)
-        ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(out)
-        return out
-    }
-
-    private fun ingest(pipeline: RealtimeAiPipeline, stereo: FloatArray) {
-        var offset = 0
-        while (offset < stereo.size) {
-            val count = minOf(1024, stereo.size - offset)
-            pipeline.ingestInterleavedForTest(stereo.copyOfRange(offset, offset + count), count)
-            offset += count
+        val mono = FloatArray(16_000) { i -> kotlin.math.sin(i * .031).toFloat() * .4f }
+        RealtimeAiPipeline.create(app, captureSampleRate = 16_000, channels = 1).use { pipeline ->
+            pipeline.ingestMonoForTest(mono)
+            val tick = requireNotNull(pipeline.runTickForTest())
+            val expected = QualcommSourceAudioPreprocessor().computeLogMelSpectrogram(mono)
+            assertNotNull(tick.result)
+            assertTrue("pipeline did not use Qualcomm frontend", maxAbs(expected, tick.logMel) < 1e-5f)
         }
     }
 
     private fun maxAbs(a: FloatArray, b: FloatArray): Float {
-        var m = 0f
-        for (i in a.indices) m = max(m, abs(a[i] - b[i]))
-        return m
+        var maxError = 0f
+        for (i in a.indices) maxError = max(maxError, abs(a[i] - b[i]))
+        return maxError
     }
 }

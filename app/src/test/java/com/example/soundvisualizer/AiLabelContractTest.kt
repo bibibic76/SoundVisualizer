@@ -1,7 +1,7 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiPostProcessor
-import com.example.soundvisualizer.ai.GunshotBoosterDecision
+import com.example.soundvisualizer.ai.YamnetSafetyCueDecision
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import org.junit.Assert.assertEquals
@@ -94,43 +94,29 @@ class AiLabelContractTest {
     }
 
     @Test
-    fun `게임 음악에 묻힌 총소리는 Booster 와 후처리를 거쳐 DANGER 로 나온다`() {
-        // 실제 파이프라인(RealtimeAiPipeline)과 같은 순서로 잇는다: 투표 → Booster 판정 → 후처리.
-        // 음악이 1위라 투표는 환경음이 되고, Booster 가 총소리 점수를 보고 위협음으로 올리는 경로다.
+    fun `YAMNet gunshot top cue는 후처리까지 세 UI 라벨 중 하나다`() {
         val probs = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
         probs[indexOfClass("Music")] = 0.5f
         probs[indexOfClass("Gunshot, gunfire")] = 0.45f
         val pre = classifier.classify(probs)
         assertUiLabel("투표", pre.coarse)
 
-        for (gunshotScore in listOf(0f, 1f)) {
-            val decision = GunshotBoosterDecision.decide(probs, classNames, pre, gunshotScore)
-            assertUiLabel("Booster 전 (점수 $gunshotScore)", decision.preBoosterCoarse)
-            assertUiLabel("Booster 후 (점수 $gunshotScore)", decision.postBoosterCoarse)
+        val decision = YamnetSafetyCueDecision.decide(classNames, pre)
+        assertUiLabel("YAMNet mapping", decision.postCoarse)
 
-            val topKSummary = pre.top5.joinToString(separator = " | ") { it.name }
-            val post = AiPostProcessor().process(
-                AiPostProcessor.FrameInput(
-                    coarse = decision.postBoosterCoarse,
-                    display = decision.postBoosterDisplay,
-                    confidence = decision.postBoosterConfidence,
-                    adoptedDangerFromBooster = decision.accepted,
-                    hasStrongDangerCue = decision.hasStrongDangerCue,
-                    hasCriticalDangerCue = AiPostProcessor.isCriticalDangerEvent(
-                        decision.postBoosterDisplay,
-                        topKSummary
-                    ),
-                    topKSummary = topKSummary
-                )
+        val topKSummary = pre.top5.joinToString(separator = " | ") { it.name }
+        val post = AiPostProcessor().process(
+            AiPostProcessor.FrameInput(
+                coarse = decision.postCoarse,
+                display = decision.postDisplay,
+                confidence = decision.postConfidence,
+                dangerCuePromoted = decision.dangerCuePromoted,
+                hasStrongDangerCue = decision.hasStrongDangerCue,
+                hasCriticalDangerCue = AiPostProcessor.isCriticalDangerEvent(decision.postDisplay, topKSummary),
+                topKSummary = topKSummary
             )
-            assertUiLabel("후처리 (점수 $gunshotScore)", post.uiCoarse)
-
-            if (gunshotScore == 1f) {
-                assertTrue("총소리 단서와 최고 점수는 Booster 가 받아들여야 한다: ${decision.reason}", decision.accepted)
-                assertEquals("Booster 후", AiClassification.DANGER, decision.postBoosterCoarse)
-                assertEquals("후처리", AiClassification.DANGER, post.uiCoarse)
-            }
-        }
+        )
+        assertUiLabel("후처리", post.uiCoarse)
     }
 
     @Test
@@ -141,7 +127,7 @@ class AiLabelContractTest {
             coarse = YamnetThreeClassMapper.mapDisplayNameToCoarse(name),
             display = name,
             confidence = confidence,
-            hasStrongDangerCue = GunshotBoosterDecision.isStrongDangerKeyword(name),
+            hasStrongDangerCue = YamnetSafetyCueDecision.isStrongDangerKeyword(name),
             hasCriticalDangerCue = AiPostProcessor.isCriticalDangerKeyword(name)
         )
 

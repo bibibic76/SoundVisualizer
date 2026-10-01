@@ -1,7 +1,6 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
-import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import java.util.Locale
 import org.junit.After
@@ -23,8 +22,6 @@ class AiDebugCsvTest {
         coarse: String = "danger",
         display: String = "Gunshot, gunfire",
         confidence: Float = 0.54321f,
-        gunshotScore: Float = 0.8f,
-        boosterAvailable: Boolean = true,
         top5: List<YamnetCoarseClassifier.TopClassHit> = listOf(
             YamnetCoarseClassifier.TopClassHit(1, "Gunshot, gunfire", 0.54321f),
             YamnetCoarseClassifier.TopClassHit(2, "Speech", 0.1f)
@@ -34,23 +31,13 @@ class AiDebugCsvTest {
         coarse = coarse,
         display = display,
         confidence = confidence,
-        gunshotScore = gunshotScore,
         top5 = top5,
-        gunshotEvidence = 0.25f,
-        boosterReason = "booster_accepted",
         dangerCuePromoted = false,
-        boosterAvailable = boosterAvailable,
-        preBoosterCoarse = "ambient",
-        boosterAccepted = true,
         meetsThreshold = true,
-        useBoosterDangerPreview = false,
         timestampMs = timestampMs,
         preprocessMs = 3.21,
         yamnetMs = 41.0,
-        boosterMs = 2.0,
-        totalMs = 46.21,
-        frontendMode = AiFrontendMode.CURRENT,
-        boosterEnabled = true
+        totalMs = 46.21
     )
 
     /** 칸 수를 맞춰 세려면 따옴표 안의 쉼표를 빼고 세야 한다. 아주 작은 CSV 파서. */
@@ -127,18 +114,6 @@ class AiDebugCsvTest {
     }
 
     @Test
-    fun `부스터가 없으면 점수 자리에 NaN 을 적지 않는다`() {
-        val parsed = cells(
-            AiDebugCsv.row(
-                result(boosterAvailable = false, gunshotScore = Float.NaN),
-                nowMs = 1_500L, captureSource = CaptureSource.InternalPlayback, level = 0.1f, shown = true
-            )
-        )
-        assertEquals(AiDebugCsv.NONE, parsed[AiDebugCsv.COLUMNS.indexOf("gunshot_score")])
-        assertEquals(AiDebugCsv.NONE, parsed[AiDebugCsv.COLUMNS.indexOf("gunshot_evidence")])
-        assertTrue("NaN 이 줄에 남았다", !parsed.any { it.contains("NaN") })
-    }
-
     @Test
     fun `언어를 바꿔도 숫자 서식이 같다`() {
         // 앱은 기본 로캘을 사용자가 고른 언어로 바꾼다. 아랍어에서는 %f 가 아랍 숫자를 쓴다.

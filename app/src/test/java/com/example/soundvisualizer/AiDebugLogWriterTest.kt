@@ -1,7 +1,6 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
-import com.example.soundvisualizer.ai.AiFrontendMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -19,23 +18,13 @@ class AiDebugLogWriterTest {
         coarse = coarse,
         display = "Speech",
         confidence = 0.5f,
-        gunshotScore = 0.1f,
         top5 = emptyList(),
-        gunshotEvidence = 0f,
-        boosterReason = "below_threshold",
         dangerCuePromoted = false,
-        boosterAvailable = true,
-        preBoosterCoarse = coarse,
-        boosterAccepted = false,
         meetsThreshold = true,
-        useBoosterDangerPreview = false,
         timestampMs = timestampMs,
         preprocessMs = 1.0,
         yamnetMs = 2.0,
-        boosterMs = 0.0,
-        totalMs = 3.0,
-        frontendMode = AiFrontendMode.CURRENT,
-        boosterEnabled = true
+        totalMs = 3.0
     )
 
     @Test

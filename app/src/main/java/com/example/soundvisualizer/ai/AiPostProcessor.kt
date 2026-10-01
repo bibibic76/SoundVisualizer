@@ -1,7 +1,7 @@
 package com.example.soundvisualizer.ai
 
 /**
- * Threshold + ApplyCoarseHysteresis + booster UI preview.
+ * Threshold + ApplyCoarseHysteresis for the YAMNet-only path.
  * Pure Kotlin — no Android framework, no capture/overlay coupling.
  */
 class AiPostProcessor(
@@ -12,7 +12,6 @@ class AiPostProcessor(
         val coarse: String,
         val display: String,
         val confidence: Float,
-        val adoptedDangerFromBooster: Boolean = false,
         val dangerCuePromoted: Boolean = false,
         /** Top-5에 strong danger keyword 존재 (threshold 완화용). */
         val hasStrongDangerCue: Boolean = false,
@@ -30,7 +29,6 @@ class AiPostProcessor(
         val confirmedCoarse: String,
         val confirmedDisplay: String,
         val confirmedConfidence: Float,
-        val useBoosterDangerPreview: Boolean,
         val uiCoarse: String,
         val uiDisplay: String,
         val uiConfidence: Float
@@ -46,7 +44,6 @@ class AiPostProcessor(
         fun computeEffectiveThreshold(
             coarse: String,
             baseThreshold: Float,
-            adoptedDangerFromBooster: Boolean,
             hasStrongDangerCue: Boolean,
             hasCriticalDangerCue: Boolean,
             dangerCuePromoted: Boolean = false
@@ -55,9 +52,9 @@ class AiPostProcessor(
             if (coarse == "danger" && dangerCuePromoted) {
                 effective = minOf(effective, 0.12f)
             } else if (coarse == "danger" &&
-                (hasStrongDangerCue || hasCriticalDangerCue || adoptedDangerFromBooster)
+                (hasStrongDangerCue || hasCriticalDangerCue)
             ) {
-                effective = minOf(effective, if (adoptedDangerFromBooster) 0.18f else 0.20f)
+                effective = minOf(effective, 0.20f)
             } else if (coarse == "speech") {
                 effective = maxOf(effective, 0.25f)
             }
@@ -66,7 +63,7 @@ class AiPostProcessor(
 
         fun isCriticalDangerKeyword(name: String?): Boolean {
             if (name.isNullOrEmpty()) return false
-            if (GunshotBoosterDecision.isGunshotKeyword(name)) return true
+            if (YamnetSafetyCueDecision.isGunshotKeyword(name)) return true
             val s = name.lowercase()
             return "explosion" in s || "fireworks" in s || "firecracker" in s
         }
@@ -94,7 +91,6 @@ class AiPostProcessor(
         val effective = computeEffectiveThreshold(
             coarse = frame.coarse,
             baseThreshold = baseConfidenceThreshold,
-            adoptedDangerFromBooster = frame.adoptedDangerFromBooster,
             hasStrongDangerCue = frame.hasStrongDangerCue,
             hasCriticalDangerCue = frame.hasCriticalDangerCue,
             dangerCuePromoted = frame.dangerCuePromoted
@@ -105,7 +101,6 @@ class AiPostProcessor(
         val rCoarse = frame.coarse
         val rDisplay = frame.display
         val rConf = frame.confidence
-        val rAdopted = frame.adoptedDangerFromBooster
         val rMeets = meets
         val rCritical = isCriticalDangerEvent(frame.display, frame.topKSummary)
 
@@ -114,19 +109,8 @@ class AiPostProcessor(
             newCoarse = rCoarse,
             display = rDisplay,
             confidence = rConf,
-            adoptedDangerFromBooster = rAdopted,
             criticalDangerEvent = rCritical
         )
-
-        val usePreview =
-            confirmedCoarse != "danger" &&
-                frame.adoptedDangerFromBooster &&
-                frame.coarse == "danger" &&
-                meets
-
-        val uiCoarse = if (usePreview) "danger" else confirmedCoarse
-        val uiDisplay = if (usePreview) frame.display else confirmedDisplay
-        val uiConfidence = if (usePreview) frame.confidence else confirmedConfidence
 
         return FrameResult(
             effectiveThreshold = effective,
@@ -136,10 +120,9 @@ class AiPostProcessor(
             confirmedCoarse = confirmedCoarse,
             confirmedDisplay = confirmedDisplay,
             confirmedConfidence = confirmedConfidence,
-            useBoosterDangerPreview = usePreview,
-            uiCoarse = uiCoarse,
-            uiDisplay = uiDisplay,
-            uiConfidence = uiConfidence
+            uiCoarse = confirmedCoarse,
+            uiDisplay = confirmedDisplay,
+            uiConfidence = confirmedConfidence
         )
     }
 
@@ -148,7 +131,6 @@ class AiPostProcessor(
         newCoarse: String,
         display: String,
         confidence: Float,
-        adoptedDangerFromBooster: Boolean,
         criticalDangerEvent: Boolean
     ) {
         if (!meetsThreshold) return
@@ -183,7 +165,6 @@ class AiPostProcessor(
             if (newCoarse == "danger") DANGER_HYSTERESIS_THRESHOLD else COARSE_HYSTERESIS_THRESHOLD
         if (confirmedCoarse == "danger" &&
             newCoarse != "danger" &&
-            !adoptedDangerFromBooster &&
             confidence >= DANGER_EXIT_RELAXED_CONFIDENCE
         ) {
             required = 1

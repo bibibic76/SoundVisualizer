@@ -37,10 +37,8 @@ internal object PipelineInternals {
      */
     fun sessionFailure(pipeline: RealtimeAiPipeline): Throwable? {
         val yamnet: YamnetInference = read(pipeline, "yamnet")
-        val booster: GunshotBoosterInference = read(pipeline, "booster")
         return try {
-            val result = yamnet.inferFromLogMelFlat(FloatArray(YamnetInference.LOG_MEL_SIZE))
-            booster.score(result.probabilities)
+            yamnet.inferFromLogMelFlat(FloatArray(YamnetInference.LOG_MEL_SIZE))
             null
         } catch (t: Throwable) {
             t
@@ -50,9 +48,7 @@ internal object PipelineInternals {
     /** 시간 초과로 일부러 누수시킨 세션을 테스트가 끝난 뒤 정리한다 (그대로 두면 프로세스 내내 남는다). */
     fun releaseLeakedSessions(pipeline: RealtimeAiPipeline) {
         val yamnet: YamnetInference = read(pipeline, "yamnet")
-        val booster: GunshotBoosterInference = read(pipeline, "booster")
         runCatching { yamnet.close() }
-        runCatching { booster.close() }
     }
 
     @Suppress("UNCHECKED_CAST")

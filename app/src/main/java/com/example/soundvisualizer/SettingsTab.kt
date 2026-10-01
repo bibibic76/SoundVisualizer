@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
-import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.language.LanguageSettingCard
 
 /** @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다. */
@@ -252,23 +251,6 @@ fun SettingsTab(onAddTile: () -> Unit) {
                             record
                         ) {
                             SettingsManager.setDeveloperRecord(it)
-                        }
-                        val diagnosticConfig by SettingsManager.aiDiagnosticConfig.collectAsState()
-                        ModernSwitch(
-                            stringResource(R.string.setting_ai_qualcomm_frontend),
-                            stringResource(R.string.setting_ai_qualcomm_frontend_desc),
-                            diagnosticConfig.frontendMode == AiFrontendMode.QUALCOMM_SOURCE
-                        ) {
-                            SettingsManager.setAiFrontendMode(
-                                if (it) AiFrontendMode.QUALCOMM_SOURCE else AiFrontendMode.CURRENT
-                            )
-                        }
-                        ModernSwitch(
-                            stringResource(R.string.setting_ai_booster),
-                            stringResource(R.string.setting_ai_booster_desc),
-                            diagnosticConfig.boosterEnabled
-                        ) {
-                            SettingsManager.setAiBoosterEnabled(it)
                         }
                     }
                 }
