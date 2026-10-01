@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">Izin mikrofon (rekam audio) diperlukan untuk menangkap audio.</string>
     <string name="permission_mic_rationale_title">Mengapa perlu izin mikrofon?</string>
     <string name="permission_mic_rationale_message">Android mewajibkan izin mikrofon untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
-    <string name="permission_mic_rationale_message_external">Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon lalu menampilkannya di layar dan lewat getaran. Di Android 12 dan yang lebih baru, indikator mikrofon muncul di status bar selama mendengarkan. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
+    <string name="permission_mic_rationale_message_external">Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon lalu menampilkannya di layar dan lewat getaran. Di Android 12 dan yang lebih baru, indikator mikrofon muncul di status bar selama mendengarkan. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="permission_mic_settings_title">Izinkan mikrofon di Setelan</string>
     <string name="permission_mic_settings_message">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Izin ini hanya digunakan untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
-    <string name="permission_mic_settings_message_external">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
+    <string name="permission_mic_settings_message_external">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="permission_continue">Lanjutkan</string>
     <string name="permission_cancel">Batal</string>
     <string name="permission_open_settings">Buka setelan</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Jeda saat layar mati</string>
-    <string name="setting_pause_screen_off_desc">Saat layar mati, aplikasi berhenti menangkap suara, mendeteksi jenis suara, dan bergetar untuk menghemat baterai, lalu lanjut lagi begitu layar dinyalakan. Matikan opsi ini jika Anda tetap ingin menerima peringatan getar saat layar mati.</string>
+    <string name="setting_pause_screen_off_desc">Saat layar mati, aplikasi berhenti menangkap suara, mendeteksi jenis suara, dan bergetar untuk menghemat baterai, lalu lanjut lagi begitu layar dinyalakan. Matikan opsi ini jika Anda tetap ingin menerima peringatan getar saat layar mati. Mode suara luar tetap mendengarkan saat layar mati, apa pun setelan ini.</string>
     <string name="setting_reduced_frame_rate">Menggambar grafik lebih jarang</string>
     <string name="setting_reduced_frame_rate_desc">Grafik digambar ulang 30 kali per detik, bukan 60 kali. Ini menghemat baterai saat aplikasi dibiarkan berjalan lama, tetapi gerakannya menjadi kurang mulus. Suara tetap ditangkap sesering biasanya.</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">Diperlukan untuk menampilkan grafik di atas game dan video.</string>
     <string name="help_perm_mic">Mikrofon (rekam audio)</string>
     <string name="help_perm_mic_desc">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
-    <string name="help_perm_mic_desc_external">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Saat mode suara luar aktif, izin ini juga dipakai untuk mendengarkan suara di sekitar Anda. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun.</string>
+    <string name="help_perm_mic_desc_external">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Saat mode suara luar aktif, izin ini juga dipakai untuk mendengarkan suara di sekitar Anda. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="help_perm_capture">Perekaman layar</string>
     <string name="help_perm_capture_desc">Android hanya mengizinkan aplikasi menangkap suara ponsel Anda melalui persetujuan ini. Layar Anda tidak direkam.</string>
     <string name="help_perm_notification">Notifikasi (Android 13+)</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">Suara yang diputar di ponsel ditangkap sesuai tingkat volume media. Jika volume diturunkan sangat rendah, grafik dan getaran mungkin tidak merespons, dan pada volume 0 tidak ada yang ditangkap. Jika responsnya lemah, naikkan sedikit volumenya. Mode suara luar tidak dipengaruhi volume.</string>
     <string name="help_note_mic_sensitivity">Dalam Mode suara luar, Sensitivitas mikrofon hanya mengubah seberapa keras suara terlihat oleh grafik dan getaran. Naikkan jika suara pelan hampir tidak tampak, dan turunkan jika di tempat bising suara latar ikut tampak. Pengaturan ini tidak mengubah suara yang digunakan AI untuk membedakan jenis suara.</string>
     <string name="help_note_stopped">Memulai perekaman layar, berbagi layar, atau cast akan mematikan visualisasi, karena semuanya memakai persetujuan perekaman layar yang sama dan Android hanya mengizinkan satu aplikasi memakainya dalam satu waktu. Jika aplikasi lain sedang merekam, berbagi, atau melakukan cast, menyalakannya lagi akan menghentikan aplikasi tersebut. Umumnya, saat visualisasi mati tanpa Anda matikan sendiri, ponsel bergetar panjang tiga kali dan menampilkan notifikasi dengan tombol “Nyalakan lagi”. Menghentikan penangkapan suara dari kontrol berbagi layar di ponsel Anda memunculkan pemberitahuan yang sama, sedangkan penghentian paksa atau aplikasi yang berhenti mendadak tidak dapat memberi tahu Anda sama sekali. Jika notifikasi dimatikan, hanya getaran yang memberi tahu Anda, dan Beranda menunjukkan apa yang mati saat Anda membuka aplikasi.</string>
-    <string name="help_note_screen_off">Saat layar mati, aplikasi menjeda dirinya untuk menghemat baterai dan lanjut lagi begitu layar dinyalakan. Anda dapat mengubahnya di bagian Baterai pada tab Setelan.</string>
+    <string name="help_note_screen_off">Saat layar mati, aplikasi menjeda dirinya untuk menghemat baterai dan lanjut lagi begitu layar dinyalakan. Anda dapat mengubahnya di bagian Baterai pada tab Setelan. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="help_note_ai">Klasifikasi AI bisa salah. Jangan mengandalkan aplikasi ini sebagai satu-satunya pengaman dalam situasi yang menyangkut keselamatan.</string>
 
     <string name="help_faq_title">Pertanyaan umum</string>

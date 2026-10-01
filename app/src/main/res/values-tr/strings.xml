@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">Sesi yakalamak için Mikrofon (ses kaydı) izni gerekiyor.</string>
     <string name="permission_mic_rationale_title">Mikrofon izni neden gerekli?</string>
     <string name="permission_mic_rationale_message">Android, telefonunuzda çalan sesin yakalanabilmesi için mikrofon izni gerektirir. Çevrenizdeki sesler kaydedilmez.</string>
-    <string name="permission_mic_rationale_message_external">Dış ses modu, mikrofonla çevrenizdeki sesleri dinler ve bunları ekranda ve titreşimle gösterir. Android 12 ve sonraki sürümlerde, dinlerken durum çubuğunda mikrofon göstergesi görünür. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="permission_mic_rationale_message_external">Dış ses modu, mikrofonla çevrenizdeki sesleri dinler ve bunları ekranda ve titreşimle gösterir. Android 12 ve sonraki sürümlerde, dinlerken durum çubuğunda mikrofon göstergesi görünür. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez. Dış ses modu, ekran kapalıyken de dinlemeye devam eder.</string>
     <string name="permission_mic_settings_title">Mikrofon iznini Ayarlar\'dan verin</string>
     <string name="permission_mic_settings_message">Mikrofon izni verilmedi. İzin penceresi tekrar görünmezse “Ayarları aç” düğmesine dokunun, ardından “İzinler” bölümüne gidip “Mikrofon” iznini verin. Bu izin yalnızca telefonunuzda çalan sesi yakalamak için kullanılır. Çevrenizdeki sesler kaydedilmez.</string>
-    <string name="permission_mic_settings_message_external">Mikrofon izni verilmedi. İzin penceresi tekrar görünmezse “Ayarları aç” düğmesine dokunun, ardından “İzinler” bölümüne gidip “Mikrofon” iznini verin. Dış ses modu, mikrofonla çevrenizdeki sesleri dinler. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="permission_mic_settings_message_external">Mikrofon izni verilmedi. İzin penceresi tekrar görünmezse “Ayarları aç” düğmesine dokunun, ardından “İzinler” bölümüne gidip “Mikrofon” iznini verin. Dış ses modu, mikrofonla çevrenizdeki sesleri dinler. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez. Dış ses modu, ekran kapalıyken de dinlemeye devam eder.</string>
     <string name="permission_continue">Devam</string>
     <string name="permission_cancel">İptal</string>
     <string name="permission_open_settings">Ayarları aç</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Ekran kapalıyken duraklat</string>
-    <string name="setting_pause_screen_off_desc">Ekran kapalıyken pilden tasarruf etmek için ses yakalamayı, ses türü algılamayı ve titreşimi durdurur; ekranı açtığınızda kaldığı yerden devam eder. Ekran kapalıyken de titreşim uyarısı almak için bunu kapatın.</string>
+    <string name="setting_pause_screen_off_desc">Ekran kapalıyken pilden tasarruf etmek için ses yakalamayı, ses türü algılamayı ve titreşimi durdurur; ekranı açtığınızda kaldığı yerden devam eder. Ekran kapalıyken de titreşim uyarısı almak için bunu kapatın. Dış ses modu, bu ayardan bağımsız olarak ekran kapalıyken de dinlemeye devam eder.</string>
     <string name="setting_reduced_frame_rate">Grafikleri daha seyrek çiz</string>
     <string name="setting_reduced_frame_rate_desc">Grafikleri saniyede 60 yerine 30 kez çizer. Uygulamayı uzun süre açık bıraktığınızda pilden tasarruf sağlar, ancak hareket daha az akıcı olur. Ses ise yine aynı sıklıkta yakalanır.</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">Oyunların ve videoların üzerinde grafik göstermek için gereklidir.</string>
     <string name="help_perm_mic">Mikrofon (ses kaydı)</string>
     <string name="help_perm_mic_desc">Android, telefonunuzda çalan sesin yakalanabilmesi için bu izni gerektirir. Çevrenizdeki sesler kaydedilmez.</string>
-    <string name="help_perm_mic_desc_external">Android, telefonunuzda çalan sesin yakalanabilmesi için bu izni gerektirir. Dış ses modu açıkken bu izin, çevrenizdeki sesleri dinlemek için de kullanılır. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez.</string>
+    <string name="help_perm_mic_desc_external">Android, telefonunuzda çalan sesin yakalanabilmesi için bu izni gerektirir. Dış ses modu açıkken bu izin, çevrenizdeki sesleri dinlemek için de kullanılır. Sesin kendisi hiçbir zaman dosyaya kaydedilmez veya bir yere gönderilmez. Dış ses modu, ekran kapalıyken de dinlemeye devam eder.</string>
     <string name="help_perm_capture">Ekran kaydı</string>
     <string name="help_perm_capture_desc">Android, uygulamaların telefonunuzdaki sesi yalnızca bu onay aracılığıyla yakalamasına izin verir. Ekranınız kaydedilmez.</string>
     <string name="help_perm_notification">Bildirimler (Android 13+)</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">Telefonunuzda çalan ses, medya ses düzeyinin belirlediği seviyede yakalanır. Ses düzeyini çok kısarsanız grafik ve titreşim tepki vermeyebilir; ses düzeyi sıfırken hiçbir şey yakalanmaz. Tepki zayıfsa ses düzeyini biraz açın. Dış ses modu ses düzeyinden etkilenmez.</string>
     <string name="help_note_mic_sensitivity">Dış ses modunda mikrofon hassasiyeti, yalnızca seslerin grafik ve titreşime ne kadar yüksek geldiğini değiştirir. Kısık sesler pek görünmüyorsa artırın, gürültülü bir yerde arka plan gürültüsü de görünüyorsa azaltın. Yapay zekanın ses türünü ayırt etmek için kullandığı sesi değiştirmez.</string>
     <string name="help_note_stopped">Ekran kaydı, ekran paylaşımı veya yayın başlatmak görselleştirmeyi kapatır; çünkü görselleştirme de aynı ekran kaydı onayını kullanır ve Android bunu aynı anda yalnızca tek bir uygulamaya verir. Başka bir uygulama kayıt, paylaşım ya da yayın yapıyorsa yeniden açtığınızda o işlem sona erer. Siz durdurmadığınız hâlde kapandığında telefon çoğu durumda art arda üç uzun titreşim verir ve “Yeniden aç” düğmesi bulunan bir bildirim gösterir. Ses yakalamayı telefonunuzun ekran paylaşımı bildiriminden durdurduğunuzda da aynı uyarı görünür; zorla durdurma veya çökme durumunda ise hiçbir bilgi verilemez. Bildirimler kapalıysa yalnızca titreşim haber verir; uygulamayı açtığınızda “Ana sayfa” sekmesinde neyin kapandığını görürsünüz.</string>
-    <string name="help_note_screen_off">Ekran kapalıyken pilden tasarruf etmek için duraklar, ekranı açtığınızda kaldığı yerden devam eder. Bunu “Ayarlar” sekmesindeki “Pil” bölümünden değiştirebilirsiniz.</string>
+    <string name="help_note_screen_off">Ekran kapalıyken pilden tasarruf etmek için duraklar, ekranı açtığınızda kaldığı yerden devam eder. Bunu “Ayarlar” sekmesindeki “Pil” bölümünden değiştirebilirsiniz. Dış ses modu, ekran kapalıyken de dinlemeye devam eder.</string>
     <string name="help_note_ai">Yapay zeka sınıflandırması hatalı olabilir. Güvenliğin söz konusu olduğu durumlarda yalnızca bu uygulamaya güvenmeyin.</string>
 
     <string name="help_faq_title">Sık sorulan sorular</string>

@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">Cần có quyền micrô (ghi âm) để thu âm thanh đang phát trên điện thoại.</string>
     <string name="permission_mic_rationale_title">Tại sao cần quyền micrô?</string>
     <string name="permission_mic_rationale_message">Android yêu cầu quyền micrô để thu âm thanh đang phát trên điện thoại của bạn. Âm thanh xung quanh bạn không bị ghi lại.</string>
-    <string name="permission_mic_rationale_message_external">Chế độ âm thanh bên ngoài nghe âm thanh xung quanh bạn qua micrô rồi hiển thị trên màn hình và báo bằng rung. Trên Android 12 trở lên, trong lúc nghe, biểu tượng micrô hiện trên thanh trạng thái. Bản thân âm thanh không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
+    <string name="permission_mic_rationale_message_external">Chế độ âm thanh bên ngoài nghe âm thanh xung quanh bạn qua micrô rồi hiển thị trên màn hình và báo bằng rung. Trên Android 12 trở lên, trong lúc nghe, biểu tượng micrô hiện trên thanh trạng thái. Bản thân âm thanh không bao giờ được lưu vào tệp hay gửi đi đâu cả. Chế độ âm thanh bên ngoài vẫn tiếp tục nghe khi màn hình tắt.</string>
     <string name="permission_mic_settings_title">Hãy cấp quyền micrô trong Cài đặt</string>
     <string name="permission_mic_settings_message">Quyền micrô chưa được cấp. Nếu yêu cầu cấp quyền không xuất hiện lại, hãy nhấn “Mở cài đặt”, vào “Quyền” rồi cho phép “Micrô”. Quyền này chỉ dùng để thu âm thanh đang phát trên điện thoại. Âm thanh xung quanh bạn không bị ghi lại.</string>
-    <string name="permission_mic_settings_message_external">Quyền micrô chưa được cấp. Nếu yêu cầu cấp quyền không xuất hiện lại, hãy nhấn “Mở cài đặt”, vào “Quyền” rồi cho phép “Micrô”. Chế độ âm thanh bên ngoài nghe âm thanh xung quanh bạn qua micrô. Bản thân âm thanh không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
+    <string name="permission_mic_settings_message_external">Quyền micrô chưa được cấp. Nếu yêu cầu cấp quyền không xuất hiện lại, hãy nhấn “Mở cài đặt”, vào “Quyền” rồi cho phép “Micrô”. Chế độ âm thanh bên ngoài nghe âm thanh xung quanh bạn qua micrô. Bản thân âm thanh không bao giờ được lưu vào tệp hay gửi đi đâu cả. Chế độ âm thanh bên ngoài vẫn tiếp tục nghe khi màn hình tắt.</string>
     <string name="permission_continue">Tiếp tục</string>
     <string name="permission_cancel">Hủy</string>
     <string name="permission_open_settings">Mở cài đặt</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Tạm dừng khi màn hình tắt</string>
-    <string name="setting_pause_screen_off_desc">Khi màn hình tắt, ứng dụng ngừng thu âm thanh, ngừng nhận diện loại âm thanh và ngừng rung để tiết kiệm pin, rồi tiếp tục khi bạn bật màn hình. Hãy tắt tùy chọn này nếu bạn muốn vẫn nhận được thông báo rung lúc màn hình tắt.</string>
+    <string name="setting_pause_screen_off_desc">Khi màn hình tắt, ứng dụng ngừng thu âm thanh, ngừng nhận diện loại âm thanh và ngừng rung để tiết kiệm pin, rồi tiếp tục khi bạn bật màn hình. Hãy tắt tùy chọn này nếu bạn muốn vẫn nhận được thông báo rung lúc màn hình tắt. Chế độ âm thanh bên ngoài vẫn tiếp tục nghe khi màn hình tắt, bất kể cài đặt này.</string>
     <string name="setting_reduced_frame_rate">Giảm tần suất vẽ đồ họa</string>
     <string name="setting_reduced_frame_rate_desc">Vẽ lại đồ họa 30 lần mỗi giây thay vì 60 lần. Cách này giúp tiết kiệm pin khi bạn để ứng dụng chạy trong thời gian dài, nhưng chuyển động sẽ kém mượt hơn. Tần suất thu âm thanh vẫn giữ nguyên.</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">Cần thiết để hiển thị đồ họa phía trên trò chơi và video.</string>
     <string name="help_perm_mic">Micrô (ghi âm)</string>
     <string name="help_perm_mic_desc">Android yêu cầu quyền này để thu âm thanh đang phát trên điện thoại của bạn. Âm thanh xung quanh bạn không bị ghi lại.</string>
-    <string name="help_perm_mic_desc_external">Android yêu cầu quyền này để thu âm thanh đang phát trên điện thoại của bạn. Khi bật chế độ âm thanh bên ngoài, quyền này còn được dùng để nghe âm thanh xung quanh bạn. Bản thân âm thanh không bao giờ được lưu vào tệp hay gửi đi đâu cả.</string>
+    <string name="help_perm_mic_desc_external">Android yêu cầu quyền này để thu âm thanh đang phát trên điện thoại của bạn. Khi bật chế độ âm thanh bên ngoài, quyền này còn được dùng để nghe âm thanh xung quanh bạn. Bản thân âm thanh không bao giờ được lưu vào tệp hay gửi đi đâu cả. Chế độ âm thanh bên ngoài vẫn tiếp tục nghe khi màn hình tắt.</string>
     <string name="help_perm_capture">Ghi màn hình</string>
     <string name="help_perm_capture_desc">Android chỉ cho phép ứng dụng thu âm thanh trên điện thoại khi bạn đồng ý với yêu cầu này. Màn hình của bạn không bị ghi lại.</string>
     <string name="help_perm_notification">Thông báo (Android 13 trở lên)</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">Âm thanh đang phát trên điện thoại được thu theo mức âm lượng nội dung nghe nhìn. Nếu bạn giảm âm lượng xuống rất thấp, đồ họa và rung có thể không phản hồi, và ở mức 0 thì không thu được gì. Nếu phản hồi yếu, hãy tăng âm lượng lên một chút. Chế độ âm thanh bên ngoài không phụ thuộc vào âm lượng.</string>
     <string name="help_note_mic_sensitivity">Trong Chế độ âm thanh bên ngoài, Độ nhạy micrô chỉ thay đổi độ lớn của âm thanh mà đồ họa và rung cảm nhận được. Hãy tăng lên nếu âm thanh nhỏ hầu như không hiện, và giảm xuống nếu ở nơi ồn ào tiếng ồn nền cũng hiện ra. Cài đặt này không thay đổi âm thanh mà AI dùng để phân biệt loại âm thanh.</string>
     <string name="help_note_stopped">Khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, âm thanh trực quan sẽ tắt, vì tất cả đều dùng chung một sự đồng ý ghi màn hình mà Android chỉ cho phép một ứng dụng dùng tại một thời điểm. Nếu một ứng dụng khác đang ghi, chia sẻ hoặc truyền màn hình, việc bật lại sẽ kết thúc hoạt động đó. Trong hầu hết trường hợp, khi ứng dụng tắt mà không phải do bạn tắt, điện thoại sẽ rung dài ba lần và hiện thông báo kèm nút “Bật lại”. Nếu bạn ngừng thu âm thanh từ phần điều khiển chia sẻ màn hình của điện thoại thì cũng hiện thông báo tương tự; còn khi ứng dụng bị buộc dừng hoặc gặp sự cố thì không thể báo cho bạn. Nếu bạn đã tắt thông báo, chỉ có rung cho bạn biết, và khi bạn mở ứng dụng, thẻ Trang chủ sẽ cho biết điều gì đã tắt.</string>
-    <string name="help_note_screen_off">Khi màn hình tắt, ứng dụng tạm dừng để tiết kiệm pin và tiếp tục khi bạn bật màn hình. Bạn có thể thay đổi điều này ở mục Pin trong thẻ Cài đặt.</string>
+    <string name="help_note_screen_off">Khi màn hình tắt, ứng dụng tạm dừng để tiết kiệm pin và tiếp tục khi bạn bật màn hình. Bạn có thể thay đổi điều này ở mục Pin trong thẻ Cài đặt. Chế độ âm thanh bên ngoài vẫn tiếp tục nghe khi màn hình tắt.</string>
     <string name="help_note_ai">AI có thể phân loại sai. Khi liên quan đến an toàn, đừng coi ứng dụng này là biện pháp bảo vệ duy nhất.</string>
 
     <string name="help_faq_title">Câu hỏi thường gặp</string>

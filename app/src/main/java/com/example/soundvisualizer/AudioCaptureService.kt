@@ -60,7 +60,7 @@ import java.nio.FloatBuffer
  * 캡처 루프는 코루틴 대신 전용 스레드(URGENT_AUDIO 우선순위)에서 돌며,
  * AudioRecord → direct ByteBuffer → JNI 로 복사 없이 넘긴다.
  *
- * 사용자가 끈 게 아닌데 멈추면 [StopAlert] 로 알린다. 화면이 꺼지면 [ScreenOffPause] 에 따라 쉰다.
+ * 사용자가 끈 게 아닌데 멈추면 [StopAlert] 로 알린다. 화면이 꺼지면 [ScreenOffPause] 에 따라 쉰다. 외부 사운드 모드는 쉬지 않는다(#260).
  * 재생 중인 소리를 아무것도 받지 못하면 [BlockedCaptureNotice] 에 따라, 마이크로 아무것도 들어오지 않으면
  * [MicSilenceNotice] 에 따라 알린다.
  */
@@ -920,7 +920,9 @@ class AudioCaptureService : Service() {
     private fun onScreenOff() {
         // 이미 내려가는 중이면 건드리지 않는다.
         if (stopLatch.isStopping) return
-        if (screenPause.onScreenOff(SettingsManager.pauseWhenScreenOff.value)) pauseForScreenOff()
+        // 외부 사운드 모드는 설정과 상관없이 화면이 꺼져도 듣는다([CaptureSource.followsScreenOffPause], #260).
+        val pause = captureSource.followsScreenOffPause && SettingsManager.pauseWhenScreenOff.value
+        if (screenPause.onScreenOff(pause)) pauseForScreenOff()
     }
 
     private fun onScreenOn() {

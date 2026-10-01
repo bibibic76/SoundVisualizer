@@ -156,6 +156,10 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 설정 탭 **배터리**의 **화면이 꺼지면 일시정지**(`SettingsManager.pauseWhenScreenOff`, 기본 켜짐)가 켜져 있으면, 화면이 꺼진 동안 캡처·AI·진동·오버레이 확인을 멈추고 화면이 켜지면 다시 켭니다. 꺼 두면 화면이 꺼져도 지금처럼 계속 돕니다(화면이 꺼진 채 음악을 들으며 진동 알림을 받고 싶은 경우).
 
+- **외부 사운드 모드는 쉬지 않습니다**(#260, `CaptureSource.followsScreenOffPause`). 이 설정과 상관없이 화면이 꺼져도 듣습니다.
+  - 이 모드는 폰을 내려놓아 화면이 꺼진 동안 초인종·화재경보·부르는 소리를 알리려는 것이라, 화면이 꺼진 때가 가장 필요한 때입니다. 아래 ‘왜 쉬나’의 이유(게임과 영상이 멈추고 오버레이가 보이지 않는다)는 폰 안의 소리에만 맞습니다.
+  - 화면이 꺼진 동안 상태 표시줄의 마이크 표시는 보이지 않습니다. 그래서 외부 모드의 마이크 권한 안내, 도움말의 권한 설명과 ‘화면이 꺼지면 쉼’ 항목, 배터리 설정 설명에 화면이 꺼져도 듣는다고 적습니다.
+
 - **왜 쉬나**: 화면이 꺼지면 게임과 대부분의 영상은 멈추고 오버레이는 보이지도 않습니다. 그래도 `AudioRecord`가 녹음 중이면 오디오 서버가 앱 몫의 wake lock을 쥐어 CPU가 잠들지 못하고, AI는 250ms마다 추론하고, 진동 판단은 100ms마다 돌고, 주머니 속에서 음악의 사이렌 소리에 위협음 진동이 울릴 수도 있습니다.
 - **감지**: `AudioCaptureService`가 실행 중에만 `ACTION_SCREEN_OFF`·`ACTION_SCREEN_ON` 수신기를 등록합니다. 이 두 방송은 매니페스트로는 받을 수 없습니다. 시스템만 보내는 보호된 방송이지만 `ContextCompat.registerReceiver(..., RECEIVER_NOT_EXPORTED)`로 앱 밖에 열어 두지 않습니다(Android 13 이상은 플래그, 그 아래는 앱 서명 권한으로 같은 효과). 등록할 때 이미 화면이 꺼져 있으면(`PowerManager.isInteractive`) 바로 쉽니다.
 - **쉬기** (메인 스레드): 결과 읽기(`AiClassification.detach`) → 진동(`HapticNotifier.stop`) → AI(`RealtimeAiPipeline.stop`) → 캡처(`isRecording=false` → `AudioRecord.stop` → 캡처 스레드 종료 대기) → `AudioEngine.reset`.

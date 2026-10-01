@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">需要麦克风（录音）权限才能捕获音频。</string>
     <string name="permission_mic_rationale_title">为什么需要麦克风权限？</string>
     <string name="permission_mic_rationale_message">根据 Android 的要求，需要麦克风权限才能捕获手机上播放的声音。本应用不会录制您周围的声音。</string>
-    <string name="permission_mic_rationale_message_external">外部声音模式会通过麦克风收听您周围的声音，并通过屏幕和振动告诉您。在 Android 12 及更高版本中，收听期间状态栏会显示麦克风图标。声音本身不会保存为文件，也不会发送到任何地方。</string>
+    <string name="permission_mic_rationale_message_external">外部声音模式会通过麦克风收听您周围的声音，并通过屏幕和振动告诉您。在 Android 12 及更高版本中，收听期间状态栏会显示麦克风图标。声音本身不会保存为文件，也不会发送到任何地方。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="permission_mic_settings_title">请在设置中允许使用麦克风</string>
     <string name="permission_mic_settings_message">未获得麦克风权限。如果权限请求窗口没有再次出现，请点按“打开设置”，然后在“权限”中允许“麦克风”。此权限仅用于捕获手机上播放的声音，不会录制您周围的声音。</string>
-    <string name="permission_mic_settings_message_external">未获得麦克风权限。如果权限请求窗口没有再次出现，请点按“打开设置”，然后在“权限”中允许“麦克风”。外部声音模式会通过麦克风收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方。</string>
+    <string name="permission_mic_settings_message_external">未获得麦克风权限。如果权限请求窗口没有再次出现，请点按“打开设置”，然后在“权限”中允许“麦克风”。外部声音模式会通过麦克风收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="permission_continue">继续</string>
     <string name="permission_cancel">取消</string>
     <string name="permission_open_settings">打开设置</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">屏幕关闭时暂停</string>
-    <string name="setting_pause_screen_off_desc">屏幕关闭期间停止捕获声音、识别声音类型和振动，以节省电量，屏幕点亮后自动继续。如果希望屏幕关闭时仍收到振动提醒，请关闭此项。</string>
+    <string name="setting_pause_screen_off_desc">屏幕关闭期间停止捕获声音、识别声音类型和振动，以节省电量，屏幕点亮后自动继续。如果希望屏幕关闭时仍收到振动提醒，请关闭此项。无论此设置如何，外部声音模式在屏幕关闭时都会继续收听。</string>
     <string name="setting_reduced_frame_rate">降低图形绘制频率</string>
     <string name="setting_reduced_frame_rate_desc">图形每秒重绘 30 次，而不是 60 次。让应用长时间运行时可以节省电量，但图形的动画会不那么流畅。声音捕获的间隔保持不变。</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">用于在游戏和视频上方显示图形。</string>
     <string name="help_perm_mic">麦克风（录音）</string>
     <string name="help_perm_mic_desc">根据 Android 的要求，需要此权限才能捕获手机上播放的声音。不会录制您周围的声音。</string>
-    <string name="help_perm_mic_desc_external">根据 Android 的要求，需要此权限才能捕获手机上播放的声音。开启外部声音模式后，也会用此权限收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方。</string>
+    <string name="help_perm_mic_desc_external">根据 Android 的要求，需要此权限才能捕获手机上播放的声音。开启外部声音模式后，也会用此权限收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="help_perm_capture">屏幕录制</string>
     <string name="help_perm_capture_desc">Android 仅允许应用在获得此项同意后捕获手机上的声音。不会录制您的屏幕画面。</string>
     <string name="help_perm_notification">通知（Android 13 及更高版本）</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">手机内播放的声音会按媒体音量设定的大小被捕获。如果把音量调得很低，图形和振动可能不会有反应；音量为 0 时则完全捕获不到。如果反应不明显，请把音量调高一些。外部声音模式不受音量影响。</string>
     <string name="help_note_mic_sensitivity">外部声音模式中的“麦克风灵敏度”只改变图形和振动所感知的声音大小。较小的声音几乎显示不出来时请调高，在嘈杂的地方连背景噪音也显示出来时请调低。它不会改变 AI 用来区分声音类型的声音。</string>
     <string name="help_note_stopped">开始屏幕录制、屏幕共享或投屏会让可视化关闭，因为它们使用同一项屏幕录制授权，而 Android 一次只允许一个应用使用。如果其他应用正在录制、共享或投屏，重新开启会使其结束。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。从手机的屏幕共享通知中结束声音捕获时，也会显示同样的提醒；如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
-    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。</string>
+    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="help_note_ai">AI 分类可能出错。在涉及安全的情况下，请勿将本应用作为唯一的保障手段。</string>
 
     <string name="help_faq_title">常见问题</string>

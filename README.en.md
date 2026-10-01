@@ -67,6 +67,7 @@ Turn on **External sound mode** on Home and start, and it listens to **the sound
 - It's off by default. When it's on, it starts without screen recording consent, and on Android 12 and later a microphone indicator shows in the status bar while it listens. The running notification title and the Home status also say **Surrounding sound**.
 - What it hears is only used to measure loudness and tell the type of sound. **The audio itself is never saved to a file or sent anywhere.** If you turn on result recording in developer mode, the names of the sounds the AI heard and their times are written to a CSV file in the app folder.
 - It can't be changed while running. Stop the visualizer, change it, and it applies the next time you start.
+- **It keeps listening while the screen is off.** The mode is meant to tell you about a doorbell or a fire alarm while your phone is lying there with the screen off, so it listens regardless of **Pause while the screen is off** in the Battery settings. It uses more battery as a result.
 - **Microphone sensitivity** appears under the switch when the mode is on (50–800%, 100% by default). Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It takes effect right away, even while running. It only changes the loudness the graphics and vibration see; the AI that tells sound types apart hears the same sound.
 - For now it always draws sound in the center. The phone's two microphones sit apart along its long side, so it can't tell left from right when you hold it upright, only when you hold it sideways. Showing left and right in landscape comes later.
 - If you're on a call, another app is using the microphone, or microphone access is turned off in Quick Settings, no sound comes in. Home and the running notification tell you when that happens.
@@ -101,7 +102,7 @@ To use a different language from your phone, tap **Language** at the top of the 
 - Built to run smoothly over games. Even on 120Hz screens it's capped at 60 frames per second to save battery and reduce heat.
 - **To save even more**, turn on **Draw the graphic less often** under **Battery** in the Settings tab. It redraws only 30 times a second, which saves battery when you leave it running for a long time. Movement is less smooth, but sound is still picked up just as often.
 - When there's no sound, it stops drawing and goes idle.
-- **It pauses while the screen is off.** It stops capturing sound, running the AI and vibrating while the screen is off, and picks up again when you turn the screen on. To keep getting vibration alerts with the screen off, turn off **Pause while the screen is off** under **Battery** in the Settings tab.
+- **It pauses while the screen is off.** It stops capturing sound, running the AI and vibrating while the screen is off, and picks up again when you turn the screen on. To keep getting vibration alerts with the screen off, turn off **Pause while the screen is off** under **Battery** in the Settings tab. External sound mode keeps listening with the screen off, whatever this setting is.
 - A notification is shown while it's running, and its **Stop** button turns it off right away. Expand the notification to switch the **visual mode** too.
 
 ---
@@ -173,13 +174,13 @@ It turns off when screen recording, screen sharing or casting starts, or when so
 Check whether the app you're playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
 
 **It doesn't vibrate.**
-In Settings, under Sound types, make sure **Show** is on and **Vibrate** isn't set to **Off** for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
+In Settings, under Sound types, make sure **Show** is on and **Vibrate** isn't set to **Off** for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. External sound mode keeps listening while the screen is off. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
 
 **A new version won't install.**
 An APK built on a different computer has a different signature and can't be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.
 
 **Does it use a lot of battery?**
-It only draws while there's sound and goes idle when it's quiet. While the screen is off, by default it also stops capturing sound and running the AI. Because it keeps capturing sound while the screen is on, it does use some battery while running. We recommend turning it off when you're not using it.
+It only draws while there's sound and goes idle when it's quiet. While the screen is off, by default it also stops capturing sound and running the AI (External sound mode keeps listening). Because it keeps capturing sound while the screen is on, it does use some battery while running. We recommend turning it off when you're not using it.
 
 **How do I change the app language?**
 Tap **Language** at the top of the **Settings** tab and pick one. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.

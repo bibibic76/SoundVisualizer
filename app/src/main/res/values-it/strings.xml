@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">Per acquisire l\'audio serve l\'autorizzazione Microfono (registrazione audio).</string>
     <string name="permission_mic_rationale_title">Perché serve l\'accesso al microfono?</string>
     <string name="permission_mic_rationale_message">Android richiede l\'autorizzazione Microfono per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
-    <string name="permission_mic_rationale_message_external">La modalità suoni esterni ascolta i suoni intorno a te con il microfono e te li mostra sullo schermo e con la vibrazione. Su Android 12 e versioni successive, mentre ascolta nella barra di stato compare l\'indicatore del microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
+    <string name="permission_mic_rationale_message_external">La modalità suoni esterni ascolta i suoni intorno a te con il microfono e te li mostra sullo schermo e con la vibrazione. Su Android 12 e versioni successive, mentre ascolta nella barra di stato compare l\'indicatore del microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove. La modalità suoni esterni continua ad ascoltare anche a schermo spento.</string>
     <string name="permission_mic_settings_title">Consenti il microfono in Impostazioni</string>
     <string name="permission_mic_settings_message">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. Viene usata solo per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
-    <string name="permission_mic_settings_message_external">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. La modalità suoni esterni ascolta i suoni intorno a te con il microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
+    <string name="permission_mic_settings_message_external">L\'autorizzazione Microfono non è stata concessa. Se la richiesta non compare più, tocca “Apri impostazioni”, vai su “Autorizzazioni” e consenti “Microfono”. La modalità suoni esterni ascolta i suoni intorno a te con il microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove. La modalità suoni esterni continua ad ascoltare anche a schermo spento.</string>
     <string name="permission_continue">Continua</string>
     <string name="permission_cancel">Annulla</string>
     <string name="permission_open_settings">Apri impostazioni</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pausa a schermo spento</string>
-    <string name="setting_pause_screen_off_desc">A schermo spento interrompe l\'acquisizione dell\'audio, il riconoscimento dei tipi di suono e la vibrazione per risparmiare batteria, e riprende quando riaccendi lo schermo. Disattiva questa opzione per continuare a ricevere gli avvisi con vibrazione a schermo spento.</string>
+    <string name="setting_pause_screen_off_desc">A schermo spento interrompe l\'acquisizione dell\'audio, il riconoscimento dei tipi di suono e la vibrazione per risparmiare batteria, e riprende quando riaccendi lo schermo. Disattiva questa opzione per continuare a ricevere gli avvisi con vibrazione a schermo spento. La modalità suoni esterni continua ad ascoltare a schermo spento, qualunque sia questa impostazione.</string>
     <string name="setting_reduced_frame_rate">Disegna la grafica meno spesso</string>
     <string name="setting_reduced_frame_rate_desc">Ridisegna la grafica 30 volte al secondo invece di 60. Risparmia batteria quando lasci l\'app attiva a lungo, ma il movimento è meno fluido. L\'audio continua a essere acquisito altrettanto spesso.</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">Serve per mostrare la grafica sopra giochi e video.</string>
     <string name="help_perm_mic">Microfono (registrazione audio)</string>
     <string name="help_perm_mic_desc">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. I suoni intorno a te non vengono registrati.</string>
-    <string name="help_perm_mic_desc_external">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. Con la modalità suoni esterni attiva, viene usata anche per ascoltare i suoni intorno a te. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
+    <string name="help_perm_mic_desc_external">Android richiede questa autorizzazione per acquisire l\'audio riprodotto sul telefono. Con la modalità suoni esterni attiva, viene usata anche per ascoltare i suoni intorno a te. L\'audio in sé non viene mai salvato in un file né inviato altrove. La modalità suoni esterni continua ad ascoltare anche a schermo spento.</string>
     <string name="help_perm_capture">Registrazione dello schermo</string>
     <string name="help_perm_capture_desc">Android consente alle app di acquisire l\'audio del telefono solo tramite questo consenso. Lo schermo non viene registrato.</string>
     <string name="help_perm_notification">Notifiche (Android 13+)</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">L\'audio riprodotto sul telefono viene acquisito al livello impostato dal volume dei contenuti multimediali. Se abbassi molto il volume, la grafica e la vibrazione potrebbero non reagire, e a zero non viene acquisito niente. Se la risposta è debole, alza un po\' il volume. La modalità suoni esterni non dipende dal volume.</string>
     <string name="help_note_mic_sensitivity">Nella modalità suoni esterni, la sensibilità del microfono cambia solo quanto forti appaiono i suoni alla grafica e alla vibrazione. Alzala se i suoni deboli si vedono appena e abbassala se in un luogo rumoroso si vede anche il rumore di fondo. Non cambia l\'audio che l\'IA usa per riconoscere i tipi di suono.</string>
     <string name="help_note_stopped">Se avvii la registrazione dello schermo, la condivisione dello schermo o la trasmissione, la visualizzazione si disattiva: usa lo stesso consenso alla registrazione dello schermo e Android lo concede a una sola app per volta. Se un\'altra app sta registrando, condividendo o trasmettendo, riattivando la visualizzazione ne interrompi l\'attività. Nella maggior parte dei casi, quando si disattiva senza che tu l\'abbia interrotta, il telefono vibra tre volte a lungo e mostra una notifica con il pulsante “Riattiva”. Anche interrompendo l\'acquisizione dell\'audio dai controlli di condivisione dello schermo del telefono compare lo stesso avviso, mentre in caso di chiusura forzata o di arresto anomalo non è possibile avvisarti. Se le notifiche sono disattivate, ti avvisa solo la vibrazione e, quando apri l\'app, la scheda Home mostra che cosa si è disattivato.</string>
-    <string name="help_note_screen_off">A schermo spento la visualizzazione va in pausa per risparmiare batteria e riprende quando riaccendi lo schermo. Puoi cambiare questa impostazione in Batteria, nella scheda Impostazioni.</string>
+    <string name="help_note_screen_off">A schermo spento la visualizzazione va in pausa per risparmiare batteria e riprende quando riaccendi lo schermo. Puoi cambiare questa impostazione in Batteria, nella scheda Impostazioni. La modalità suoni esterni continua ad ascoltare anche a schermo spento.</string>
     <string name="help_note_ai">La classificazione dell\'IA può essere errata. Non affidarti a questa app come unica protezione quando è in gioco la sicurezza.</string>
 
     <string name="help_faq_title">Domande frequenti</string>

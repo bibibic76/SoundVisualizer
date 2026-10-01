@@ -31,20 +31,30 @@ enum class CaptureSource(
      * 그 안내는 재생 중인 앱이 소리 공유를 막았다고 본다. 마이크가 조용한 이유는 재생 중인 앱과 상관이 없어서,
      * 마이크 모드에서 돌리면 이어폰으로 음악을 듣는 동안 엉뚱한 앱을 탓한다. 마이크는 [MicSilenceNotice] 가 본다.
      */
-    val watchesBlockedCapture: Boolean
+    val watchesBlockedCapture: Boolean,
+    /**
+     * 설정의 "화면이 꺼지면 일시정지"([ScreenOffPause])를 따르는지.
+     *
+     * 그 설정의 이유는 폰 안의 소리에만 맞는다. 화면이 꺼지면 게임과 대부분의 영상이 멈추고 오버레이도 보이지 않는다.
+     * 외부 사운드 모드는 반대로, 폰을 내려놓아 화면이 꺼진 동안 초인종·화재경보·부르는 소리를 알리려는 모드다.
+     * 그래서 마이크는 따르지 않고 화면이 꺼져도 듣는다(#260). 그 대신 마이크 권한 안내와 도움말에 그렇다고 적는다.
+     */
+    val followsScreenOffPause: Boolean
 ) {
     /** 폰에서 재생되는 소리(AudioPlaybackCapture). 외부 사운드 모드를 끈, 지금까지의 동작이다. */
     InternalPlayback(
         needsProjectionConsent = true,
         foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION,
-        watchesBlockedCapture = true
+        watchesBlockedCapture = true,
+        followsScreenOffPause = true
     ),
 
     /** 마이크로 듣는 주변 소리. 외부 사운드 모드를 켜면 쓴다. */
     Microphone(
         needsProjectionConsent = false,
         foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE,
-        watchesBlockedCapture = false
+        watchesBlockedCapture = false,
+        followsScreenOffPause = false
     );
 
     companion object {
