@@ -114,7 +114,6 @@ class AiDebugCsvTest {
     }
 
     @Test
-    @Test
     fun `언어를 바꿔도 숫자 서식이 같다`() {
         // 앱은 기본 로캘을 사용자가 고른 언어로 바꾼다. 아랍어에서는 %f 가 아랍 숫자를 쓴다.
         val us = AiDebugCsv.row(
