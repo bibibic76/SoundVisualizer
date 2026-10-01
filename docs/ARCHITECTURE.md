@@ -37,7 +37,7 @@ graph TD
 **앱에서 시작** (`MainActivity`)
 
 1. 다른 앱 위에 표시 권한(`SYSTEM_ALERT_WINDOW`)을 확인하고, 없으면 **먼저 안내 창을 띄운 뒤** 설정 화면으로 보냅니다. 그 화면은 기기에 따라 앱 목록만 뜨고 어느 앱을 켜야 하는지 알려주지 않아서, 설명 없이 보내면 처음 쓰는 사용자가 그냥 나가기 쉽습니다.
-   - 이 화면은 결과를 돌려주지 않으므로, 허용하고 돌아온 것은 `onResume`에서 `Settings.canDrawOverlays`로 확인해 눌렀던 실행을 이어갑니다. `onResume`은 앱을 열 때마다·화면을 돌릴 때마다·다른 앱에서 돌아올 때마다 불리므로, **사용자가 실행을 눌러 설정 화면으로 보내진 경우에만 한 번** 이어갑니다(`PendingStart`, 화면을 돌려 다시 만들어져도 유지되게 `onSaveInstanceState`에 저장). 허용하지 않고 돌아왔거나 실행 종료를 누르면 버립니다. 이 규칙은 안드로이드에 의존하지 않아 JVM에서 검사합니다(`PendingStartTest`).
+   - 이 화면은 결과를 돌려주지 않으므로, 허용하고 돌아온 것은 `onResume`에서 `Settings.canDrawOverlays`로 확인해 눌렀던 실행을 이어갑니다. `onResume`은 앱을 열 때마다·화면을 돌릴 때마다·다른 앱에서 돌아올 때마다 불리므로, **사용자가 실행을 눌러 설정 화면으로 보내진 경우에만 한 번** 이어갑니다(`PendingStart`). 이 표시는 화면 회전처럼 설정이 바뀌어 다시 만들어질 때만 `onRetainCustomNonConfigurationInstance`로 넘기고, 저장 번들(`onSaveInstanceState`)에는 넣지 않습니다. 넣으면 프로세스가 죽은 뒤 한참 있다 앱을 열었을 때도 남아 누르지도 않은 실행이 이어지고, 외부 사운드 모드라면 동의 창 없이 마이크가 열립니다. 허용하지 않고 돌아왔거나 실행 종료를 누르면 버립니다. 이 규칙은 안드로이드에 의존하지 않아 JVM에서 검사합니다(`PendingStartTest`).
 2. 녹음(`RECORD_AUDIO`)과 알림(`POST_NOTIFICATIONS`, Android 13 이상) 권한을 요청합니다. 알림 권한은 거부해도 이어서 켭니다.
    - 녹음 권한이 필요하면 시스템 창보다 먼저 이유를 설명하는 창을 띄웁니다. 시스템 창에는 "마이크"라고만 떠서 녹음 앱으로 오해하고 거부하기 쉽기 때문입니다. 알림 권한만 필요하면 바로 묻습니다.
    - 녹음 권한이 거부됐는데 `shouldShowRequestPermissionRationale`이 `false`면 시스템이 더는 창을 띄우지 않는 상태로 보고, 앱 정보 화면(`ACTION_APPLICATION_DETAILS_SETTINGS`)을 여는 안내 창을 띄웁니다. 그 밖의 거부는 토스트로 알리고 멈춥니다.
