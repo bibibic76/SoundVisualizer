@@ -87,10 +87,13 @@ fun AiDebugOverlay() {
             val result = AiClassification.latest()
             val nowMs = System.currentTimeMillis()
             val level = AudioEngine.currentLevel()
+            // 실행마다 고정되는 소스를 결과를 본 시점에 함께 큐로 넘긴다. 파일 쓰기 스레드가 나중에
+            // 설정을 읽으면 다음 실행의 source로 잘못 적힐 수 있다.
+            val captureSource = SettingsManager.runningCaptureSource.value
             val shown = result?.let { LiveVisualizerInputs.isShown(it.coarse) } ?: false
             // 기록은 큐에 넣기만 하므로 메인 스레드를 붙잡지 않는다. 같은 결과를 두세 번 보는 것은
             // AiDebugLogWriter 가 timestampMs 로 걸러 낸다.
-            if (result != null) AiDebugRecorder.offer(result, nowMs, level, shown)
+            if (result != null) AiDebugRecorder.offer(result, nowMs, captureSource, level, shown)
             value = AiDebugText.format(
                 result = result,
                 nowMs = nowMs,

@@ -23,6 +23,7 @@ object AiDebugCsv {
         add("time_ms")
         add("result_ms")
         add("age_ms")
+        add("capture_source")
         add("coarse")
         add("display")
         add("confidence")
@@ -58,17 +59,26 @@ object AiDebugCsv {
      *
      * @param nowMs 읽은 시각. [AiClassificationResult.timestampMs] 와의 차이가 age 다. 무음 게이트가 닫히면
      *   추론을 건너뛰고 마지막 결과를 들고 있으므로, 나이가 자라는 것이 보여야 "추론이 멈췄다" 를 알 수 있다.
+     * @param captureSource 이번 행이 나온 실행의 입력 소스. 비동기 파일 writer가 설정을 나중에 읽지 않도록,
+     *   HUD가 결과를 본 시점에 함께 고정한다.
      * @param level 그때의 소리 크기(`AudioEngine.currentLevel()`). 진동 게이트가 보는 값이라
      *   "왜 진동이 안 왔나" 를 여기서 가른다.
      * @param shown 그 종류 표시가 켜져 있었는지. 꺼 두면 화면에 아무것도 그리지 않으므로,
      *   이것 없이는 설정 상태를 "AI 가 못 잡았다" 로 오독한다.
      */
-    fun row(result: AiClassificationResult, nowMs: Long, level: Float, shown: Boolean): String {
+    fun row(
+        result: AiClassificationResult,
+        nowMs: Long,
+        captureSource: CaptureSource,
+        level: Float,
+        shown: Boolean
+    ): String {
         val cells = ArrayList<String>(COLUMNS.size)
         cells += nowMs.toString()
         cells += result.timestampMs.toString()
         // 시계가 뒤로 튈 수 있다(System.currentTimeMillis). 음수 나이는 뜻이 없으니 0 으로 붙인다.
         cells += (nowMs - result.timestampMs).coerceAtLeast(0L).toString()
+        cells += captureSource.name
         cells += result.coarse
         cells += result.display
         cells += prob(result.confidence)

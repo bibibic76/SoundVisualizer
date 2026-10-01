@@ -343,7 +343,7 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 
 - `confidence`는 **라벨이 확정된 순간의 값**(`confirmedConfidence`)이라 몇 초 전 값일 수 있습니다. 현재 프레임의 확신도는 결과에 실려 있지 않고 `meetsThreshold` 불린으로만 나옵니다.
 
-**결과를 파일로 기록** (`AiDebugCsv`, `AiDebugLogWriter`, `AiDebugRecorder`, #193): 개발자 모드 아래의 딸린 스위치(기본 꺼짐)를 켜면, HUD 가 읽는 그 결과를 CSV 로 남깁니다. `getExternalFilesDir()/ai-log/ai-<날짜-시각>.csv` 에 쌓이고 `adb pull /sdcard/Android/data/com.example.soundvisualizer/files/ai-log/` 로 받습니다.
+**결과를 파일로 기록** (`AiDebugCsv`, `AiDebugLogWriter`, `AiDebugRecorder`, #193): 개발자 모드 아래의 딸린 스위치(기본 꺼짐)를 켜면, HUD 가 읽는 그 결과를 CSV 로 남깁니다. `getExternalFilesDir()/ai-log/ai-<날짜-시각>.csv` 에 쌓이고 `adb pull /sdcard/Android/data/com.example.soundvisualizer/files/ai-log/` 로 받습니다. 각 행의 `capture_source`는 `InternalPlayback` 또는 `Microphone`이며, HUD가 결과를 큐에 넣을 때 고정해 비동기 파일 writer가 다음 실행의 소스를 잘못 적지 않습니다(#253).
 
 - **왜 파일인가.** HUD 는 지금 순간만 보여주고, `AI_RESULT` 로그는 `debuggable` 빌드에만 남으면서 **2초에 한 줄**로 묶입니다. 추론은 초당 네 번 도니 총소리 한 발(30~60ms)처럼 짧은 소리는 로그 사이로 빠집니다. 이 기록은 배포판에서도 남고 추론 주기를 그대로 따라갑니다.
 - **디스크는 쓰는 스레드에서만** 만집니다. 부르는 곳이 오버레이의 HUD 루프(메인 스레드)라서, 거기서 폴더를 확인하거나 파일을 열거나 쓰면 그리는 프레임이 밀립니다. `offer()` 는 큐에 넣고 바로 돌아오고, 큐가 차면 **가장 오래된 줄을 버립니다**(버린 수는 `dropped` 로 남습니다). 기록이 밀리는 것보다 화면이 밀리는 것이 나쁩니다.

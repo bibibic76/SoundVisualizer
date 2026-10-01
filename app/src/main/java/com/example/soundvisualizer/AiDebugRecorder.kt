@@ -56,6 +56,7 @@ object AiDebugRecorder {
     private class Row(
         val result: AiClassificationResult,
         val nowMs: Long,
+        val captureSource: CaptureSource,
         val level: Float,
         val shown: Boolean
     )
@@ -119,9 +120,15 @@ object AiDebugRecorder {
      *
      * 메인 스레드에서 불러도 되도록 여기서는 디스크를 만지지 않는다.
      */
-    fun offer(result: AiClassificationResult, nowMs: Long, level: Float, shown: Boolean) {
+    fun offer(
+        result: AiClassificationResult,
+        nowMs: Long,
+        captureSource: CaptureSource,
+        level: Float,
+        shown: Boolean
+    ) {
         val current = session ?: return
-        val row = Row(result, nowMs, level, shown)
+        val row = Row(result, nowMs, captureSource, level, shown)
         if (!current.queue.offer(row)) {
             // 가장 오래된 것을 버리고 새것을 넣는다. 최근 것이 궁금한 도구라 뒤를 살린다.
             current.queue.poll()
@@ -157,7 +164,7 @@ object AiDebugRecorder {
                 // 줄마다 디스크에 밀어 넣는다. 모아 두면 돌아가는 중에 adb pull 로 받은 파일에 최근 몇
                 // 초가 비어, 그 구간을 "결과가 없었다" 로 읽게 된다. 초당 네 번 쓰는 비용은 60fps 로
                 // 그리는 것 옆에서 없는 셈이다.
-                if (log!!.write(row.result, row.nowMs, row.level, row.shown)) writer.flush()
+                if (log!!.write(row.result, row.nowMs, row.captureSource, row.level, row.shown)) writer.flush()
                 if (log!!.stopped) {
                     // 상태를 사실에 맞춘다. 닫지 않으면 오버레이가 아무도 비우지 않는 큐에 계속 줄을 넣는다.
                     Log.w(TAG, "기록 상한에 닿아 멈춘다: ${log!!.rows}줄, ${file.name}")
