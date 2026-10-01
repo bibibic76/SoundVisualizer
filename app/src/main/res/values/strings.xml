@@ -71,10 +71,10 @@
     <string name="permission_record_audio_required">Microphone (audio recording) permission is required to capture audio.</string>
     <string name="permission_mic_rationale_title">Why the microphone permission?</string>
     <string name="permission_mic_rationale_message">Android requires the microphone permission to capture sound playing on your phone. Sounds around you are not recorded.</string>
-    <string name="permission_mic_rationale_message_external">External sound mode listens to the sounds around you through the microphone and shows them on screen and with vibration. On Android 12 and later, a microphone indicator shows in the status bar while it listens. The audio itself is never saved to a file or sent anywhere.</string>
+    <string name="permission_mic_rationale_message_external">External sound mode listens to the sounds around you through the microphone and shows them on screen and with vibration. On Android 12 and later, a microphone indicator shows in the status bar while it listens. The audio itself is never saved to a file or sent anywhere. External sound mode keeps listening while the screen is off.</string>
     <string name="permission_mic_settings_title">Allow the microphone in Settings</string>
     <string name="permission_mic_settings_message">Microphone permission wasn\'t granted. If the permission prompt doesn\'t appear again, tap “Open settings”, go to “Permissions” and allow “Microphone”. It\'s only used to capture sound playing on your phone. Sounds around you are not recorded.</string>
-    <string name="permission_mic_settings_message_external">Microphone permission wasn\'t granted. If the permission prompt doesn\'t appear again, tap “Open settings”, go to “Permissions” and allow “Microphone”. External sound mode listens to the sounds around you. The audio itself is never saved to a file or sent anywhere.</string>
+    <string name="permission_mic_settings_message_external">Microphone permission wasn\'t granted. If the permission prompt doesn\'t appear again, tap “Open settings”, go to “Permissions” and allow “Microphone”. External sound mode listens to the sounds around you. The audio itself is never saved to a file or sent anywhere. External sound mode keeps listening while the screen is off.</string>
     <string name="permission_continue">Continue</string>
     <string name="permission_cancel">Cancel</string>
     <string name="permission_open_settings">Open settings</string>
@@ -135,7 +135,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause while the screen is off</string>
-    <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off.</string>
+    <string name="setting_pause_screen_off_desc">While the screen is off, stops capturing sound, detecting sound types and vibrating to save battery, and picks up again when you turn the screen on. Turn this off to keep getting vibration alerts with the screen off. External sound mode keeps listening with the screen off, whatever this setting is.</string>
     <string name="setting_reduced_frame_rate">Draw the graphic less often</string>
     <string name="setting_reduced_frame_rate_desc">Redraws the graphic 30 times a second instead of 60. It saves battery while you leave the app running for a long time, but the movement is less smooth. The sound is still picked up just as often.</string>
     <!-- settings_section_developer 와 같은 이유로 영어·한국어만 둔다. -->
@@ -247,7 +247,7 @@
     <string name="help_perm_overlay_desc">Needed to show graphics on top of games and videos.</string>
     <string name="help_perm_mic">Microphone (audio recording)</string>
     <string name="help_perm_mic_desc">Android requires this permission to capture sound playing on your phone. Sounds around you are not recorded.</string>
-    <string name="help_perm_mic_desc_external">Android requires this permission to capture sound playing on your phone. With external sound mode on, it also uses it to listen to the sounds around you. The audio itself is never saved to a file or sent anywhere.</string>
+    <string name="help_perm_mic_desc_external">Android requires this permission to capture sound playing on your phone. With external sound mode on, it also uses it to listen to the sounds around you. The audio itself is never saved to a file or sent anywhere. External sound mode keeps listening while the screen is off.</string>
     <string name="help_perm_capture">Screen recording</string>
     <string name="help_perm_capture_desc">Android only lets apps capture your phone\'s sound through this consent. Your screen is not captured.</string>
     <string name="help_perm_notification">Notifications (Android 13+)</string>
@@ -274,7 +274,7 @@
     <string name="help_note_volume">Sound playing on your phone is captured at the level set by the media volume. If you turn the volume very low, the graphics and vibration may not respond, and at zero nothing is captured. If it isn\'t responding well, turn the volume up a little. External sound mode isn\'t affected by the volume.</string>
     <string name="help_note_mic_sensitivity">In External sound mode, Microphone sensitivity only changes how loud sounds seem to the graphics and vibration. Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It doesn\'t change the sound the AI uses to tell sound types apart.</string>
     <string name="help_note_stopped">Starting screen recording, screen sharing or casting turns the visualizer off, because it uses the same screen recording consent and Android lets only one app use it at a time. If another app is recording, sharing or casting, turning it on again ends it. In most cases, when it turns off without you stopping it, your phone vibrates three long times and shows a notification with a “Turn on again” button. Stopping sound capture from your phone\'s screen-sharing controls shows the same alert, and a force stop or a crash can\'t tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
-    <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in the Settings tab.</string>
+    <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in the Settings tab. External sound mode keeps listening while the screen is off.</string>
     <string name="help_note_ai">AI classification can be wrong. Don\'t rely on this app as your only safeguard when safety is at stake.</string>
 
     <string name="help_faq_title">FAQ</string>

@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">音声をキャプチャするには、マイク（音声の録音）の権限が必要です。</string>
     <string name="permission_mic_rationale_title">マイクの権限が必要な理由</string>
     <string name="permission_mic_rationale_message">スマートフォンで再生中の音を取得するには、Android の仕様上、マイクの権限が必要です。周囲の音は録音しません。</string>
-    <string name="permission_mic_rationale_message_external">外部音モードでは、マイクで周囲の音を聞き取り、画面と振動でお知らせします。Android 12 以降では、聞き取っている間はステータスバーにマイクのマークが表示されます。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
+    <string name="permission_mic_rationale_message_external">外部音モードでは、マイクで周囲の音を聞き取り、画面と振動でお知らせします。Android 12 以降では、聞き取っている間はステータスバーにマイクのマークが表示されます。音そのものをファイルに保存したり、外部に送信したりすることはありません。外部音モードは、画面がオフの間も聞き取りを続けます。</string>
     <string name="permission_mic_settings_title">設定でマイクを許可してください</string>
     <string name="permission_mic_settings_message">マイクの権限が許可されていません。権限の確認画面が再び表示されない場合は、「設定を開く」をタップし、「権限」で「マイク」を許可してください。この権限は、スマートフォンで再生中の音の取得にのみ使用します。周囲の音は録音しません。</string>
-    <string name="permission_mic_settings_message_external">マイクの権限が許可されていません。権限の確認画面が再び表示されない場合は、「設定を開く」をタップし、「権限」で「マイク」を許可してください。外部音モードでは、マイクで周囲の音を聞き取ります。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
+    <string name="permission_mic_settings_message_external">マイクの権限が許可されていません。権限の確認画面が再び表示されない場合は、「設定を開く」をタップし、「権限」で「マイク」を許可してください。外部音モードでは、マイクで周囲の音を聞き取ります。音そのものをファイルに保存したり、外部に送信したりすることはありません。外部音モードは、画面がオフの間も聞き取りを続けます。</string>
     <string name="permission_continue">続行</string>
     <string name="permission_cancel">キャンセル</string>
     <string name="permission_open_settings">設定を開く</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">画面オフ中は一時停止</string>
-    <string name="setting_pause_screen_off_desc">画面が消えている間は音の取得・音の種類の判別・振動を止めてバッテリーを節約し、画面をつけると再開します。画面が消えている間も振動でお知らせしてほしい場合は、オフにしてください。</string>
+    <string name="setting_pause_screen_off_desc">画面が消えている間は音の取得・音の種類の判別・振動を止めてバッテリーを節約し、画面をつけると再開します。画面が消えている間も振動でお知らせしてほしい場合は、オフにしてください。外部音モードは、この設定にかかわらず画面がオフの間も聞き取りを続けます。</string>
     <string name="setting_reduced_frame_rate">グラフィックの描画回数を減らす</string>
     <string name="setting_reduced_frame_rate_desc">グラフィックを1秒間に60回ではなく30回描き直します。アプリを長時間動かし続けるときにバッテリーを節約できますが、動きのなめらかさは下がります。音を取得する間隔は変わりません。</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">ゲームや動画の上にグラフィックを表示するために必要です。</string>
     <string name="help_perm_mic">マイク（音声の録音）</string>
     <string name="help_perm_mic_desc">スマートフォンで再生中の音を取得するには、Android の仕様上、この権限が必要です。周囲の音は録音しません。</string>
-    <string name="help_perm_mic_desc_external">スマートフォンで再生中の音を取得するには、Android の仕様上、この権限が必要です。外部音モードをオンにすると、この権限で周囲の音も聞き取ります。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
+    <string name="help_perm_mic_desc_external">スマートフォンで再生中の音を取得するには、Android の仕様上、この権限が必要です。外部音モードをオンにすると、この権限で周囲の音も聞き取ります。音そのものをファイルに保存したり、外部に送信したりすることはありません。外部音モードは、画面がオフの間も聞き取りを続けます。</string>
     <string name="help_perm_capture">画面の録画</string>
     <string name="help_perm_capture_desc">Android では、この同意がないとアプリはスマートフォンで再生中の音を取得できません。画面の映像は取得しません。</string>
     <string name="help_perm_notification">通知（Android 13 以降）</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">スマートフォンで再生中の音は、メディアの音量に合わせた大きさで取得されます。音量をかなり下げると、グラフィックや振動が反応しないことがあり、0にすると何も取得されません。反応が弱いときは、音量を少し上げてください。外部音モードは音量の影響を受けません。</string>
     <string name="help_note_mic_sensitivity">外部音モードの「マイクの感度」は、グラフィックと振動が受け取る音の大きさだけを変えます。小さな音があまり描かれないときは上げ、騒がしい場所で周りの雑音まで描かれるときは下げてください。AIが音の種類を判断するための音は変わりません。</string>
     <string name="help_note_stopped">画面の録画・画面の共有・キャストを開始すると、可視化はオフになります。どれも同じ画面の録画への同意を使っていて、Android は一度に1つのアプリにしか許可しないためです。他のアプリが録画・共有・キャスト中の場合、もう一度オンにするとそちらが終了します。自分でオフにしていないのにオフになったときは、多くの場合スマートフォンが3回長く振動し、「オンに戻す」ボタン付きの通知を表示します。スマートフォンの画面共有の通知から音の取得を終了したときも同じお知らせが表示されますが、強制停止やアプリの異常終了ではお知らせできません。通知をオフにしている場合は振動だけでお知らせし、アプリを開くと「ホーム」タブに何がオフになったかを表示します。</string>
-    <string name="help_note_screen_off">画面が消えている間はバッテリーを節約するために一時停止し、画面をつけると再開します。「設定」タブの「バッテリー」で変更できます。</string>
+    <string name="help_note_screen_off">画面が消えている間はバッテリーを節約するために一時停止し、画面をつけると再開します。「設定」タブの「バッテリー」で変更できます。外部音モードは、画面がオフの間も聞き取りを続けます。</string>
     <string name="help_note_ai">AI による分類は間違うことがあります。安全に関わる場面では、このアプリだけに頼らないでください。</string>
 
     <string name="help_faq_title">よくある質問</string>

@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">A permissão do microfone (gravação de áudio) é necessária para capturar o áudio.</string>
     <string name="permission_mic_rationale_title">Por que a permissão do microfone?</string>
     <string name="permission_mic_rationale_message">O Android exige a permissão do microfone para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
-    <string name="permission_mic_rationale_message_external">O modo de som externo ouve os sons ao seu redor pelo microfone e mostra esses sons na tela e com vibração. No Android 12 ou mais recente, um indicador de microfone aparece na barra de status enquanto ele ouve. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="permission_mic_rationale_message_external">O modo de som externo ouve os sons ao seu redor pelo microfone e mostra esses sons na tela e com vibração. No Android 12 ou mais recente, um indicador de microfone aparece na barra de status enquanto ele ouve. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum. O modo de som externo continua ouvindo mesmo com a tela desligada.</string>
     <string name="permission_mic_settings_title">Permita o microfone nas Configurações</string>
     <string name="permission_mic_settings_message">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. Ela só é usada para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
-    <string name="permission_mic_settings_message_external">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. O modo de som externo ouve os sons ao seu redor pelo microfone. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="permission_mic_settings_message_external">A permissão do microfone não foi concedida. Se o pedido de permissão não aparecer de novo, toque em “Configurações”, vá em “Permissões” e permita o “Microfone”. O modo de som externo ouve os sons ao seu redor pelo microfone. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum. O modo de som externo continua ouvindo mesmo com a tela desligada.</string>
     <string name="permission_continue">Continuar</string>
     <string name="permission_cancel">Cancelar</string>
     <string name="permission_open_settings">Configurações</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pausar com a tela desligada</string>
-    <string name="setting_pause_screen_off_desc">Com a tela desligada, o app para de capturar o som, de detectar tipos de som e de vibrar para economizar bateria, e volta a funcionar quando você liga a tela. Desative para continuar recebendo avisos por vibração com a tela desligada.</string>
+    <string name="setting_pause_screen_off_desc">Com a tela desligada, o app para de capturar o som, de detectar tipos de som e de vibrar para economizar bateria, e volta a funcionar quando você liga a tela. Desative para continuar recebendo avisos por vibração com a tela desligada. O modo de som externo continua ouvindo com a tela desligada, seja qual for este ajuste.</string>
     <string name="setting_reduced_frame_rate">Desenhar os gráficos com menos frequência</string>
     <string name="setting_reduced_frame_rate_desc">Redesenha os gráficos 30 vezes por segundo em vez de 60. Economiza bateria quando você deixa o app em execução por muito tempo, mas o movimento fica menos suave. O som continua sendo capturado tão frequentemente quanto antes.</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">Necessária para mostrar os gráficos por cima de jogos e vídeos.</string>
     <string name="help_perm_mic">Microfone (gravação de áudio)</string>
     <string name="help_perm_mic_desc">O Android exige esta permissão para capturar o som que toca no seu celular. Os sons ao seu redor não são gravados.</string>
-    <string name="help_perm_mic_desc_external">O Android exige esta permissão para capturar o som que toca no seu celular. Com o modo de som externo ligado, ela também é usada para ouvir os sons ao seu redor. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="help_perm_mic_desc_external">O Android exige esta permissão para capturar o som que toca no seu celular. Com o modo de som externo ligado, ela também é usada para ouvir os sons ao seu redor. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum. O modo de som externo continua ouvindo mesmo com a tela desligada.</string>
     <string name="help_perm_capture">Gravação de tela</string>
     <string name="help_perm_capture_desc">O Android só permite que apps capturem o som do celular por meio desta autorização. A sua tela não é capturada.</string>
     <string name="help_perm_notification">Notificações (Android 13+)</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">O som que toca no celular é capturado no nível definido pelo volume de mídia. Se você abaixar muito o volume, os gráficos e a vibração podem não reagir, e com o volume no zero nada é capturado. Se a resposta estiver fraca, aumente um pouco o volume. O modo de som externo não depende do volume.</string>
     <string name="help_note_mic_sensitivity">No modo de som externo, a sensibilidade do microfone só muda o quão altos os sons parecem para os gráficos e a vibração. Aumente-a se sons baixos quase não aparecerem e diminua-a se, em um lugar barulhento, o ruído de fundo também aparecer. Ela não muda o som que a IA usa para distinguir os tipos de som.</string>
     <string name="help_note_stopped">Começar uma gravação de tela, um compartilhamento de tela ou uma transmissão desliga a visualização, porque ela usa a mesma autorização de gravação de tela e o Android deixa só um app usá-la por vez. Se outro app estiver gravando, compartilhando ou transmitindo, ligar a visualização de novo encerra o que ele está fazendo. Na maioria dos casos, quando ela desliga sem que você a tenha parado, o celular vibra três vezes de forma longa e mostra uma notificação com o botão “Ligar de novo”. Encerrar a captura de som pelos controles de compartilhamento de tela do celular mostra o mesmo aviso, e um encerramento forçado ou uma falha do app não conseguem avisar de jeito nenhum. Se as notificações estiverem desativadas, só a vibração avisa, e a aba Início mostra o que foi desligado quando você abre o app.</string>
-    <string name="help_note_screen_off">Com a tela desligada, o app fica em pausa para economizar bateria e volta a funcionar quando você liga a tela. Você pode mudar isso em Bateria, na aba Ajustes.</string>
+    <string name="help_note_screen_off">Com a tela desligada, o app fica em pausa para economizar bateria e volta a funcionar quando você liga a tela. Você pode mudar isso em Bateria, na aba Ajustes. O modo de som externo continua ouvindo mesmo com a tela desligada.</string>
     <string name="help_note_ai">A IA pode errar na classificação. Não use este app como sua única proteção em situações que envolvam segurança.</string>
 
     <string name="help_faq_title">Perguntas frequentes</string>

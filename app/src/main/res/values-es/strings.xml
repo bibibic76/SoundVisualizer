@@ -62,10 +62,10 @@
     <string name="permission_record_audio_required">Se necesita el permiso de micrófono (grabación de audio) para capturar el audio.</string>
     <string name="permission_mic_rationale_title">¿Por qué el permiso de micrófono?</string>
     <string name="permission_mic_rationale_message">Android exige el permiso de micrófono para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
-    <string name="permission_mic_rationale_message_external">El modo de sonido externo escucha los sonidos de tu entorno con el micrófono y te los muestra en pantalla y con vibración. En Android 12 y versiones posteriores, mientras escucha aparece un indicador de micrófono en la barra de estado. El audio en sí nunca se guarda en un archivo ni se envía a ningún sitio.</string>
+    <string name="permission_mic_rationale_message_external">El modo de sonido externo escucha los sonidos de tu entorno con el micrófono y te los muestra en pantalla y con vibración. En Android 12 y versiones posteriores, mientras escucha aparece un indicador de micrófono en la barra de estado. El audio en sí nunca se guarda en un archivo ni se envía a ningún sitio. El modo de sonido externo sigue escuchando aunque la pantalla esté apagada.</string>
     <string name="permission_mic_settings_title">Permite el micrófono en Ajustes</string>
     <string name="permission_mic_settings_message">No se concedió el permiso de micrófono. Si la solicitud de permiso no vuelve a aparecer, toca “Abrir ajustes”, ve a “Permisos” y permite “Micrófono”. Solo se usa para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
-    <string name="permission_mic_settings_message_external">No se concedió el permiso de micrófono. Si la solicitud de permiso no vuelve a aparecer, toca “Abrir ajustes”, ve a “Permisos” y permite “Micrófono”. El modo de sonido externo escucha los sonidos de tu entorno con el micrófono. El audio en sí nunca se guarda en un archivo ni se envía a ningún sitio.</string>
+    <string name="permission_mic_settings_message_external">No se concedió el permiso de micrófono. Si la solicitud de permiso no vuelve a aparecer, toca “Abrir ajustes”, ve a “Permisos” y permite “Micrófono”. El modo de sonido externo escucha los sonidos de tu entorno con el micrófono. El audio en sí nunca se guarda en un archivo ni se envía a ningún sitio. El modo de sonido externo sigue escuchando aunque la pantalla esté apagada.</string>
     <string name="permission_continue">Continuar</string>
     <string name="permission_cancel">Cancelar</string>
     <string name="permission_open_settings">Abrir ajustes</string>
@@ -121,7 +121,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pausar con la pantalla apagada</string>
-    <string name="setting_pause_screen_off_desc">Con la pantalla apagada, deja de capturar el sonido, de detectar tipos de sonido y de vibrar para ahorrar batería, y se reanuda al encender la pantalla. Desactívalo para seguir recibiendo avisos por vibración con la pantalla apagada.</string>
+    <string name="setting_pause_screen_off_desc">Con la pantalla apagada, deja de capturar el sonido, de detectar tipos de sonido y de vibrar para ahorrar batería, y se reanuda al encender la pantalla. Desactívalo para seguir recibiendo avisos por vibración con la pantalla apagada. El modo de sonido externo sigue escuchando con la pantalla apagada, sea cual sea este ajuste.</string>
     <string name="setting_reduced_frame_rate">Dibujar los gráficos con menos frecuencia</string>
     <string name="setting_reduced_frame_rate_desc">Vuelve a dibujar los gráficos 30 veces por segundo en lugar de 60. Ahorra batería si dejas la app en marcha durante mucho tiempo, pero el movimiento se ve menos fluido. El sonido se sigue capturando tan a menudo como antes.</string>
 
@@ -219,7 +219,7 @@
     <string name="help_perm_overlay_desc">Necesario para mostrar los gráficos sobre juegos y videos.</string>
     <string name="help_perm_mic">Micrófono (grabación de audio)</string>
     <string name="help_perm_mic_desc">Android exige este permiso para capturar el sonido que se reproduce en tu teléfono. Los sonidos de tu entorno no se graban.</string>
-    <string name="help_perm_mic_desc_external">Android exige este permiso para capturar el sonido que se reproduce en tu teléfono. Con el modo de sonido externo activado, también se usa para escuchar los sonidos de tu entorno. El audio en sí nunca se guarda en un archivo ni se envía a ningún sitio.</string>
+    <string name="help_perm_mic_desc_external">Android exige este permiso para capturar el sonido que se reproduce en tu teléfono. Con el modo de sonido externo activado, también se usa para escuchar los sonidos de tu entorno. El audio en sí nunca se guarda en un archivo ni se envía a ningún sitio. El modo de sonido externo sigue escuchando aunque la pantalla esté apagada.</string>
     <string name="help_perm_capture">Grabación de pantalla</string>
     <string name="help_perm_capture_desc">Android solo permite que las apps capturen el sonido del teléfono con este consentimiento. Tu pantalla no se captura.</string>
     <string name="help_perm_notification">Notificaciones (Android 13 o posterior)</string>
@@ -246,7 +246,7 @@
     <string name="help_note_volume">El sonido que se reproduce en tu teléfono se captura al nivel que marca el volumen multimedia. Si bajas mucho el volumen, es posible que los gráficos y la vibración no respondan, y con el volumen a cero no se captura nada. Si no responde bien, sube un poco el volumen. El modo de sonido externo no depende del volumen.</string>
     <string name="help_note_mic_sensitivity">En el modo de sonido externo, la sensibilidad del micrófono solo cambia lo fuertes que parecen los sonidos para los gráficos y la vibración. Súbela si los sonidos suaves apenas se ven y bájala si en un lugar ruidoso también se ve el ruido de fondo. No cambia el sonido que usa la IA para distinguir los tipos de sonido.</string>
     <string name="help_note_stopped">Si inicias una grabación de pantalla, compartes la pantalla o transmites a otro dispositivo, el visor de sonido se apaga: usa el mismo consentimiento de grabación de pantalla y Android solo deja que una app lo use a la vez. Si otra app está grabando, compartiendo o transmitiendo, al volver a encender el visor se detendrá esa grabación, pantalla compartida o transmisión. Cuando se apaga sin que lo hayas detenido tú, lo normal es que el teléfono vibre tres veces de forma larga y muestre una notificación con el botón “Volver a encender”. Si detienes la captura de sonido desde los controles de pantalla compartida del teléfono, aparece el mismo aviso; un cierre forzado o un fallo de la app no pueden avisarte. Si las notificaciones están desactivadas, solo te avisa la vibración, y la pestaña Inicio te muestra qué se apagó cuando abres la app.</string>
-    <string name="help_note_screen_off">Con la pantalla apagada, la app se pausa para ahorrar batería y se reanuda al encender la pantalla. Puedes cambiarlo en Batería, en la pestaña Ajustes.</string>
+    <string name="help_note_screen_off">Con la pantalla apagada, la app se pausa para ahorrar batería y se reanuda al encender la pantalla. Puedes cambiarlo en Batería, en la pestaña Ajustes. El modo de sonido externo sigue escuchando aunque la pantalla esté apagada.</string>
     <string name="help_note_ai">La IA puede equivocarse al clasificar los sonidos. No confíes solo en esta app cuando tu seguridad esté en juego.</string>
 
     <string name="help_faq_title">Preguntas frecuentes</string>
