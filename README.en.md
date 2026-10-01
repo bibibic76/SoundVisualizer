@@ -77,9 +77,9 @@ All settings are **saved separately for each mode**, so you can make Wave mode b
 
 | Setting | What it does |
 |---|---|
-| **Size** | How far the graphics reach. At 100 they get close to the center of the screen. |
+| **Size** | How large the graphics are drawn for the same sound. At 100 they get close to the center of the screen. It doesn't help pick up quieter sounds. |
 | **Opacity** | Higher values look bolder; lower values look fainter and more transparent. |
-| **Sensitivity** | How quickly the graphics react when loudness changes. |
+| **Sensitivity** | How quickly the graphics grow and shrink as the loudness changes. Higher values pulse with the beat; lower values change smoothly. It doesn't help pick up quieter sounds. |
 | **Speed** | How fast the graphics move to a new position when the sound changes direction. |
 | **Lock size** | Keeps the graphics at a fixed size and shows loudness only as opacity. Turn it on to use **Fixed size** and **Max opacity**. |
 | **Radius** | (Circle mode only) The size of the ring in the center. |

@@ -104,21 +104,21 @@
     <string name="setting_max_opacity">최대 진하기</string>
     <string name="setting_max_opacity_desc">소리가 가장 클 때 도달할 진하기입니다.</string>
     <string name="setting_size">크기</string>
-    <string name="setting_size_desc">그래픽의 크기와 전체적인 볼륨감을 조절합니다.</string>
+    <string name="setting_size_desc">같은 소리를 그래픽으로 얼마나 크게 그릴지 정합니다. 작은 소리를 더 잘 잡는 설정은 아닙니다.</string>
     <string name="setting_radius">반지름</string>
-    <string name="setting_radius_desc">원형 모드에서 가운데 중심부의 반지름을 개별 조절합니다.</string>
+    <string name="setting_radius_desc">원형 모드에서 가운데 고리의 반지름을 정합니다.</string>
     <string name="setting_opacity">진하기</string>
     <string name="setting_opacity_desc">값이 클수록 진하고, 작을수록 옅고 투명해집니다.</string>
     <string name="setting_speed">속도</string>
     <string name="setting_speed_desc">소리의 방향이 바뀔 때 그래픽이 새 위치로 옮겨가는 속도를 조절합니다.</string>
     <string name="setting_sensitivity">민감도</string>
-    <string name="setting_sensitivity_desc">소리 크기 변화에 그래픽이 얼마나 빠르게 반응(떨림)할지 조절합니다.</string>
+    <string name="setting_sensitivity_desc">소리 크기가 바뀔 때 그래픽이 얼마나 빨리 커지고 작아지는지 정합니다. 높으면 박자에 맞춰 떨리고, 낮으면 부드럽게 바뀝니다. 작은 소리를 더 잘 잡는 설정은 아닙니다.</string>
     <string name="setting_glow">광원</string>
-    <string name="setting_glow_desc">그래픽 주변에 부드러운 아우라 형식의 네온 광원 효과를 부여합니다. 주의: 추가 리소스를 사용합니다.</string>
+    <string name="setting_glow_desc">그래픽 둘레에 부드러운 네온 빛을 더합니다. 배터리를 조금 더 씁니다.</string>
     <string name="setting_glow_intensity">광원 강도</string>
     <string name="setting_glow_intensity_desc">광원 효과가 퍼지는 정도를 조절합니다.</string>
     <string name="setting_ripple">공간 리플 효과</string>
-    <string name="setting_ripple_desc">소리가 정면에서 후면으로 퍼져나가는 듯한 공간 지연 효과를 적용합니다.</string>
+    <string name="setting_ripple_desc">뒤쪽을 살짝 늦게 그려서, 소리가 앞에서 뒤로 퍼져 나가는 것처럼 보이게 합니다.</string>
 
     <!-- 배터리 -->
     <string name="setting_pause_screen_off">화면이 꺼지면 일시정지</string>

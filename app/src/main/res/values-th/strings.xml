@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">ความเข้มสูงสุด</string>
     <string name="setting_max_opacity_desc">ความเข้มของกราฟิกเมื่อเสียงดังที่สุด</string>
     <string name="setting_size">ขนาด</string>
-    <string name="setting_size_desc">ปรับว่ากราฟิกจะดูใหญ่และหนาแน่นแค่ไหน</string>
+    <string name="setting_size_desc">ปรับว่ากราฟิกจะวาดใหญ่แค่ไหนสำหรับเสียงเดียวกัน การตั้งค่านี้ไม่ได้ช่วยให้จับเสียงที่เบากว่าได้ดีขึ้น</string>
     <string name="setting_radius">รัศมี</string>
     <string name="setting_radius_desc">ปรับรัศมีของวงแหวนตรงกลางในโหมดวงกลม</string>
     <string name="setting_opacity">ความเข้ม</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">ความเร็ว</string>
     <string name="setting_speed_desc">ความเร็วที่กราฟิกเคลื่อนไปยังตำแหน่งใหม่เมื่อทิศทางของเสียงเปลี่ยน</string>
     <string name="setting_sensitivity">ความไว</string>
-    <string name="setting_sensitivity_desc">ความเร็วที่กราฟิกตอบสนอง (เต้นตาม) เมื่อความดังของเสียงเปลี่ยนแปลง</string>
+    <string name="setting_sensitivity_desc">ปรับว่ากราฟิกจะขยายและหดเร็วแค่ไหนเมื่อความดังของเสียงเปลี่ยน ค่าสูงจะเต้นตามจังหวะ ค่าต่ำจะเปลี่ยนอย่างนุ่มนวล การตั้งค่านี้ไม่ได้ช่วยให้จับเสียงที่เบากว่าได้ดีขึ้น</string>
     <string name="setting_glow">แสงเรือง</string>
     <string name="setting_glow_desc">เพิ่มแสงเรืองแบบนีออนที่นุ่มนวลรอบกราฟิก หมายเหตุ: ใช้ทรัพยากรเครื่องมากขึ้น</string>
     <string name="setting_glow_intensity">ระดับแสงเรือง</string>

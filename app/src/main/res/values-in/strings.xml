@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Opasitas maks</string>
     <string name="setting_max_opacity_desc">Seberapa pekat grafik saat suara paling keras.</string>
     <string name="setting_size">Ukuran</string>
-    <string name="setting_size_desc">Mengatur seberapa besar dan penuh tampilan grafik.</string>
+    <string name="setting_size_desc">Mengatur seberapa besar grafik digambar untuk suara yang sama. Ini tidak membantu menangkap suara yang lebih pelan.</string>
     <string name="setting_radius">Radius</string>
     <string name="setting_radius_desc">Mengatur radius cincin di tengah layar pada mode Lingkar.</string>
     <string name="setting_opacity">Opasitas</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Kecepatan</string>
     <string name="setting_speed_desc">Seberapa cepat grafik berpindah ke posisi baru saat arah suara berubah.</string>
     <string name="setting_sensitivity">Kepekaan</string>
-    <string name="setting_sensitivity_desc">Seberapa cepat grafik bereaksi (berdenyut) terhadap perubahan kerasnya suara.</string>
+    <string name="setting_sensitivity_desc">Mengatur seberapa cepat grafik membesar dan mengecil saat kerasnya suara berubah. Nilai tinggi membuatnya berdenyut mengikuti irama; nilai rendah membuatnya berubah dengan halus. Ini tidak membantu menangkap suara yang lebih pelan.</string>
     <string name="setting_glow">Efek cahaya</string>
     <string name="setting_glow_desc">Menambahkan pendar neon yang lembut di sekitar grafik. Catatan: menggunakan sumber daya tambahan.</string>
     <string name="setting_glow_intensity">Kuat cahaya</string>

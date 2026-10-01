@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">أقصى عتامة</string>
     <string name="setting_max_opacity_desc">مدى عتامة الرسومات عند أعلى مستوى للصوت.</string>
     <string name="setting_size">الحجم</string>
-    <string name="setting_size_desc">يضبط حجم الرسومات ومدى امتلائها.</string>
+    <string name="setting_size_desc">يحدد مدى كِبَر الرسومات التي تُرسم للصوت نفسه. لا يساعد على التقاط الأصوات الأخفض.</string>
     <string name="setting_radius">نصف القطر</string>
     <string name="setting_radius_desc">يضبط نصف قطر الحلقة التي تتوسط الشاشة في وضع الدائرة.</string>
     <string name="setting_opacity">العتامة</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">السرعة</string>
     <string name="setting_speed_desc">مدى سرعة انتقال الرسومات إلى موضع جديد عند تغيّر اتجاه الصوت.</string>
     <string name="setting_sensitivity">الحساسية</string>
-    <string name="setting_sensitivity_desc">مدى سرعة استجابة الرسومات (نبضها) لتغيّرات شدة الصوت.</string>
+    <string name="setting_sensitivity_desc">يحدد مدى سرعة كِبَر الرسومات وصِغَرها عند تغيّر شدة الصوت. القيم الأعلى تجعلها تنبض مع الإيقاع، والقيم الأقل تجعل تغيّرها سلسًا. لا يساعد على التقاط الأصوات الأخفض.</string>
     <string name="setting_glow">التوهج</string>
     <string name="setting_glow_desc">يضيف توهجًا ناعمًا يشبه ضوء النيون حول الرسومات. ملاحظة: يستهلك موارد إضافية.</string>
     <string name="setting_glow_intensity">قوة التوهج</string>

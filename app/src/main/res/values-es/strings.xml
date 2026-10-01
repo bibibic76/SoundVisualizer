@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Opacidad máx.</string>
     <string name="setting_max_opacity_desc">La opacidad que alcanzan los gráficos con el sonido más fuerte.</string>
     <string name="setting_size">Tamaño</string>
-    <string name="setting_size_desc">Ajusta lo grandes y voluminosos que se ven los gráficos.</string>
+    <string name="setting_size_desc">Ajusta el tamaño con el que se dibujan los gráficos para un mismo sonido. No ayuda a captar sonidos más bajos.</string>
     <string name="setting_radius">Radio</string>
     <string name="setting_radius_desc">Ajusta el radio del anillo central en el modo Círculo.</string>
     <string name="setting_opacity">Opacidad</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Velocidad</string>
     <string name="setting_speed_desc">La rapidez con la que los gráficos se mueven a su nueva posición cuando cambia la dirección del sonido.</string>
     <string name="setting_sensitivity">Sensibilidad</string>
-    <string name="setting_sensitivity_desc">La rapidez con la que los gráficos reaccionan (palpitan) a los cambios de volumen.</string>
+    <string name="setting_sensitivity_desc">Ajusta lo rápido que los gráficos crecen y se encogen cuando cambia el volumen. Con valores altos laten al ritmo; con valores bajos cambian con suavidad. No ayuda a captar sonidos más bajos.</string>
     <string name="setting_glow">Resplandor</string>
     <string name="setting_glow_desc">Añade un suave resplandor de neón alrededor de los gráficos. Nota: consume recursos adicionales.</string>
     <string name="setting_glow_intensity">Intensidad</string>

@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Opacità max</string>
     <string name="setting_max_opacity_desc">Quanto diventa opaca la grafica quando il suono è al massimo.</string>
     <string name="setting_size">Dimensione</string>
-    <string name="setting_size_desc">Regola quanto la grafica appare grande e piena.</string>
+    <string name="setting_size_desc">Regola quanto è grande la grafica disegnata per uno stesso suono. Non aiuta a captare i suoni più deboli.</string>
     <string name="setting_radius">Raggio</string>
     <string name="setting_radius_desc">Imposta il raggio dell\'anello centrale nella modalità Cerchio.</string>
     <string name="setting_opacity">Opacità</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Velocità</string>
     <string name="setting_speed_desc">Quanto velocemente la grafica si sposta nella nuova posizione quando il suono cambia direzione.</string>
     <string name="setting_sensitivity">Sensibilità</string>
-    <string name="setting_sensitivity_desc">Quanto rapidamente la grafica reagisce (pulsa) alle variazioni di volume.</string>
+    <string name="setting_sensitivity_desc">Regola quanto rapidamente la grafica si ingrandisce e si rimpicciolisce quando cambia il volume. Con valori alti pulsa a ritmo; con valori bassi cambia in modo graduale. Non aiuta a captare i suoni più deboli.</string>
     <string name="setting_glow">Bagliore</string>
     <string name="setting_glow_desc">Aggiunge un morbido bagliore al neon attorno alla grafica. Nota: consuma più risorse.</string>
     <string name="setting_glow_intensity">Intensità</string>

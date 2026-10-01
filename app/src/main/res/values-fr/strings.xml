@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Opacité max</string>
     <string name="setting_max_opacity_desc">Opacité atteinte par les graphismes quand le son est le plus fort.</string>
     <string name="setting_size">Taille</string>
-    <string name="setting_size_desc">Règle la taille et l\'ampleur des graphismes.</string>
+    <string name="setting_size_desc">Règle la taille à laquelle les graphismes sont dessinés pour un même son. N\'aide pas à capter les sons plus faibles.</string>
     <string name="setting_radius">Rayon</string>
     <string name="setting_radius_desc">Règle le rayon de l\'anneau central en mode Cercle.</string>
     <string name="setting_opacity">Opacité</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Vitesse</string>
     <string name="setting_speed_desc">Vitesse à laquelle les graphismes se déplacent quand la direction du son change.</string>
     <string name="setting_sensitivity">Sensibilité</string>
-    <string name="setting_sensitivity_desc">Rapidité avec laquelle les graphismes réagissent (pulsent) aux variations du volume sonore.</string>
+    <string name="setting_sensitivity_desc">Règle la vitesse à laquelle les graphismes grandissent et rétrécissent quand le volume change. Une valeur élevée les fait pulser au rythme ; une valeur basse les fait varier en douceur. N\'aide pas à capter les sons plus faibles.</string>
     <string name="setting_glow">Halo</string>
     <string name="setting_glow_desc">Ajoute un doux halo néon autour des graphismes. Remarque : consomme davantage de ressources.</string>
     <string name="setting_glow_intensity">Intensité</string>

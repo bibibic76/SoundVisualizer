@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Maks. opaklık</string>
     <string name="setting_max_opacity_desc">Ses en yüksek olduğunda grafiklerin ulaşacağı opaklık.</string>
     <string name="setting_size">Boyut</string>
-    <string name="setting_size_desc">Grafiklerin ne kadar büyük ve dolgun görüneceğini ayarlar.</string>
+    <string name="setting_size_desc">Aynı ses için grafiklerin ne kadar büyük çizileceğini ayarlar. Daha kısık sesleri yakalamaya yardımcı olmaz.</string>
     <string name="setting_radius">Yarıçap</string>
     <string name="setting_radius_desc">Daire modunda ortadaki halkanın yarıçapını ayarlar.</string>
     <string name="setting_opacity">Opaklık</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Hız</string>
     <string name="setting_speed_desc">Sesin yönü değiştiğinde grafiklerin yeni konumuna ne kadar hızlı geçeceğini ayarlar.</string>
     <string name="setting_sensitivity">Hassasiyet</string>
-    <string name="setting_sensitivity_desc">Ses yüksekliği değiştiğinde grafiklerin ne kadar hızlı tepki vereceğini (büyüyüp küçüleceğini) ayarlar.</string>
+    <string name="setting_sensitivity_desc">Ses yüksekliği değiştiğinde grafiklerin ne kadar hızlı büyüyüp küçüleceğini ayarlar. Yüksek değerlerde ritimle birlikte atar, düşük değerlerde yumuşakça değişir. Daha kısık sesleri yakalamaya yardımcı olmaz.</string>
     <string name="setting_glow">Parıltı</string>
     <string name="setting_glow_desc">Grafiklerin çevresine yumuşak bir neon parıltısı ekler. Dikkat: Ek sistem kaynağı kullanır.</string>
     <string name="setting_glow_intensity">Parıltı gücü</string>

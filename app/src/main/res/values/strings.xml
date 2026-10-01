@@ -117,7 +117,7 @@
     <string name="setting_max_opacity">Max opacity</string>
     <string name="setting_max_opacity_desc">How opaque the graphics get at the loudest sound.</string>
     <string name="setting_size">Size</string>
-    <string name="setting_size_desc">Adjusts how large and full the graphics look.</string>
+    <string name="setting_size_desc">Sets how large the graphics are drawn for the same sound. It doesn\'t help pick up quieter sounds.</string>
     <string name="setting_radius">Radius</string>
     <string name="setting_radius_desc">Sets the radius of the center ring in Circle mode.</string>
     <string name="setting_opacity">Opacity</string>
@@ -125,7 +125,7 @@
     <string name="setting_speed">Speed</string>
     <string name="setting_speed_desc">How fast the graphics move to a new position when the sound changes direction.</string>
     <string name="setting_sensitivity">Sensitivity</string>
-    <string name="setting_sensitivity_desc">How quickly the graphics react (pulse) to changes in loudness.</string>
+    <string name="setting_sensitivity_desc">How quickly the graphics grow and shrink as the loudness changes. Higher values pulse with the beat; lower values change smoothly. It doesn\'t help pick up quieter sounds.</string>
     <string name="setting_glow">Glow</string>
     <string name="setting_glow_desc">Adds a soft neon glow around the graphics. Note: uses extra resources.</string>
     <string name="setting_glow_intensity">Glow strength</string>

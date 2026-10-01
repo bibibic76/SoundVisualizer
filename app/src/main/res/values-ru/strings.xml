@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Макс. плотность</string>
     <string name="setting_max_opacity_desc">Насколько плотной становится графика при самом громком звуке.</string>
     <string name="setting_size">Размер</string>
-    <string name="setting_size_desc">Регулирует, насколько крупной и объёмной выглядит графика.</string>
+    <string name="setting_size_desc">Задаёт, насколько крупно рисуется графика для одного и того же звука. Тихие звуки от этого лучше не улавливаются.</string>
     <string name="setting_radius">Радиус</string>
     <string name="setting_radius_desc">Задаёт радиус центрального кольца в режиме «Круг».</string>
     <string name="setting_opacity">Плотность</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Скорость</string>
     <string name="setting_speed_desc">Как быстро графика перемещается на новое место, когда меняется направление звука.</string>
     <string name="setting_sensitivity">Отклик</string>
-    <string name="setting_sensitivity_desc">Как быстро графика реагирует (пульсирует) на изменение громкости.</string>
+    <string name="setting_sensitivity_desc">Задаёт, как быстро графика увеличивается и уменьшается при изменении громкости. При высоких значениях она пульсирует в такт, при низких — меняется плавно. Тихие звуки от этого лучше не улавливаются.</string>
     <string name="setting_glow">Сияние</string>
     <string name="setting_glow_desc">Добавляет мягкое неоновое сияние вокруг графики. Внимание: требует дополнительных ресурсов.</string>
     <string name="setting_glow_intensity">Сила сияния</string>
