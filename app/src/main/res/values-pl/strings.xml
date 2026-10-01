@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Maks. krycie</string>
     <string name="setting_max_opacity_desc">Określa krycie grafiki przy najgłośniejszym dźwięku.</string>
     <string name="setting_size">Rozmiar</string>
-    <string name="setting_size_desc">Reguluje, jak duża i obszerna wydaje się grafika.</string>
+    <string name="setting_size_desc">Określa, jak duża jest grafika rysowana dla tego samego dźwięku. Nie pomaga wychwytywać cichszych dźwięków.</string>
     <string name="setting_radius">Promień</string>
     <string name="setting_radius_desc">Ustawia promień pierścienia na środku ekranu w trybie Okrąg.</string>
     <string name="setting_opacity">Krycie</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Szybkość</string>
     <string name="setting_speed_desc">Określa, jak szybko grafika przesuwa się w nowe miejsce, gdy zmienia się kierunek dźwięku.</string>
     <string name="setting_sensitivity">Czułość</string>
-    <string name="setting_sensitivity_desc">Określa, jak szybko grafika reaguje (pulsuje) na zmiany głośności.</string>
+    <string name="setting_sensitivity_desc">Określa, jak szybko grafika rośnie i maleje, gdy zmienia się głośność. Wyższe wartości sprawiają, że pulsuje w rytm, niższe – że zmienia się płynnie. Nie pomaga wychwytywać cichszych dźwięków.</string>
     <string name="setting_glow">Poświata</string>
     <string name="setting_glow_desc">Dodaje wokół grafiki delikatną neonową poświatę. Uwaga: zużywa więcej zasobów.</string>
     <string name="setting_glow_intensity">Moc poświaty</string>

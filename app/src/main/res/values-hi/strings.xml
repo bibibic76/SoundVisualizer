@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">अधिकतम गहरापन</string>
     <string name="setting_max_opacity_desc">सबसे तेज़ आवाज़ पर ग्राफ़िक्स कितने गहरे दिखेंगे।</string>
     <string name="setting_size">साइज़</string>
-    <string name="setting_size_desc">ग्राफ़िक्स कितने बड़े और भरे-भरे दिखें, यह तय करता है।</string>
+    <string name="setting_size_desc">एक ही आवाज़ के लिए ग्राफ़िक्स कितने बड़े बनें, यह तय करता है। इससे धीमी आवाज़ें बेहतर ढंग से कैप्चर नहीं होतीं।</string>
     <string name="setting_radius">त्रिज्या</string>
     <string name="setting_radius_desc">वृत्त मोड में बीच वाले घेरे की त्रिज्या बदलता है।</string>
     <string name="setting_opacity">गहरापन</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">स्पीड</string>
     <string name="setting_speed_desc">आवाज़ की दिशा बदलने पर ग्राफ़िक्स कितनी तेज़ी से नई जगह पर पहुंचते हैं।</string>
     <string name="setting_sensitivity">संवेदनशीलता</string>
-    <string name="setting_sensitivity_desc">आवाज़ के घटने-बढ़ने पर ग्राफ़िक्स कितनी जल्दी प्रतिक्रिया देते (धड़कते) हैं।</string>
+    <string name="setting_sensitivity_desc">आवाज़ के घटने-बढ़ने पर ग्राफ़िक्स कितनी जल्दी बड़े-छोटे होते हैं, यह तय करता है। ज़्यादा होने पर वे ताल के साथ धड़कते हैं, कम होने पर धीरे-धीरे बदलते हैं। इससे धीमी आवाज़ें बेहतर ढंग से कैप्चर नहीं होतीं।</string>
     <string name="setting_glow">चमक</string>
     <string name="setting_glow_desc">ग्राफ़िक्स के चारों ओर हल्की नियॉन चमक जोड़ता है। ध्यान दें: इससे डिवाइस के ज़्यादा संसाधन इस्तेमाल होते हैं।</string>
     <string name="setting_glow_intensity">चमक का स्तर</string>

@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Max. Deckkraft</string>
     <string name="setting_max_opacity_desc">Wie deckend die Grafiken beim lautesten Geräusch werden.</string>
     <string name="setting_size">Größe</string>
-    <string name="setting_size_desc">Legt fest, wie groß und voll die Grafiken wirken.</string>
+    <string name="setting_size_desc">Legt fest, wie groß die Grafik bei gleichem Ton gezeichnet wird. Leisere Geräusche werden dadurch nicht besser erfasst.</string>
     <string name="setting_radius">Radius</string>
     <string name="setting_radius_desc">Legt den Radius des Rings in der Bildschirmmitte im Modus „Kreis“ fest.</string>
     <string name="setting_opacity">Deckkraft</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Tempo</string>
     <string name="setting_speed_desc">Wie schnell sich die Grafiken an eine neue Position bewegen, wenn sich die Richtung des Geräuschs ändert.</string>
     <string name="setting_sensitivity">Empfindlichkeit</string>
-    <string name="setting_sensitivity_desc">Wie schnell die Grafiken auf Änderungen der Lautstärke reagieren (pulsieren).</string>
+    <string name="setting_sensitivity_desc">Legt fest, wie schnell die Grafik größer und kleiner wird, wenn sich die Lautstärke ändert. Höhere Werte lassen sie im Takt pulsieren, niedrigere ändern sie sanft. Leisere Geräusche werden dadurch nicht besser erfasst.</string>
     <string name="setting_glow">Leuchten</string>
     <string name="setting_glow_desc">Fügt ein weiches Neonleuchten um die Grafiken hinzu. Hinweis: Dies beansprucht zusätzliche Ressourcen.</string>
     <string name="setting_glow_intensity">Leuchtstärke</string>

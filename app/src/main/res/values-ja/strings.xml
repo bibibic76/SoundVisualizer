@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">最大の濃さ</string>
     <string name="setting_max_opacity_desc">音が最も大きいときのグラフィックの濃さです。</string>
     <string name="setting_size">サイズ</string>
-    <string name="setting_size_desc">グラフィックの大きさと、全体の厚みを調整します。</string>
+    <string name="setting_size_desc">同じ音をどれくらい大きく描くかを調整します。小さな音を拾いやすくする設定ではありません。</string>
     <string name="setting_radius">半径</string>
     <string name="setting_radius_desc">円形モードで、中央のリングの半径を調整します。</string>
     <string name="setting_opacity">濃さ</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">速度</string>
     <string name="setting_speed_desc">音の方向が変わったときに、グラフィックが新しい位置へ移動する速さを調整します。</string>
     <string name="setting_sensitivity">感度</string>
-    <string name="setting_sensitivity_desc">音の大きさの変化に、グラフィックがどれだけ素早く反応して揺れるかを調整します。</string>
+    <string name="setting_sensitivity_desc">音の大きさが変わったときに、グラフィックがどれだけ素早く大きくなったり小さくなったりするかを調整します。高いとリズムに合わせて揺れ、低いとなめらかに変わります。小さな音を拾いやすくする設定ではありません。</string>
     <string name="setting_glow">発光</string>
     <string name="setting_glow_desc">グラフィックの周りに、柔らかなネオン風の発光効果を加えます。注意：処理の負荷が増えます。</string>
     <string name="setting_glow_intensity">発光の強さ</string>

@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">最大不透明度</string>
     <string name="setting_max_opacity_desc">声音最大时图形达到的不透明度。</string>
     <string name="setting_size">大小</string>
-    <string name="setting_size_desc">调整图形的大小和整体饱满程度。</string>
+    <string name="setting_size_desc">调整同样的声音要把图形画多大。该设置不会让更小的声音更容易被捕获。</string>
     <string name="setting_radius">半径</string>
     <string name="setting_radius_desc">调整圆环模式下中央圆环的半径。</string>
     <string name="setting_opacity">不透明度</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">速度</string>
     <string name="setting_speed_desc">声音方向改变时，图形移动到新位置的速度。</string>
     <string name="setting_sensitivity">灵敏度</string>
-    <string name="setting_sensitivity_desc">图形对声音大小变化的反应（跳动）速度。</string>
+    <string name="setting_sensitivity_desc">调整声音大小变化时，图形放大和缩小的快慢。数值高时会随节奏跳动，数值低时变化更平缓。该设置不会让更小的声音更容易被捕获。</string>
     <string name="setting_glow">发光</string>
     <string name="setting_glow_desc">在图形周围添加柔和的霓虹光晕效果。注意：会占用额外资源。</string>
     <string name="setting_glow_intensity">发光强度</string>

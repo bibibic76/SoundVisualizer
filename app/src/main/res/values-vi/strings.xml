@@ -103,7 +103,7 @@
     <string name="setting_max_opacity">Đậm tối đa</string>
     <string name="setting_max_opacity_desc">Độ đậm của đồ họa khi âm thanh lớn nhất.</string>
     <string name="setting_size">Kích thước</string>
-    <string name="setting_size_desc">Điều chỉnh độ lớn và độ đầy đặn của đồ họa.</string>
+    <string name="setting_size_desc">Điều chỉnh đồ họa được vẽ to đến mức nào với cùng một âm thanh. Cài đặt này không giúp thu được âm thanh nhỏ hơn.</string>
     <string name="setting_radius">Bán kính</string>
     <string name="setting_radius_desc">Chỉnh riêng bán kính của vòng tròn ở giữa màn hình trong chế độ Vòng.</string>
     <string name="setting_opacity">Độ đậm</string>
@@ -111,7 +111,7 @@
     <string name="setting_speed">Tốc độ</string>
     <string name="setting_speed_desc">Tốc độ đồ họa di chuyển đến vị trí mới khi hướng âm thanh thay đổi.</string>
     <string name="setting_sensitivity">Độ nhạy</string>
-    <string name="setting_sensitivity_desc">Đồ họa phản ứng (co giãn) nhanh hay chậm khi độ lớn âm thanh thay đổi.</string>
+    <string name="setting_sensitivity_desc">Điều chỉnh đồ họa to lên và nhỏ lại nhanh đến mức nào khi độ lớn âm thanh thay đổi. Giá trị cao sẽ co giãn theo nhịp; giá trị thấp sẽ thay đổi mượt mà. Cài đặt này không giúp thu được âm thanh nhỏ hơn.</string>
     <string name="setting_glow">Phát sáng</string>
     <string name="setting_glow_desc">Thêm hiệu ứng ánh sáng neon dịu nhẹ quanh đồ họa. Lưu ý: tốn thêm tài nguyên.</string>
     <string name="setting_glow_intensity">Độ phát sáng</string>
