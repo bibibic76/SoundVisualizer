@@ -6,10 +6,10 @@ stable logical names let evaluation code avoid depending on contributor-made
 filenames.  The CSV is deliberately separate from the source audio so the raw
 audio can remain outside the repository.
 
-The legacy Gunshot Booster directory is *not* three-class ground truth.  A
-small set of names establishes a Danger category (gunshot, alarm, siren, and
-explosion).  All ``new_*`` background files are emitted as ``review_required``
-until a person assigns their intended Ambient/Speech/Danger label.
+The legacy Gunshot Booster directory is *not* independent three-class ground
+truth.  A small set of names establishes a Danger category (gunshot, alarm,
+siren, and explosion).  The remaining legacy background files are cataloged as
+Ambient according to the product owner's explicit evaluation annotation.
 """
 
 from __future__ import annotations
@@ -123,8 +123,8 @@ def legacy_sample(path: Path) -> SourceSample:
     if category is not None:
         return SourceSample("legacy_booster", path, "danger", category, "declared_by_filename")
     return SourceSample(
-        "legacy_booster", path, "", "background", "review_required",
-        "Legacy Booster negative/background filename is not three-class ground truth.",
+        "legacy_booster", path, "ambient", "background", "annotated_by_product_owner",
+        "Ambient annotation supplied for this legacy background group; the group remains non-independent Booster data.",
     )
 
 
