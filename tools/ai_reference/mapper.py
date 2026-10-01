@@ -123,6 +123,10 @@ def _matches_danger(s: str) -> bool:
         return True
     if "explosion" in s or "fireworks" in s or "firecracker" in s:
         return True
+    # Product policy: sudden explosive or destructive events are Danger even when
+    # YAMNet cannot identify their precise source (for example, a gunshot vs. a pop).
+    if s in {"burst, pop", "boom", "bang", "smash, crash", "breaking", "shatter"}:
+        return True
     if "civil defense siren" in s:
         return True
     if "police car" in s and "siren" in s:

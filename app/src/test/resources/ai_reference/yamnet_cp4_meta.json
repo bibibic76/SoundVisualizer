@@ -15,7 +15,13 @@
     "Silence": "ambient",
     "Footsteps": "ambient",
     "Vehicle horn, car horn, honking": "danger",
-    "Air horn, truck horn": "danger"
+    "Air horn, truck horn": "danger",
+    "Burst, pop": "danger",
+    "Boom": "danger",
+    "Bang": "danger",
+    "Smash, crash": "danger",
+    "Breaking": "danger",
+    "Shatter": "danger"
   },
   "handcrafted": {
     "ambient": {

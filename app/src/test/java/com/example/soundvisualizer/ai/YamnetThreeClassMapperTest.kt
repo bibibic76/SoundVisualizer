@@ -158,6 +158,23 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
+    fun approvedSuddenImpactPolicy() {
+        listOf(
+            "Burst, pop",
+            "Boom",
+            "Bang",
+            "Smash, crash",
+            "Breaking",
+            "Shatter"
+        ).forEach { displayName ->
+            assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Glass", "Door", "Knock", "Thump, thud", "Whack, thwack", "Clang").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
     fun waterSoundsDoNotProduceDangerCoarseClassification() {
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             val probabilities = FloatArray(classNames.size)

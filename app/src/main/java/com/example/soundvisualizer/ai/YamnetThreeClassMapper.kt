@@ -40,6 +40,14 @@ object YamnetThreeClassMapper {
             return true
         }
         if ("explosion" in s || "fireworks" in s || "firecracker" in s) return true
+        // Product policy: sudden explosive or destructive events are Danger even when
+        // YAMNet cannot identify their precise source (for example, a gunshot vs. a pop).
+        if (
+            s == "burst, pop" || s == "boom" || s == "bang" ||
+            s == "smash, crash" || s == "breaking" || s == "shatter"
+        ) {
+            return true
+        }
         if ("civil defense siren" in s) return true
         if ("police car" in s && "siren" in s) return true
         if ("ambulance" in s && "siren" in s) return true
