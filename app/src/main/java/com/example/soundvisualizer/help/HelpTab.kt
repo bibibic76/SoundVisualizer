@@ -126,6 +126,7 @@ fun HelpTab() {
                     R.string.help_note_mono,
                     R.string.help_note_sources,
                     R.string.help_note_volume,
+                    R.string.help_note_mic_sensitivity,
                     R.string.help_note_stopped,
                     R.string.help_note_screen_off,
                     R.string.help_note_ai
