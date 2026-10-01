@@ -56,7 +56,7 @@ Vibration lets you know a sound happened even when you're not looking at the scr
   - Medium pulses every half second, Slow at half that pace and Fast at twice that pace. Continuous vibrates without a break.
 - **Set the strength for each type with a slider (10–100%).** Every mode vibrates at the strength you picked. Give each type a different mode and you can tell sounds apart by touch alone.
 - **It keeps vibrating while a sound of that type lasts and stops when the sound does.** Pauses shorter than 0.4 seconds, like the gaps between words, count as the same sound.
-- Tap a mode or change the strength in Settings to feel it for 2 seconds.
+- Tap a mode or change the strength in Settings to feel it for 2 seconds. While the visualizer is running, previews don't play, so they aren't mixed up with real alerts.
 - **Only types shown on screen vibrate.**
 - While the phone keeps vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
 

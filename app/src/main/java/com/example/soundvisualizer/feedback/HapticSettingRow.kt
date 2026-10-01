@@ -20,6 +20,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +58,7 @@ import kotlin.math.roundToInt
  *
  * 진동은 화면 표시가 켜진 종류만 울리므로, 표시가 꺼져 있으면 비활성으로 보여준다.
  * 세기는 꺼짐이 아닐 때만 펼쳐서 카드가 길어지지 않게 한다. 방식을 누르거나 세기를 바꾸면 그대로 미리 울려 본다.
+ * 시각화가 실행 중이면 미리보기가 실제 진동과 섞여 무엇이 울린 것인지 헷갈리므로 울리지 않는다(#244).
  *
  * @param label [com.example.soundvisualizer.AiClassification] 의 라벨
  * @param shown 이 종류의 화면 표시가 켜져 있는지
@@ -67,6 +69,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val player = remember { HapticPlayer(context) }
     val settings by SettingsManager.hapticSettings(label).collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
+    val running by SettingsManager.isServiceRunning.collectAsState()
 
     val rowEnabled = shown && player.hasVibrator
 
@@ -74,8 +77,13 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     DisposableEffect(label) {
         onDispose { HapticPreviewGate.stopPreview(owner = label) }
     }
+    // 미리보기를 튼 직후 빠른 설정 타일 등으로 시각화를 켜면, 남은 미리보기도 바로 멈춘다.
+    LaunchedEffect(running) {
+        if (running) HapticPreviewGate.stopPreview(owner = label)
+    }
 
-    val preview: (HapticSettings) -> Unit = { next ->
+    val preview: (HapticSettings) -> Unit = preview@{ next ->
+        if (running) return@preview
         val plan = HapticShapes.preview(next, player.hasAmplitudeControl)
         if (plan == null) {
             HapticPreviewGate.stopPreview(owner = label)
@@ -152,7 +160,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             }
 
             Text(
-                stringResource(R.string.haptic_preview_hint),
+                stringResource(if (running) R.string.haptic_preview_hint_running else R.string.haptic_preview_hint),
                 fontSize = 12.sp,
                 color = SecondaryTextColor,
                 modifier = Modifier.padding(top = 8.dp)

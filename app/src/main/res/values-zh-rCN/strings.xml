@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">快</string>
     <string name="haptic_mode_continuous">连续</string>
     <string name="haptic_preview_hint">点按一种振动方式或调整强度，即可预览 2 秒振动效果。</string>
+    <string name="haptic_preview_hint_running">可视化运行时不会播放预览振动，以免与真实振动混淆。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">选择颜色</string>

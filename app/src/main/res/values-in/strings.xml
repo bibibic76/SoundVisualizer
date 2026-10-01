@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">Cepat</string>
     <string name="haptic_mode_continuous">Terus-menerus</string>
     <string name="haptic_preview_hint">Ketuk salah satu mode atau ubah kekuatannya untuk merasakan getarannya selama 2 detik.</string>
+    <string name="haptic_preview_hint_running">Saat visualisasi berjalan, contoh getaran tidak diputar agar tidak tertukar dengan getaran yang sebenarnya.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pilih warna</string>

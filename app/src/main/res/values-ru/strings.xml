@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">Быстро</string>
     <string name="haptic_mode_continuous">Непрерывно</string>
     <string name="haptic_preview_hint">Нажмите на режим или измените силу, чтобы почувствовать вибрацию в течение 2 секунд.</string>
+    <string name="haptic_preview_hint_running">Пока визуализатор работает, пробная вибрация не включается, чтобы её не путали с настоящей.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Выбор цвета</string>

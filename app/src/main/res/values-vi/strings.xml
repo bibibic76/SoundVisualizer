@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">Nhanh</string>
     <string name="haptic_mode_continuous">Liên tục</string>
     <string name="haptic_preview_hint">Nhấn vào một chế độ hoặc thay đổi cường độ để thử cảm giác rung trong 2 giây.</string>
+    <string name="haptic_preview_hint_running">Khi âm thanh trực quan đang chạy, rung thử sẽ không phát để không lẫn với rung thật.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Chọn màu</string>

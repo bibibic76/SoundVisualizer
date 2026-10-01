@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">Hızlı</string>
     <string name="haptic_mode_continuous">Sürekli</string>
     <string name="haptic_preview_hint">Titreşimi 2 saniye boyunca denemek için bir moda dokunun veya yoğunluğu değiştirin.</string>
+    <string name="haptic_preview_hint_running">Görselleştirme çalışırken önizleme titreşimi çalınmaz; böylece gerçek titreşimle karışmaz.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>

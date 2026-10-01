@@ -134,6 +134,7 @@
     <string name="haptic_mode_fast">速い</string>
     <string name="haptic_mode_continuous">連続</string>
     <string name="haptic_preview_hint">振動の仕方をタップするか強さを変えると、2秒間試せます。</string>
+    <string name="haptic_preview_hint_running">可視化の実行中は、実際の振動と区別できるようにお試しの振動は鳴りません。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">色を選択</string>
