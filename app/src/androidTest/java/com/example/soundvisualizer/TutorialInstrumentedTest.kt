@@ -128,6 +128,40 @@ class TutorialInstrumentedTest {
     }
 
     @Test
+    fun tapDuringCloseDoesNotReachHomeSwitch() {
+        // 튜토리얼이 사라지는 동안의 누름이 홈의 외부 사운드 모드 스위치를 바꾸지 않는다(#264). 가로 화면에서는 ‘확인’
+        // 자리에 그 스위치가 있어, 두 번 누르면 동의 없이 켜지는 마이크 모드로 바뀌었다. 여기서는 자리와 상관없이
+        // 전환 한가운데에 스위치를 직접 누른다.
+        setSeen(true)
+        var modeBefore = false
+        instrumentation.runOnMainSync {
+            modeBefore = SettingsManager.externalSoundMode.value
+            SettingsManager.setExternalSoundMode(false)
+        }
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use {
+                rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
+                repeat(TutorialPage.entries.size - 1) {
+                    rule.onNodeWithText(text(R.string.tutorial_next)).performClick()
+                }
+
+                rule.mainClock.autoAdvance = false
+                rule.onNodeWithText(text(R.string.tutorial_done)).performClick()
+                rule.mainClock.advanceTimeBy(100)
+                rule.onNodeWithText(text(R.string.home_external_mode)).performClick()
+                rule.mainClock.autoAdvance = true
+
+                rule.onNodeWithText(text(R.string.tab_home)).assertIsDisplayed()
+                var mode = true
+                instrumentation.runOnMainSync { mode = SettingsManager.externalSoundMode.value }
+                assertFalse("튜토리얼이 사라지는 동안의 누름이 외부 사운드 모드를 켰다", mode)
+            }
+        } finally {
+            instrumentation.runOnMainSync { SettingsManager.setExternalSoundMode(modeBefore) }
+        }
+    }
+
+    @Test
     fun backGoesToPreviousPageThenCloses() {
         setSeen(false)
         ActivityScenario.launch(MainActivity::class.java).use {
