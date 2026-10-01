@@ -15,7 +15,9 @@ class RealtimeAiPipelineInstrumentedTest {
     @Test
     fun realtimePipeline_logMelMatchesQualcommFrontend() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
-        val mono = FloatArray(16_000) { i -> kotlin.math.sin(i * .031).toFloat() * .4f }
+        val mono = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES) { i ->
+            kotlin.math.sin(i * .031).toFloat() * .4f
+        }
         RealtimeAiPipeline.create(app, captureSampleRate = 16_000, channels = 1).use { pipeline ->
             // Exercise the capture-facing ingest path too: it opens the silence gate
             // before an inference tick is allowed to read the ring buffer.
