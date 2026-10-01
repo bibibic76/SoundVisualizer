@@ -51,6 +51,7 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
     // 마지막 자식(실행·실행 종료 버튼)이 눌려 사라진다. 스크롤을 열고 최소 높이를 화면 높이로 잡아
     // 짧을 때는 가운데 정렬로, 길면 밀어 볼 수 있게 한다.
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val landscape = maxWidth > maxHeight
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -140,53 +141,14 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                 }
             }
 
-            // 외부 사운드 모드(#226). 켜기 전에 고르고, 실행 중에는 잠근다. 소스는 켤 때 정해져 돌고 있는 실행에는
-            // 적용되지 않으므로, 바꿀 수 있는 것처럼 두면 스위치와 실제로 듣는 곳이 어긋난다.
-            Card(
-                colors = CardDefaults.cardColors(containerColor = CardColor),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
-            ) {
-                Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp)) {
-                    ModernSwitch(
-                        stringResource(R.string.home_external_mode),
-                        stringResource(if (isRunning) R.string.home_external_mode_locked else R.string.home_external_mode_desc),
-                        externalSoundMode,
-                        enabled = !isRunning
-                    ) {
-                        SettingsManager.setExternalSoundMode(it)
-                    }
-                    // 감도는 모드를 켰을 때만 보인다. 잰 크기에만 곱하므로 도는 실행에도 바로 먹어, 실행 중에 그림을 보며 맞출 수 있다.
-                    DependentSettings(externalSoundMode) {
-                        MicSensitivitySlider()
-                    }
-                }
-            }
-
-            // 번역된 이름이 길면 버튼 안에서 가운데 정렬로 두 줄까지 들어간다(56dp 안에 두 줄).
-            // 글자 크기 설정 때문에 한쪽이 더 커지면 두 버튼 높이를 같이 맞춘다.
-            Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-                Button(
-                    onClick = onStart,
-                    enabled = !isRunning,
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentColor, disabledContainerColor = Color(0xFF333A44)),
-                    shape = RoundedCornerShape(14.dp),
-                    contentPadding = HomeButtonPadding,
-                    modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
-                ) {
-                    Text(stringResource(R.string.home_start), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (isRunning) SecondaryTextColor else Color.White)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Button(
-                    onClick = onStop,
-                    enabled = isRunning,
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerColor, disabledContainerColor = Color(0xFF333A44)),
-                    shape = RoundedCornerShape(14.dp),
-                    contentPadding = HomeButtonPadding,
-                    modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
-                ) {
-                    Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (!isRunning) SecondaryTextColor else Color.White)
-                }
+            // 가로 화면은 높이가 짧아(폰에서 약 285dp) 외부 사운드 모드 카드 아래의 실행 버튼이 화면 밖으로 밀린다(#264).
+            // 그래서 가로일 때만 실행 버튼을 카드 위에 둔다. 세로는 고르고 나서 누르는 순서 그대로 카드가 먼저다.
+            if (landscape) {
+                StartStopButtons(isRunning, onStart, onStop)
+                ExternalModeCard(isRunning, externalSoundMode, Modifier.padding(top = 24.dp))
+            } else {
+                ExternalModeCard(isRunning, externalSoundMode, Modifier.padding(bottom = 24.dp))
+                StartStopButtons(isRunning, onStart, onStop)
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -204,6 +166,65 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                     fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, color = SecondaryTextColor
                 )
             }
+        }
+    }
+}
+
+/**
+ * 외부 사운드 모드(#226). 켜기 전에 고르고, 실행 중에는 잠근다. 소스는 켤 때 정해져 돌고 있는 실행에는
+ * 적용되지 않으므로, 바꿀 수 있는 것처럼 두면 스위치와 실제로 듣는 곳이 어긋난다.
+ */
+@Composable
+private fun ExternalModeCard(isRunning: Boolean, externalSoundMode: Boolean, modifier: Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = CardColor),
+        shape = RoundedCornerShape(20.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp)) {
+            ModernSwitch(
+                stringResource(R.string.home_external_mode),
+                stringResource(if (isRunning) R.string.home_external_mode_locked else R.string.home_external_mode_desc),
+                externalSoundMode,
+                enabled = !isRunning
+            ) {
+                SettingsManager.setExternalSoundMode(it)
+            }
+            // 감도는 모드를 켰을 때만 보인다. 잰 크기에만 곱하므로 도는 실행에도 바로 먹어, 실행 중에 그림을 보며 맞출 수 있다.
+            DependentSettings(externalSoundMode) {
+                MicSensitivitySlider()
+            }
+        }
+    }
+}
+
+/**
+ * 실행·실행 종료 버튼. 번역된 이름이 길면 버튼 안에서 가운데 정렬로 두 줄까지 들어간다(56dp 안에 두 줄).
+ * 글자 크기 설정 때문에 한쪽이 더 커지면 두 버튼 높이를 같이 맞춘다.
+ */
+@Composable
+private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+        Button(
+            onClick = onStart,
+            enabled = !isRunning,
+            colors = ButtonDefaults.buttonColors(containerColor = AccentColor, disabledContainerColor = Color(0xFF333A44)),
+            shape = RoundedCornerShape(14.dp),
+            contentPadding = HomeButtonPadding,
+            modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
+        ) {
+            Text(stringResource(R.string.home_start), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (isRunning) SecondaryTextColor else Color.White)
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Button(
+            onClick = onStop,
+            enabled = isRunning,
+            colors = ButtonDefaults.buttonColors(containerColor = DangerColor, disabledContainerColor = Color(0xFF333A44)),
+            shape = RoundedCornerShape(14.dp),
+            contentPadding = HomeButtonPadding,
+            modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
+        ) {
+            Text(stringResource(R.string.home_stop), fontSize = 17.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = if (!isRunning) SecondaryTextColor else Color.White)
         }
     }
 }
