@@ -140,15 +140,19 @@ class TutorialInstrumentedTest {
         }
         try {
             ActivityScenario.launch(MainActivity::class.java).use {
+                // 탭 화면은 튜토리얼이 닫히며 새로 만들어져 맨 위부터 보인다. 스위치 자리를 그 상태에서 재 둔다.
+                val switch = rule.onNodeWithText(text(R.string.home_external_mode)).fetchSemanticsNode().boundsInRoot.center
                 rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
                 repeat(TutorialPage.entries.size - 1) {
                     rule.onNodeWithText(text(R.string.tutorial_next)).performClick()
                 }
+                // 시계를 멈추기 전에 잰다. 멈춘 뒤에는 마지막 쪽으로 넘어가는 전환이 끝나지 않아 ‘확인’이 아직 없다.
+                val done = rule.onNodeWithText(text(R.string.tutorial_done)).fetchSemanticsNode().boundsInRoot.center
 
                 rule.mainClock.autoAdvance = false
-                rule.onNodeWithText(text(R.string.tutorial_done)).performClick()
+                rule.onRoot().performTouchInput { click(done) }
                 rule.mainClock.advanceTimeBy(100)
-                rule.onNodeWithText(text(R.string.home_external_mode)).performClick()
+                rule.onRoot().performTouchInput { click(switch) }
                 rule.mainClock.autoAdvance = true
 
                 rule.onNodeWithText(text(R.string.tab_home)).assertIsDisplayed()
