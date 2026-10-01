@@ -10,8 +10,10 @@
     <string name="home_status_running_external">Stan: działa · Dźwięki zewnętrzne</string>
     <string name="home_mic_silenced">Przez mikrofon nie dociera żaden dźwięk. Być może trwa rozmowa telefoniczna, inna aplikacja używa mikrofonu albo dostęp do mikrofonu jest wyłączony w Szybkich ustawieniach.</string>
     <string name="home_external_mode">Tryb dźwięków zewnętrznych</string>
-    <string name="home_external_mode_desc">Słucha przez mikrofon dźwięków wokół Ciebie zamiast dźwięku odtwarzanego na telefonie i pokazuje je na ekranie oraz za pomocą wibracji. Nie trzeba zgody na nagrywanie ekranu. Na Androidzie 12 i nowszych podczas słuchania na pasku stanu widać wskaźnik mikrofonu. Sam dźwięk nie jest zapisywany w pliku ani nigdzie wysyłany.</string>
+    <string name="home_external_mode_desc">Słucha przez mikrofon dźwięków wokół Ciebie zamiast dźwięku odtwarzanego na telefonie. Sam dźwięk nie jest nigdzie zapisywany ani wysyłany.</string>
     <string name="home_external_mode_locked">Nie można tego zmienić, gdy wizualizacja działa. Zatrzymaj ją i zmień ustawienie – zacznie obowiązywać przy następnym uruchomieniu.</string>
+    <string name="home_mic_sensitivity">Czułość mikrofonu</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">Stan: w gotowości</string>
     <string name="home_capture_blocked">Do wizualizacji nie dociera żaden dźwięk, więc nie ma czego rysować. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie (tak działają filmy chronione przed nagrywaniem) lub dźwięk może być w niej wyciszony.</string>
     <string name="home_ai_unavailable_loud">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia, a wibrują tylko głośne dźwięki – z ustawieniem wibracji dla dźwięków zagrożenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>

@@ -16,8 +16,10 @@
     <string name="home_capture_blocked">No sound is reaching the visualizer, so nothing can be drawn. The app you\'re using may not allow its sound to be shared (protected video works this way), or its own sound may be muted.</string>
     <string name="home_mic_silenced">No sound is coming in through the microphone. You may be on a call, another app may be using the microphone, or microphone access may be turned off in Quick Settings.</string>
     <string name="home_external_mode">External sound mode</string>
-    <string name="home_external_mode_desc">Listens to the sounds around you through the microphone instead of sound playing on your phone, and shows them on screen and with vibration. No screen recording consent is needed. On Android 12 and later, a microphone indicator shows in the status bar while it listens. The audio itself is never saved to a file or sent anywhere.</string>
+    <string name="home_external_mode_desc">Listens to the sounds around you through the microphone instead of sound playing on your phone. The audio itself is never saved or sent anywhere.</string>
     <string name="home_external_mode_locked">Can\'t be changed while running. Stop the visualizer and change it, and it applies the next time you start.</string>
+    <string name="home_mic_sensitivity">Microphone sensitivity</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_ai_unavailable_loud">Sound type detection isn\'t working, so every sound is shown in the ambient color and only loud sounds vibrate, using the danger sound vibration setting. Try turning the visualizer off and on again.</string>
     <string name="home_ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color and vibration alerts are off. Try turning the visualizer off and on again.</string>
     <string name="home_stopped_dismiss">Dismiss notice</string>

@@ -720,7 +720,9 @@ class AudioCaptureService : Service() {
             if (bytes > 0) {
                 val floats = bytes / BYTES_PER_FLOAT
                 if (dualMono) toDualMono(floatView, floats, micMutedForCall)
-                AudioEngine.pushAudioBuffer(buffer, floats)
+                // 마이크 감도는 실행 중에도 바꿀 수 있어 버퍼마다 읽는다(원자 읽기 하나). 크기에만 곱하고 AI 는 그대로 받는다.
+                val levelGain = if (dualMono) MicSensitivity.gain(SettingsManager.micSensitivity.value) else 1f
+                AudioEngine.pushAudioBuffer(buffer, floats, levelGain)
                 // 쉬는 오버레이를 소리가 난 이 버퍼에서 바로 깨운다(#170). 원자 변수를 읽고, 오버레이가 쉬는 중이면
                 // 소리 크기를 한 번 더 읽는다. 할당은 없다.
                 OverlayWake.onBuffer()
@@ -751,8 +753,9 @@ class AudioCaptureService : Service() {
      * 마이크 입력을 좌우가 같은 두 채널로 바꾼다(#226). 캡처 스레드에서 버퍼마다 부르며 할당은 없다.
      *
      * 오버레이는 좌우 크기 차이로 방향을 그린다. 마이크 두 개가 따로 들어오는 기기에서는 마이크 감도와 자리
-     * 차이만으로 한쪽으로 기운 그림이 나온다. 폰의 두 마이크는 위아래로 약 14cm 떨어져 있어 좌우를 가릴 수 없으므로,
-     * 틀린 방향을 그리지 않도록 한가운데로 그린다. [mute] 면 모두 0 으로 버린다(통화 중).
+     * 차이만으로 한쪽으로 기운 그림이 나온다. 폰의 두 마이크는 긴 축으로 약 14cm 떨어져 있어, 세로로 들면 좌우를
+     * 가릴 수 없고 가로로 들 때만 도착 시간차로 가릴 수 있다. 그 계산(#248)을 넣기 전까지는 틀린 방향을 그리지 않도록
+     * 한가운데로 그린다. [mute] 면 모두 0 으로 버린다(통화 중).
      */
     private fun toDualMono(view: FloatBuffer, floats: Int, mute: Boolean) {
         var i = 0

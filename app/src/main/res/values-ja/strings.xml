@@ -10,8 +10,10 @@
     <string name="home_status_running_external">状態：実行中 · 周囲の音</string>
     <string name="home_mic_silenced">マイクから音が入ってきません。通話中か、ほかのアプリがマイクを使っているか、クイック設定でマイクへのアクセスがオフになっている可能性があります。</string>
     <string name="home_external_mode">外部音モード</string>
-    <string name="home_external_mode_desc">スマートフォンで再生中の音の代わりに、マイクで周囲の音を聞き取り、画面と振動でお知らせします。画面録画の同意は不要です。Android 12 以降では、聞き取っている間はステータスバーにマイクのマークが表示されます。音そのものをファイルに保存したり、外部に送信したりすることはありません。</string>
+    <string name="home_external_mode_desc">スマートフォンで再生中の音の代わりに、マイクで周囲の音を聞き取ります。音そのものを保存したり、外部に送信したりすることはありません。</string>
     <string name="home_external_mode_locked">実行中は変更できません。可視化を停止してから変更すると、次回の開始時から適用されます。</string>
+    <string name="home_mic_sensitivity">マイクの感度</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">状態：待機中</string>
     <string name="home_capture_blocked">音を受け取れていないため、何も描けません。再生中のアプリが音の共有を許可していないか（保護された動画がそうです）、そのアプリの音がオフになっている可能性があります。</string>
     <string name="home_ai_unavailable_loud">音の種類を判別できないため、すべての音が環境音の色で表示され、振動は種類に関係なく大きな音にだけ、危険音の振動設定で起こります。可視化を一度オフにして、もう一度オンにしてみてください。</string>

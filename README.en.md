@@ -67,7 +67,8 @@ Turn on **External sound mode** on Home and start, and it listens to **the sound
 - It's off by default. When it's on, it starts without screen recording consent, and on Android 12 and later a microphone indicator shows in the status bar while it listens. The running notification title and the Home status also say **Surrounding sound**.
 - What it hears is only used to measure loudness and tell the type of sound. **The audio itself is never saved to a file or sent anywhere.** If you turn on result recording in developer mode, the names of the sounds the AI heard and their times are written to a CSV file in the app folder.
 - It can't be changed while running. Stop the visualizer, change it, and it applies the next time you start.
-- It always draws sound in the center. The phone's two microphones sit at the top and bottom, so it can't tell whether a sound comes from the left or the right.
+- **Microphone sensitivity** appears under the switch when the mode is on (50–800%, 100% by default). Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It takes effect right away, even while running. It only changes the loudness the graphics and vibration see; the AI that tells sound types apart hears the same sound.
+- For now it always draws sound in the center. The phone's two microphones sit apart along its long side, so it can't tell left from right when you hold it upright, only when you hold it sideways. Showing left and right in landscape comes later.
 - If you're on a call, another app is using the microphone, or microphone access is turned off in Quick Settings, no sound comes in. Home and the running notification tell you when that happens.
 
 ### ⚙️ Settings for each mode

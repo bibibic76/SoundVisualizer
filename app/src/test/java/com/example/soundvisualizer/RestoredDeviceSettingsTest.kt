@@ -16,13 +16,14 @@ import org.junit.Test
  */
 class RestoredDeviceSettingsTest {
 
-    /** 그 기기에서 쓰던 상태. 꺼짐 안내와 타일 추가 여부, 그리고 사용자 설정 하나. */
+    /** 그 기기에서 쓰던 상태. 꺼짐 안내와 타일 추가 여부, 마이크 감도, 그리고 사용자 설정 하나. */
     private fun usedPrefs(): MemoryPrefs {
         val prefs = MemoryPrefs()
         prefs.edit()
             .putString(STOP_KEY, StopReason.ProjectionStopped.name)
             .putInt(SEQ_KEY, 3)
             .putBoolean(TILE_KEY, true)
+            .putInt(MIC_KEY, 400)
             .putInt(COLOR_KEY, 0x112233)
             .apply()
         return prefs
@@ -37,6 +38,7 @@ class RestoredDeviceSettingsTest {
         assertNull("복원한 폰에서 꺼짐 안내가 떴다", SettingsManager.lastUnexpectedStop.value)
         assertEquals(0, SettingsManager.lastUnexpectedStopSeq.value)
         assertFalse("타일이 없는 폰인데 추가된 것으로 본다", SettingsManager.tileAdded.value)
+        assertEquals("마이크 감도는 그 폰의 마이크에 맞춘 값이다", MicSensitivity.DEFAULT, SettingsManager.micSensitivity.value)
         assertEquals("사용자 설정은 새 기기로 따라가야 한다", 0x112233, SettingsManager.colorAmbient.value)
     }
 
@@ -50,6 +52,7 @@ class RestoredDeviceSettingsTest {
         assertEquals(StopReason.ProjectionStopped, SettingsManager.lastUnexpectedStop.value)
         assertEquals(3, SettingsManager.lastUnexpectedStopSeq.value)
         assertTrue(SettingsManager.tileAdded.value)
+        assertEquals(400, SettingsManager.micSensitivity.value)
     }
 
     @Test
@@ -73,6 +76,7 @@ class RestoredDeviceSettingsTest {
         const val STOP_KEY = "last_unexpected_stop"
         const val SEQ_KEY = "last_unexpected_stop_seq"
         const val TILE_KEY = "tile_added"
+        const val MIC_KEY = "mic_sensitivity"
         const val COLOR_KEY = "color_ambient"
         const val DEVICE_KEY = "device_tag"
     }

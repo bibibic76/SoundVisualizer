@@ -10,8 +10,10 @@
     <string name="home_status_running_external">Status: Em execução · Som externo</string>
     <string name="home_mic_silenced">Nenhum som está chegando pelo microfone. Talvez você esteja em uma ligação, outro app esteja usando o microfone ou o acesso ao microfone esteja desativado nas Configurações rápidas.</string>
     <string name="home_external_mode">Modo de som externo</string>
-    <string name="home_external_mode_desc">Ouve os sons ao seu redor pelo microfone, em vez do som que toca no celular, e mostra esses sons na tela e com vibração. Não é preciso autorizar a gravação da tela. No Android 12 ou mais recente, um indicador de microfone aparece na barra de status enquanto ele ouve. O áudio em si nunca é salvo em arquivo nem enviado a lugar nenhum.</string>
+    <string name="home_external_mode_desc">Ouve os sons ao seu redor pelo microfone, em vez do som que toca no celular. O áudio em si nunca é salvo nem enviado a lugar nenhum.</string>
     <string name="home_external_mode_locked">Não dá para mudar enquanto está em execução. Pare a visualização e mude; a alteração vale na próxima vez que você iniciar.</string>
+    <string name="home_mic_sensitivity">Sensibilidade do microfone</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">Status: Pronto</string>
     <string name="home_capture_blocked">A visualização não está recebendo nenhum som, então não há nada para desenhar. Pode ser que o app que está tocando não permita compartilhar o som dele (é o caso dos vídeos protegidos) ou que o som esteja desligado dentro do próprio app.</string>
     <string name="home_ai_unavailable_loud">A detecção do tipo de som não está funcionando, então todos os sons aparecem na cor dos sons ambientes e só os sons altos vibram, com o ajuste de vibração dos sons de perigo. Tente desligar e ligar a visualização de novo.</string>

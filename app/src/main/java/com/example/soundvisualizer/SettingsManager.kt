@@ -78,6 +78,7 @@ object SettingsManager {
 
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
     private const val KEY_EXTERNAL_SOUND_MODE = "external_sound_mode"
+    private const val KEY_MIC_SENSITIVITY = "mic_sensitivity"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
     private const val KEY_DEVELOPER_RECORD = "developer_record"
     private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
@@ -166,6 +167,13 @@ object SettingsManager {
      */
     private val _externalSoundMode = MutableStateFlow(EXTERNAL_SOUND_MODE_DEFAULT)
     val externalSoundMode: StateFlow<Boolean> = _externalSoundMode
+
+    /**
+     * 외부 사운드 모드의 마이크 감도(%, [MicSensitivity]). 실행 중에도 바꿀 수 있고, 캡처 스레드가 버퍼마다 읽는다.
+     * 마이크는 기기마다 달라 기기 전용 값이다([dropOtherDeviceValues]).
+     */
+    private val _micSensitivity = MutableStateFlow(MicSensitivity.DEFAULT)
+    val micSensitivity: StateFlow<Int> = _micSensitivity
 
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
@@ -261,7 +269,8 @@ object SettingsManager {
      *
      * 자동 백업은 프리퍼런스 파일을 통째로 옮기고, 백업 규칙은 파일 단위라 키 하나만 뺄 수 없다. 그대로 두면
      * 새 폰에서 앱을 처음 열었을 때 "꺼졌습니다" 안내가 뜬다. 그 기기에서는 켠 적도 없는데, 소리를 못 듣는
-     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다.
+     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다. 마이크 감도도 기기의
+     * 마이크에 맞춘 값이라, 새 기기에서는 기본값에서 다시 맞추는 편이 낫다.
      *
      * 색·진동·모드 같은 사용자 설정은 새 기기로 옮겨 가는 게 맞으므로 건드리지 않는다.
      * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 기기의 값이 사라진다.
@@ -277,6 +286,7 @@ object SettingsManager {
                 remove(KEY_LAST_UNEXPECTED_STOP)
                 remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
                 remove(KEY_TILE_ADDED)
+                remove(KEY_MIC_SENSITIVITY)
             }
             putString(KEY_DEVICE_TAG, deviceTag)
         }
@@ -316,6 +326,7 @@ object SettingsManager {
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
         _externalSoundMode.value = loadExternalSoundMode(prefs)
+        _micSensitivity.value = loadMicSensitivity(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
         _developerRecord.value = loadDeveloperRecord(prefs)
         _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
@@ -383,6 +394,10 @@ object SettingsManager {
     /** 저장된 적이 없으면 [EXTERNAL_SOUND_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadExternalSoundMode(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_EXTERNAL_SOUND_MODE, EXTERNAL_SOUND_MODE_DEFAULT)
+
+    /** 저장된 적이 없으면 [MicSensitivity.DEFAULT]. 슬라이더에 없는 값은 가장 가까운 칸으로 맞춘다. */
+    internal fun loadMicSensitivity(source: SharedPreferences): Int =
+        MicSensitivity.clamp(source.getInt(KEY_MIC_SENSITIVITY, MicSensitivity.DEFAULT))
 
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
@@ -588,6 +603,13 @@ object SettingsManager {
     fun setExternalSoundMode(enabled: Boolean) {
         _externalSoundMode.value = enabled
         prefs.edit { putBoolean(KEY_EXTERNAL_SOUND_MODE, enabled) }
+    }
+
+    /** 실행 중에도 바로 적용된다(캡처 스레드가 버퍼마다 읽는다). */
+    fun setMicSensitivity(percent: Int) {
+        val value = MicSensitivity.clamp(percent)
+        _micSensitivity.value = value
+        prefs.edit { putInt(KEY_MIC_SENSITIVITY, value) }
     }
 
     /** 오버레이가 프레임마다 읽으므로 켜고 끄면 실행 중에도 바로 적용된다. */

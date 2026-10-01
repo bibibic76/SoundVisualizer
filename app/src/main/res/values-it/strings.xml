@@ -10,8 +10,10 @@
     <string name="home_status_running_external">Stato: in esecuzione · Suoni esterni</string>
     <string name="home_mic_silenced">Dal microfono non arriva nessun suono. Potresti essere in chiamata, un\'altra app potrebbe usare il microfono oppure l\'accesso al microfono potrebbe essere disattivato nelle Impostazioni rapide.</string>
     <string name="home_external_mode">Modalità suoni esterni</string>
-    <string name="home_external_mode_desc">Ascolta i suoni intorno a te con il microfono invece dell\'audio riprodotto sul telefono e te li mostra sullo schermo e con la vibrazione. Non serve il consenso alla registrazione dello schermo. Su Android 12 e versioni successive, mentre ascolta nella barra di stato compare l\'indicatore del microfono. L\'audio in sé non viene mai salvato in un file né inviato altrove.</string>
+    <string name="home_external_mode_desc">Ascolta i suoni intorno a te con il microfono invece dell\'audio riprodotto sul telefono. L\'audio in sé non viene mai salvato né inviato altrove.</string>
     <string name="home_external_mode_locked">Non si può cambiare mentre è in esecuzione. Interrompi la visualizzazione e cambialo: varrà dal prossimo avvio.</string>
+    <string name="home_mic_sensitivity">Sensibilità del microfono</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">Stato: pronto</string>
     <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
     <string name="home_ai_unavailable_loud">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e vibrano solo i suoni forti, con l\'impostazione di vibrazione dei suoni di pericolo. Prova a disattivare e riattivare la visualizzazione.</string>

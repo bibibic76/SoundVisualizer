@@ -18,14 +18,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticPlayer
+import kotlin.math.roundToInt
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
 private val HomeButtonPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -155,6 +159,10 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                     ) {
                         SettingsManager.setExternalSoundMode(it)
                     }
+                    // 감도는 모드를 켰을 때만 보인다. 잰 크기에만 곱하므로 도는 실행에도 바로 먹어, 실행 중에 그림을 보며 맞출 수 있다.
+                    DependentSettings(externalSoundMode) {
+                        MicSensitivitySlider()
+                    }
                 }
             }
 
@@ -222,5 +230,43 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onAddTile: () -> Unit, onOp
                 )
             }
         }
+    }
+}
+
+/**
+ * 외부 사운드 모드의 마이크 감도(#226). 칸마다 약 3dB 이고, 끄는 동안 바로 적용한다.
+ *
+ * 올리면 작은 소리도 그리지만 조용하지 않은 곳의 잡음도 그리므로, 기본은 감도를 조절하기 전과 같은 100% 다.
+ * 오버레이·진동이 보는 크기에만 곱하고 AI 가 받는 소리는 그대로다([MicSensitivity]).
+ */
+@Composable
+private fun MicSensitivitySlider() {
+    val percent by SettingsManager.micSensitivity.collectAsState()
+    val name = stringResource(R.string.home_mic_sensitivity)
+    val value = stringResource(R.string.home_mic_sensitivity_value, percent)
+    val last = MicSensitivity.STEPS.size - 1
+    Column(modifier = Modifier.padding(bottom = 20.dp)) {
+        // 이름과 값은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clearAndSetSemantics { }) {
+            Text(name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor)
+        }
+        Slider(
+            value = MicSensitivity.indexOf(percent).toFloat(),
+            onValueChange = { SettingsManager.setMicSensitivity(MicSensitivity.STEPS[it.roundToInt().coerceIn(0, last)]) },
+            valueRange = 0f..last.toFloat(),
+            steps = last - 1,
+            colors = SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = AccentColor,
+                inactiveTrackColor = Color(0xFF333A44)
+            ),
+            // 값을 화면 글자 그대로 읽힌다. 두지 않으면 슬라이더 위치(칸 번호)를 퍼센트로 읽는다.
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = name
+                stateDescription = value
+            }
+        )
     }
 }

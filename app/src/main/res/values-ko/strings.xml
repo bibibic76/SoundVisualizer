@@ -12,8 +12,10 @@
     <string name="home_capture_blocked">소리를 받지 못해 아무것도 그릴 수 없습니다. 지금 재생 중인 앱이 소리 공유를 허용하지 않거나(보호된 영상이 그렇습니다), 그 앱의 소리가 꺼져 있을 수 있습니다.</string>
     <string name="home_mic_silenced">마이크로 아무 소리도 들어오지 않습니다. 통화 중이거나, 다른 앱이 마이크를 쓰고 있거나, 빠른 설정에서 마이크 사용을 막아 두었을 수 있습니다.</string>
     <string name="home_external_mode">외부 사운드 모드</string>
-    <string name="home_external_mode_desc">켜면 폰 안의 소리 대신 마이크로 주변 소리를 듣고 화면과 진동으로 알려 줍니다. 화면 녹화 동의는 필요 없고, 안드로이드 12 이상에서는 듣는 동안 상태 표시줄에 마이크 표시가 뜹니다. 소리 자체는 파일로 남기거나 밖으로 보내지 않습니다.</string>
+    <string name="home_external_mode_desc">폰 안의 소리 대신 마이크로 주변 소리를 듣습니다. 소리 자체는 저장하거나 밖으로 보내지 않습니다.</string>
     <string name="home_external_mode_locked">실행 중에는 바꿀 수 없습니다. 실행을 끈 뒤 바꾸면 다음 실행부터 적용됩니다.</string>
+    <string name="home_mic_sensitivity">마이크 감도</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_ai_unavailable_loud">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시되고, 진동은 종류와 상관없이 큰 소리에만 위협음 진동 설정으로 울립니다. 껐다가 다시 켜 보세요.</string>
     <string name="home_ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시되고 진동 알림이 꺼져 있습니다. 껐다가 다시 켜 보세요.</string>
     <string name="home_stopped_dismiss">안내 닫기</string>
