@@ -40,8 +40,6 @@ app/src/main/assets/ai/yamnet.data
 app/src/main/assets/ai/yamnet_class_map.csv
 
 TensorFlow Model Garden 의 YAMNet 오디오 분류 모델을 ONNX 로 변환하여 포함합니다.
-app/src/main/assets/ai/gunshot_booster.onnx 는 이 모델의 임베딩을 이용해 학습한
-파생 모델이므로 동일한 조건이 적용됩니다.
 
 Copyright The TensorFlow Authors. All Rights Reserved.
 Licensed under the Apache License, Version 2.0.

@@ -17,7 +17,7 @@ class YamnetSafetyCueDecisionTest {
     @Test fun `strong non-gunshot cue is retained without an auxiliary model`() {
         val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
         probabilities[0] = .6f
-        probabilities[1] = .1f
+        probabilities[1] = .2f
         val decision = YamnetSafetyCueDecision.decide(names, classifier.classify(probabilities))
         assertEquals("danger", decision.postCoarse)
         assertEquals("Siren", decision.postDisplay)
