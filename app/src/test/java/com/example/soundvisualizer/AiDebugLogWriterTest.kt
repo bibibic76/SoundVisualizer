@@ -42,8 +42,8 @@ class AiDebugLogWriterTest {
     fun `머리글은 첫 줄과 함께 한 번만 나간다`() {
         val sink = StringBuilder()
         val writer = AiDebugLogWriter(sink)
-        assertTrue(writer.write(result(1_000L), nowMs = 1_000L, level = 0.1f, shown = true))
-        assertTrue(writer.write(result(1_250L), nowMs = 1_250L, level = 0.1f, shown = true))
+        assertTrue(writer.write(result(1_000L), 1_000L, CaptureSource.InternalPlayback, 0.1f, true))
+        assertTrue(writer.write(result(1_250L), 1_250L, CaptureSource.InternalPlayback, 0.1f, true))
 
         val lines = sink.toString().trim().lines()
         assertEquals(3, lines.size)
@@ -66,10 +66,10 @@ class AiDebugLogWriterTest {
         val sink = StringBuilder()
         val writer = AiDebugLogWriter(sink)
         val same = result(2_000L)
-        assertTrue(writer.write(same, nowMs = 2_000L, level = 0.1f, shown = true))
-        assertFalse("같은 추론 결과가 두 줄이 됐다", writer.write(same, nowMs = 2_100L, level = 0.1f, shown = true))
-        assertFalse(writer.write(result(2_000L), nowMs = 2_200L, level = 0.1f, shown = true))
-        assertTrue(writer.write(result(2_250L), nowMs = 2_250L, level = 0.1f, shown = true))
+        assertTrue(writer.write(same, 2_000L, CaptureSource.InternalPlayback, 0.1f, true))
+        assertFalse("같은 추론 결과가 두 줄이 됐다", writer.write(same, 2_100L, CaptureSource.InternalPlayback, 0.1f, true))
+        assertFalse(writer.write(result(2_000L), 2_200L, CaptureSource.InternalPlayback, 0.1f, true))
+        assertTrue(writer.write(result(2_250L), 2_250L, CaptureSource.InternalPlayback, 0.1f, true))
         assertEquals(2, writer.rows)
     }
 
@@ -78,9 +78,9 @@ class AiDebugLogWriterTest {
         val sink = StringBuilder()
         // 머리글 + 한 줄이면 이미 넘는 아주 작은 상한.
         val writer = AiDebugLogWriter(sink, maxBytes = 10L)
-        assertTrue(writer.write(result(1_000L), nowMs = 1_000L, level = 0f, shown = false))
+        assertTrue(writer.write(result(1_000L), 1_000L, CaptureSource.InternalPlayback, 0f, false))
         assertTrue("상한에 닿았는데 멈추지 않았다", writer.stopped)
-        assertFalse(writer.write(result(1_250L), nowMs = 1_250L, level = 0f, shown = false))
+        assertFalse(writer.write(result(1_250L), 1_250L, CaptureSource.InternalPlayback, 0f, false))
         assertEquals(1, writer.rows)
         assertEquals(2, sink.toString().trim().lines().size)
     }
@@ -89,10 +89,14 @@ class AiDebugLogWriterTest {
     fun `쓴 줄에 그때의 값이 들어간다`() {
         val sink = StringBuilder()
         val writer = AiDebugLogWriter(sink)
-        writer.write(result(3_000L, coarse = "danger"), nowMs = 3_120L, level = 0.42f, shown = false)
+        writer.write(result(3_000L, coarse = "danger"), 3_120L, CaptureSource.Microphone, 0.42f, false)
 
         val row = sink.toString().trim().lines()[1]
-        assertEquals(AiDebugCsv.row(result(3_000L, coarse = "danger"), 3_120L, 0.42f, false), row)
+        assertEquals(
+            AiDebugCsv.row(result(3_000L, coarse = "danger"), 3_120L, CaptureSource.Microphone, 0.42f, false),
+            row
+        )
+        assertTrue("마이크 source가 빠졌다", row.contains("Microphone"))
         assertTrue("소리 크기가 빠졌다", row.contains("0.42000"))
         assertTrue("표시 여부가 빠졌다", row.contains("false"))
     }
