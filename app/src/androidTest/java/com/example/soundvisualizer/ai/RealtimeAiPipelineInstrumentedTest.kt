@@ -17,7 +17,9 @@ class RealtimeAiPipelineInstrumentedTest {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
         val mono = FloatArray(16_000) { i -> kotlin.math.sin(i * .031).toFloat() * .4f }
         RealtimeAiPipeline.create(app, captureSampleRate = 16_000, channels = 1).use { pipeline ->
-            pipeline.ingestMonoForTest(mono)
+            // Exercise the capture-facing ingest path too: it opens the silence gate
+            // before an inference tick is allowed to read the ring buffer.
+            pipeline.ingestInterleavedForTest(mono, mono.size)
             val tick = requireNotNull(pipeline.runTickForTest())
             val expected = QualcommSourceAudioPreprocessor().computeLogMelSpectrogram(mono)
             assertNotNull(tick.result)
