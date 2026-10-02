@@ -106,6 +106,11 @@ def _matches_danger(s: str) -> bool:
     if _matches_temporary_gunshot_proxy_danger(s):
         return True
 
+    # Product policy: these exact YAMNet labels require immediate attention.
+    # Keep exact matching so nearby unapproved labels do not inherit Danger.
+    if s in {"chainsaw", "thunder", "thunderstorm"}:
+        return True
+
     # Product policy: footsteps are Ambient; only explicit vehicle-horn
     # YAMNet classes are Danger (not every generic "horn").
     if s == "vehicle horn, car horn, honking":
