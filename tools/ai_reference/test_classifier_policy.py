@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+import mapper
 from classifier import ReferenceClassifier
 
 
@@ -28,6 +29,18 @@ class StrongDangerCuePolicyTest(unittest.TestCase):
         for label in ("Plop", "Gargling", "Breaking news", "Booming music"):
             with self.subTest(label=label):
                 self.assertFalse(classifier._is_strong_danger_keyword(label))
+
+
+class ThreeClassMapperPolicyTest(unittest.TestCase):
+    def test_attention_nature_and_tool_labels_are_danger(self) -> None:
+        for label in ("Chainsaw", "Thunder", "Thunderstorm"):
+            with self.subTest(label=label):
+                self.assertEqual("danger", mapper.map_display_name_to_coarse(label))
+
+    def test_partial_matches_remain_ambient(self) -> None:
+        for label in ("Chainsaw-like sound", "Distant thunder", "Rain", "Wind"):
+            with self.subTest(label=label):
+                self.assertEqual("ambient", mapper.map_display_name_to_coarse(label))
 
 
 if __name__ == "__main__":

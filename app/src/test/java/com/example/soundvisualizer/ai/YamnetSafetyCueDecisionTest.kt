@@ -99,4 +99,24 @@ class YamnetSafetyCueDecisionTest {
             assertFalse(proxy, decision.dangerCuePromoted)
         }
     }
+
+    @Test fun `chainsaw and thunder labels do not bypass mapper vote through safety cue`() {
+        listOf("Chainsaw", "Thunder", "Thunderstorm").forEach { cue ->
+            val cueNames = names.toMutableList().also { it[1] = cue }
+            val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
+            probabilities[0] = .6f
+            probabilities[1] = .2f
+            probabilities[4] = .001f
+            probabilities[5] = .001f
+            probabilities[6] = .001f
+
+            val decision = YamnetSafetyCueDecision.decide(
+                cueNames,
+                YamnetCoarseClassifier(cueNames).classify(probabilities)
+            )
+
+            assertEquals(cue, "ambient", decision.postCoarse)
+            assertFalse(cue, decision.dangerCuePromoted)
+        }
+    }
 }

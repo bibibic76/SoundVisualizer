@@ -175,6 +175,16 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
+    fun approvedChainsawAndThunderPolicyUsesExactLabels() {
+        listOf("Chainsaw", "Thunder", "Thunderstorm").forEach { displayName ->
+            assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Rain", "Wind", "Distant thunder", "Chainsaw-like sound").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
     fun waterSoundsDoNotProduceDangerCoarseClassification() {
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             val probabilities = FloatArray(classNames.size)
