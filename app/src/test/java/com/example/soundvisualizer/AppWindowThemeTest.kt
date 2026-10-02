@@ -6,8 +6,11 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.w3c.dom.Element
+import java.awt.image.BufferedImage
 import java.io.File
+import javax.imageio.ImageIO
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.math.abs
 
 /**
  * 앱을 켜서 Compose 가 첫 화면을 그리기 전에는 창 테마(res 의 values, values-v31 폴더 themes.xml)의 배경이 보인다.
@@ -61,6 +64,34 @@ class AppWindowThemeTest {
     }
 
     @Test
+    fun `Android 12 이상 스플래시는 로고 뒤에 아이콘 배경과 같은 흰 원을 깐다`() {
+        // 아이콘 배경색이 없으면 스플래시가 런처 아이콘 전경만 원으로 잘라, 전경 PNG 의 흰 사각 판이
+        // 네 모서리가 잘린 채 보인다(#275). 배경 레이어와 같은 색이어야 판이 원에 묻힌다.
+        val theme = resolve(APP_THEME, listOf("values-v31", "values"))
+        assertEquals(
+            "values-v31/themes.xml 의 $APP_THEME 에 android:windowSplashScreenIconBackgroundColor 를 두세요",
+            "@color/$SPLASH_ICON_BACKGROUND",
+            theme.items["android:windowSplashScreenIconBackgroundColor"]
+        )
+        val colors = parseElements("values/colors.xml", "color")
+        val value = colors[SPLASH_ICON_BACKGROUND]
+            ?: throw AssertionError("values/colors.xml 에 $SPLASH_ICON_BACKGROUND 가 없습니다")
+        val splash = parseColor(value)
+        assertEquals("원 뒤가 비치지 않게 불투명한 색으로 둡니다: $value", 0xFF, splash ushr 24)
+
+        val layer = ImageIO.read(File(resDir, ICON_BACKGROUND_LAYER))
+            ?: throw AssertionError("아이콘 배경 레이어를 읽지 못했습니다: $ICON_BACKGROUND_LAYER")
+        for ((channel, shift) in listOf("R" to 16, "G" to 8, "B" to 0)) {
+            val layerAverage = averageChannel(layer, shift)
+            val splashChannel = (splash shr shift) and 0xFF
+            assertTrue(
+                "$SPLASH_ICON_BACKGROUND($value)를 $ICON_BACKGROUND_LAYER 의 색과 맞추세요 ($channel: $layerAverage 대 $splashChannel)",
+                abs(layerAverage - splashChannel) <= LAYER_COLOR_TOLERANCE
+            )
+        }
+    }
+
+    @Test
     fun `타일의 투명 화면은 시스템 바까지 투명하게 그린다`() {
         // 옛 플랫폼 투명 테마(Theme.Translucent.NoTitleBar)는 바 배경을 그리지 않아, 권한 안내 창이 떠 있는 동안
         // 보던 게임 위에 위아래 바만 검게 칠해졌다(#142).
@@ -78,6 +109,15 @@ class AppWindowThemeTest {
         assertEquals("창 배경", TRANSPARENT, theme.items["android:windowBackground"])
         assertEquals("상태 표시줄", TRANSPARENT, theme.items["android:statusBarColor"])
         assertEquals("내비게이션 바", TRANSPARENT, theme.items["android:navigationBarColor"])
+    }
+
+    /** [image] 전체 픽셀의 한 채널(ARGB 에서 [shift] 만큼 민 8비트) 평균. */
+    private fun averageChannel(image: BufferedImage, shift: Int): Int {
+        var sum = 0L
+        for (y in 0 until image.height) {
+            for (x in 0 until image.width) sum += (image.getRGB(x, y) shr shift) and 0xFF
+        }
+        return (sum / (image.width.toLong() * image.height)).toInt()
     }
 
     /** 매니페스트에서 [name] 액티비티에 지정한 android:theme 값. */
@@ -157,6 +197,11 @@ class AppWindowThemeTest {
         const val APP_THEME = "Theme.SoundVisualizer"
         const val APP_BACKGROUND = "app_background"
         const val COLOR_REF = "@color/$APP_BACKGROUND"
+        const val SPLASH_ICON_BACKGROUND = "splash_icon_background"
+        const val ICON_BACKGROUND_LAYER = "mipmap-xxxhdpi/adaptive_icon_background.png"
+
+        /** 배경 레이어 PNG 는 흰색 사이에 254 같은 값이 섞여 있다. 평균이 이만큼 안이면 같은 색으로 본다. */
+        const val LAYER_COLOR_TOLERANCE = 3
         const val MAX_PARENT_DEPTH = 10
         const val TILE_ACTIVITY = ".tile.StartVisualizerActivity"
         const val TRANSPARENT = "@android:color/transparent"

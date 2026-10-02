@@ -564,7 +564,10 @@ App Bundle로 배포하더라도 앱 안에서 고른 언어의 문구가 빠지
 화면은 Compose가 그리지만, 앱을 켜서 첫 화면을 그리기 전과 액티비티가 다시 만들어지는 동안에는 창 테마(`res/values/themes.xml`의 `Theme.SoundVisualizer`)의 배경이 보입니다. 이 색이 앱 배경과 다르면 앱을 켤 때마다 다른 색이 번쩍입니다.
 
 - 부모는 어두운 `android:Theme.Material.NoActionBar`이고, 창 배경·상태 표시줄·내비게이션 바를 `@color/app_background`(#2A2C31)로 칠합니다. 바 색은 첫 화면이 뜨기 전의 시작 창에서만 쓰입니다(Android 14 이하). 첫 화면이 뜨면 아래처럼 바가 투명해집니다.
-- Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`). 아이콘은 런처 아이콘을 그대로 씁니다.
+- Android 12 이상에서 앱을 켤 때 뜨는 시스템 스플래시의 배경(`windowSplashScreenBackground`)도 같은 색입니다(`res/values-v31/themes.xml`).
+- 스플래시 아이콘은 런처 아이콘을 쓰고, 그 뒤에 흰 원(`windowSplashScreenIconBackgroundColor` = `@color/splash_icon_background`)을 깝니다.
+  - 이 색이 없으면 스플래시는 아이콘의 전경만 꺼내 원으로 자릅니다. 전경 PNG에는 로고 뒤에 흰 사각 판이 있어서, 판의 네 모서리가 잘린 채 보였습니다(#275).
+  - 원의 색은 런처 아이콘 배경 레이어(`adaptive_icon_background.png`)와 같은 흰색이라 판이 원에 묻힙니다. 두 색이 어긋나거나 이 값이 빠지면 `AppWindowThemeTest`가 실패합니다.
 - `app_background`는 Compose의 `BgColor`(`UiColors.kt`)와 같은 값이어야 합니다. 어긋나거나 밝은 테마로 돌아가면 `AppWindowThemeTest`가 실패합니다.
 - **화면은 시스템 바 밑까지 그립니다(edge-to-edge, #138).**
   - `MainActivity`가 `enableEdgeToEdge`로 바를 투명하게 합니다.
