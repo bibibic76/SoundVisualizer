@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Vozes</string>
     <string name="tutorial_type_speech_examples">Pessoas falando</string>
     <string name="tutorial_type_danger">Sons de perigo</string>
-    <string name="tutorial_type_danger_examples">Tiros, explosões, passos</string>
+    <string name="tutorial_type_danger_examples">Tiros, explosões, sirenes</string>
     <string name="tutorial_vibration_title">Sons de perigo também vibram</string>
     <string name="tutorial_vibration_body">Quando toca um som de perigo no seu jogo ou vídeo, o seu celular vibra. Você percebe mesmo quando não está olhando para a tela. Por padrão, só os sons de perigo vibram. Na aba Ajustes, você pode ativar ou desativar a vibração de cada tipo.</string>
     <string name="tutorial_start_title">Como ligar e desligar</string>

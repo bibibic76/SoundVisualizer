@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">เสียงพูด</string>
     <string name="tutorial_type_speech_examples">เสียงคน</string>
     <string name="tutorial_type_danger">เสียงอันตราย</string>
-    <string name="tutorial_type_danger_examples">เสียงปืน เสียงระเบิด เสียงฝีเท้า</string>
+    <string name="tutorial_type_danger_examples">เสียงปืน เสียงระเบิด เสียงไซเรน</string>
     <string name="tutorial_vibration_title">เมื่อมีเสียงอันตราย โทรศัพท์จะสั่นด้วย</string>
     <string name="tutorial_vibration_body">เมื่อมีเสียงอันตรายในเกมหรือวิดีโอ โทรศัพท์จะสั่น คุณจึงรู้ได้แม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะสั่นเฉพาะเสียงอันตราย คุณเปิดหรือปิดการสั่นของแต่ละประเภทได้ในแท็บการตั้งค่า</string>
     <string name="tutorial_start_title">วิธีเปิดและปิด</string>
