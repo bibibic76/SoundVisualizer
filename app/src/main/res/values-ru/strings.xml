@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Речь</string>
     <string name="tutorial_type_speech_examples">Голоса людей</string>
     <string name="tutorial_type_danger">Опасные звуки</string>
-    <string name="tutorial_type_danger_examples">Выстрелы, взрывы, шаги</string>
+    <string name="tutorial_type_danger_examples">Выстрелы, взрывы, сирены</string>
     <string name="tutorial_vibration_title">При опасных звуках телефон также вибрирует</string>
     <string name="tutorial_vibration_body">Когда в игре или видео звучит опасный звук, телефон вибрирует. Вы заметите это, даже когда не смотрите на экран. По умолчанию вибрация включена только для опасных звуков. На вкладке «Настройки» её можно включить или выключить для каждого типа.</string>
     <string name="tutorial_start_title">Как включить и выключить</string>

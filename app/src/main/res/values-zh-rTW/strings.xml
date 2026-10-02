@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">人聲</string>
     <string name="tutorial_type_speech_examples">說話聲</string>
     <string name="tutorial_type_danger">危險音</string>
-    <string name="tutorial_type_danger_examples">槍聲、爆炸聲、腳步聲</string>
+    <string name="tutorial_type_danger_examples">槍聲、爆炸聲、警報聲</string>
     <string name="tutorial_vibration_title">危險音還會以震動提醒</string>
     <string name="tutorial_vibration_body">遊戲或影片中出現危險音時，手機會震動。即使沒有看著螢幕，也能察覺到。預設只有危險音會震動。你可以在「設定」分頁中為每種類型開啟或關閉震動。</string>
     <string name="tutorial_start_title">如何開啟和關閉</string>

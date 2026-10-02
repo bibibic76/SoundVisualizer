@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Giọng nói</string>
     <string name="tutorial_type_speech_examples">Tiếng người nói</string>
     <string name="tutorial_type_danger">Nguy hiểm</string>
-    <string name="tutorial_type_danger_examples">Tiếng súng, tiếng nổ, tiếng bước chân</string>
+    <string name="tutorial_type_danger_examples">Tiếng súng, tiếng nổ, tiếng còi báo động</string>
     <string name="tutorial_vibration_title">Âm thanh nguy hiểm còn được báo bằng rung</string>
     <string name="tutorial_vibration_body">Khi có âm thanh nguy hiểm trong trò chơi hoặc video, điện thoại sẽ rung. Bạn vẫn nhận biết được ngay cả khi không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể bật hoặc tắt rung cho từng loại trong thẻ Cài đặt.</string>
     <string name="tutorial_start_title">Cách bật và tắt</string>

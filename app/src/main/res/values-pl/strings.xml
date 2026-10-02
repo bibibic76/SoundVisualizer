@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Mowa</string>
     <string name="tutorial_type_speech_examples">Głosy ludzi</string>
     <string name="tutorial_type_danger">Dźwięki zagrożenia</string>
-    <string name="tutorial_type_danger_examples">Strzały, wybuchy, kroki</string>
+    <string name="tutorial_type_danger_examples">Strzały, wybuchy, syreny</string>
     <string name="tutorial_vibration_title">Przy dźwiękach zagrożenia telefon też wibruje</string>
     <string name="tutorial_vibration_body">Gdy w grze lub filmie pojawia się dźwięk zagrożenia, telefon wibruje. Poczujesz to, nawet gdy nie patrzysz na ekran. Domyślnie wibracje są włączone tylko dla dźwięków zagrożenia. Na karcie „Ustawienia” możesz włączyć lub wyłączyć wibracje dla każdego rodzaju.</string>
     <string name="tutorial_start_title">Jak włączyć i wyłączyć</string>

@@ -60,7 +60,7 @@
     <string name="tutorial_type_speech">Speech</string>
     <string name="tutorial_type_speech_examples">Voices</string>
     <string name="tutorial_type_danger">Danger</string>
-    <string name="tutorial_type_danger_examples">Gunshots, explosions, footsteps</string>
+    <string name="tutorial_type_danger_examples">Gunshots, explosions, sirens</string>
     <string name="tutorial_vibration_title">Danger sounds also vibrate</string>
     <string name="tutorial_vibration_body">When a danger sound plays in your game or video, your phone vibrates. You notice it even when you\'re not looking at the screen. At first only danger sounds vibrate. You can turn vibration on or off for each type in the Settings tab.</string>
     <string name="tutorial_start_title">How to turn it on and off</string>
