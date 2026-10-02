@@ -29,25 +29,15 @@ object AiDebugCsv {
         add("confidence")
         // 임계값 자체는 결과에 실리지 않는다(후처리 안에만 있다). 넘었는지만 적는다.
         add("meets_threshold")
-        add("pre_booster_coarse")
-        add("booster_enabled")
-        add("booster_available")
-        add("booster_accepted")
-        add("booster_reason")
-        add("gunshot_score")
-        add("gunshot_evidence")
         add("danger_cue_promoted")
-        add("danger_preview")
         for (slot in 1..TOP_SLOTS) {
             add("top${slot}_name")
             add("top${slot}_prob")
         }
-        add("frontend")
         add("level")
         add("shown")
         add("preprocess_ms")
         add("yamnet_ms")
-        add("booster_ms")
         add("total_ms")
     }
 
@@ -83,27 +73,16 @@ object AiDebugCsv {
         cells += result.display
         cells += prob(result.confidence)
         cells += result.meetsThreshold.toString()
-        cells += result.preBoosterCoarse
-        cells += result.boosterEnabled.toString()
-        cells += result.boosterAvailable.toString()
-        cells += result.boosterAccepted.toString()
-        cells += result.boosterReason
-        // 부스터를 못 불러왔으면 점수 자리는 NaN 이다. 그대로 적으면 표에 NaN 이 뜨므로 비운다.
-        cells += if (result.boosterAvailable) prob(result.gunshotScore) else NONE
-        cells += if (result.boosterAvailable) prob(result.gunshotEvidence) else NONE
         cells += result.dangerCuePromoted.toString()
-        cells += result.useBoosterDangerPreview.toString()
         for (slot in 0 until TOP_SLOTS) {
             val hit = result.top5.getOrNull(slot)
             cells += hit?.name ?: NONE
             cells += hit?.let { prob(it.probability) } ?: NONE
         }
-        cells += result.frontendMode.diagnosticName
         cells += prob(level)
         cells += shown.toString()
         cells += millis(result.preprocessMs)
         cells += millis(result.yamnetMs)
-        cells += millis(result.boosterMs)
         cells += millis(result.totalMs)
         return cells.joinToString(",") { quote(it) }
     }

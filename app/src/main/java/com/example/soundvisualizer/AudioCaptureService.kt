@@ -434,8 +434,7 @@ class AudioCaptureService : Service() {
                 RealtimeAiPipeline.create(
                     appContext,
                     rate,
-                    channels = 2,
-                    diagnosticConfigProvider = SettingsManager::activeAiDiagnosticConfig
+                    channels = 2
                 )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)

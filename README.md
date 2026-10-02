@@ -265,7 +265,7 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 | `OverlayService` | 화면 가장자리 오버레이 창을 띄우는 서비스 |
 | `VisualizerOverlay` / `VisualizerEngine` | 프레임 렌더 루프와 네 가지 모드(`VisualMode`) 렌더링 |
 | `SoundWakeSignal` | 쉬는 오버레이를 캡처 스레드가 소리 난 순간 깨우는 신호 |
-| `ai/` | 소리 분류 파이프라인 (전처리 → YAMNet → Gunshot Booster → 후처리) |
+| `ai/` | 소리 분류 파이프라인 (Qualcomm-source 전처리 → YAMNet → 안전 신호·후처리) |
 | `AiClassification` | 분류기와 렌더러를 잇는 연결 지점 |
 | `AiDebugOverlay` / `AiDebugText` | 개발자 모드 (설정 맨 아래): 오버레이에 AI 분류 결과를 그대로 띄워 팀이 정확도를 확인 |
 | `AiDebugCsv` / `AiDebugLogWriter` / `AiDebugRecorder` | 개발자 모드의 결과 기록: AI 판정을 CSV 로 남겨 무슨 소리로 들었는지 나중에 되짚어 보기 |
@@ -288,7 +288,7 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 - **언어**: Kotlin, C++17
 - **UI**: Jetpack Compose (Material 3)
 - **오디오 캡처**: MediaProjection, `AudioPlaybackCapture`, `AudioRecord`
-- **AI 추론**: ONNX Runtime (YAMNet, Gunshot Booster)
+- **AI 추론**: ONNX Runtime (YAMNet)
 - **빌드**: Gradle (Kotlin DSL), CMake
 
 ---

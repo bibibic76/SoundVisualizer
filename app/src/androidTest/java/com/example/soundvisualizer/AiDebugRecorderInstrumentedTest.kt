@@ -3,7 +3,6 @@ package com.example.soundvisualizer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.soundvisualizer.ai.AiClassificationResult
-import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import java.io.File
 import org.junit.After
@@ -37,23 +36,13 @@ class AiDebugRecorderInstrumentedTest {
         coarse = coarse,
         display = "Gunshot, gunfire",
         confidence = 0.5f,
-        gunshotScore = 0.8f,
         top5 = listOf(YamnetCoarseClassifier.TopClassHit(1, "Gunshot, gunfire", 0.5f)),
-        gunshotEvidence = 0.2f,
-        boosterReason = "booster_accepted",
         dangerCuePromoted = false,
-        boosterAvailable = true,
-        preBoosterCoarse = "ambient",
-        boosterAccepted = true,
         meetsThreshold = true,
-        useBoosterDangerPreview = false,
         timestampMs = timestampMs,
         preprocessMs = 1.0,
         yamnetMs = 2.0,
-        boosterMs = 0.5,
-        totalMs = 3.5,
-        frontendMode = AiFrontendMode.CURRENT,
-        boosterEnabled = true
+        totalMs = 3.5
     )
 
     /**

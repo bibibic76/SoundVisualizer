@@ -10,8 +10,8 @@ import java.util.Locale
  * @param coarse 소리 종류를 대문자로. 결과가 없으면 왜 없는지를 대신 넣는다
  * @param label 모델이 말한 이름 (raw YAMNet 클래스명)
  * @param confidence 확신도 두 자리
- * @param detail 임계값·부스터·프리뷰·나이
- * @param verdict 부스터 판정 이유·총소리 근거·경보 신호 승격 여부
+ * @param detail 임계값·나이
+ * @param verdict YAMNet danger cue 승격 여부
  * @param timing 소리 크기·표시 여부·단계별 소요시간
  * @param top5 모델이 가장 높게 본 이름들. 한 줄에 하나씩 순위·이름·확률
  */
@@ -95,10 +95,7 @@ object AiDebugText {
             confidence = twoDecimals(result.confidence),
             detail = detailOf(result, nowMs),
             verdict = verdictOf(result),
-            // 어느 전처리를 썼는지(path)는 그 전처리 시간(괄호 안 첫 값) 옆에 둔다. detail 줄에 두면
-            // 58자를 넘어 두 줄로 꺾였다(#165).
-            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}   " +
-                "path ${result.frontendMode.diagnosticName}",
+            timing = "$levelText   shown ${yesNo(shown)}   ${timingOf(result)}",
             top5 = result.top5.take(5).mapIndexed { i, hit ->
                 "${i + 1} ${fitName(hit.name)} ${twoDecimals(hit.probability)}"
             }
@@ -106,25 +103,14 @@ object AiDebugText {
     }
 
     private fun detailOf(result: AiClassificationResult, nowMs: Long): String {
-        // 부스터가 채택되면 종류뿐 아니라 이름까지 총소리 클래스명으로 갈아치운다. 그래서 pre(부스터 전
-        // 종류)와 bst(채택 여부·점수)가 없으면, 모델이 하지 않은 말을 모델 탓으로 채점하게 된다.
-        val booster = when {
-            !result.boosterEnabled -> "bst disabled"
-            result.boosterAvailable -> "bst ${yesNo(result.boosterAccepted)} ${twoDecimals(result.gunshotScore)}"
-            else -> "bst unavailable"
-        }
-        return "thr ${yesNo(result.meetsThreshold)}   pre ${result.preBoosterCoarse}   $booster   " +
-            "prev ${yesNo(result.useBoosterDangerPreview)}   age ${ageText(result.timestampMs, nowMs)}"
+        return "thr ${yesNo(result.meetsThreshold)}   age ${ageText(result.timestampMs, nowMs)}"
     }
 
     /**
-     * 위험으로 올린 까닭. 부스터 채택(`bst`)과 경보 신호 승격(`cue`)은 서로 다른 길이라 따로 보여준다.
-     *
-     * 판정 이유 문자열은 뒤에 점수·근거를 다시 붙여 오므로 이름(첫 낱말)만 쓴다. 근거는 `ev` 로 따로 둔다.
+     * Mapper vote와 독립적으로 strong YAMNet danger cue가 보존됐는지 보여준다.
      */
     private fun verdictOf(result: AiClassificationResult): String {
-        val reason = result.boosterReason.substringBefore(' ').ifEmpty { NONE }
-        return "why $reason   ev ${twoDecimals(result.gunshotEvidence)}   cue ${yesNo(result.dangerCuePromoted)}"
+        return "cue ${yesNo(result.dangerCuePromoted)}"
     }
 
     /** 고정폭 칸에 맞춘 이름. 짧으면 공백으로 채워 확률이 한 줄에 세로로 맞는다. */
@@ -137,7 +123,7 @@ object AiDebugText {
 
     private fun timingOf(result: AiClassificationResult): String =
         "${wholeMillis(result.totalMs)}ms " +
-            "(${wholeMillis(result.preprocessMs)}/${wholeMillis(result.yamnetMs)}/${wholeMillis(result.boosterMs)})"
+            "(${wholeMillis(result.preprocessMs)}/${wholeMillis(result.yamnetMs)})"
 
     /**
      * 결과가 나온 뒤 흐른 시간. 무음이면 추론을 건너뛰고 마지막 결과를 그대로 들고 있으므로,

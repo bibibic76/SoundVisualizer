@@ -80,7 +80,7 @@ class YamnetInference private constructor(
         @Synchronized
         fun ensureModelFiles(context: Context): File {
             val destDir = File(context.filesDir, FILES_SUBDIR)
-            removeObsoleteManifest(destDir)
+            removeObsoleteCacheFiles(destDir)
             val am = context.assets
             val copied = ModelCacheIntegrity.ensureFiles(destDir, YamnetModelFiles.files) { name ->
                 am.open("$ASSET_DIR/$name")
@@ -91,8 +91,16 @@ class YamnetInference private constructor(
             return destDir
         }
 
-        private fun removeObsoleteManifest(directory: File) {
-            for (name in listOf(OBSOLETE_BUNDLE_MANIFEST, ".$OBSOLETE_BUNDLE_MANIFEST.partial")) {
+        private fun removeObsoleteCacheFiles(directory: File) {
+            // The auxiliary Gunshot Booster is no longer shipped. Remove a copy left
+            // by an older app version so device diagnostics cannot mistake it for a
+            // production model.
+            for (name in listOf(
+                OBSOLETE_BUNDLE_MANIFEST,
+                ".$OBSOLETE_BUNDLE_MANIFEST.partial",
+                "gunshot_booster.onnx",
+                ".gunshot_booster.onnx.partial"
+            )) {
                 val obsolete = File(directory, name)
                 if (obsolete.exists() && !obsolete.delete()) {
                     Log.w(TAG, "Unable to remove obsolete model cache metadata: $obsolete")

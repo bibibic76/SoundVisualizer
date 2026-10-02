@@ -6,8 +6,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.edit
-import com.example.soundvisualizer.ai.AiDiagnosticConfig
-import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,9 +64,6 @@ object SettingsManager {
 
     internal const val DEVELOPER_RECORD_DEFAULT = false
 
-    /** Developer A/B controls must not change the production path on a new install. */
-    internal val AI_DIAGNOSTIC_CONFIG_DEFAULT = AiDiagnosticConfig.DEFAULT
-
     /**
      * "그래픽 덜 자주 그리기"의 기본값. 꺼 두는 쪽이 부드럽다.
      *
@@ -82,8 +77,6 @@ object SettingsManager {
     private const val KEY_MIC_SENSITIVITY = "mic_sensitivity"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
     private const val KEY_DEVELOPER_RECORD = "developer_record"
-    private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
-    private const val KEY_AI_BOOSTER_ENABLED = "ai_booster_enabled"
     private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
     private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
@@ -185,10 +178,6 @@ object SettingsManager {
 
     /** 개발자 모드에서 AI 판정을 파일로 남길지 (#193). 개발자 모드를 꺼도 값은 남는다. */
     val developerRecord: StateFlow<Boolean> = _developerRecord
-
-    // Developer-only A/B choice. Kept as one value so an inference tick can read a coherent snapshot.
-    private val _aiDiagnosticConfig = MutableStateFlow(AI_DIAGNOSTIC_CONFIG_DEFAULT)
-    val aiDiagnosticConfig: StateFlow<AiDiagnosticConfig> = _aiDiagnosticConfig
 
     // 켜면 오버레이를 초당 30번만 그린다. 덜 부드러운 대신 배터리를 아낀다. (VisualizerEngine.framesPerSecond)
     private val _reducedFrameRate = MutableStateFlow(REDUCED_FRAME_RATE_DEFAULT)
@@ -370,7 +359,6 @@ object SettingsManager {
         _micSensitivity.value = loadMicSensitivity(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
         _developerRecord.value = loadDeveloperRecord(prefs)
-        _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
         _reducedFrameRate.value = loadReducedFrameRate(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
         _lastUnexpectedStopSeq.value = loadLastUnexpectedStopSeq(prefs)
@@ -447,19 +435,6 @@ object SettingsManager {
     /** 저장된 적이 없으면 [DEVELOPER_RECORD_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperRecord(source: android.content.SharedPreferences): Boolean =
         source.getBoolean(KEY_DEVELOPER_RECORD, DEVELOPER_RECORD_DEFAULT)
-
-    /** Unknown enum names fall back to the unchanged production frontend. */
-    internal fun loadAiDiagnosticConfig(source: SharedPreferences): AiDiagnosticConfig =
-        AiDiagnosticConfig(
-            frontendMode = enumByName(
-                source.getString(KEY_AI_FRONTEND_MODE, null),
-                AI_DIAGNOSTIC_CONFIG_DEFAULT.frontendMode
-            ),
-            boosterEnabled = source.getBoolean(
-                KEY_AI_BOOSTER_ENABLED,
-                AI_DIAGNOSTIC_CONFIG_DEFAULT.boosterEnabled
-            )
-        )
 
     /** 저장된 적이 없으면 [REDUCED_FRAME_RATE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadReducedFrameRate(source: SharedPreferences): Boolean =
@@ -670,20 +645,6 @@ object SettingsManager {
         _developerRecord.value = enabled
         prefs.edit { putBoolean(KEY_DEVELOPER_RECORD, enabled) }
     }
-
-    fun setAiFrontendMode(mode: AiFrontendMode) {
-        _aiDiagnosticConfig.value = _aiDiagnosticConfig.value.copy(frontendMode = mode)
-        prefs.edit { putString(KEY_AI_FRONTEND_MODE, mode.name) }
-    }
-
-    fun setAiBoosterEnabled(enabled: Boolean) {
-        _aiDiagnosticConfig.value = _aiDiagnosticConfig.value.copy(boosterEnabled = enabled)
-        prefs.edit { putBoolean(KEY_AI_BOOSTER_ENABLED, enabled) }
-    }
-
-    /** Hidden A/B choices must never affect the runtime after developer mode is turned off. */
-    fun activeAiDiagnosticConfig(): AiDiagnosticConfig =
-        if (_developerMode.value) _aiDiagnosticConfig.value else AI_DIAGNOSTIC_CONFIG_DEFAULT
 
     /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
     fun setAiAvailable(available: Boolean) {

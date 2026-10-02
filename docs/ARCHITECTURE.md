@@ -9,7 +9,7 @@ graph TD
     A["폰 내부 오디오<br/>게임 · 미디어"] -->|"MediaProjection<br/>AudioPlaybackCapture"| B["AudioCaptureService<br/>캡처 스레드"]
     B -->|"direct ByteBuffer<br/>복사 없음"| C["AudioEngine · native-lib.cpp<br/>좌우 피크 측정 (C++)"]
     B -->|"모노로 합쳐 복사"| D["AiAudioBuffer<br/>AI용 링버퍼"]
-    D -->|"250ms 간격"| E["RealtimeAiPipeline<br/>16kHz 변환 → Log-mel → YAMNet<br/>→ Gunshot Booster → 후처리"]
+    D -->|"250ms 간격"| E["RealtimeAiPipeline<br/>16kHz 변환 → Qualcomm Log-mel → YAMNet<br/>→ 안전 신호·후처리"]
     C -->|"readPeaks"| F["VisualizerEngine<br/>8방향 합성 · 스무딩 · 도형"]
     E -->|"AiClassification.coarse"| F
     F --> G["OverlayService<br/>화면 가장자리 오버레이"]
@@ -211,21 +211,14 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 
 1. **입력 자르기**: 링버퍼에서 최근 약 0.975초(16kHz 기준 15,600샘플)를 가져옵니다.
 2. **16kHz 변환**: 캡처 레이트의 소리를 16kHz로 줄입니다. 그냥 솎아 내면 8kHz 위의 소리가 아래로 접혀 들어오므로(에일리어싱) **96탭 Kaiser 창 sinc 저역통과 FIR**(차단 7.8kHz, β 8.6)을 거칩니다. 계수 표는 캡처 레이트마다 한 번만 만들고(44.1kHz는 위상 160개, 48kHz는 1개), 원본 위치와 위상은 정수로 계산해 15,600샘플 동안 어긋나지 않습니다. 16kHz 입력은 그대로 통과합니다. AI가 받는 캡처 레이트는 16·44.1·48kHz뿐이라(`AiCaptureSampleRatePolicy`) 그보다 높은 레이트에서 필터가 모자라는 일은 없습니다. (`CaptureAudioMath`)
-3. **Log-mel 스펙트로그램**: Kotlin으로 계산합니다. (`AudioPreprocessor`: 25ms 창, 10ms 간격, 64개 멜 대역, 96프레임 → `[1, 1, 96, 64]`)
+3. **Log-mel 스펙트로그램**: pinned Qualcomm source frontend 계약으로 Kotlin에서 계산합니다. (`QualcommSourceAudioPreprocessor`: centered STFT/reflect padding, 64개 멜 대역, 96프레임 → `[1, 1, 96, 64]`)
 4. **YAMNet 추론**: 521개 소리 클래스의 확률을 냅니다. (`YamnetInference`, 연산 스레드 1개로 제한해 캡처·렌더와 CPU를 다투지 않게 함)
 5. **3종 분류**: 상위 클래스들을 투표해 환경음(`ambient`)·대화음(`speech`)·위협음(`danger`)으로 묶습니다. (`YamnetCoarseClassifier`, `YamnetThreeClassMapper`)
-6. **Gunshot Booster**: 521개 확률을 입력으로 받는 작은 모델이 총소리 점수를 내고, 위협음으로 올릴지 정합니다. (`GunshotBoosterInference`, `GunshotBoosterDecision`)
+6. **안전 신호 보존**: YAMNet top-5 안의 alarm·siren·explosion 계열은 모델 점수와 독립적으로 위험 신호로 보존합니다. (`YamnetSafetyCueDecision`)
 7. **후처리**: 확신도 기준과 히스테리시스를 적용해 라벨이 매번 흔들리지 않게 합니다. 위협음은 다른 종류보다 빨리 전환됩니다. 확신도가 기준에 못 미치면 **이전 라벨을 유지**합니다. (`AiPostProcessor`)
 8. 결과를 `AtomicReference`에 저장합니다. 읽는 쪽은 락 없이 가져갑니다.
 
-기본 경로는 계속 `AudioPreprocessor`와 Gunshot Booster를 사용합니다. 개발자 모드를 켠 동안에만
-설정에서 pinned Qualcomm source frontend와 Booster 우회를 고를 수 있습니다(#160). 파이프라인은
-틱 시작 때 설정 한 벌을 읽고 frontend 하나만 실행하며, Booster를 끄면 ONNX 점수 계산을 건너뜁니다.
-조합을 바꾼 첫 틱에는 이전 조합의 candidate/confirmed 이력이 섞이지 않도록 후처리 상태를 비웁니다.
-전처리기는 파이프라인 초기화 때 두 개를 만들지 않고 첫 tick에서 선택된 하나만 만듭니다. 선택이
-바뀌면 이전 인스턴스 참조를 버리고 새 선택만 유지해 두 구현의 작업 버퍼를 함께 보관하지 않습니다.
-개발자 모드를 끄면 저장해 둔 선택과 상관없이 다음 틱부터 기본 경로로 돌아갑니다. 이 진단 선택은
-mapper·임계값·히스테리시스·Booster 모델을 바꾸지 않습니다.
+Qualcomm source frontend가 유일한 production 경로입니다. 개발자 모드는 관찰용 top-5·입력 통계·CSV 기록만 제공하며 frontend 또는 보조 모델을 바꾸는 A/B 선택은 없습니다. Gunshot Booster ONNX 모델과 점수 기반 승격은 production 경로에서 제거되었습니다.
 
 ### 결과 전달 (`AiClassification`)
 
@@ -233,19 +226,19 @@ mapper·임계값·히스테리시스·Booster 모델을 바꾸지 않습니다.
 
 붙어 있는 구간은 **파이프라인이 도는 동안뿐**입니다. 멈춘 파이프라인도 마지막 결과를 들고 있어서, 붙여 둔 채로 두면 옛 라벨이 계속 나옵니다. 그래서 `startAiLocked`(비운 뒤 붙이기)와 `pauseForScreenOff`·`onDestroy`(떼기)가 짝을 이루고, 화면이 꺼져 쉬는 동안과 다시 켠 뒤 300ms 동안은 붙어 있지 않습니다.
 
-라벨은 `AiClassification`의 문자열 상수 세 개(`AMBIENT`·`SPEECH`·`DANGER`)입니다. 화면 색·표시 여부와 진동 설정은 모르는 라벨을 환경음으로 처리하므로, `ai/` 코드가 내보내는 라벨 이름이 이 상수와 어긋나면 오류 없이 위협음이 환경음처럼 표시됩니다. 그래서 `ai/` 밖의 `AiLabelContractTest`가 매핑·투표·Booster·후처리의 결과 라벨이 세 상수 중 하나인지와 대표 소리(총소리·말소리·빗소리)가 맞는 상수로 나오는지 확인합니다.
+라벨은 `AiClassification`의 문자열 상수 세 개(`AMBIENT`·`SPEECH`·`DANGER`)입니다. 화면 색·표시 여부와 진동 설정은 모르는 라벨을 환경음으로 처리하므로, `ai/` 코드가 내보내는 라벨 이름이 이 상수와 어긋나면 오류 없이 위협음이 환경음처럼 표시됩니다. 그래서 `ai/` 밖의 `AiLabelContractTest`가 매핑·투표·안전 신호·후처리의 결과 라벨이 세 상수 중 하나인지와 대표 소리(총소리·말소리·빗소리)가 맞는 상수로 나오는지 확인합니다.
 
-화면과 진동에는 라벨 하나면 충분하지만, 파이프라인이 넘기는 결과에는 모델이 말한 이름·확신도·임계값 통과 여부·Booster 개입·단계별 소요시간이 함께 들어 있습니다. 개발자 모드(4장)가 `AiClassification.latest()`로 그 전부를 읽습니다.
+화면과 진동에는 라벨 하나면 충분하지만, 파이프라인이 넘기는 결과에는 모델이 말한 이름·확신도·임계값 통과 여부·안전 신호 승격·단계별 소요시간이 함께 들어 있습니다. 개발자 모드(4장)가 `AiClassification.latest()`로 그 전부를 읽습니다.
 
 ### 기준 구현과 검증
 
 - `tools/ai_reference/`: 전처리·추론의 Python 기준 구현과 골든 데이터 생성 스크립트
-- 유닛 테스트(`app/src/test/.../ai/`): 전처리 골든 비교, 분류 매핑, Booster 판정, 후처리
+- 유닛 테스트(`app/src/test/.../ai/`): Qualcomm 전처리 골든 비교, 분류 매핑, 안전 신호, 후처리
 - 계측 테스트(`app/src/androidTest/.../ai/`): 실제 ONNX 모델 추론 비교 (기기 필요)
 - 골든 픽스처(`app/src/test/resources/ai_reference/`)는 고리 셋의 가운데입니다. **Kotlin ↔ 커밋된 픽스처**는 위의 테스트가 보고, **픽스처를 만든 Python 기준 구현 ↔ 실제 TensorFlow·torch_audioset**은 `AI frontend reference parity` 워크플로(`verify_tensorflow_logmel_parity.py`, `verify_torchaudio_logmel_parity.py`)가 봅니다. 픽스처만 다시 만들어 올려도 두 번째 검사가 돌아야 하므로 — 안 돌면 골든 테스트가 그 새 픽스처에 맞춰 통과합니다 — 그 워크플로의 `paths` 에는 `tools/ai_reference/` 와 함께 픽스처 폴더도 들어 있습니다(#152).
 - 리샘플러는 Python 기준 구현과 44.1·48kHz 모두 오차 1e-5 안으로 맞는지(`CaptureAudioPathTest`), 통과대역과 저지대역 요건을 채우는지 봅니다. 이 비교에 쓰는 짧은 픽스처는 라이선스 오디오 없이 `export_resample_parity_golden.py`로 다시 만들 수 있습니다. 실제 소리로 끝까지 도는 e2e 골든은 원본 오디오의 출처·라이선스·SHA-256을 `realtime_e2e_sources.json`에 적어 두고, 오디오 파일 자체는 커밋하지 않습니다.
 
-**진단 로그** (`debuggable` 빌드만): 분석 결과를 2초에 한 번 `AI_RESULT` 로그로 풀어 남깁니다. 실제 사용한 frontend와 Booster 설정·사용 가능 여부, 입력 형식(레이트·채널), 16kHz 신호의 RMS·피크·평균, log-mel의 최솟값·최댓값·평균·표준편차, YAMNet top-5, 종류별 점수, Booster 전후의 종류·이름·확신도, 총소리 점수·근거·채택 사유, 후처리의 임계값·확정 상태·연속 횟수입니다. 캡처를 시작할 때는 요청한 형식과 실제로 열린 형식을 한 줄 남깁니다. 배포판(릴리스 APK)에는 남지 않으므로, 배포판을 쓰는 기기에서 볼 때는 개발자 모드(4장)를 씁니다. 개발자 모드가 읽는 `AiClassificationResult`에도 frontend·Booster 설정, top-5·총소리 근거·판정 이유·경보 신호 승격 여부가 실려 있습니다(#131, #160).
+**진단 로그** (`debuggable` 빌드만): 분석 결과를 2초에 한 번 `AI_RESULT` 로그로 풀어 남깁니다. Qualcomm frontend, 입력 형식(레이트·채널), 16kHz 신호의 RMS·피크·평균, log-mel의 최솟값·최댓값·평균·표준편차, YAMNet top-5, 종류별 점수, 안전 신호 승격, 후처리의 임계값·확정 상태·연속 횟수입니다. 캡처를 시작할 때는 요청한 형식과 실제로 열린 형식을 한 줄 남깁니다. 배포판(릴리스 APK)에는 남지 않으므로, 배포판을 쓰는 기기에서 볼 때는 개발자 모드(4장)를 씁니다.
 
 ---
 
@@ -327,9 +320,9 @@ mapper·임계값·히스테리시스·Booster 모델을 바꾸지 않습니다.
 
 ```text
 DANGER ● Alarm 0.12
-thr Y   pre ambient   bst disabled   prev N   age 0.2s
-why game_mix_or_strong_danger   ev 0.00   cue Y
-lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
+thr Y   age 0.2s
+cue Y
+lvl 0.14   shown Y   65ms (12/48)
 1 Air horn, truck horn       0.12
 2 Sound effect               0.10
 3 Buzzer                     0.09
@@ -343,14 +336,10 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 
 | 표시 | 없으면 생기는 오독 |
 |---|---|
-| `path`·`bst disabled/unavailable` | 어느 frontend와 Booster 조건으로 나온 결과인지, Booster를 일부러 끈 것인지 모델을 못 불러온 것인지 구분할 수 없습니다 |
 | `thr` (`meetsThreshold`) | 임계값을 못 넘는 동안 확정값이 **전부 얼어붙습니다**. 이게 없으면 "AI가 못 잡는다"와 "임계값을 못 넘는다"를 구분할 수 없습니다 |
 | `age` (결과가 나온 뒤 흐른 시간) | 무음이면 추론을 건너뛰고 마지막 결과를 그대로 들고 있습니다. 나이가 자라는 것이 "지금 추론이 돌지 않는다"는 신호입니다 |
-| `pre`·`bst` (Booster 전 종류, 채택 여부·점수) | Booster가 채택되면 종류뿐 아니라 **이름까지 총소리 클래스명으로 갈아치웁니다**. 이게 없으면 모델이 하지 않은 말을 모델 탓으로 채점합니다 |
-| `why`·`ev` (판정 이유의 이름, 총소리 근거) | 어느 분기를 탔는지와, 총소리로 부를 근거(top-5 안 총기 라벨 확률)가 있었는지. 이유 문자열 뒤의 점수·근거는 `bst`·`ev`와 겹쳐 이름만 씁니다 |
-| `cue` (`dangerCuePromoted`) | 부스터와 별개로 경보·사이렌·폭발 같은 신호로 위험에 올린 경우입니다. `bst N`인데 위험인 까닭을 설명합니다 |
+| `cue` (`dangerCuePromoted`) | YAMNet top-5의 경보·사이렌·폭발 신호를 위험으로 보존한 경우입니다 |
 | top-5 (순위·이름·확률) | 모델이 1위만이 아니라 무엇을 함께 들었는지. 1위가 경보가 아니어도 4위의 `Alarm`으로 위험이 될 수 있습니다. 한 줄에 하나씩, 긴 이름은 26자에서 줄여 확률이 한 열에 서게 합니다 |
-| `prev` (`useBoosterDangerPreview`) | 히스테리시스를 우회한 한 틱짜리 프리뷰. "빨갛게 번쩍했는데 확정 라벨은 danger가 아니다"의 유일한 설명입니다 |
 | `lvl`·`shown` | 진동 게이트 값과 그 종류의 표시 설정. "왜 진동이 안 울렸나", "왜 아무것도 안 그려지나"를 AI 탓으로 돌리지 않게 합니다 |
 | 소요시간 | 실제 주기는 `totalMs + 250ms`입니다(스케줄러가 틱 **뒤에** 쉽니다). "AI가 늦다"가 사실은 "이 기기가 느리다"인 경우를 가릅니다 |
 
@@ -366,14 +355,14 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 - **같은 결과는 한 번만** 적습니다. 폴링은 100ms, 추론은 250ms 주기라 같은 결과를 두세 번 보게 되는데, `timestampMs` 가 같으면 건너뜁니다.
 - **20MB 에서 멈춥니다.** 초당 네 줄이면 하루쯤 담기는 양이고, 켜 둔 것을 잊은 기기에서 저장 공간을 먹는 것을 막습니다.
 - **이름에 든 쉼표.** YAMNet 클래스명에는 쉼표가 들어갑니다(`Gunshot, gunfire`). 칸을 따옴표로 감싸지 않으면 그 줄만 칸이 밀려 표 전체가 어긋납니다. 숫자 서식은 `Locale.US` 로 고정합니다 — 앱이 기본 로캘을 사용자가 고른 언어로 바꾸므로, 그대로 두면 아랍어에서 소수점이 아랍 숫자로 나갑니다.
-- 한 줄에 적는 것: 시각과 결과 시각·나이, 3분류, 모델이 말한 이름, 확신도, 임계값을 넘었는지, 부스터 전 종류와 채택 여부·사유·총소리 점수·근거, 경보 신호 승격, 프리뷰, **top-5 이름과 확률**, frontend, 그때의 소리 크기, 그 종류 표시 여부, 단계별 소요 시간. 임계값 자체는 결과에 실리지 않아(후처리 안에만 있습니다) 넘었는지만 적습니다.
+- 한 줄에 적는 것: 시각과 결과 시각·나이, 3분류, 모델이 말한 이름, 확신도, 임계값을 넘었는지, 경보 신호 승격, **top-5 이름과 확률**, 그때의 소리 크기, 그 종류 표시 여부, 전처리·YAMNet·전체 소요 시간입니다. 임계값 자체는 결과에 실리지 않아(후처리 안에만 있습니다) 넘었는지만 적습니다.
 - 그리기는 **오버레이 창 안의 형제 Compose `Text`**입니다. 엔진의 무할당 그리기 경로는 건드리지 않습니다. 다만 **상태 읽기를 `AiDebugOverlay` 안에 가둬야** 합니다. 바깥에서 읽으면 오버레이 전체가 초당 4회 리컴포지션되고 `Canvas`의 그리기 람다가 매번 새로 만들어집니다.
 - 갱신은 **100ms 폴링**입니다. 추론이 250ms 주기라 같은 주기로 읽으면 지터 때문에 같은 결과를 두 번 읽고 **다음 결과 하나를 통째로 건너뜁니다.** 총성 한 발이 만드는 250ms짜리 danger 틱 하나가 정확히 이 도구가 잡아야 할 사건입니다(진동 알림이 100ms인 것과 같은 이유). 화면이 꺼져 쉬는 동안에는 폴링도 멈춥니다.
 - 글자를 넣어도 **터치 통과는 깨지지 않습니다.** 그 성질은 창 플래그(`FLAG_NOT_TOUCHABLE`)에 걸려 있습니다. 같은 이유로 이 표시를 별도 창으로 띄우면 안 됩니다. 불투명한 두 번째 오버레이 창은 그 영역의 "신뢰할 수 없는 터치 차단"을 다시 부릅니다.
 - Android 12 이상에서는 창 알파(약 0.8)가 곱해지므로 판은 **완전히 불투명한** 검정으로 둡니다. 안쪽에 반투명을 쓰면 알파가 두 번 곱해져 흐려집니다.
 - 화면 읽어주기는 이 표시를 건너뜁니다(`clearAndSetSemantics`). 개발용 글자라 정작 이 앱 사용자에게는 소음입니다.
-- 줄 만들기는 `AiDebugText`라는 순수 로직으로 빼 기기 없이 검사합니다(`AiDebugTextTest`). NaN 점수, 확정 이름이 빈 경우, 뒤로 간 시계, 긴 top-5 이름, 그리고 앱 언어 때문에 숫자가 아랍 숫자로 나오는 것까지 고정합니다.
-- **한 줄은 58자까지입니다**(`AiDebugText.HUD_MAX_COLUMNS`). 폭 411dp 폰을 글꼴 크기 기본값으로 쓸 때 글자 영역이 383dp 이고, 고정폭 글꼴 11sp 는 글자당 6.6dp 입니다. 넘으면 줄이 두 줄로 꺾여 읽기 어려워집니다. 그래서 어느 전처리를 썼는지(`path`)는 detail 줄이 아니라 그 전처리 시간이 있는 줄 끝에 두고, 100초가 넘은 결과의 나이는 `123s`·`17m` 처럼 짧게 씁니다(#165). `AiDebugTextTest` 가 가장 긴 경우(부스터 모델 없음, 가장 긴 판정 이유와 클래스 이름, 느린 기기의 소요시간)로 모든 줄을 재어 봅니다.
+- 줄 만들기는 `AiDebugText`라는 순수 로직으로 빼 기기 없이 검사합니다(`AiDebugTextTest`). 확정 이름이 빈 경우, 뒤로 간 시계, 긴 top-5 이름, 그리고 앱 언어 때문에 숫자가 아랍 숫자로 나오는 것까지 고정합니다.
+- **한 줄은 58자까지입니다**(`AiDebugText.HUD_MAX_COLUMNS`). 폭 411dp 폰을 글꼴 크기 기본값으로 쓸 때 글자 영역이 383dp 이고, 고정폭 글꼴 11sp 는 글자당 6.6dp 입니다. 넘으면 줄이 두 줄로 꺾여 읽기 어려워집니다. 100초가 넘은 결과의 나이는 `123s`·`17m` 처럼 짧게 씁니다(#165).
 - 글꼴은 **앱에 넣은 고정폭 글꼴**(`AppMonospace`, `UiFonts.kt`)입니다. 시스템의 `FontFamily.Monospace` 를 쓰면 삼성 One UI 가 비례폭으로 덮어써서, 값이 바뀔 때 자리가 흔들리고 top-5 확률이 한 열에 서지 않습니다. Galaxy S25+ 에서 `lvl 0.00` 의 글자 간격이 11.5~19px 로 들쭉날쭉했고, 같은 코드가 Pixel(AOSP) 에서는 17px 로 고르게 나왔습니다(#162). 넣은 글꼴은 AOSP 의 `DroidSansMono.ttf` 를 고치지 않은 것이고, 도움말의 라이선스 고지와 제보용 기기 정보도 같은 글꼴을 씁니다. `AppMonospaceFontTest` 가 이 글꼴이 정말 고정폭인지, HUD 가 찍을 수 있는 글자(YAMNet 클래스 이름 521개, 말줄임표 포함)가 모두 들어 있는지 확인합니다. 빠진 글자는 그 글자만 시스템 글꼴로 그려져 그 줄이 다시 비례폭이 됩니다.
 
 ### 한 프레임의 계산 (`VisualizerEngine.tick`)
@@ -477,7 +466,7 @@ lvl 0.14   shown Y   65ms (12/48/3)   path qualcomm
 - 마지막으로 뜻하지 않게 꺼진 이유(`lastUnexpectedStop`)는 캡처 서비스가 알려주지만, 프로세스가 끝난 뒤 앱을 열어도 홈에서 보이도록 이름으로 저장합니다. 모르는 이름(항목을 바꾼 뒤)이면 안내가 없는 것으로 봅니다. 읽기·쓰기(`loadLastUnexpectedStop`·`putLastUnexpectedStop`)는 `StopNoticeSettingsTest`가 확인합니다.
 - 외부 사운드 모드(`externalSoundMode`, 키 `external_sound_mode`, 2장)의 기본값은 `EXTERNAL_SOUND_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 마이크로 주변 소리를 듣는 일이라 사용자가 골라야 하고, `ExternalSoundModeSettingTest`가 지킵니다. 사용자의 선택이라 기기 전용 값처럼 복원할 때 비우지 않습니다.
 - "화면이 꺼지면 일시정지"의 기본값은 `PAUSE_WHEN_SCREEN_OFF_DEFAULT` 한 곳에만 둡니다. 흐름의 초기값과 저장값이 없을 때의 값을 따로 적으면 한쪽만 바꿔도 모르고 지나갑니다(`ScreenOffPauseTest`).
-- 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다. frontend·Booster A/B 선택은 저장하지만 개발자 모드가 꺼져 있으면 `AiDiagnosticConfig.DEFAULT`만 파이프라인에 넘깁니다. `AiDiagnosticSettingTest`가 기본값·저장 복원·이 안전 복귀를 지킵니다.
+- 개발자 모드(`developerMode`, 4장)도 같은 방식으로 `DEVELOPER_MODE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 켜 두고 잊으면 사용자에게 영어 글자판이 그대로 남으므로, 기본값이 꺼짐인 것을 `DeveloperModeSettingTest`가 지킵니다. 오버레이가 이 값을 구독하므로 켜고 끄면 실행 중에도 바로 나타나고 사라집니다. Qualcomm frontend는 모든 실행에서 고정이며 개발자 A/B 선택은 없습니다.
 - 기록 스위치(`developerRecord`, 4장)는 개발자 모드와 따로 저장합니다(`DEVELOPER_RECORD_DEFAULT`=꺼짐). 개발자 모드를 껐다 켜도 기록 설정은 그대로 남고, 오버레이가 이 값을 구독하므로 켜면 파일이 새로 열리고 끄면 닫힙니다.
 - **튜토리얼을 본 적이 있는지**(`tutorialSeen`, 키 `tutorial_seen`): 아직이면 `MainActivity`가 탭 화면 대신 튜토리얼을 띄우고, 닫으면(건너뛰기·확인·첫 쪽에서 뒤로 가기) `true`로 저장합니다. 보는 도중에 앱을 끄면 다음에 다시 뜹니다.
   - **저장된 적이 없을 때의 판단**: 다른 값이 하나라도 저장돼 있으면 이 기능 전부터 앱을 쓰던 사람으로 보고 본 것으로 칩니다. 거의 모든 기존 사용자는 이미 앱을 아니 저절로 띄우지 않습니다(설정을 한 번도 바꾸지 않은 1.5.0 이전 설치는 한 번 봅니다). 아무것도 없으면 새로 설치한 것이라 띄웁니다.

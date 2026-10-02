@@ -1,7 +1,6 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
-import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier.TopClassHit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -46,23 +45,19 @@ class AppMonospaceFontTest {
 
     @Test
     fun `HUD 가 만드는 글자는 모두 글꼴에 있다`() {
-        // 실제로 나올 수 있는 모양을 두루 만들어 본다. 결과 없음, 모델 없음, 부스터 꺼짐·없음,
-        // 두 frontend, NaN 점수, 긴 이름이 잘려 말줄임표가 붙는 top-5.
+        // 실제로 나올 수 있는 모양을 두루 만들어 본다. 결과 없음, 모델 없음, 세 coarse
+        // 결과와 긴 이름이 잘려 말줄임표가 붙는 top-5.
         val longName = classNames().maxBy { it.length }
         val outputs = buildList {
             add(AiDebugText.format(null, 0L, 0f, shown = false, aiAvailable = true))
             add(AiDebugText.format(null, 0L, 0f, shown = false, aiAvailable = false))
             for (coarse in listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)) {
-                for (mode in AiFrontendMode.entries) {
-                    for ((enabled, available) in listOf(true to true, true to false, false to false)) {
-                        add(
-                            AiDebugText.format(
-                                result(coarse, longName, mode, enabled, available),
-                                nowMs = 3_456L, level = 0.14f, shown = true, aiAvailable = true
-                            )
-                        )
-                    }
-                }
+                add(
+                    AiDebugText.format(
+                        result(coarse, longName),
+                        nowMs = 3_456L, level = 0.14f, shown = true, aiAvailable = true
+                    )
+                )
             }
         }
         val text = outputs.joinToString("") { lines ->
@@ -89,31 +84,18 @@ class AppMonospaceFontTest {
 
     private fun result(
         coarse: String,
-        display: String,
-        frontendMode: AiFrontendMode,
-        boosterEnabled: Boolean,
-        boosterAvailable: Boolean
+        display: String
     ) = AiClassificationResult(
         coarse = coarse,
         display = display,
         confidence = 0.41f,
-        gunshotScore = if (boosterAvailable) 0.83f else Float.NaN,
-        boosterAvailable = boosterAvailable,
-        preBoosterCoarse = AiClassification.AMBIENT,
-        boosterAccepted = boosterAvailable,
         meetsThreshold = true,
-        useBoosterDangerPreview = false,
         timestampMs = 1_000L,
         preprocessMs = 12.0,
         yamnetMs = 48.0,
-        boosterMs = 3.0,
         totalMs = 65.0,
         top5 = List(5) { TopClassHit(index = it, name = display, probability = 0.5f - it * 0.1f) },
-        gunshotEvidence = 0f,
-        boosterReason = "",
-        dangerCuePromoted = false,
-        frontendMode = frontendMode,
-        boosterEnabled = boosterEnabled
+        dangerCuePromoted = false
     )
 
     private companion object {
