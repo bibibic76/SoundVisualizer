@@ -210,7 +210,9 @@ class GunshotBoosterDecisionTest {
         assertMatchesMeta("alarm", r)
         assertFalse(r.accepted)
         assertFalse(r.dangerCuePromoted)
-        assertEquals("ambient", r.postBoosterCoarse)
+        // The Booster still rejects score-only adoption; explicit Air horn policy
+        // makes the underlying mapper result Danger.
+        assertEquals("danger", r.postBoosterCoarse)
         assertFalse(r.postBoosterDisplay.contains("Gunshot", ignoreCase = true))
         assertEquals(r.preBoosterConfidence, r.postBoosterConfidence, 0f)
     }
