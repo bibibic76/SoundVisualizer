@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">人声</string>
     <string name="tutorial_type_speech_examples">说话声</string>
     <string name="tutorial_type_danger">危险音</string>
-    <string name="tutorial_type_danger_examples">枪声、爆炸声、脚步声</string>
+    <string name="tutorial_type_danger_examples">枪声、爆炸声、警报声</string>
     <string name="tutorial_vibration_title">危险音还会以振动提醒</string>
     <string name="tutorial_vibration_body">游戏或视频中出现危险音时，手机会振动。即使您没有看着屏幕，也能察觉到。默认只有危险音会振动。您可以在“设置”标签页中为每种类型开启或关闭振动。</string>
     <string name="tutorial_start_title">如何开启和关闭</string>

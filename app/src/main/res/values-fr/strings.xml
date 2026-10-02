@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Voix</string>
     <string name="tutorial_type_speech_examples">Personnes qui parlent</string>
     <string name="tutorial_type_danger">Danger</string>
-    <string name="tutorial_type_danger_examples">Coups de feu, explosions, bruits de pas</string>
+    <string name="tutorial_type_danger_examples">Coups de feu, explosions, sirènes</string>
     <string name="tutorial_vibration_title">Les sons de danger font aussi vibrer</string>
     <string name="tutorial_vibration_body">Quand un son de danger retentit dans votre jeu ou votre vidéo, votre téléphone vibre. Vous le remarquez même si vous ne regardez pas l\'écran. Par défaut, seuls les sons de danger font vibrer. Dans l\'onglet Paramètres, vous pouvez activer ou désactiver la vibration pour chaque type.</string>
     <string name="tutorial_start_title">Activer et désactiver la visualisation</string>

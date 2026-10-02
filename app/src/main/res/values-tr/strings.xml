@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Konuşma</string>
     <string name="tutorial_type_speech_examples">İnsan sesleri</string>
     <string name="tutorial_type_danger">Tehlike sesleri</string>
-    <string name="tutorial_type_danger_examples">Silah sesi, patlama, ayak sesi</string>
+    <string name="tutorial_type_danger_examples">Silah sesi, patlama, siren</string>
     <string name="tutorial_vibration_title">Tehlike sesleri titreşimle de bildirilir</string>
     <string name="tutorial_vibration_body">Oyununuzda veya videonuzda bir tehlike sesi çaldığında telefonunuz titreşir. Ekrana bakmıyorken bile fark edersiniz. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Titreşimi her tür için “Ayarlar” sekmesinden açıp kapatabilirsiniz.</string>
     <string name="tutorial_start_title">Nasıl açılıp kapatılır</string>

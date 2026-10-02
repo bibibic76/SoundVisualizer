@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">बातचीत</string>
     <string name="tutorial_type_speech_examples">लोगों की आवाज़ें</string>
     <string name="tutorial_type_danger">खतरे की आवाज़ें</string>
-    <string name="tutorial_type_danger_examples">गोलियों की आवाज़, धमाके, कदमों की आहट</string>
+    <string name="tutorial_type_danger_examples">गोलियों की आवाज़, धमाके, सायरन</string>
     <string name="tutorial_vibration_title">खतरे की आवाज़ पर फ़ोन वाइब्रेट भी करता है</string>
     <string name="tutorial_vibration_body">गेम या वीडियो में खतरे की आवाज़ आने पर आपका फ़ोन वाइब्रेट करता है। स्क्रीन न देखते समय भी आपको पता चल जाता है। डिफ़ॉल्ट रूप से सिर्फ़ खतरे की आवाज़ों के लिए वाइब्रेशन चालू रहता है। “सेटिंग” टैब में हर प्रकार के लिए वाइब्रेशन चालू या बंद किया जा सकता है।</string>
     <string name="tutorial_start_title">चालू और बंद कैसे करें</string>

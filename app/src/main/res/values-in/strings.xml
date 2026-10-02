@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Percakapan</string>
     <string name="tutorial_type_speech_examples">Suara manusia</string>
     <string name="tutorial_type_danger">Suara bahaya</string>
-    <string name="tutorial_type_danger_examples">Tembakan, ledakan, langkah kaki</string>
+    <string name="tutorial_type_danger_examples">Tembakan, ledakan, sirene</string>
     <string name="tutorial_vibration_title">Suara bahaya juga membuat ponsel bergetar</string>
     <string name="tutorial_vibration_body">Saat ada suara bahaya di game atau video Anda, ponsel Anda bergetar. Anda tetap tahu meskipun tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat mengaktifkan atau menonaktifkan getaran untuk setiap jenis di tab Setelan.</string>
     <string name="tutorial_start_title">Cara menyalakan dan mematikannya</string>

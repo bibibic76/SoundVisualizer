@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">الكلام</string>
     <string name="tutorial_type_speech_examples">أصوات الناس</string>
     <string name="tutorial_type_danger">أصوات الخطر</string>
-    <string name="tutorial_type_danger_examples">طلقات نارية، انفجارات، وقع أقدام</string>
+    <string name="tutorial_type_danger_examples">طلقات نارية، انفجارات، صفارات إنذار</string>
     <string name="tutorial_vibration_title">يهتز هاتفك أيضًا عند أصوات الخطر</string>
     <string name="tutorial_vibration_body">عندما يصدر صوت خطر في اللعبة أو الفيديو، يهتز هاتفك. ينبّهك الاهتزاز حتى عندما لا تنظر إلى الشاشة. في البداية يكون الاهتزاز مفعّلًا لأصوات الخطر فقط. يمكنك تفعيل الاهتزاز أو إيقافه لكل نوع من علامة تبويب «الإعدادات».</string>
     <string name="tutorial_start_title">طريقة التشغيل والإيقاف</string>
