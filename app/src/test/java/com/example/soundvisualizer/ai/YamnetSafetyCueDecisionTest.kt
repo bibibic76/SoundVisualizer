@@ -47,4 +47,56 @@ class YamnetSafetyCueDecisionTest {
         assertEquals("speech", decision.postCoarse)
         assertFalse(decision.dangerCuePromoted)
     }
+
+    @Test fun `approved attention cues are safety-promoted`() {
+        val attentionCues = listOf(
+            "Vehicle horn, car horn, honking",
+            "Air horn, truck horn",
+            "Burst, pop",
+            "Boom",
+            "Bang",
+            "Smash, crash",
+            "Breaking",
+            "Shatter"
+        )
+
+        attentionCues.forEach { cue ->
+            val cueNames = names.toMutableList().also { it[1] = cue }
+            val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
+            probabilities[0] = .6f
+            probabilities[1] = .2f
+            probabilities[4] = .001f
+            probabilities[5] = .001f
+            probabilities[6] = .001f
+
+            val decision = YamnetSafetyCueDecision.decide(
+                cueNames,
+                YamnetCoarseClassifier(cueNames).classify(probabilities)
+            )
+
+            assertEquals(cue, "danger", decision.postCoarse)
+            assertEquals(cue, cue, decision.postDisplay)
+            assertTrue(cue, decision.dangerCuePromoted)
+        }
+    }
+
+    @Test fun `temporary proxies and partial label matches are not safety-promoted`() {
+        listOf("Plop", "Gargling", "Breaking news").forEach { proxy ->
+            val proxyNames = names.toMutableList().also { it[1] = proxy }
+            val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
+            probabilities[0] = .6f
+            probabilities[1] = .2f
+            probabilities[4] = .001f
+            probabilities[5] = .001f
+            probabilities[6] = .001f
+
+            val decision = YamnetSafetyCueDecision.decide(
+                proxyNames,
+                YamnetCoarseClassifier(proxyNames).classify(probabilities)
+            )
+
+            assertEquals(proxy, "ambient", decision.postCoarse)
+            assertFalse(proxy, decision.dangerCuePromoted)
+        }
+    }
 }

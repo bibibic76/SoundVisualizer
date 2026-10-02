@@ -79,6 +79,7 @@ object YamnetSafetyCueDecision {
         if (isGunshotKeyword(name)) return true
         val s = name.lowercase()
         if ("alarm clock" in s) return false
+        if (s in APPROVED_ATTENTION_CUE_LABELS) return true
         return "explosion" in s || "fireworks" in s || "firecracker" in s ||
             "siren" in s || "alarm" in s
     }
@@ -140,4 +141,19 @@ object YamnetSafetyCueDecision {
     }
 
     private const val STRONG_DANGER_CUE_MIN_PROBABILITY = 0.05f
+
+    /**
+     * Exact YAMNet labels already approved as Danger by the three-class mapper.
+     * Keep this list exact so similarly named, unapproved classes are not promoted.
+     */
+    private val APPROVED_ATTENTION_CUE_LABELS = setOf(
+        "vehicle horn, car horn, honking",
+        "air horn, truck horn",
+        "burst, pop",
+        "boom",
+        "bang",
+        "smash, crash",
+        "breaking",
+        "shatter"
+    )
 }
