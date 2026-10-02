@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">話し声</string>
     <string name="tutorial_type_speech_examples">人の声</string>
     <string name="tutorial_type_danger">危険音</string>
-    <string name="tutorial_type_danger_examples">銃声・爆発音・足音</string>
+    <string name="tutorial_type_danger_examples">銃声・爆発音・サイレン</string>
     <string name="tutorial_vibration_title">危険音は振動でもお知らせします</string>
     <string name="tutorial_vibration_body">ゲームや動画で危険音が鳴ると、スマートフォンが振動します。画面を見ていなくても気づけます。初期設定では危険音だけが振動します。振動は「設定」タブで種類ごとにオン/オフできます。</string>
     <string name="tutorial_start_title">オン/オフの方法</string>

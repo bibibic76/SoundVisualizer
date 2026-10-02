@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">대화음</string>
     <string name="tutorial_type_speech_examples">사람 목소리</string>
     <string name="tutorial_type_danger">위협음</string>
-    <string name="tutorial_type_danger_examples">총소리·폭발음·발소리</string>
+    <string name="tutorial_type_danger_examples">총소리·폭발음·사이렌</string>
     <string name="tutorial_vibration_title">위협음은 진동으로도 알려 드립니다</string>
     <string name="tutorial_vibration_body">게임이나 영상에서 위협음이 나면 폰이 진동합니다. 화면을 보고 있지 않아도 알 수 있습니다. 처음에는 위협음만 진동하고, 설정 탭에서 종류마다 켜고 끌 수 있습니다.</string>
     <string name="tutorial_start_title">켜고 끄는 방법</string>

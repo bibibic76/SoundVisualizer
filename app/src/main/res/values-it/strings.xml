@@ -51,7 +51,7 @@
     <string name="tutorial_type_speech">Voci</string>
     <string name="tutorial_type_speech_examples">Persone che parlano</string>
     <string name="tutorial_type_danger">Suoni di pericolo</string>
-    <string name="tutorial_type_danger_examples">Spari, esplosioni, passi</string>
+    <string name="tutorial_type_danger_examples">Spari, esplosioni, sirene</string>
     <string name="tutorial_vibration_title">I suoni di pericolo fanno anche vibrare il telefono</string>
     <string name="tutorial_vibration_body">Quando nel gioco o nel video c\'è un suono di pericolo, il telefono vibra. Così te ne accorgi anche se non stai guardando lo schermo. Inizialmente la vibrazione è attiva solo per i suoni di pericolo. Nella scheda Impostazioni puoi attivarla o disattivarla per ogni tipo.</string>
     <string name="tutorial_start_title">Come si attiva e si disattiva</string>
