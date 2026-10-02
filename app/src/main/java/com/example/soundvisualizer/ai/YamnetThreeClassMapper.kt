@@ -33,6 +33,9 @@ object YamnetThreeClassMapper {
         // YAMNet classes are promoted to Danger (not every generic "horn").
         if (s == "vehicle horn, car horn, honking") return true
         if (s == "air horn, truck horn") return true
+        // Product policy: these exact source labels require immediate attention.
+        // Keep exact matching so Rain/Wind and similarly named labels stay Ambient.
+        if (s == "chainsaw" || s == "thunder" || s == "thunderstorm") return true
         if (
             "gunshot" in s || "gunfire" in s || "machine gun" in s ||
             "artillery" in s || "fusillade" in s || "cap gun" in s
