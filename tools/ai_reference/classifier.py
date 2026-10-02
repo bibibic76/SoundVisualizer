@@ -34,6 +34,20 @@ from preprocess import (
 )
 
 
+# Exact YAMNet labels approved by the product policy. Keep this synchronized
+# with YamnetSafetyCueDecision.APPROVED_ATTENTION_CUE_LABELS.
+APPROVED_ATTENTION_CUE_LABELS = {
+    "vehicle horn, car horn, honking",
+    "air horn, truck horn",
+    "burst, pop",
+    "boom",
+    "bang",
+    "smash, crash",
+    "breaking",
+    "shatter",
+}
+
+
 @dataclass
 class InferenceResult:
     yamnet_class_index: int
@@ -705,6 +719,8 @@ class ReferenceClassifier:
         s = name.lower()
         if "alarm clock" in s:
             return False
+        if s in APPROVED_ATTENTION_CUE_LABELS:
+            return True
         return any(k in s for k in ("explosion", "fireworks", "firecracker", "siren", "alarm"))
 
     def _is_critical_danger_keyword(self, name: str) -> bool:
