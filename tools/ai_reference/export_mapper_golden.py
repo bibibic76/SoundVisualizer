@@ -132,6 +132,15 @@ def main() -> None:
             "Gargling",
             "Music",
             "Silence",
+            "Footsteps",
+            "Vehicle horn, car horn, honking",
+            "Air horn, truck horn",
+            "Burst, pop",
+            "Boom",
+            "Bang",
+            "Smash, crash",
+            "Breaking",
+            "Shatter",
         )
     }
 

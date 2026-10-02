@@ -11,7 +11,7 @@ import math
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import onnxruntime as ort
@@ -68,11 +68,19 @@ class ReferenceClassifier:
     DANGER_IMMEDIATE_SWITCH_CONFIDENCE = 0.28
     DANGER_EXIT_RELAXED_CONFIDENCE = 0.27
 
-    def __init__(self, model_dir: str | Path, load_booster: bool = True):
+    def __init__(
+        self,
+        model_dir: str | Path,
+        load_booster: bool = True,
+        log_mel_provider: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+    ):
         self.model_dir = Path(model_dir)
         self._hann = create_hann_window(400)
         self._mel = create_mel_filter_bank()
         self._mel_starts, self._mel_ends = mel_nonzero_ranges(self._mel)
+        # Reference-only injection point for frontend investigations. Production
+        # parity keeps the default app-contract implementation below.
+        self._log_mel_provider = log_mel_provider
 
         self._ring = np.zeros(self.MAX_RING_SIZE, dtype=np.float32)
         self._ring_head = 0
@@ -188,9 +196,14 @@ class ReferenceClassifier:
         diag: Dict[str, Any] = {}
         t0 = time.perf_counter()
 
-        log_mel = compute_log_mel_spectrogram(
-            mono_audio, self._hann, self._mel, self._mel_starts, self._mel_ends
-        )
+        if self._log_mel_provider is None:
+            log_mel = compute_log_mel_spectrogram(
+                mono_audio, self._hann, self._mel, self._mel_starts, self._mel_ends
+            )
+        else:
+            log_mel = np.asarray(self._log_mel_provider(mono_audio), dtype=np.float32).reshape(
+                TIME_FRAMES * MEL_BINS
+            )
         tensor = log_mel_to_tensor(log_mel)
         diag["log_mel_flat"] = log_mel
         diag["tensor"] = tensor

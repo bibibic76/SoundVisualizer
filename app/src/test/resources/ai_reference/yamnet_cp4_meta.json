@@ -12,7 +12,16 @@
     "Train": "ambient",
     "Gargling": "danger",
     "Music": "ambient",
-    "Silence": "ambient"
+    "Silence": "ambient",
+    "Footsteps": "ambient",
+    "Vehicle horn, car horn, honking": "danger",
+    "Air horn, truck horn": "danger",
+    "Burst, pop": "danger",
+    "Boom": "danger",
+    "Bang": "danger",
+    "Smash, crash": "danger",
+    "Breaking": "danger",
+    "Shatter": "danger"
   },
   "handcrafted": {
     "ambient": {
@@ -408,15 +417,15 @@
       ]
     },
     "alarm": {
-      "coarse": "ambient",
+      "coarse": "danger",
       "display": "Air horn, truck horn",
       "confidence": 0.13773442804813385,
       "yamnet_class_index": 312,
       "game_mix_preference_applied": false,
       "vote_scores": {
-        "ambient": 0.33290545642375946,
+        "ambient": 0.09391622245311737,
         "speech": 0.0,
-        "danger": 0.0
+        "danger": 0.2389892339706421
       },
       "top5": [
         {

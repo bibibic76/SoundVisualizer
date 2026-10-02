@@ -106,7 +106,11 @@ def _matches_danger(s: str) -> bool:
     if _matches_temporary_gunshot_proxy_danger(s):
         return True
 
-    if "footstep" in s or "footsteps" in s:
+    # Product policy: footsteps are Ambient; only explicit vehicle-horn
+    # YAMNet classes are Danger (not every generic "horn").
+    if s == "vehicle horn, car horn, honking":
+        return True
+    if s == "air horn, truck horn":
         return True
     if (
         "gunshot" in s
@@ -118,6 +122,10 @@ def _matches_danger(s: str) -> bool:
     ):
         return True
     if "explosion" in s or "fireworks" in s or "firecracker" in s:
+        return True
+    # Product policy: sudden explosive or destructive events are Danger even when
+    # YAMNet cannot identify their precise source (for example, a gunshot vs. a pop).
+    if s in {"burst, pop", "boom", "bang", "smash, crash", "breaking", "shatter"}:
         return True
     if "civil defense siren" in s:
         return True
