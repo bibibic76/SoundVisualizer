@@ -130,6 +130,20 @@ class HapticSourceContractTest {
     }
 
     @Test
+    fun `화면이 꺼져도 계속 들으면 끊긴 연속 진동을 다시 보낸다`() {
+        // 사용자가 화면을 끄면 안드로이드가 울리던 진동을 끊고 앱에는 알리지 않는다. 연속 울림이 30초라
+        // 그대로 두면 최대 30초 조용하다(#288).
+        val screenOff = body(notifier, "fun onScreenOff()")
+        assertTrue("진동 스레드에서 보낸 울림을 잊지 않는다", screenOff.contains("handler?.post") && screenOff.contains("driver.onPreempted()"))
+        assertTrue("멈춘 뒤에도 driver 를 건드린다", screenOff.contains("if (running)"))
+
+        val service = body(code("AudioCaptureService.kt"), "private fun onScreenOff()")
+        val pause = service.indexOf("pauseForScreenOff()")
+        val notify = service.indexOf("hapticNotifier }?.onScreenOff()")
+        assertTrue("쉬지 않는 갈래에서 진동 알림에 알리지 않는다", pause >= 0 && notify > pause && service.contains("} else {"))
+    }
+
+    @Test
     fun `꺼짐 알림 앞에서 미리보기를 멈춘다`() {
         val alert = code("StopAlert.kt")
         val stop = alert.indexOf("HapticPreviewGate.stopPreview()")

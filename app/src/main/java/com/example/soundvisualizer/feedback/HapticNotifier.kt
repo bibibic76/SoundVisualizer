@@ -125,6 +125,16 @@ class HapticNotifier(
         if (debug) Log.i(TAG, player.capabilityLine())
     }
 
+    /**
+     * 화면이 꺼졌는데 이 알림은 계속 돈다(외부 사운드 모드 등). 사용자가 화면을 끄면 안드로이드가 시스템 앱이 아닌 앱의
+     * 울리던 진동을 끊는데(`VibrationSettings.shouldCancelVibrationOnScreenOff`), 앱에는 알리지 않는다. 그대로 두면 연속
+     * 울림을 다시 보낼 때까지([HapticTuning.CONTINUOUS_CHUNK_MS]) 조용하므로, 보낸 울림을 끊긴 것으로 잊어 다음 틱에 다시
+     * 보낸다(#288). 꺼진 뒤에 시작한 진동은 끊지 않는다. 어느 스레드에서 불러도 된다.
+     */
+    fun onScreenOff() {
+        handler?.post { if (running) driver.onPreempted() }
+    }
+
     fun stop() {
         running = false
         val h = handler ?: return

@@ -921,7 +921,12 @@ class AudioCaptureService : Service() {
         if (stopLatch.isStopping) return
         // 외부 사운드 모드는 설정과 상관없이 화면이 꺼져도 듣는다([CaptureSource.followsScreenOffPause], #260).
         val pause = captureSource.followsScreenOffPause && SettingsManager.pauseWhenScreenOff.value
-        if (screenPause.onScreenOff(pause)) pauseForScreenOff()
+        if (screenPause.onScreenOff(pause)) {
+            pauseForScreenOff()
+        } else {
+            // 쉬지 않고 계속 듣는다. 안드로이드가 화면을 끄며 끊은 진동을 바로 다시 울리게 알린다(#288).
+            synchronized(aiLock) { hapticNotifier }?.onScreenOff()
+        }
     }
 
     private fun onScreenOn() {
