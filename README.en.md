@@ -41,7 +41,7 @@ You can see the same sound in four shapes and switch between them any time in Se
 ### 🧠 Sound types (AI)
 
 - Sorts what you hear into **ambient, speech and danger** sounds.
-- Gunshots are double-checked by a dedicated model so they aren't missed.
+- Sirens and alarms count as danger sounds when they clearly show up among the AI's top candidates, even if they aren't its first pick.
 - **Pick a color for each type.** Choose any color in the color picker, or tap a common color.
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
 - When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away.
