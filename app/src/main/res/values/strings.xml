@@ -5,6 +5,7 @@
     <!-- Tabs -->
     <string name="tab_home">Home</string>
     <string name="tab_settings">Settings</string>
+    <string name="tab_classify" tools:ignore="MissingTranslation">Sounds</string>
     <string name="tab_help">Help</string>
 
     <!-- Home -->
@@ -151,6 +152,30 @@
     <string name="ai_show_speech">Show speech</string>
     <string name="ai_show_danger">Show danger sounds</string>
     <string name="ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color. Try turning the visualizer off and on again.</string>
+
+    <!-- Sounds tab: which type each sound counts as -->
+    <string name="classify_title" tools:ignore="MissingTranslation">Pick a type for each sound</string>
+    <string name="classify_preview_note" tools:ignore="MissingTranslation">Developer preview: the AI does not use these types yet. What you change here is saved, but colors and vibration still follow the default types.</string>
+    <string name="classify_desc" tools:ignore="MissingTranslation">Here is every sound the AI can recognize and the type it counts as. Change a sound\'s type, and its color and vibration follow the new type right away.</string>
+    <string name="classify_danger_note" tools:ignore="MissingTranslation">A sound you move out of Danger no longer gets danger colors or vibration. Similar sounds are separate rows (sirens have five), so change them all to move them all.</string>
+    <string name="classify_search_hint" tools:ignore="MissingTranslation">Search sounds</string>
+    <string name="cd_classify_clear_search" tools:ignore="MissingTranslation">Clear search</string>
+    <string name="classify_filter_all" tools:ignore="MissingTranslation">All</string>
+    <string name="classify_filter_changed" tools:ignore="MissingTranslation">Changed</string>
+    <string name="sound_type_ambient" tools:ignore="MissingTranslation">Ambient</string>
+    <string name="sound_type_speech" tools:ignore="MissingTranslation">Speech</string>
+    <string name="sound_type_danger" tools:ignore="MissingTranslation">Danger</string>
+    <string name="classify_type_default" tools:ignore="MissingTranslation">%1$s (default)</string>
+    <string name="classify_changed_from" tools:ignore="MissingTranslation">Default: %1$s</string>
+    <string name="classify_changed_count" tools:ignore="MissingTranslation">Changed: %1$d</string>
+    <string name="classify_reset_all" tools:ignore="MissingTranslation">Reset all</string>
+    <string name="classify_reset_title" tools:ignore="MissingTranslation">Reset all sounds?</string>
+    <string name="classify_reset_message" tools:ignore="MissingTranslation">Every sound you changed goes back to its default type.</string>
+    <string name="classify_reset_confirm" tools:ignore="MissingTranslation">Reset</string>
+    <string name="classify_reset_cancel" tools:ignore="MissingTranslation">Cancel</string>
+    <string name="classify_empty" tools:ignore="MissingTranslation">No matching sounds.</string>
+    <string name="cd_classify_sound" tools:ignore="MissingTranslation">%1$s, type: %2$s</string>
+    <string name="cd_classify_sound_changed" tools:ignore="MissingTranslation">%1$s, type: %2$s, default: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>

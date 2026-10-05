@@ -273,6 +273,7 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 | `SettingsManager` | 모드별 설정 저장 |
 | `MainActivity` | 앱 화면의 액티비티 (권한을 켜고 돌아오면 이어서 켜기: `PendingStart`) |
 | `LauncherApp` / `HomeTab` / `SettingsTab` | 탭 틀, 홈 화면, 설정 화면 |
+| `ClassifyTab` / `SoundCatalog` | 분류 탭: AI가 알아듣는 소리마다 종류를 고르는 화면과 그 소리 목록 (이름은 `res/values…/sound_names.xml`). AI 판정에 연결되기 전(#291)이라 개발자 모드에서만 보입니다 |
 | `ColorPickerDialog` / `UiControls` / `UiColors` / `UiFonts` | 색 고르기 창, 공용 컨트롤(스위치·슬라이더·펼침 줄), 화면 색 상수, 앱에 넣은 고정폭 글꼴 |
 | `help/` | 도움말 탭, 앱 안 제보(`ReportLink`: GitHub 이슈·메일 주소와 기기 정보 네 줄), 앱에 넣은 오픈소스 고지(`assets/licenses`, 저장소의 `NOTICE`·`LICENSE` 복사본) |
 | `tutorial/` | 처음 열 때 뜨는 튜토리얼(홈의 **튜토리얼 보기**로 다시 열기). 그림은 실제 오버레이 엔진(`VisualizerEngine`)에 정해 둔 소리 대본(`TutorialScript`)을 흘려 그림 |
