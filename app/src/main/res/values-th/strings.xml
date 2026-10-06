@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">ฟังเสียงรอบตัวคุณผ่านไมโครโฟนแทนเสียงที่เล่นอยู่ในโทรศัพท์ ตัวเสียงเองจะไม่ถูกบันทึกหรือส่งไปที่ใด</string>
     <string name="home_external_mode_locked">เปลี่ยนไม่ได้ขณะกำลังทำงาน ให้หยุดการแสดงภาพเสียงแล้วเปลี่ยน ค่าที่เปลี่ยนจะมีผลในครั้งถัดไปที่เริ่ม</string>
     <string name="home_mic_sensitivity">ความไวของไมโครโฟน</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d</string>
     <string name="home_status_idle">สถานะ: พร้อมใช้งาน</string>
     <string name="home_capture_blocked">ไม่มีเสียงเข้ามาที่แอปนี้ จึงวาดอะไรไม่ได้ แอปที่กำลังเล่นเสียงอยู่อาจไม่อนุญาตให้แชร์เสียงของตัวเอง (วิดีโอที่มีการป้องกันเนื้อหาจะเป็นแบบนี้) หรือเสียงในแอปนั้นอาจถูกปิดอยู่</string>
     <string name="home_ai_unavailable_loud">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม และจะสั่นเฉพาะเสียงดังตามการตั้งค่าการสั่นของเสียงอันตราย ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>

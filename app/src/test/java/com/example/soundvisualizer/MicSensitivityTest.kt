@@ -36,10 +36,18 @@ class MicSensitivityTest {
     }
 
     @Test
+    fun `화면에는 퍼센트 대신 1부터 10까지의 단계로 보인다`() {
+        assertEquals(10, MicSensitivity.STEPS.size)
+        assertEquals((1..10).toList(), MicSensitivity.STEPS.map { MicSensitivity.level(it) })
+        assertEquals("기본은 3단계", 3, MicSensitivity.level(MicSensitivity.DEFAULT))
+        assertEquals("예전 최대(800%)는 9단계로 그대로 읽힌다", 9, MicSensitivity.level(SettingsManager.loadMicSensitivity(MemoryPrefs().apply { edit().putInt("mic_sensitivity", 800).apply() })))
+    }
+
+    @Test
     fun `칸에 없는 값은 가장 가까운 칸으로 맞춘다`() {
         assertEquals(50, MicSensitivity.clamp(0))
         assertEquals(140, MicSensitivity.clamp(130))
-        assertEquals(800, MicSensitivity.clamp(10_000))
+        assertEquals(1130, MicSensitivity.clamp(10_000))
         for (p in MicSensitivity.STEPS) assertEquals(p, MicSensitivity.clamp(p))
     }
 

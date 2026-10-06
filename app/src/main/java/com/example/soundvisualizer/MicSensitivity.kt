@@ -14,8 +14,11 @@ import kotlin.math.abs
  */
 object MicSensitivity {
 
-    /** 슬라이더의 칸(%). 한 칸마다 약 3dB(√2 배). */
-    val STEPS = intArrayOf(50, 70, 100, 140, 200, 280, 400, 560, 800)
+    /**
+     * 슬라이더의 칸(%). 한 칸마다 약 3dB(√2 배). 화면에는 퍼센트 대신 단계 1~10 으로 보인다([level], #306).
+     * 저장도 이 퍼센트로 하므로, 칸을 더하거나 빼도 저장된 값은 가장 가까운 칸으로 그대로 읽힌다.
+     */
+    val STEPS = intArrayOf(50, 70, 100, 140, 200, 280, 400, 560, 800, 1130)
 
     /** 기본값. 감도를 조절하기 전과 똑같다. */
     const val DEFAULT = 100
@@ -25,6 +28,9 @@ object MicSensitivity {
 
     /** [percent] 에 가장 가까운 칸의 번호. 저장된 값이 칸에 없어도(손으로 고친 값 등) 슬라이더에 있는 값이 된다. */
     fun indexOf(percent: Int): Int = STEPS.indices.minByOrNull { abs(STEPS[it] - percent) } ?: STEPS.indexOf(DEFAULT)
+
+    /** 화면에 보이는 단계(1부터). 기본(100%)은 3단계다. */
+    fun level(percent: Int): Int = indexOf(percent) + 1
 
     /** [percent] 를 가장 가까운 칸의 값으로 맞춘다. */
     fun clamp(percent: Int): Int = STEPS[indexOf(percent)]

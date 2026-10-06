@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Mendengarkan suara di sekitar Anda melalui mikrofon, bukan suara yang diputar di ponsel. Suaranya sendiri tidak pernah disimpan atau dikirim ke mana pun.</string>
     <string name="home_external_mode_locked">Tidak dapat diubah saat berjalan. Hentikan visualisasi lalu ubah pengaturan ini; perubahan berlaku saat Anda memulainya lagi.</string>
     <string name="home_mic_sensitivity">Sensitivitas mikrofon</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d</string>
     <string name="home_status_idle">Status: Siap</string>
     <string name="home_capture_blocked">Aplikasi ini tidak menerima suara apa pun, sehingga tidak ada yang dapat digambar. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan (video yang dilindungi memang begitu), atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
     <string name="home_ai_unavailable_loud">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan hanya suara keras yang memicu getaran, dengan setelan getar suara bahaya. Coba matikan lalu nyalakan lagi visualisasinya.</string>

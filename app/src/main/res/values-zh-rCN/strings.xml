@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">通过麦克风收听您周围的声音，而不是手机上播放的声音。声音本身不会被保存，也不会发送到任何地方。</string>
     <string name="home_external_mode_locked">运行时无法更改。请先停止可视化再更改，更改会在下次开启时生效。</string>
     <string name="home_mic_sensitivity">麦克风灵敏度</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d</string>
     <string name="home_status_idle">状态：待启动</string>
     <string name="home_capture_blocked">本应用当前接收不到声音，因此无法绘制任何图形。可能是正在播放声音的应用不允许共享自己的声音（受保护的视频就属于这种情况），也可能是该应用自身已静音。</string>
     <string name="home_ai_unavailable_loud">当前无法识别声音类型，所有声音都以环境音的颜色显示，并且只有较大的声音会按危险音的振动设置振动。请尝试将可视化关闭后重新开启。</string>

@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Hört über das Mikrofon auf die Geräusche in Ihrer Umgebung statt auf den Ton, der auf Ihrem Smartphone läuft. Der Ton selbst wird weder gespeichert noch irgendwohin gesendet.</string>
     <string name="home_external_mode_locked">Kann während der Ausführung nicht geändert werden. Schalten Sie die Tonvisualisierung aus und ändern Sie die Einstellung. Sie gilt ab dem nächsten Start.</string>
     <string name="home_mic_sensitivity">Mikrofonempfindlichkeit</string>
-    <string name="home_mic_sensitivity_value">%1$d %%</string>
+    <string name="home_mic_sensitivity_value">%1$d</string>
     <string name="home_status_idle">Status: Bereit</string>
     <string name="home_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an, daher kann nichts dargestellt werden. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu (bei geschützten Videos ist das so), oder in dieser App ist der Ton ausgeschaltet.</string>
     <string name="home_ai_unavailable_loud">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und nur laute Geräusche lösen eine Vibration aus – mit der Vibrationseinstellung für Gefahrengeräusche. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>

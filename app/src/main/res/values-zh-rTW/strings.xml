@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">透過麥克風聆聽你周遭的聲音，而不是手機內播放的聲音。聲音本身不會被儲存，也不會傳送到任何地方。</string>
     <string name="home_external_mode_locked">執行時無法變更。請先停止聲音視覺化再變更，變更會在下次開啟時生效。</string>
     <string name="home_mic_sensitivity">麥克風靈敏度</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d</string>
     <string name="home_status_idle">狀態：準備就緒</string>
     <string name="home_capture_blocked">目前接收不到聲音，因此無法繪製任何圖形。可能是正在播放的應用程式不允許分享聲音 (受保護的影片就是這樣)，也可能是該應用程式本身的聲音已靜音。</string>
     <string name="home_ai_unavailable_loud">目前無法辨識聲音類型，所有聲音都會以環境音的顏色顯示，而且只有較大的聲音會依危險音的震動設定震動。請試著關閉聲音視覺化後再重新開啟。</string>

@@ -242,7 +242,8 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
 private fun MicSensitivitySlider() {
     val percent by SettingsManager.micSensitivity.collectAsState()
     val name = stringResource(R.string.home_mic_sensitivity)
-    val value = stringResource(R.string.home_mic_sensitivity_value, percent)
+    // 퍼센트가 아니라 단계(1~10)로 보인다(#306). 곱하는 값은 칸마다 약 3dB 씩 커진다.
+    val value = stringResource(R.string.home_mic_sensitivity_value, MicSensitivity.level(percent))
     val last = MicSensitivity.STEPS.size - 1
     Column(modifier = Modifier.padding(bottom = 20.dp)) {
         // 이름과 값은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
