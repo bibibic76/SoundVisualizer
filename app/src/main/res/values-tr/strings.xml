@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
-    <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir. Ses sürdükçe çizim ayrıca bir nabız gibi parlayıp kararır; böylece renkleri ayırt etmekte zorlansanız da tanıyabilirsiniz.</string>
+    <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
     <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için bir mod (Kapalı, Yavaş, Orta, Hızlı, Sürekli) ve yoğunluk seçebilirsiniz.</string>
     <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Telefon, o türden bir ses sürdüğü sürece titreşir ve ses durunca durur. Orta her yarım saniyede bir atar, Yavaş bunun yarı hızında, Hızlı ise iki katı hızında atar; Sürekli ise ara vermeden titreşir. Her modda titreşim seçtiğiniz yoğunlukta kalır.</string>
 
