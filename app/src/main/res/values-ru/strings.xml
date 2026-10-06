@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Главная</string>
     <string name="tab_settings">Настройки</string>
+    <string name="tab_classify">Звуки</string>
     <string name="tab_help">Справка</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Показывать речь</string>
     <string name="ai_show_danger">Показывать опасные звуки</string>
     <string name="ai_unavailable">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков. Попробуйте выключить и снова включить визуализатор.</string>
+    <string name="classify_title">Выберите тип для каждого звука</string>
+    <string name="classify_desc">Здесь собраны все звуки, которые может распознать ИИ, и для каждого указан тип, к которому он относится. Если изменить тип звука, его цвет и вибрация сразу станут такими же, как у нового типа.</string>
+    <string name="classify_danger_note">У звука, убранного из опасных, больше не будет цвета и вибрации опасных звуков. Похожие звуки стоят в отдельных строках (у сирен их пять), поэтому, чтобы убрать их все, измените каждую строку.</string>
+    <string name="classify_search_hint">Поиск звуков</string>
+    <string name="cd_classify_clear_search">Очистить поиск</string>
+    <string name="classify_filter_all">Все</string>
+    <string name="classify_filter_changed">Изменённые</string>
+    <string name="sound_type_ambient">Фоновые звуки</string>
+    <string name="sound_type_speech">Речь</string>
+    <string name="sound_type_danger">Опасные звуки</string>
+    <string name="classify_type_default">%1$s (по умолчанию)</string>
+    <string name="classify_changed_from">По умолчанию: %1$s</string>
+    <string name="classify_changed_count">Изменено: %1$d</string>
+    <string name="classify_reset_all">Сбросить все</string>
+    <string name="classify_reset_title">Сбросить типы всех звуков?</string>
+    <string name="classify_reset_message">Каждый звук, который вы изменили, вернётся к своему типу по умолчанию.</string>
+    <string name="classify_reset_confirm">Сбросить</string>
+    <string name="classify_reset_cancel">Отмена</string>
+    <string name="classify_empty">Подходящих звуков нет.</string>
+    <string name="cd_classify_sound">%1$s, тип: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, тип: %2$s, по умолчанию: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Вибрация</string>

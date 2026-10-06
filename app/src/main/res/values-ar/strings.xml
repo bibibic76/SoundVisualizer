@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">الرئيسية</string>
     <string name="tab_settings">الإعدادات</string>
+    <string name="tab_classify">الأصوات</string>
     <string name="tab_help">المساعدة</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">إظهار الكلام</string>
     <string name="ai_show_danger">إظهار أصوات الخطر</string>
     <string name="ai_unavailable">لا يمكن تحديد نوع الصوت حاليًا، لذا تظهر جميع الأصوات بلون الأصوات المحيطة. جرّب إيقاف الصوت المرئي ثم تشغيله مرة أخرى.</string>
+    <string name="classify_title">اختيار نوع لكل صوت</string>
+    <string name="classify_desc">تعرض هذه القائمة جميع الأصوات التي يتعرّف عليها الذكاء الاصطناعي، والنوع الذي يُصنَّف ضمنه كل صوت. إذا غيّرت نوع أي صوت، فسيأخذ فورًا لون النوع الجديد واهتزازه.</string>
+    <string name="classify_danger_note">إذا أخرجت صوتًا من أصوات الخطر، فلن يأخذ بعد ذلك لون أصوات الخطر ولا اهتزازها. الأصوات المتشابهة مقسّمة إلى صفوف منفصلة (لصفارات الإنذار خمسة صفوف)، فغيّرها كلها إذا أردت إخراجها كلها.</string>
+    <string name="classify_search_hint">البحث عن صوت</string>
+    <string name="cd_classify_clear_search">محو نص البحث</string>
+    <string name="classify_filter_all">الكل</string>
+    <string name="classify_filter_changed">المعدّلة</string>
+    <string name="sound_type_ambient">الأصوات المحيطة</string>
+    <string name="sound_type_speech">الكلام</string>
+    <string name="sound_type_danger">أصوات الخطر</string>
+    <string name="classify_type_default">%1$s (تلقائي)</string>
+    <string name="classify_changed_from">النوع التلقائي: %1$s</string>
+    <string name="classify_changed_count">الأصوات المعدّلة: %1$d</string>
+    <string name="classify_reset_all">إعادة ضبط الكل</string>
+    <string name="classify_reset_title">هل تريد إعادة ضبط كل الأصوات؟</string>
+    <string name="classify_reset_message">ستعود جميع الأصوات التي غيّرتها إلى نوعها التلقائي.</string>
+    <string name="classify_reset_confirm">إعادة ضبط</string>
+    <string name="classify_reset_cancel">إلغاء</string>
+    <string name="classify_empty">لا توجد أصوات مطابقة.</string>
+    <string name="cd_classify_sound">%1$s، النوع: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s، النوع: %2$s، النوع التلقائي: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">الاهتزاز</string>

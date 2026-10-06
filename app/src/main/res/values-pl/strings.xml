@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Główna</string>
     <string name="tab_settings">Ustawienia</string>
+    <string name="tab_classify">Dźwięki</string>
     <string name="tab_help">Pomoc</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Pokaż mowę</string>
     <string name="ai_show_danger">Pokaż dźwięki zagrożenia</string>
     <string name="ai_unavailable">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
+    <string name="classify_title">Wybierz rodzaj każdego dźwięku</string>
+    <string name="classify_desc">Oto wszystkie dźwięki, które AI potrafi rozpoznać, i rodzaj, do którego należy każdy z nich. Gdy zmienisz rodzaj dźwięku, jego kolor i wibracje od razu dostosują się do nowego rodzaju.</string>
+    <string name="classify_danger_note">Dźwięk przeniesiony z dźwięków zagrożenia do innego rodzaju nie będzie już miał ich koloru ani wibracji. Podobne dźwięki mają osobne wiersze (syreny zajmują pięć), więc aby przenieść je wszystkie, zmień każdy z tych wierszy.</string>
+    <string name="classify_search_hint">Szukaj dźwięków</string>
+    <string name="cd_classify_clear_search">Wyczyść wyszukiwanie</string>
+    <string name="classify_filter_all">Wszystkie</string>
+    <string name="classify_filter_changed">Zmienione</string>
+    <string name="sound_type_ambient">Dźwięki otoczenia</string>
+    <string name="sound_type_speech">Mowa</string>
+    <string name="sound_type_danger">Dźwięki zagrożenia</string>
+    <string name="classify_type_default">%1$s (domyślnie)</string>
+    <string name="classify_changed_from">Domyślnie: %1$s</string>
+    <string name="classify_changed_count">Zmienione: %1$d</string>
+    <string name="classify_reset_all">Przywróć domyślne</string>
+    <string name="classify_reset_title">Przywrócić domyślne rodzaje dźwięków?</string>
+    <string name="classify_reset_message">Każdy zmieniony przez Ciebie dźwięk wróci do swojego domyślnego rodzaju.</string>
+    <string name="classify_reset_confirm">Przywróć</string>
+    <string name="classify_reset_cancel">Anuluj</string>
+    <string name="classify_empty">Brak pasujących dźwięków.</string>
+    <string name="cd_classify_sound">%1$s, rodzaj: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, rodzaj: %2$s, domyślnie: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Wibracje</string>

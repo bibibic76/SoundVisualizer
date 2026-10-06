@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Inicio</string>
     <string name="tab_settings">Ajustes</string>
+    <string name="tab_classify">Sonidos</string>
     <string name="tab_help">Ayuda</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Mostrar voz</string>
     <string name="ai_show_danger">Mostrar peligro</string>
     <string name="ai_unavailable">La detección del tipo de sonido no funciona, así que todos los sonidos se muestran en el color del sonido ambiente. Prueba a apagar y volver a encender la visualización.</string>
+    <string name="classify_title">Elige el tipo de cada sonido</string>
+    <string name="classify_desc">Aquí aparecen todos los sonidos que la IA puede reconocer y el tipo en que se clasifica cada uno. Si cambias el tipo de un sonido, su color y su vibración pasan a ser los del nuevo tipo al instante.</string>
+    <string name="classify_danger_note">Si cambias un sonido de peligro a otro tipo, ya no tendrá el color ni la vibración de peligro. Los sonidos parecidos están en filas separadas (las sirenas ocupan cinco); para cambiarlos todos, cambia cada fila.</string>
+    <string name="classify_search_hint">Buscar sonidos</string>
+    <string name="cd_classify_clear_search">Borrar búsqueda</string>
+    <string name="classify_filter_all">Todos</string>
+    <string name="classify_filter_changed">Cambiados</string>
+    <string name="sound_type_ambient">Sonido ambiente</string>
+    <string name="sound_type_speech">Voz</string>
+    <string name="sound_type_danger">Peligro</string>
+    <string name="classify_type_default">%1$s (por defecto)</string>
+    <string name="classify_changed_from">Por defecto: %1$s</string>
+    <string name="classify_changed_count">Cambiados: %1$d</string>
+    <string name="classify_reset_all">Restablecer todo</string>
+    <string name="classify_reset_title">¿Restablecer todos los sonidos?</string>
+    <string name="classify_reset_message">Todos los sonidos que hayas cambiado volverán a su tipo por defecto.</string>
+    <string name="classify_reset_confirm">Restablecer</string>
+    <string name="classify_reset_cancel">Cancelar</string>
+    <string name="classify_empty">No hay sonidos que coincidan.</string>
+    <string name="cd_classify_sound">%1$s, tipo: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, tipo: %2$s, por defecto: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrar</string>

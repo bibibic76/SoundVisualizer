@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">หน้าแรก</string>
     <string name="tab_settings">การตั้งค่า</string>
+    <string name="tab_classify">เสียง</string>
     <string name="tab_help">ความช่วยเหลือ</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">แสดงเสียงพูด</string>
     <string name="ai_show_danger">แสดงเสียงอันตราย</string>
     <string name="ai_unavailable">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
+    <string name="classify_title">เลือกประเภทของแต่ละเสียง</string>
+    <string name="classify_desc">แสดงเสียงทั้งหมดที่ AI รู้จัก และแต่ละเสียงจัดอยู่ในประเภทใดในขณะนี้ หากเปลี่ยนประเภทของเสียงใด สีและการสั่นของเสียงนั้นจะเปลี่ยนตามประเภทใหม่ทันที</string>
+    <string name="classify_danger_note">เสียงที่ย้ายออกจากเสียงอันตรายแล้วจะไม่ใช้สีและการสั่นของเสียงอันตรายอีก เสียงที่คล้ายกันแยกเป็นหลายแถว (ไซเรนมี 5 แถว) หากต้องการย้ายออกทั้งหมด ต้องเปลี่ยนทุกแถว</string>
+    <string name="classify_search_hint">ค้นหาเสียง</string>
+    <string name="cd_classify_clear_search">ล้างคำค้นหา</string>
+    <string name="classify_filter_all">ทั้งหมด</string>
+    <string name="classify_filter_changed">เปลี่ยนแล้ว</string>
+    <string name="sound_type_ambient">เสียงแวดล้อม</string>
+    <string name="sound_type_speech">เสียงพูด</string>
+    <string name="sound_type_danger">เสียงอันตราย</string>
+    <string name="classify_type_default">%1$s (ค่าเริ่มต้น)</string>
+    <string name="classify_changed_from">ค่าเริ่มต้น: %1$s</string>
+    <string name="classify_changed_count">เปลี่ยนแล้ว %1$d เสียง</string>
+    <string name="classify_reset_all">รีเซ็ตทั้งหมด</string>
+    <string name="classify_reset_title">รีเซ็ตเสียงทั้งหมดหรือไม่</string>
+    <string name="classify_reset_message">เสียงทุกเสียงที่คุณเปลี่ยนไว้จะกลับไปเป็นประเภทเริ่มต้น</string>
+    <string name="classify_reset_confirm">รีเซ็ต</string>
+    <string name="classify_reset_cancel">ยกเลิก</string>
+    <string name="classify_empty">ไม่พบเสียงที่ตรงกัน</string>
+    <string name="cd_classify_sound">%1$s, ประเภท: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, ประเภท: %2$s, ค่าเริ่มต้น: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">สั่น</string>

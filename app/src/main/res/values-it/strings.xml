@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Home</string>
     <string name="tab_settings">Impostazioni</string>
+    <string name="tab_classify">Suoni</string>
     <string name="tab_help">Guida</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Mostra voci</string>
     <string name="ai_show_danger">Mostra suoni di pericolo</string>
     <string name="ai_unavailable">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali. Prova a disattivare e riattivare la visualizzazione.</string>
+    <string name="classify_title">Scegli il tipo di ogni suono</string>
+    <string name="classify_desc">Qui trovi tutti i suoni che l\'IA sa riconoscere e il tipo assegnato a ciascuno. Se cambi il tipo di un suono, il suo colore e la sua vibrazione seguono subito il nuovo tipo.</string>
+    <string name="classify_danger_note">Se togli un suono dai suoni di pericolo, non avrà più il colore né la vibrazione dei suoni di pericolo. I suoni simili sono su righe separate (cinque per le sirene): per toglierli tutti, cambia ogni riga.</string>
+    <string name="classify_search_hint">Cerca suoni</string>
+    <string name="cd_classify_clear_search">Cancella ricerca</string>
+    <string name="classify_filter_all">Tutti</string>
+    <string name="classify_filter_changed">Modificati</string>
+    <string name="sound_type_ambient">Suoni ambientali</string>
+    <string name="sound_type_speech">Voci</string>
+    <string name="sound_type_danger">Suoni di pericolo</string>
+    <string name="classify_type_default">%1$s (predefinito)</string>
+    <string name="classify_changed_from">Predefinito: %1$s</string>
+    <string name="classify_changed_count">Modificati: %1$d</string>
+    <string name="classify_reset_all">Ripristina tutto</string>
+    <string name="classify_reset_title">Ripristinare tutti i suoni?</string>
+    <string name="classify_reset_message">Tutti i suoni che hai modificato torneranno al loro tipo predefinito.</string>
+    <string name="classify_reset_confirm">Ripristina</string>
+    <string name="classify_reset_cancel">Annulla</string>
+    <string name="classify_empty">Nessun suono corrispondente.</string>
+    <string name="cd_classify_sound">%1$s, tipo: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, tipo: %2$s, predefinito: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrazione</string>
