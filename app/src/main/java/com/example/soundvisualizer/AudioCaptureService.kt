@@ -1270,9 +1270,15 @@ class AudioCaptureService : Service() {
             val chipIntent = notificationActionIntent(NotificationCommand.ACTION_SET_MODE)
                 .putExtra(NotificationCommand.EXTRA_MODE_ORDINAL, mode.ordinal)
             views.setTextViewText(chip, label)
+            // 12 이상의 칩은 라디오 버튼이라 선택 상태를 스스로 알린다. 거기에 "선택됨" 을 덧붙이면 두 번 읽힌다(#300).
+            // 그 아래의 칩은 글자 칸이라 덧붙여야 색만으로 알리지 않는다.
             views.setContentDescription(
                 chip,
-                if (selected) uiContext.getString(R.string.notification_mode_selected, label) else label
+                if (selected && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                    uiContext.getString(R.string.notification_mode_selected, label)
+                } else {
+                    label
+                }
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // 색은 state_checked 로 정해져 있으므로 켜짐만 알려 주면 된다.

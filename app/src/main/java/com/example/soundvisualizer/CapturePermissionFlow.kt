@@ -9,6 +9,9 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -17,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -227,7 +231,13 @@ private fun PermissionAlert(
         onDismissRequest = onDismiss,
         containerColor = CardColor,
         title = { Text(title, color = PrimaryTextColor, fontWeight = FontWeight.Bold) },
-        text = { Text(message, color = SecondaryTextColor, fontSize = 15.sp, lineHeight = 24.sp) },
+        // 창은 본문에 남는 높이만 준다. 큰 글꼴에서 외부 사운드 모드의 마이크 안내(파일로 남기지 않는다는 약속까지)가
+        // 그 높이를 넘으면 스크롤 없이는 잘려 볼 수 없다(#300). 색·언어 창과 같이 본문을 스크롤되게 둔다.
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Text(message, color = SecondaryTextColor, fontSize = 15.sp, lineHeight = 24.sp)
+            }
+        },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(confirmLabel, color = AccentColor, fontWeight = FontWeight.Bold)
