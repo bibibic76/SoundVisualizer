@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticPlayer
+import com.example.soundvisualizer.language.LanguageButton
 import kotlin.math.roundToInt
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
@@ -156,18 +157,26 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // 처음 열 때 한 번 저절로 뜬 튜토리얼을 다시 보는 곳. 실행 버튼들과 겨루지 않게 회색 글자 버튼으로 둔다.
-            TextButton(
-                onClick = onOpenTutorial,
+            // 맨 아래 한 줄: 왼쪽은 튜토리얼 다시 보기, 오른쪽은 언어(#308). 실행 버튼들과 겨루지 않게 둘 다 회색 글자로 작게 둔다.
+            // 오른쪽에서 왼쪽으로 쓰는 언어(아랍어)에서는 줄이 뒤집혀 언어가 왼쪽 아래에 온다.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth()
                     .padding(top = 24.dp, bottom = 8.dp)
-                    .heightIn(min = 48.dp)
             ) {
-                Text(
-                    stringResource(R.string.home_tutorial),
-                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, color = SecondaryTextColor
-                )
+                // 처음 열 때 한 번 저절로 뜬 튜토리얼을 다시 보는 곳. 이름이 긴 번역은 줄을 바꾸고 언어 버튼은 밀어내지 않는다.
+                TextButton(
+                    onClick = onOpenTutorial,
+                    modifier = Modifier.weight(1f, fill = false).heightIn(min = 48.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.home_tutorial),
+                        fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Start, color = SecondaryTextColor
+                    )
+                }
+                LanguageButton(modifier = Modifier.padding(start = 8.dp))
             }
         }
     }

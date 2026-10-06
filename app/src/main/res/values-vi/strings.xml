@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Ứng dụng chỉ vẽ khi có âm thanh và chuyển sang trạng thái chờ khi yên tĩnh. Tuy nhiên, vì ứng dụng liên tục thu âm thanh, bạn nên tắt ứng dụng khi không sử dụng.</string>
     <string name="help_faq_battery_less_drawing">Khi có âm thanh, việc vẽ đồ họa tốn pin nhiều nhất. Nếu bạn bật “Giảm tần suất vẽ đồ họa” ở mục Pin trong thẻ Cài đặt, ứng dụng sẽ tốn ít pin hơn, nhưng chuyển động sẽ kém mượt hơn.</string>
     <string name="help_faq_language_q">Làm cách nào để đổi ngôn ngữ ứng dụng?</string>
-    <string name="help_faq_language_a">Nhấn “Ngôn ngữ” ở đầu thẻ Cài đặt rồi chọn một ngôn ngữ. “Mặc định của hệ thống” sẽ dùng ngôn ngữ của điện thoại. Trên Android 13 trở lên, bạn cũng có thể đổi trong mục “Ngôn ngữ ứng dụng” ở phần cài đặt của điện thoại.</string>
+    <string name="help_faq_language_a">Nhấn nút hình quả địa cầu ở góc dưới bên phải thẻ Trang chủ rồi chọn một ngôn ngữ. “Mặc định của hệ thống” sẽ dùng ngôn ngữ của điện thoại. Trên Android 13 trở lên, bạn cũng có thể đổi trong mục “Ngôn ngữ ứng dụng” ở phần cài đặt của điện thoại.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Báo cáo sự cố</string>

@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">只在有声音时才绘制图形，安静时会进入待机状态。不过，由于需要持续捕获声音，建议您在不使用时将其关闭。</string>
     <string name="help_faq_battery_less_drawing">有声音时，绘制图形最耗电。在“设置”标签页的“电池”中开启“降低图形绘制频率”，可以减少耗电，但图形的动画会不那么流畅。</string>
     <string name="help_faq_language_q">如何更改应用语言？</string>
-    <string name="help_faq_language_a">点按“设置”标签页顶部的“语言”，然后选择一种语言。选择“系统默认”将跟随手机的语言。在 Android 13 及更高版本中，您也可以在手机设置的“应用语言”中更改。</string>
+    <string name="help_faq_language_a">点按“首页”标签页右下角的地球图标按钮，然后选择一种语言。选择“系统默认”将跟随手机的语言。在 Android 13 及更高版本中，您也可以在手机设置的“应用语言”中更改。</string>
 
     <!-- Help: report -->
     <string name="help_report_title">报告问题</string>

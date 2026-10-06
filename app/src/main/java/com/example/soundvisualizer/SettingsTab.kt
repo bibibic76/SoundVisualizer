@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
-import com.example.soundvisualizer.language.LanguageSettingCard
 
 /** @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다. */
 @Composable
@@ -64,10 +63,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
 
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
-            // 읽지 못하는 언어로 바뀌어도 찾을 수 있게 맨 위에 둔다.
-            LanguageSettingCard()
-            QuickTileCard(onAddTile)
-
+            // 언어는 홈 오른쪽 아래로 옮겼다(#308). 앱을 열면 처음 보이는 곳이라 읽지 못하는 언어로 바뀌어도 찾기 쉽다.
             Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -192,6 +188,9 @@ fun SettingsTab(onAddTile: () -> Unit) {
                     HapticSettingRow(AiClassification.DANGER, showDanger)
                 }
             }
+
+            // 알림창에서 켜고 끄기(빠른 설정 타일)는 소리 분류와 배터리 사이에 둔다(#308).
+            QuickTileCard(onAddTile)
 
             Text(stringResource(R.string.settings_section_battery), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp))
             Card(
@@ -446,7 +445,7 @@ private fun QuickTileCard(onAddTile: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
     ) {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
             Text(stringResource(R.string.settings_tile_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)

@@ -95,7 +95,7 @@ The app follows your phone's language and is available in the languages below. O
 
 English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español · Português (Brasil) · Français · Deutsch · Русский · Italiano · Tiếng Việt · ไทย · Bahasa Indonesia · Türkçe · Polski · हिन्दी · العربية
 
-To use a different language from your phone, tap **Language** at the top of the **Settings** tab. **System default** follows your phone's language again. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
+To use a different language from your phone, tap the globe button at the bottom right of the **Home** tab. **System default** follows your phone's language again. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
 
 ### 🔋 Lightweight
 
@@ -183,7 +183,7 @@ An APK built on a different computer has a different signature and can't be inst
 It only draws while there's sound and goes idle when it's quiet. While the screen is off, by default it also stops capturing sound and running the AI (External sound mode keeps listening). Because it keeps capturing sound while the screen is on, it does use some battery while running. We recommend turning it off when you're not using it.
 
 **How do I change the app language?**
-Tap **Language** at the top of the **Settings** tab and pick one. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
+Tap the globe button at the bottom right of the **Home** tab and pick a language. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
 
 **A sound is shown as the wrong type. / I found a bug.**
 Tell us from **Report a problem** in the **Help** tab. The app version, Android version, device model and app language are filled in for you.

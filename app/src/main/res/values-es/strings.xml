@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Solo dibuja mientras hay sonido y pasa a reposo cuando hay silencio. Aun así, como captura el sonido de forma continua, te recomendamos apagarlo cuando no lo uses.</string>
     <string name="help_faq_battery_less_drawing">Mientras hay sonido, lo que más batería gasta es dibujar los gráficos. Si activas “Dibujar los gráficos con menos frecuencia” en Batería, en la pestaña Ajustes, la app gasta menos, aunque el movimiento se ve menos fluido.</string>
     <string name="help_faq_language_q">¿Cómo cambio el idioma de la app?</string>
-    <string name="help_faq_language_a">Toca “Idioma” en la parte superior de la pestaña Ajustes y elige uno. Con “Idioma del sistema”, la app usa el idioma de tu teléfono. En Android 13 y versiones posteriores, también puedes cambiarlo en “Idiomas de las apps”, dentro de los ajustes de tu teléfono.</string>
+    <string name="help_faq_language_a">Toca el botón del globo terráqueo en la esquina inferior derecha de la pestaña Inicio y elige un idioma. Con “Idioma del sistema”, la app usa el idioma de tu teléfono. En Android 13 y versiones posteriores, también puedes cambiarlo en “Idiomas de las apps”, dentro de los ajustes de tu teléfono.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Informar de un problema</string>

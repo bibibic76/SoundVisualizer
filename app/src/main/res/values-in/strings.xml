@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Aplikasi hanya menggambar saat ada suara dan beralih ke mode siaga saat hening. Namun, karena aplikasi terus menangkap suara, sebaiknya matikan saat tidak digunakan.</string>
     <string name="help_faq_battery_less_drawing">Saat ada suara, daya paling banyak terpakai untuk menggambar grafik. Jika Anda menyalakan “Menggambar grafik lebih jarang” di bagian Baterai pada tab Setelan, daya yang terpakai lebih sedikit, tetapi gerakannya menjadi kurang mulus.</string>
     <string name="help_faq_language_q">Bagaimana cara mengubah bahasa aplikasi?</string>
-    <string name="help_faq_language_a">Ketuk “Bahasa” di bagian atas tab Setelan, lalu pilih bahasa. “Default sistem” mengikuti bahasa ponsel Anda. Di Android 13 dan versi lebih baru, Anda juga dapat mengubahnya di “Bahasa aplikasi” pada setelan ponsel.</string>
+    <string name="help_faq_language_a">Ketuk tombol bola dunia di kanan bawah tab Beranda, lalu pilih bahasa. “Default sistem” mengikuti bahasa ponsel Anda. Di Android 13 dan versi lebih baru, Anda juga dapat mengubahnya di “Bahasa aplikasi” pada setelan ponsel.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Laporkan masalah</string>

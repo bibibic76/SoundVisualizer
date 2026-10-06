@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Aplikacja rysuje grafikę tylko wtedy, gdy słychać dźwięk, a w ciszy przechodzi w stan spoczynku. Ponieważ jednak cały czas przechwytuje dźwięk, zalecamy ją wyłączać, gdy z niej nie korzystasz.</string>
     <string name="help_faq_battery_less_drawing">Gdy słychać dźwięk, najwięcej energii zużywa rysowanie grafiki. Jeśli włączysz „Rzadziej rysuj grafikę” w sekcji „Bateria” na karcie „Ustawienia”, aplikacja będzie zużywać mniej energii, ale ruch będzie mniej płynny.</string>
     <string name="help_faq_language_q">Jak zmienić język aplikacji?</string>
-    <string name="help_faq_language_a">Naciśnij „Język” u góry karty „Ustawienia” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
+    <string name="help_faq_language_a">Naciśnij przycisk z globusem w prawym dolnym rogu karty „Główna” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Zgłoś problem</string>

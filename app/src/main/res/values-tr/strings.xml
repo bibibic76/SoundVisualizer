@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Yalnızca ses varken çizim yapar, ses olmadığında bekleme moduna geçer. Yine de sesi sürekli yakaladığı için kullanmadığınızda kapatmanızı öneririz.</string>
     <string name="help_faq_battery_less_drawing">Ses varken pilin en çok harcandığı iş grafikleri çizmektir. “Ayarlar” sekmesindeki “Pil” bölümünde yer alan “Grafikleri daha seyrek çiz” seçeneğini açarsanız daha az pil harcanır, ancak hareket daha az akıcı olur.</string>
     <string name="help_faq_language_q">Uygulama dilini nasıl değiştiririm?</string>
-    <string name="help_faq_language_a">“Ayarlar” sekmesinin en üstündeki “Dil” seçeneğine dokunup bir dil seçin. “Sistem varsayılanı” telefonunuzun dilini kullanır. Android 13 ve sonraki sürümlerde telefonunuzun ayarlarındaki “Uygulama dilleri” bölümünden de değiştirebilirsiniz.</string>
+    <string name="help_faq_language_a">“Ana sayfa” sekmesinin sağ altındaki dünya simgesi düğmesine dokunup bir dil seçin. “Sistem varsayılanı” telefonunuzun dilini kullanır. Android 13 ve sonraki sürümlerde telefonunuzun ayarlarındaki “Uygulama dilleri” bölümünden de değiştirebilirsiniz.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Sorun bildir</string>
