@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -68,7 +69,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
             LanguageSettingCard()
             QuickTileCard(onAddTile)
 
-            Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+            Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -111,7 +112,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
                 }
             }
 
-            Text(stringResource(R.string.settings_section_mode_detail), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+            Text(stringResource(R.string.settings_section_mode_detail), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
         }
 
         // 동적으로 선택된 모드를 제일 위에 오도록 정렬
@@ -150,7 +151,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
         }
 
         item {
-            Text(stringResource(R.string.settings_section_ai), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            Text(stringResource(R.string.settings_section_ai), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -191,7 +192,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
                 }
             }
 
-            Text(stringResource(R.string.settings_section_battery), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            Text(stringResource(R.string.settings_section_battery), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -226,7 +227,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = SecondaryTextColor,
-                modifier = Modifier.padding(bottom = 16.dp, top = 24.dp)
+                modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp)
             )
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),

@@ -84,7 +84,10 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                                 else -> R.string.home_status_running
                             }
                         ),
-                        fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
+                        fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor,
+                        // 실행·실행 종료를 누른 결과를 화면 읽어주기가 알려 준다. 그러지 않으면 화면을 볼 수 없는
+                        // 사람은 켜졌는지 꺼졌는지 다시 찾아 읽어야 안다(#300). 이 글은 켜고 끌 때만 바뀐다.
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
                     )
                 }
                 // 돌고 있는데도 화면에 아무 일이 없어 보이는 두 경우를 상태 바로 아래에 알린다.

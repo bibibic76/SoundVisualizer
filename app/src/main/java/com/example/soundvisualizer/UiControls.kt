@@ -25,7 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.Hyphens
@@ -77,18 +79,31 @@ fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Compo
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        // 카드 안쪽 여백 24dp 가운데 제목 위아래 12dp 씩을 누르는 자리 안으로 옮긴다. 보이는 자리는 그대로이고,
+        // 제목 줄(약 24dp)만 눌리던 것이 48dp 높이가 된다(#300).
+        Column(
+            modifier = Modifier.padding(
+                start = 24.dp,
+                end = 24.dp,
+                top = 12.dp,
+                bottom = if (expanded) 24.dp else 12.dp
+            )
+        ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically, 
-                // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 펼친 내용과의 빈 칸까지 눌린다.
+                verticalAlignment = Alignment.CenterVertically,
+                // 펼친 내용과의 빈 칸 가운데 절반만 누르는 자리에 넣는다. 다 넣으면 내용 바로 위까지 눌린다.
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = if (expanded) 24.dp else 0.dp)
+                    .padding(bottom = if (expanded) 12.dp else 0.dp)
+                    // 화면 읽어주기에서 제목 단위로 건너뛸 수 있게 제목으로 표시하고, 누르면 펼쳐지는 버튼으로 읽힌다.
+                    .semantics(mergeDescendants = true) { heading() }
                     .clickable(
                         // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 화살표가 돌고 내용이 펼쳐지는 것으로 충분하다.
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null
+                        indication = null,
+                        role = Role.Button
                     ) { expanded = !expanded }
+                    .padding(vertical = 12.dp)
             ) {
                 Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
                 Icon(
@@ -119,6 +134,7 @@ fun ModernSlider(
     val labelColor = if (enabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f)
     val descColor = if (enabled) SecondaryTextColor else SecondaryTextColor.copy(alpha = 0.4f)
     val valueColor = if (enabled) AccentColor else AccentColor.copy(alpha = 0.35f)
+    val valueText = String.format(Locale.US, "%.0f", value)
 
     Column(
         modifier = Modifier
@@ -135,7 +151,7 @@ fun ModernSlider(
         ) {
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, style = wrappingLabelStyle(), modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(String.format(Locale.US, "%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
+            Text(valueText, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
         }
         Slider(
             value = value,
@@ -153,7 +169,12 @@ fun ModernSlider(
                 disabledInactiveTrackColor = Color(0xFF2A3038)
             ),
             // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다.
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label }
+            // 값도 화면에 보이는 숫자 그대로 읽힌다. 두지 않으면 범위 안의 위치로 읽어, 범위가 10~100 인
+            // 크기에서 화면의 "55" 가 "50퍼센트" 가 된다(#300, 진동 세기 슬라이더와 같은 처리).
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = label
+                stateDescription = valueText
+            }
         )
         Text(desc, fontSize = 13.sp, color = descColor)
     }

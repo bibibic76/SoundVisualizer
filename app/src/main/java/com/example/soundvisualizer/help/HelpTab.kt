@@ -40,6 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -307,7 +309,8 @@ private fun Paragraphs(@StringRes vararg texts: Int) {
 private fun NumberedSteps(@StringRes vararg steps: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         steps.forEachIndexed { index, res ->
-            Row {
+            // 번호와 글을 화면 읽어주기에서 한 번에 읽는다. 따로 두면 "1." 에서 한 번 더 멈춘다(#300).
+            Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
                 Text("${index + 1}.", fontSize = BodySize, lineHeight = BodyLineHeight, fontWeight = FontWeight.Bold, color = AccentColor, modifier = Modifier.width(24.dp))
                 Text(stringResource(res), fontSize = BodySize, lineHeight = BodyLineHeight, color = PrimaryTextColor)
             }
@@ -319,8 +322,9 @@ private fun NumberedSteps(@StringRes vararg steps: Int) {
 private fun Bullets(@StringRes vararg items: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items.forEach { res ->
+            // 점은 모양일 뿐이라 읽지 않는다. 두면 화면 읽어주기가 줄마다 "•" 에서 한 번 더 멈춘다(#300).
             Row {
-                Text("•", fontSize = BodySize, lineHeight = BodyLineHeight, color = SecondaryTextColor, modifier = Modifier.width(16.dp))
+                Text("•", fontSize = BodySize, lineHeight = BodyLineHeight, color = SecondaryTextColor, modifier = Modifier.width(16.dp).clearAndSetSemantics { })
                 Text(stringResource(res), fontSize = BodySize, lineHeight = BodyLineHeight, color = PrimaryTextColor)
             }
         }
