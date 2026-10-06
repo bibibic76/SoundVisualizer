@@ -27,13 +27,14 @@ object YamnetSafetyCueDecision {
 
     fun decide(
         classNames: List<String>,
-        pre: YamnetCoarseClassifier.Result
+        pre: YamnetCoarseClassifier.Result,
+        mapping: YamnetMappingPolicy = YamnetMappingPolicy.DEFAULT
     ): Result {
         val topIndices = IntArray(5) { -1 }
         val topProbabilities = FloatArray(5) { -1f }
         for (i in pre.top5.indices) {
             if (i >= 5) break
-            topIndices[i] = pre.top5[i].index
+            topIndices[i] = if (mapping.allowsSafetyCue(pre.top5[i].name)) pre.top5[i].index else -1
             topProbabilities[i] = pre.top5[i].probability
         }
 

@@ -3,6 +3,8 @@ package com.example.soundvisualizer.ai
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,6 +28,36 @@ class RealtimeAiPipelineInstrumentedTest {
             val expected = QualcommSourceAudioPreprocessor().computeLogMelSpectrogram(mono)
             assertNotNull(tick.result)
             assertTrue("pipeline did not use Qualcomm frontend", maxAbs(expected, tick.logMel) < 1e-5f)
+        }
+    }
+
+    @Test
+    fun runtimeMappingChangeInvalidatesPreviousResultAndResetsConfirmation() {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext
+        val names = app.assets.open("ai/yamnet_class_map.csv").use { YamnetCoarseClassifier.loadClassNames(it) }
+        var overrides: Map<String, String> = names.associateWith { "danger" }
+        val mono = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES) { i ->
+            kotlin.math.sin(i * .031).toFloat() * .4f
+        }
+        RealtimeAiPipeline.create(app, 16_000, 1, mappingOverrides = { overrides }).use { pipeline ->
+            pipeline.ingestInterleavedForTest(mono, mono.size)
+            val danger = requireNotNull(pipeline.runTickForTest())
+            assertTrue(danger.dangerScore > 0f)
+            assertEquals(0f, danger.ambientScore, 0f)
+            assertNotNull(pipeline.lastClassification())
+
+            overrides = names.associateWith { "ambient" }
+            assertNull("old mapping result must disappear immediately", pipeline.lastClassification())
+            pipeline.ingestInterleavedForTest(mono, mono.size)
+            val ambient = requireNotNull(pipeline.runTickForTest())
+            assertEquals(0f, ambient.dangerScore, 0f)
+            assertEquals("ambient", ambient.uiCoarse)
+            assertEquals(YamnetMappingPolicy.from(overrides, names).signature, ambient.result.mappingSignature)
+
+            overrides = emptyMap()
+            assertNull(pipeline.lastClassification())
+            pipeline.ingestInterleavedForTest(mono, mono.size)
+            assertEquals("default", requireNotNull(pipeline.runTickForTest()).result.mappingSignature)
         }
     }
 

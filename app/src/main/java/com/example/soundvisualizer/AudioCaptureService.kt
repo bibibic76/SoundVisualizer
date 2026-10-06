@@ -441,7 +441,8 @@ class AudioCaptureService : Service() {
                 RealtimeAiPipeline.create(
                     appContext,
                     rate,
-                    channels = 2
+                    channels = 2,
+                    mappingOverrides = { SettingsManager.soundTypes.value }
                 )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)

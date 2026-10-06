@@ -1,6 +1,7 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
+import com.example.soundvisualizer.ai.YamnetMappingPolicy
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -11,7 +12,7 @@ import org.junit.Test
 /**
  * 분류 탭에서 바꾼 소리 종류의 저장·복원과, AI 가 읽어 갈 창구([SettingsManager.soundTypeOverride]).
  *
- * AI 판정에 연결하는 일은 #291 이 맡는다. 그 전까지는 사용자가 무엇을 바꿔도 AI 의 매핑이 그대로여야 한다(#283).
+ * 기본 mapper는 불변이고, 추론별 정책 스냅샷에만 사용자 설정을 반영한다 (#291).
  * SettingsManager 는 싱글턴이라 테스트마다 빈 프리퍼런스로 다시 읽어 되돌린다.
  */
 class SoundTypeSettingsTest {
@@ -58,8 +59,7 @@ class SoundTypeSettingsTest {
     }
 
     @Test
-    fun `AI 의 매핑은 사용자가 바꿔도 그대로다`() {
-        // #291 전까지 분류 탭은 화면과 저장만 한다. 매핑이 따라 바뀌면 #117 기준 결과와 실기기 기록이 섞인다.
+    fun `기본 매핑은 불변이고 사용자 선택은 정책 스냅샷에 반영된다`() {
         val names = listOf("Siren", "Doorbell", "Speech", "Rain", "Gunshot, gunfire")
         val before = names.associateWith { YamnetThreeClassMapper.mapDisplayNameToCoarse(it) }
         SettingsManager.load(MemoryPrefs())
@@ -70,6 +70,12 @@ class SoundTypeSettingsTest {
         SettingsManager.setSoundType("Rain", AiClassification.SPEECH)
 
         assertEquals(before, names.associateWith { YamnetThreeClassMapper.mapDisplayNameToCoarse(it) })
+        val policy = YamnetMappingPolicy.from(SettingsManager.soundTypes.value, names)
+        assertEquals("ambient", policy.coarse("Siren"))
+        assertEquals("danger", policy.coarse("Doorbell"))
+        assertEquals("ambient", policy.coarse("Speech"))
+        assertEquals("speech", policy.coarse("Rain"))
+        assertEquals(before.getValue("Gunshot, gunfire"), policy.coarse("Gunshot, gunfire"))
     }
 
     @Test
