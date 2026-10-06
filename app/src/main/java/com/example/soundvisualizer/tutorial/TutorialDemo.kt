@@ -35,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,6 +79,8 @@ import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.VisualizerEngine
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /** 가로로 눕힌 폰 그림의 가로:세로. 요즘 폰 화면(19.5:9 안팎)에 테두리를 더한 비율이다. */
 private const val PHONE_ASPECT = 2.05f
@@ -163,22 +166,33 @@ private fun DemoPhone(
     val engineDensity = screenHeightPx / REFERENCE_SHORT_SIDE_DP
     // 입력은 이 쪽만 쓴다. 넘기는 동안 두 쪽의 엔진이 함께 돌기 때문이다.
     val inputs = remember(scene) { TutorialDemoInputs(scene, LiveVisualizerInputs::colorFor) }
-    // 움직이기 시작할 때마다 새 엔진으로 처음부터 그린다. 멈춰 있던 동안의 상태가 남지 않는다.
+    // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
     // 입력은 반드시 넘긴다. 빼면 기본값인 실제 소리가 그려진다.
-    // 멈춰 둘 장면은 여기서 바로 만든다. 효과(LaunchedEffect)에서 만들면 첫 그리기가 효과보다 먼저라 빈 장면이 그려지고,
-    // 그 뒤로 다시 그리게 하는 것이 없어 애니메이션을 꺼 둔 사람에게는 폰 그림이 끝내 비어 있다.
-    val engine = remember(inputs, engineDensity, running, screenWidthPx, screenHeightPx) {
-        VisualizerEngine(engineDensity, inputs).also {
-            // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
-            it.setSurfaceSize(screenWidthPx, screenHeightPx)
-            if (!running) it.runTo(inputs, scene.stillAtSec)
+    fun newEngine(source: TutorialDemoInputs) =
+        VisualizerEngine(engineDensity, source).also { it.setSurfaceSize(screenWidthPx, screenHeightPx) }
+
+    // 멈춰 둘 장면([TutorialScene.stillAtSec]) 한 장. 옆 쪽을 미리 그려 둘 때·멈춤·애니메이션 끔에 쓴다.
+    // 대본을 2초 남짓 미리 돌려야 해서(엔진 틱 백여 번), 화면을 그리는 스레드에서 만들면 옆 쪽이 들어오거나 쪽이
+    // 멈추는 순간 넘기기가 툭 끊긴다(#318). 그래서 쪽마다 한 번만, 백그라운드에서 만들어 두고 움직이다 멈춰도 다시
+    // 만들지 않는다. 다 만들어지면 상태가 바뀌어 다시 그린다(애니메이션을 꺼 둔 사람에게도 그림이 비지 않는다).
+    // 움직이는 엔진과 시각이 섞이지 않게 입력도 따로 쓴다.
+    val stillInputs = remember(scene) { TutorialDemoInputs(scene, LiveVisualizerInputs::colorFor) }
+    val stillEngine by produceState<VisualizerEngine?>(null, stillInputs, engineDensity, screenWidthPx, screenHeightPx) {
+        value = withContext(Dispatchers.Default) {
+            newEngine(stillInputs).also { it.runTo(stillInputs, scene.stillAtSec) }
         }
     }
+    // 움직이기 시작할 때마다 새 엔진으로 처음부터 그린다. 멈춰 있던 동안의 상태가 남지 않는다. 미리 돌리지 않아 금방 만든다.
+    val liveEngine = remember(inputs, engineDensity, running, screenWidthPx, screenHeightPx) {
+        if (running) newEngine(inputs) else null
+    }
+    val engine = if (running) liveEngine else stillEngine
     // 엔진이 새로 계산할 때마다 올린다. 그리기가 이 값을 읽어, 시각(time)이 같은 값이어도 다시 그린다.
     val frame = remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(engine) {
-        if (!running) {
+    LaunchedEffect(liveEngine) {
+        val live = liveEngine
+        if (live == null) {
             time.floatValue = scene.stillAtSec
             frame.intValue++
             return@LaunchedEffect
@@ -197,7 +211,7 @@ private fun DemoPhone(
                     inputs.timeSec = t
                     // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
                     // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
-                    if (engine.isIdle) engine.pollWake() else engine.tick(nanos)
+                    if (live.isIdle) live.pollWake() else live.tick(nanos)
                     time.floatValue = t
                     frame.intValue++
                 }
@@ -273,7 +287,8 @@ private fun DemoPhone(
                         }
                         // 값은 쓰지 않고, 읽어서 엔진이 새로 계산할 때마다 다시 그리게 한다(VisualizerOverlay 와 같은 방식).
                         val serial = frame.intValue.toLong()
-                        drawIntoCanvas { engine.draw(it.nativeCanvas, w, h, serial) }
+                        // 멈춘 장면이 아직 만들어지는 중이면(잠깐) 게임 장면만 그린다.
+                        drawIntoCanvas { engine?.draw(it.nativeCanvas, w, h, serial) }
                     }
                 }
         )
