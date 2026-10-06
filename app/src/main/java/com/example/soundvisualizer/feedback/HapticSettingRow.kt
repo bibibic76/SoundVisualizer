@@ -1,19 +1,15 @@
 package com.example.soundvisualizer.feedback
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -44,11 +40,13 @@ import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.DependentSettings
+import com.example.soundvisualizer.EqualChoiceRows
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.WarningColor
+import com.example.soundvisualizer.choicesPerRow
 import com.example.soundvisualizer.wrappingLabelStyle
 import kotlin.math.roundToInt
 
@@ -239,20 +237,18 @@ private fun <T> HapticChoiceRow(
     // 번역된 선택지가 칸보다 길면 가운데 정렬로 줄을 바꾸고, 칸 높이를 함께 맞춘다.
     // 다섯 칸이 한 줄에 들어가야 해서 칸 사이와 안쪽 여백을 설정 화면의 다른 선택지보다 좁게 둔다. 넓히면 영어의
     // Medium 같은 짧은 단어도 칸에 들어가지 않아 글자 중간에서 끊긴다.
+    // 글꼴을 키워 그래도 단어가 칸에 들어가지 않으면 한 줄의 칸 수를 줄인다(3+2, [choicesPerRow], #304).
     // 고른 칸은 색으로만 보이므로, 화면 읽어주기에는 selectableGroup 과 selectable 로 알린다.
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier
-            .padding(top = 10.dp)
-            .height(IntrinsicSize.Min)
-            .selectableGroup()
-    ) {
-        options.forEach { option ->
+    val labels = options.map { labelOf(it) }
+    val labelStyle = wrappingLabelStyle().copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+    BoxWithConstraints(modifier = Modifier.padding(top = 10.dp)) {
+        val perRow = choicesPerRow(
+            labels, maxPerRow = options.size, rowWidth = maxWidth, gap = 4.dp, cellPadding = 2.dp, style = labelStyle
+        )
+        EqualChoiceRows(options, perRow, gap = 4.dp) { option, cellModifier ->
             val isSelected = option == selected
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                modifier = cellModifier
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         when {
