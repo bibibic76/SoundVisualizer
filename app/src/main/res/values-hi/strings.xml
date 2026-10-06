@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">होम</string>
     <string name="tab_settings">सेटिंग</string>
+    <string name="tab_classify">आवाज़ें</string>
     <string name="tab_help">सहायता</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">बातचीत दिखाएं</string>
     <string name="ai_show_danger">खतरे की आवाज़ें दिखाएं</string>
     <string name="ai_unavailable">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
+    <string name="classify_title">हर आवाज़ का प्रकार चुनें</string>
+    <string name="classify_desc">AI जिन आवाज़ों को पहचान सकता है, वे सभी यहां दिखती हैं, साथ ही यह भी कि हर आवाज़ किस प्रकार में गिनी जाती है। किसी आवाज़ का प्रकार बदलने पर, उसका रंग और वाइब्रेशन तुरंत नए प्रकार के हिसाब से बदल जाते हैं।</string>
+    <string name="classify_danger_note">किसी आवाज़ को खतरे की आवाज़ों से हटाने पर, उसके लिए खतरे की आवाज़ों वाला रंग और वाइब्रेशन नहीं मिलेगा। मिलती-जुलती आवाज़ें अलग-अलग पंक्तियों में हैं (सायरन की पांच पंक्तियां हैं), इसलिए सबको हटाने के लिए हर पंक्ति बदलें।</string>
+    <string name="classify_search_hint">आवाज़ें खोजें</string>
+    <string name="cd_classify_clear_search">खोज मिटाएं</string>
+    <string name="classify_filter_all">सभी</string>
+    <string name="classify_filter_changed">बदली गई</string>
+    <string name="sound_type_ambient">माहौल की आवाज़ें</string>
+    <string name="sound_type_speech">बातचीत</string>
+    <string name="sound_type_danger">खतरे की आवाज़ें</string>
+    <string name="classify_type_default">%1$s (डिफ़ॉल्ट)</string>
+    <string name="classify_changed_from">डिफ़ॉल्ट: %1$s</string>
+    <string name="classify_changed_count">बदली गई आवाज़ें: %1$d</string>
+    <string name="classify_reset_all">सभी रीसेट करें</string>
+    <string name="classify_reset_title">सभी आवाज़ें रीसेट करें?</string>
+    <string name="classify_reset_message">आपने जिन आवाज़ों का प्रकार बदला है, वे सभी वापस अपने डिफ़ॉल्ट प्रकार पर आ जाएंगी।</string>
+    <string name="classify_reset_confirm">रीसेट करें</string>
+    <string name="classify_reset_cancel">रद्द करें</string>
+    <string name="classify_empty">मेल खाने वाली कोई आवाज़ नहीं मिली।</string>
+    <string name="cd_classify_sound">%1$s, प्रकार: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, प्रकार: %2$s, डिफ़ॉल्ट: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">वाइब्रेट करें</string>

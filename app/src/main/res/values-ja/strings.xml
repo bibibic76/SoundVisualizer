@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">ホーム</string>
     <string name="tab_settings">設定</string>
+    <string name="tab_classify">分類</string>
     <string name="tab_help">ヘルプ</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">話し声を表示</string>
     <string name="ai_show_danger">危険音を表示</string>
     <string name="ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示されます。可視化を一度オフにして、もう一度オンにしてみてください。</string>
+    <string name="classify_title">音ごとに種類を選ぶ</string>
+    <string name="classify_desc">AI が認識できるすべての音と、それぞれの音が今どの種類として扱われているかを表示します。種類を変えると、その音の色と振動はすぐに新しい種類に合わせて変わります。</string>
+    <string name="classify_danger_note">危険音から外した音には、危険音の色も振動も使われなくなります。似た音は別々の行に分かれている（サイレンは5行）ため、すべて外すにはそれぞれ変更してください。</string>
+    <string name="classify_search_hint">音の名前で検索</string>
+    <string name="cd_classify_clear_search">検索語を消去</string>
+    <string name="classify_filter_all">すべて</string>
+    <string name="classify_filter_changed">変更した音</string>
+    <string name="sound_type_ambient">環境音</string>
+    <string name="sound_type_speech">話し声</string>
+    <string name="sound_type_danger">危険音</string>
+    <string name="classify_type_default">%1$s（初期設定）</string>
+    <string name="classify_changed_from">初期設定：%1$s</string>
+    <string name="classify_changed_count">変更した音：%1$d件</string>
+    <string name="classify_reset_all">すべてリセット</string>
+    <string name="classify_reset_title">すべての音を初期設定に戻しますか？</string>
+    <string name="classify_reset_message">変更した音はすべて、初期設定の種類に戻ります。</string>
+    <string name="classify_reset_confirm">リセット</string>
+    <string name="classify_reset_cancel">キャンセル</string>
+    <string name="classify_empty">該当する音がありません。</string>
+    <string name="cd_classify_sound">%1$s、種類：%2$s</string>
+    <string name="cd_classify_sound_changed">%1$s、種類：%2$s、初期設定：%3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">振動</string>

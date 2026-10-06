@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Startseite</string>
     <string name="tab_settings">Einstellungen</string>
+    <string name="tab_classify">Geräusche</string>
     <string name="tab_help">Hilfe</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Stimmen zeigen</string>
     <string name="ai_show_danger">Gefahrengeräusche zeigen</string>
     <string name="ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
+    <string name="classify_title">Art für jedes Geräusch wählen</string>
+    <string name="classify_desc">Hier sehen Sie alle Geräusche, welche die KI erkennen kann, und die Art, zu der sie jeweils zählen. Wenn Sie die Art eines Geräuschs ändern, richten sich seine Farbe und Vibration sofort nach der neuen Art.</string>
+    <string name="classify_danger_note">Ein Geräusch, das Sie aus den Gefahrengeräuschen herausnehmen, erhält nicht mehr die Farbe und Vibration für Gefahrengeräusche. Ähnliche Geräusche stehen in eigenen Zeilen (bei Sirenen sind es fünf). Um alle herauszunehmen, ändern Sie jede dieser Zeilen.</string>
+    <string name="classify_search_hint">Geräusche suchen</string>
+    <string name="cd_classify_clear_search">Suchbegriff löschen</string>
+    <string name="classify_filter_all">Alle</string>
+    <string name="classify_filter_changed">Geändert</string>
+    <string name="sound_type_ambient">Umgebungsgeräusche</string>
+    <string name="sound_type_speech">Stimmen</string>
+    <string name="sound_type_danger">Gefahrengeräusche</string>
+    <string name="classify_type_default">%1$s (Standard)</string>
+    <string name="classify_changed_from">Standard: %1$s</string>
+    <string name="classify_changed_count">Geändert: %1$d</string>
+    <string name="classify_reset_all">Alle zurücksetzen</string>
+    <string name="classify_reset_title">Alle Geräusche zurücksetzen?</string>
+    <string name="classify_reset_message">Alle Geräusche, die Sie geändert haben, erhalten wieder ihre standardmäßige Art.</string>
+    <string name="classify_reset_confirm">Zurücksetzen</string>
+    <string name="classify_reset_cancel">Abbrechen</string>
+    <string name="classify_empty">Keine passenden Geräusche.</string>
+    <string name="cd_classify_sound">%1$s, Art: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, Art: %2$s, Standard: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrieren</string>

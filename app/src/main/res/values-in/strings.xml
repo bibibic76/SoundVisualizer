@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Beranda</string>
     <string name="tab_settings">Setelan</string>
+    <string name="tab_classify">Suara</string>
     <string name="tab_help">Bantuan</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Tampilkan percakapan</string>
     <string name="ai_show_danger">Tampilkan suara bahaya</string>
     <string name="ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar. Coba matikan lalu nyalakan lagi visualisasinya.</string>
+    <string name="classify_title">Pilih jenis untuk setiap suara</string>
+    <string name="classify_desc">Berikut semua suara yang dapat dikenali AI beserta jenisnya. Jika Anda mengubah jenis suatu suara, warna dan getarannya langsung mengikuti jenis yang baru.</string>
+    <string name="classify_danger_note">Suara yang Anda pindahkan dari jenis suara bahaya tidak lagi mendapat warna maupun getaran suara bahaya. Suara yang mirip ada di baris terpisah (sirene ada di lima baris), jadi ubah setiap barisnya untuk memindahkan semuanya.</string>
+    <string name="classify_search_hint">Cari suara</string>
+    <string name="cd_classify_clear_search">Hapus pencarian</string>
+    <string name="classify_filter_all">Semua</string>
+    <string name="classify_filter_changed">Diubah</string>
+    <string name="sound_type_ambient">Suara latar</string>
+    <string name="sound_type_speech">Percakapan</string>
+    <string name="sound_type_danger">Suara bahaya</string>
+    <string name="classify_type_default">%1$s (default)</string>
+    <string name="classify_changed_from">Default: %1$s</string>
+    <string name="classify_changed_count">Diubah: %1$d</string>
+    <string name="classify_reset_all">Reset semua</string>
+    <string name="classify_reset_title">Reset semua suara?</string>
+    <string name="classify_reset_message">Semua suara yang telah Anda ubah akan kembali ke jenis default.</string>
+    <string name="classify_reset_confirm">Reset</string>
+    <string name="classify_reset_cancel">Batal</string>
+    <string name="classify_empty">Tidak ada suara yang cocok.</string>
+    <string name="cd_classify_sound">%1$s, jenis: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, jenis: %2$s, default: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Getar</string>

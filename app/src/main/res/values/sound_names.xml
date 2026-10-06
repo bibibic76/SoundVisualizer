@@ -5,7 +5,7 @@
     values-xx/sound_names.xml 에 같은 키로 번역한다. 사용자가 고른 종류는 번역이 아니라 모델의 이름으로 저장한다.
     이름과 번호가 CSV 와 맞는지, 번역이 빠지거나 겹치지 않는지는 SoundNamesResourceTest 가 확인한다.
 -->
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+<resources>
     <string name="sound_name_0">Speech</string>
     <string name="sound_name_1">Child speech, kid speaking</string>
     <string name="sound_name_2">Conversation</string>

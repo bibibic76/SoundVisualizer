@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Trang chủ</string>
     <string name="tab_settings">Cài đặt</string>
+    <string name="tab_classify">Phân loại</string>
     <string name="tab_help">Trợ giúp</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Hiện giọng nói</string>
     <string name="ai_show_danger">Hiện âm thanh nguy hiểm</string>
     <string name="ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
+    <string name="classify_title">Chọn loại cho từng âm thanh</string>
+    <string name="classify_desc">Đây là tất cả các âm thanh mà AI nhận diện được, cùng với loại mà mỗi âm thanh đang được xếp vào. Khi bạn đổi loại của một âm thanh, màu và rung của âm thanh đó sẽ đổi theo loại mới ngay lập tức.</string>
+    <string name="classify_danger_note">Khi bạn đưa một âm thanh ra khỏi loại âm thanh nguy hiểm, âm thanh đó sẽ không còn có màu và rung của âm thanh nguy hiểm nữa. Các âm thanh tương tự nằm ở các dòng riêng (còi hụ có năm dòng), nên muốn đưa tất cả ra thì hãy đổi từng dòng.</string>
+    <string name="classify_search_hint">Tìm âm thanh</string>
+    <string name="cd_classify_clear_search">Xóa từ khóa tìm kiếm</string>
+    <string name="classify_filter_all">Tất cả</string>
+    <string name="classify_filter_changed">Đã đổi</string>
+    <string name="sound_type_ambient">Âm thanh môi trường</string>
+    <string name="sound_type_speech">Giọng nói</string>
+    <string name="sound_type_danger">Âm thanh nguy hiểm</string>
+    <string name="classify_type_default">%1$s (mặc định)</string>
+    <string name="classify_changed_from">Mặc định: %1$s</string>
+    <string name="classify_changed_count">Đã đổi: %1$d</string>
+    <string name="classify_reset_all">Đặt lại tất cả</string>
+    <string name="classify_reset_title">Đặt lại tất cả âm thanh về mặc định?</string>
+    <string name="classify_reset_message">Mọi âm thanh bạn đã đổi sẽ trở về loại mặc định.</string>
+    <string name="classify_reset_confirm">Đặt lại</string>
+    <string name="classify_reset_cancel">Hủy</string>
+    <string name="classify_empty">Không có âm thanh nào phù hợp.</string>
+    <string name="cd_classify_sound">%1$s, loại: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, loại: %2$s, mặc định: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Rung</string>

@@ -2,6 +2,7 @@
     <!-- Tabs -->
     <string name="tab_home">Ana sayfa</string>
     <string name="tab_settings">Ayarlar</string>
+    <string name="tab_classify">Sesler</string>
     <string name="tab_help">Yardım</string>
 
     <!-- Home -->
@@ -132,6 +133,27 @@
     <string name="ai_show_speech">Konuşmayı göster</string>
     <string name="ai_show_danger">Tehlike seslerini göster</string>
     <string name="ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
+    <string name="classify_title">Her sesin türünü seçin</string>
+    <string name="classify_desc">Yapay zekanın tanıyabildiği tüm sesler ve her birinin hangi tür olarak sayıldığı burada gösterilir. Bir sesin türünü değiştirdiğinizde o sesin rengi ve titreşimi hemen yeni türe göre değişir.</string>
+    <string name="classify_danger_note">Tehlike sesleri arasından çıkardığınız bir ses için artık tehlike sesi rengi ve titreşimi kullanılmaz. Benzer sesler ayrı satırlardadır (sirenler beş satırdadır); hepsini çıkarmak için her satırı değiştirin.</string>
+    <string name="classify_search_hint">Seslerde ara</string>
+    <string name="cd_classify_clear_search">Aramayı temizle</string>
+    <string name="classify_filter_all">Tümü</string>
+    <string name="classify_filter_changed">Değiştirilenler</string>
+    <string name="sound_type_ambient">Ortam sesi</string>
+    <string name="sound_type_speech">Konuşma</string>
+    <string name="sound_type_danger">Tehlike sesi</string>
+    <string name="classify_type_default">%1$s (varsayılan)</string>
+    <string name="classify_changed_from">Varsayılan: %1$s</string>
+    <string name="classify_changed_count">Değiştirilen: %1$d</string>
+    <string name="classify_reset_all">Tümünü sıfırla</string>
+    <string name="classify_reset_title">Tüm sesler sıfırlansın mı?</string>
+    <string name="classify_reset_message">Değiştirdiğiniz tüm sesler varsayılan türlerine döner.</string>
+    <string name="classify_reset_confirm">Sıfırla</string>
+    <string name="classify_reset_cancel">İptal</string>
+    <string name="classify_empty">Eşleşen ses yok.</string>
+    <string name="cd_classify_sound">%1$s, tür: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, tür: %2$s, varsayılan: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Titreşim</string>
