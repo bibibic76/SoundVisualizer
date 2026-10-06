@@ -3,7 +3,7 @@ package com.example.soundvisualizer.ai
 /**
  * YAMNet 521 클래스 → 3분류 키워드 매핑.
  * 키워드 우선순위: danger > speech > ambient > 기본 ambient.
- * 임시 proxy 매핑은 제한된 라벨에만 적용한다.
+ * Plop/Gargling은 원래 소리 의미대로 Ambient로 둔다 (#319).
  */
 object YamnetThreeClassMapper {
 
@@ -21,14 +21,7 @@ object YamnetThreeClassMapper {
         return "ambient"
     }
 
-    private fun matchesTemporaryGunshotProxyDanger(s: String): Boolean {
-        if ("plop" in s) return true
-        if ("gargling" in s) return true
-        return false
-    }
-
     private fun matchesDanger(s: String): Boolean {
-        if (matchesTemporaryGunshotProxyDanger(s)) return true
         // Product policy: footsteps are Ambient; only explicit vehicle-horn
         // YAMNet classes are promoted to Danger (not every generic "horn").
         if (s == "vehicle horn, car horn, honking") return true

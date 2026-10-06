@@ -94,18 +94,7 @@ def map_display_name_to_coarse(display_name: str) -> str:
     return "ambient"
 
 
-def _matches_temporary_gunshot_proxy_danger(s: str) -> bool:
-    if "plop" in s:
-        return True
-    if "gargling" in s:
-        return True
-    return False
-
-
 def _matches_danger(s: str) -> bool:
-    if _matches_temporary_gunshot_proxy_danger(s):
-        return True
-
     # Product policy: these exact YAMNet labels require immediate attention.
     # Keep exact matching so nearby unapproved labels do not inherit Danger.
     if s in {"chainsaw", "thunder", "thunderstorm"}:

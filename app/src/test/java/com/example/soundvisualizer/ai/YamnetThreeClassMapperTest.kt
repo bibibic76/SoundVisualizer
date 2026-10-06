@@ -138,10 +138,10 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
-    fun G_proxyPlopRemainsDangerButWaterSoundsAreAmbient() {
+    fun G_formerGunshotProxiesAndWaterSoundsAreAmbient() {
         assertCase("proxy_plop")
-        assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Plop"))
-        assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Gargling"))
+        assertEquals("ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse("Plop"))
+        assertEquals("ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse("Gargling"))
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
         }
