@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Écoute les sons autour de vous avec le micro au lieu du son diffusé sur votre téléphone. Le son lui-même n\'est jamais enregistré ni envoyé où que ce soit.</string>
     <string name="home_external_mode_locked">Impossible de le modifier pendant la visualisation. Arrêtez-la, modifiez ce réglage et il s\'appliquera au prochain démarrage.</string>
     <string name="home_mic_sensitivity">Sensibilité du micro</string>
-    <string name="home_mic_sensitivity_value">%1$d %%</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">État : prêt</string>
     <string name="home_capture_blocked">Aucun son ne parvient au visualiseur : rien ne peut donc être dessiné. Il se peut que l\'application qui diffuse le son n\'autorise pas son partage (c\'est le cas des vidéos protégées), ou que le son y soit coupé.</string>
     <string name="home_ai_unavailable_loud">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance et seuls les sons forts font vibrer, avec le réglage de vibration des sons de danger. Essayez de désactiver puis de réactiver la visualisation.</string>

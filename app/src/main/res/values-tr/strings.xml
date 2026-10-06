@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Telefonunuzda çalan ses yerine mikrofonla çevrenizdeki sesleri dinler. Sesin kendisi hiçbir zaman kaydedilmez veya bir yere gönderilmez.</string>
     <string name="home_external_mode_locked">Çalışırken değiştirilemez. Görselleştirmeyi durdurup değiştirin; değişiklik bir sonraki başlatmada geçerli olur.</string>
     <string name="home_mic_sensitivity">Mikrofon hassasiyeti</string>
-    <string name="home_mic_sensitivity_value">%%%1$d</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Durum: Hazır</string>
     <string name="home_capture_blocked">Görselleştirmeye hiç ses ulaşmıyor; bu yüzden hiçbir şey çizilemiyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir (korumalı videolarda durum böyledir) veya o uygulamanın kendi sesi kapalı olabilir.</string>
     <string name="home_ai_unavailable_loud">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve yalnızca yüksek sesler, tehlike seslerinin titreşim ayarıyla titreşiyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
