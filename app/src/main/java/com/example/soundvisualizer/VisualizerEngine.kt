@@ -77,6 +77,23 @@ class VisualizerEngine(
          * AI·캡처처럼 프레임 수와 무관한 비용이 섞여 있기 때문이다. 대신 그만큼 덜 부드럽다.
          */
         const val REDUCED_FPS = 30
+
+        /**
+         * 위협음 맥박의 한 주기(약 초당 1.4번, #314). 번쩍임이 아니라 밝기를 코사인으로 부드럽게 오가고,
+         * 광과민성 기준(초당 3번 미만의 번쩍임)보다 느리다.
+         */
+        internal const val DANGER_PULSE_NS = 700_000_000L
+
+        /** 맥박이 가장 어두울 때의 밝기 배율. 색을 못 구분해도 움직임이 보일 만큼 내리되 그림이 사라지지는 않게 한다. */
+        internal const val DANGER_PULSE_MIN = 0.45f
+
+        /**
+         * 위협음이 시작된 지 [sinceNanos] 뒤의 밝기 배율. 시작하는 순간은 가장 밝고(1), 반 주기에 [DANGER_PULSE_MIN] 까지 내려갔다 돌아온다.
+         */
+        internal fun dangerPulse(sinceNanos: Long): Float {
+            val phase = (sinceNanos.coerceAtLeast(0L) % DANGER_PULSE_NS).toFloat() / DANGER_PULSE_NS
+            return DANGER_PULSE_MIN + (1f - DANGER_PULSE_MIN) * (0.5f + 0.5f * cos(2f * PI.toFloat() * phase))
+        }
         /** 이 시간 동안 아무것도 안 보이면 저빈도 폴링(idle)으로 전환 */
         private const val IDLE_AFTER_NS = 1_000_000_000L
         /** 대기 중 확인 간격. 조용하고 보관한 소리도 없을 때는 이 간격 대신 소리 신호를 기다린다([canSleepUntilLoud]). */
@@ -142,6 +159,10 @@ class VisualizerEngine(
     private var settings: ModeSettings = ModeSettings()
     private var alpha = 0f
     private var glowAlpha = 0f
+    /** 그리는 밝기에만 곱하는 위협음 맥박(#314). 보이는지·대기 판단은 [alpha] 로 하므로 맥박 때문에 깜박 사라지지 않는다. */
+    private var pulse = 1f
+    /** 맥박을 시작한 프레임 시각. 위협음이 아니면 -1. */
+    private var dangerSinceNanos = -1L
     private var glowRadiusPx = 0f
     private var colorRgb = 0xFFFFFF
     private var visible = false
@@ -333,6 +354,16 @@ class VisualizerEngine(
         // 색은 보간하지 않고 즉시 바꾼다. 위협음은 경고라서 서서히 물드는 것보다
         // 바로 뜨는 편이 낫고, 프레임당 셰이더 재생성(=할당)도 생기지 않는다.
         colorRgb = inputs.colorFor(coarse) and 0xFFFFFF
+        // 위협음은 색만으로 알리지 않는다(#314). 기본색에서 노랑(대화)과 빨강(위협)은 색각이상이 있으면 잘 구분되지 않고,
+        // 밝기는 소리 크기로도 바뀌어 단서가 못 된다. 그래서 위협음일 때만 밝기가 맥박치듯 오간다.
+        // 폰에서 애니메이션을 끈 사람(움직임 줄이기)에게는 움직이지 않는다.
+        pulse = if (coarse == AiClassification.DANGER && inputs.animationsEnabled()) {
+            if (dangerSinceNanos < 0L) dangerSinceNanos = frameTimeNanos
+            dangerPulse(frameTimeNanos - dangerSinceNanos)
+        } else {
+            dangerSinceNanos = -1L
+            1f
+        }
         if (s.isGlowMode && s.glowIntensity > 0f) {
             glowAlpha = min(1f, s.glowIntensity / 100f * 1.6f)
             glowRadiusPx = max(1f, s.glowIntensity * 0.5f) * density
@@ -393,6 +424,7 @@ class VisualizerEngine(
     internal data class DebugState(
         val visible: Boolean,
         val alpha: Float,
+        val pulse: Float,
         val smoothTotal: Float,
         val baseDepth: Float,
         val colorRgb: Int,
@@ -425,6 +457,7 @@ class VisualizerEngine(
     internal fun debugState(): DebugState = DebugState(
         visible = visible,
         alpha = alpha,
+        pulse = pulse,
         smoothTotal = smoothTotal,
         baseDepth = baseDepth,
         colorRgb = colorRgb,
@@ -1016,7 +1049,7 @@ class VisualizerEngine(
             paintPath(canvas, shader, style, strokeWidth)
             return
         }
-        fillPaint.alpha = alphaByte(alpha)
+        fillPaint.alpha = alphaByte(alpha * pulse)
         // withClip 은 인라인이라 프레임마다 할당하지 않는다.
         canvas.withClip(0f, 0f, w, t) { paintInBand(this, glow, shader, style, strokeWidth) }          // 위 (모서리 포함)
         canvas.withClip(0f, h - t, w, h) { paintInBand(this, glow, shader, style, strokeWidth) }       // 아래 (모서리 포함)
@@ -1033,7 +1066,7 @@ class VisualizerEngine(
     /** 발광(켜져 있으면)과 본 도형을 자르지 않고 그린다. [fillPaint] 의 색·셰이더·모양은 부르는 쪽이 정해 둔다. */
     private fun paintPath(canvas: NativeCanvas, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
         if (glowAlpha > 0f) drawGlow(canvas, shader, style, strokeWidth)
-        fillPaint.alpha = alphaByte(alpha)
+        fillPaint.alpha = alphaByte(alpha * pulse)
         canvas.drawPath(path, fillPaint)
     }
 
@@ -1049,7 +1082,7 @@ class VisualizerEngine(
         paint.style = style
         paint.strokeWidth = strokeWidth
         paint.color = (0xFF shl 24) or colorRgb
-        paint.alpha = alphaByte(glowAlpha * alpha)
+        paint.alpha = alphaByte(glowAlpha * alpha * pulse)
         canvas.drawPath(path, paint)
     }
 

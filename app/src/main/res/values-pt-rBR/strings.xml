@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">Tipos de som e vibração</string>
     <string name="help_sound_kinds">A IA separa os sons em três tipos: sons ambientes, vozes e sons de perigo. Por padrão, os sons ambientes aparecem em branco, as vozes em amarelo e os sons de perigo em vermelho. Na aba Ajustes, você pode mudar a cor de cada tipo e escolher se ele é mostrado.</string>
-    <string name="help_sound_danger">Quando um som de perigo (como um tiro) é detectado, a cor muda na hora, sem transição gradual.</string>
+    <string name="help_sound_danger">Quando um som de perigo (como um tiro) é detectado, a cor muda na hora, sem transição gradual. Enquanto ele dura, o desenho também pulsa, ficando mais claro e mais escuro, para você reconhecê-lo mesmo que seja difícil distinguir as cores.</string>
     <string name="help_sound_haptic">A vibração avisa mesmo quando você não está olhando para a tela. Por padrão, só os sons de perigo vibram, e você pode escolher o modo (Desligada, Lenta, Média, Rápida, Contínua) e a intensidade de cada tipo.</string>
     <string name="help_sound_haptic_rule">Só vibram os tipos mostrados na tela. O celular vibra enquanto durar um som desse tipo e para quando ele termina. Média pulsa a cada meio segundo, Lenta na metade desse ritmo e Rápida no dobro, enquanto Contínua vibra sem interrupção. Em todos os modos, a vibração mantém a intensidade que você escolheu.</string>
 

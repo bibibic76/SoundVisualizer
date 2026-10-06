@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">Types de sons et vibration</string>
     <string name="help_sound_kinds">L\'IA classe les sons entendus en trois types : ambiance, voix et danger. Par défaut, l\'ambiance s\'affiche en blanc, les voix en jaune et les dangers en rouge. Dans l\'onglet Paramètres, vous pouvez changer la couleur de chaque type et choisir de l\'afficher ou non.</string>
-    <string name="help_sound_danger">Lorsqu\'un son de danger (comme un coup de feu) est détecté, la couleur change instantanément, sans transition progressive.</string>
+    <string name="help_sound_danger">Lorsqu\'un son de danger (comme un coup de feu) est détecté, la couleur change instantanément, sans transition progressive. Tant qu\'il dure, le dessin pulse aussi en s\'éclaircissant et en s\'assombrissant, pour que vous le repériez même si les couleurs sont difficiles à distinguer.</string>
     <string name="help_sound_haptic">La vibration vous alerte même si vous ne regardez pas l\'écran. Par défaut, seuls les sons de danger font vibrer. Pour chaque type, vous pouvez choisir un mode (Désactivée, Lente, Moyenne, Rapide, Continue) et une intensité.</string>
     <string name="help_sound_haptic_rule">Seuls les types affichés à l\'écran déclenchent une vibration. Le téléphone vibre tant qu\'un son de ce type dure et s\'arrête avec lui. Moyenne pulse toutes les demi-secondes, Lente deux fois moins vite et Rapide deux fois plus vite, tandis que Continue vibre sans interruption. Dans tous les modes, la vibration garde l\'intensité choisie.</string>
 

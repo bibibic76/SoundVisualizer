@@ -22,7 +22,9 @@ private class FakeInputs(
     var color: Int = 0xFFFFFF,
     var shown: Boolean = true,
     /** 모드별로 다른 설정을 주고 싶을 때만 쓴다. null 이면 [settings] 를 그대로 돌려준다. */
-    var settingsProvider: ((VisualMode) -> ModeSettings)? = null
+    var settingsProvider: ((VisualMode) -> ModeSettings)? = null,
+    /** 폰의 애니메이션이 켜져 있는지(#314). 끄면 위협음 맥박이 멈춘다. */
+    var animations: Boolean = true
 ) : VisualizerInputs {
 
     /** 다음 readPeaks 가 돌려줄 값. */
@@ -49,6 +51,7 @@ private class FakeInputs(
     override fun coarseLabel(): String = label
     override fun colorFor(label: String): Int = color
     override fun isShown(label: String): Boolean = shown
+    override fun animationsEnabled(): Boolean = animations
 }
 
 private fun newEngine(fake: FakeInputs): VisualizerEngine =
@@ -850,5 +853,81 @@ class VisualizerEngineTest {
         val depths = engine.debugState().depths
         assertEquals("좌우 사이드가 비대칭", depths[6], depths[2], 0.001f)
         assertEquals("좌우 프론트가 비대칭", depths[7], depths[1], 0.001f)
+    }
+
+    // ---------------- 위협음 맥박 (#314) ----------------
+
+    @Test
+    fun `맥박은 가장 밝게 시작해 반 주기에 가장 어둡고 한 주기에 돌아온다`() {
+        val half = VisualizerEngine.DANGER_PULSE_NS / 2
+        assertEquals(1f, VisualizerEngine.dangerPulse(0L), 1e-4f)
+        assertEquals(VisualizerEngine.DANGER_PULSE_MIN, VisualizerEngine.dangerPulse(half), 1e-4f)
+        assertEquals(1f, VisualizerEngine.dangerPulse(VisualizerEngine.DANGER_PULSE_NS), 1e-4f)
+        var t = 0L
+        while (t < 3 * VisualizerEngine.DANGER_PULSE_NS) {
+            val p = VisualizerEngine.dangerPulse(t)
+            assertTrue("$t: $p", p >= VisualizerEngine.DANGER_PULSE_MIN - 1e-4f && p <= 1f + 1e-4f)
+            t += FRAME_60
+        }
+    }
+
+    @Test
+    fun `맥박은 초당 3번보다 느리다`() {
+        // 광과민성 기준: 1초에 3번 넘게 번쩍이면 안 된다. 맥박은 번쩍임이 아니지만 그보다도 느리게 둔다.
+        assertTrue(1_000_000_000.0 / VisualizerEngine.DANGER_PULSE_NS < 3.0)
+    }
+
+    @Test
+    fun `위협음이면 그리는 밝기가 맥박치고 보이는 상태는 그대로다`() {
+        val fake = FakeInputs(label = AiClassification.DANGER).apply { left = 0.5f; right = 0.5f }
+        val engine = newEngine(fake)
+        val pulses = mutableListOf<Float>()
+        var t = FRAME_60
+        repeat(60) {
+            engine.tick(t)
+            val s = engine.debugState()
+            // 처음 몇 프레임은 소리가 차오르는 중이라 원래 보이지 않는다. 그 뒤로는 어두운 맥박에도 보여야 한다.
+            if (it >= 15) assertTrue("맥박 때문에 그림이 사라지면 안 된다(프레임 $it)", s.visible)
+            pulses += s.pulse
+            t += FRAME_60
+        }
+        assertEquals("시작하는 순간은 가장 밝다", 1f, pulses.first(), 1e-4f)
+        assertTrue("한 주기 안에 어두워진다: ${pulses.minOrNull()}", pulses.minOrNull()!! < 0.5f)
+    }
+
+    @Test
+    fun `위협음이 아니면 맥박치지 않는다`() {
+        val fake = FakeInputs(label = AiClassification.SPEECH).apply { left = 0.5f; right = 0.5f }
+        val engine = newEngine(fake)
+        var t = FRAME_60
+        repeat(60) {
+            engine.tick(t)
+            assertEquals(1f, engine.debugState().pulse, 0f)
+            t += FRAME_60
+        }
+    }
+
+    @Test
+    fun `폰의 애니메이션을 끄면 위협음도 맥박치지 않는다`() {
+        val fake = FakeInputs(label = AiClassification.DANGER, animations = false).apply { left = 0.5f; right = 0.5f }
+        val engine = newEngine(fake)
+        var t = FRAME_60
+        repeat(60) {
+            engine.tick(t)
+            assertEquals(1f, engine.debugState().pulse, 0f)
+            t += FRAME_60
+        }
+    }
+
+    @Test
+    fun `위협음이 다시 시작되면 맥박도 가장 밝게 다시 시작한다`() {
+        val fake = FakeInputs(label = AiClassification.DANGER).apply { left = 0.5f; right = 0.5f }
+        val engine = newEngine(fake)
+        var t = engine.advance(20)
+        fake.label = AiClassification.AMBIENT
+        t += FRAME_60; engine.tick(t)
+        fake.label = AiClassification.DANGER
+        t += FRAME_60; engine.tick(t)
+        assertEquals(1f, engine.debugState().pulse, 1e-4f)
     }
 }

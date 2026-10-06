@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">Jenis suara dan getaran</string>
     <string name="help_sound_kinds">AI mengelompokkan suara yang terdengar menjadi suara latar, percakapan, dan suara bahaya. Secara default, suara latar berwarna putih, percakapan kuning, dan suara bahaya merah. Di tab Setelan, Anda dapat mengubah warna setiap jenis dan memilih apakah jenis tersebut ditampilkan.</string>
-    <string name="help_sound_danger">Saat suara bahaya (seperti suara tembakan) terdeteksi, warna langsung berubah tanpa memudar perlahan.</string>
+    <string name="help_sound_danger">Saat suara bahaya (seperti suara tembakan) terdeteksi, warna langsung berubah tanpa memudar perlahan. Selama suara itu berlangsung, gambar juga berdenyut terang dan redup, sehingga Anda tetap bisa mengenalinya meski sulit membedakan warna.</string>
     <string name="help_sound_haptic">Getaran memberi tahu Anda meskipun Anda tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat memilih mode (Mati, Lambat, Sedang, Cepat, Terus-menerus) dan kekuatan untuk setiap jenis.</string>
     <string name="help_sound_haptic_rule">Getaran hanya berlaku untuk jenis suara yang ditampilkan di layar. Ponsel terus bergetar selama suara jenis itu masih terdengar dan berhenti saat suaranya berhenti. Sedang berdenyut setiap setengah detik, Lambat dengan setengah kecepatan itu, dan Cepat dengan dua kali kecepatan itu, sedangkan Terus-menerus bergetar tanpa jeda. Di semua mode, getaran tetap pada kekuatan yang Anda pilih.</string>
 
