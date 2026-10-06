@@ -107,12 +107,16 @@ fun ClassifyTab() {
     }
 
     // 한참 내려간 채로 찾는 말이나 거르기를 바꾸면 결과의 중간부터 보인다. 결과가 찾기 칸 바로 밑부터 보이게 올린다.
-    // 맨 위(제목이 보이는 자리)에 있을 때는 그대로 둔다. 처음 값은 건너뛴다. 다른 탭에 갔다 돌아오면 이 화면이
-    // 새로 만들어지는데, 그때마다 올리면 내려 두었던 자리를 잃는다.
+    // **찾는 말이 있으면 맨 위에 있어도 올린다.** 찾기 칸을 누르면 자판이 화면 아래 절반을 가리는데, 맨 위의 제목·안내가
+    // 남은 자리를 다 차지해 결과가 하나도 보이지 않았다(#283, 에뮬레이터 계측 테스트). 거르기만 바꿀 때는 맨 위면
+    // 그대로 둔다. 처음 값은 건너뛴다. 다른 탭에 갔다 돌아오면 이 화면이 새로 만들어지는데, 그때마다 올리면 내려 두었던
+    // 자리를 잃는다.
     val listState = rememberLazyListState()
     LaunchedEffect(listState) {
-        snapshotFlow { search.text.toString() to filter }.drop(1).collect {
-            if (listState.firstVisibleItemIndex > STICKY_HEADER_INDEX) listState.scrollToItem(STICKY_HEADER_INDEX)
+        snapshotFlow { search.text.toString() to filter }.drop(1).collect { (text, _) ->
+            if (text.isNotEmpty() || listState.firstVisibleItemIndex > STICKY_HEADER_INDEX) {
+                listState.scrollToItem(STICKY_HEADER_INDEX)
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -79,9 +80,14 @@ class ClassifyTabInstrumentedTest {
         rule.waitForIdle()
     }
 
+    /**
+     * 찾는 말을 넣고 자판의 찾기 키를 누른다(사용자처럼). 찾기 키는 자판만 내리고([SearchField]), 목록은 글자를 칠 때마다
+     * 이미 걸러져 있다. 자판이 떠 있으면 화면 아래가 가려져 결과 줄이 그려지지 않을 수 있다.
+     */
     private fun search(text: String) {
         rule.onNode(hasSetTextAction()).performTextClearance()
         rule.onNode(hasSetTextAction()).performTextInput(text)
+        rule.onNode(hasSetTextAction()).performImeAction()
         rule.waitForIdle()
     }
 
