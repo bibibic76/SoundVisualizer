@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">No se pudieron mostrar los gráficos sobre otras apps, así que el visor de sonido se apagó. Comprueba que el permiso “Mostrar sobre otras apps” esté concedido.</string>
     <string name="stopped_turn_on">Volver a encender</string>
     <string name="stopped_toast">El visor de sonido se apagó. Los gráficos y los avisos por vibración están desactivados.</string>
+    <string name="danger_alert_channel_name">Alertas de sonidos de peligro</string>
+    <string name="danger_alert_channel_desc">Si se oye un sonido de peligro con el teléfono bloqueado o la pantalla apagada, aparece un aviso en la pantalla de bloqueo y la pantalla se enciende un momento. No emite sonido.</string>
+    <string name="danger_alert_title">Se oyó un sonido de peligro</string>
+    <string name="danger_alert_text_named">Se oyó: %1$s. Revisa lo que tienes alrededor.</string>
+    <string name="danger_alert_text">Revisa lo que tienes alrededor.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visor de sonido</string>

@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">ग्राफ़िक्स दूसरे ऐप्लिकेशन के ऊपर नहीं दिखाए जा सके, इसलिए विज़ुअलाइज़र बंद हो गया। देखें कि “दूसरे ऐप्लिकेशन के ऊपर दिखाएं” की अनुमति मिली हुई है या नहीं।</string>
     <string name="stopped_turn_on">दोबारा चालू करें</string>
     <string name="stopped_toast">आवाज़ विज़ुअलाइज़र बंद हो गया। ग्राफ़िक्स और वाइब्रेशन भी बंद हैं।</string>
+    <string name="danger_alert_channel_name">खतरे की आवाज़ों की सूचना</string>
+    <string name="danger_alert_channel_desc">फ़ोन लॉक होने या स्क्रीन बंद होने पर खतरे की आवाज़ सुनाई दे, तो लॉक स्क्रीन पर सूचना दिखती है और स्क्रीन थोड़ी देर के लिए चालू होती है। इससे कोई आवाज़ नहीं आती।</string>
+    <string name="danger_alert_title">खतरे की आवाज़ सुनाई दी</string>
+    <string name="danger_alert_text_named">सुनाई दी आवाज़: %1$s। अपने आसपास देखें।</string>
+    <string name="danger_alert_text">अपने आसपास देखें।</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">आवाज़ विज़ुअलाइज़र</string>

@@ -59,6 +59,7 @@ Vibration lets you know a sound happened even when you're not looking at the scr
 - Tap a mode or change the strength in Settings to feel it for 2 seconds. While the visualizer is running, previews don't play, so they aren't mixed up with real alerts.
 - **Only types shown on screen vibrate.**
 - While the phone keeps vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
+- **Danger sound alerts on the lock screen**: while the phone is locked or the screen is off, the graphics are hidden behind the lock screen. If a danger sound is heard then, a "Danger sound heard" alert (with the name of the sound) appears on the lock screen and a dark screen turns on briefly. The alert is silent; vibration follows the danger sound vibration setting. One continuing danger sound alerts once (at least 30 seconds between alerts), and the alert goes away when you unlock. Nothing is shown if danger sounds are hidden. On Samsung phones set to show lock screen notifications as icons only, change that in the phone's settings to see the text.
 
 ### 🎤 External sound mode
 

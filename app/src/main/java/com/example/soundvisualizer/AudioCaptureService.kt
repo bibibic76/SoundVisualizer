@@ -2,6 +2,7 @@ package com.example.soundvisualizer
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -140,6 +141,9 @@ class AudioCaptureService : Service() {
     /** [AudioEngine.takePeakSinceLastCheck] 가 채우는 `[피크, 버퍼 수]`. 틱마다 새로 만들지 않는다. 메인 스레드 전용. */
     private val checkSample = FloatArray(2)
 
+    /** 잠겨 있거나 화면이 꺼진 동안의 위협음을 잠금 화면에 알릴지(#310). 확인 틱(메인 스레드)에서만 쓴다. */
+    private val dangerAlertPolicy = DangerAlertPolicy()
+
     /** 화면이 켜진 뒤 미뤄 둔 AI 재시작. 취소할 수 있게 들고 있는다. 메인 스레드 전용. ([scheduleAiResume]) */
     private var aiResumeRunnable: Runnable? = null
 
@@ -162,6 +166,8 @@ class AudioCaptureService : Service() {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> onScreenOff()
                 Intent.ACTION_SCREEN_ON -> onScreenOn()
+                // 잠금을 풀면 오버레이가 다시 보이므로 잠금 화면의 위협음 알림은 할 일을 다 했다(#310).
+                Intent.ACTION_USER_PRESENT -> DangerAlert.cancel(this@AudioCaptureService)
             }
         }
     }
@@ -380,6 +386,7 @@ class AudioCaptureService : Service() {
         SettingsManager.setCaptureBlocked(false)
         createNotificationChannel()
         StopAlert.createChannel(this)
+        DangerAlert.createChannel(this)
         // Android 14+: getMediaProjection() 이전에 mediaProjection 타입 FGS 가 먼저 떠 있어야 한다.
         // 마이크 모드는 microphone 타입이어야 다른 앱으로 나가 있어도 마이크가 막히지 않는다(Android 11+).
         // 타입은 하나만 넘긴다([CaptureSource.foregroundServiceType]).
@@ -781,14 +788,49 @@ class AudioCaptureService : Service() {
             // 내려가는 중이거나 이미 멈춘 캡처라면 더 볼 것이 없다. 다시 예약하지도 않는다.
             if (!isRecording || stopLatch.isStopping) return
             updateBlockedNotice()
+            // 위 확인이 방금 읽어 간 소리 크기(checkSample)를 그대로 쓴다. 피크는 읽는 쪽이 하나여야 한다.
+            updateDangerAlert()
             mainHandler.postDelayed(this, BLOCKED_CHECK_MS)
         }
+    }
+
+    /**
+     * 잠겨 있거나 화면이 꺼진 동안 위협음이 들리기 시작하면 잠금 화면에 알리고 꺼진 화면을 깨운다(#310).
+     * 언제 알릴지는 [DangerAlertPolicy] 가 정한다. 진동이 없는 폰에서도 돈다.
+     */
+    private fun updateDangerAlert() {
+        val enabled = SettingsManager.showDanger.value && SettingsManager.aiAvailable.value
+        val fire = dangerAlertPolicy.onTick(
+            SystemClock.elapsedRealtime(),
+            AiClassification.coarse(),
+            checkSample[0],
+            enabled
+        ) { isLockedOrScreenOff() }
+        if (!fire) return
+        val posted = DangerAlert.show(uiContext, dangerSoundName())
+        Log.i(TAG, "danger alert on lock screen: posted=$posted")
+    }
+
+    private fun isLockedOrScreenOff(): Boolean =
+        getSystemService(PowerManager::class.java)?.isInteractive == false ||
+            getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
+
+    /**
+     * 알림에 적을 소리 이름(앱 언어). AI 의 상위 후보 가운데 기본 종류가 위협음인 첫 소리다.
+     * 1순위가 음악이고 사이렌이 안전 신호로 올라온 경우에도 "음악" 이 아니라 그 위협음 이름을 적는다. 없으면 null.
+     */
+    private fun dangerSoundName(): String? {
+        val hit = AiClassification.latest()?.top5
+            ?.firstOrNull { SettingsManager.defaultSoundType(it.name) == AiClassification.DANGER }
+            ?: return null
+        return uiContext.resources.getStringArray(R.array.sound_names).getOrNull(hit.index)
     }
 
     /** 캡처가 돌기 시작했다. 두 번 불러도 틱은 하나만 돈다. */
     private fun startBlockedCheck() {
         blockedNotice.reset()
         micSilence.reset()
+        dangerAlertPolicy.reset()
         // 지난번 캡처가 남긴 피크·버퍼 수를 버린다. 남겨 두면 첫 틱이 방금 받은 소리로 착각한다.
         AudioEngine.takePeakSinceLastCheck(checkSample)
         mainHandler.removeCallbacks(blockedCheck)
@@ -909,6 +951,8 @@ class AudioCaptureService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
+            // 잠금을 풀면 잠금 화면의 위협음 알림을 치운다(#310). 이것도 시스템만 보내는 보호된 방송이다.
+            addAction(Intent.ACTION_USER_PRESENT)
         }
         ContextCompat.registerReceiver(this, screenReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         screenReceiverRegistered = true

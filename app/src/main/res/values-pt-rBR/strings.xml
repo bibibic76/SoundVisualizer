@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Não foi possível mostrar os gráficos por cima de outros apps, então a visualização foi desligada. Verifique se a permissão “Sobrepor a outros apps” está concedida.</string>
     <string name="stopped_turn_on">Ligar de novo</string>
     <string name="stopped_toast">A visualização de sons foi desligada. Os gráficos e os avisos por vibração estão desligados.</string>
+    <string name="danger_alert_channel_name">Alertas de sons de perigo</string>
+    <string name="danger_alert_channel_desc">Se um som de perigo for ouvido com o celular bloqueado ou a tela desligada, um alerta aparece na tela de bloqueio e a tela acende por alguns segundos. Não faz nenhum som.</string>
+    <string name="danger_alert_title">Som de perigo ouvido</string>
+    <string name="danger_alert_text_named">Ouvido: %1$s. Verifique o que está ao seu redor.</string>
+    <string name="danger_alert_text">Verifique o que está ao seu redor.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualizar sons</string>

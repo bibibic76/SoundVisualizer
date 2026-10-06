@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Die Grafiken konnten nicht über anderen Apps angezeigt werden, daher wurde die Tonvisualisierung ausgeschaltet. Prüfen Sie, ob „Über anderen Apps einblenden“ zugelassen ist.</string>
     <string name="stopped_turn_on">Wieder einschalten</string>
     <string name="stopped_toast">Tonvisualisierung ausgeschaltet. Grafiken und Vibrationswarnungen sind aus.</string>
+    <string name="danger_alert_channel_name">Warnungen bei Gefahrengeräuschen</string>
+    <string name="danger_alert_channel_desc">Wenn bei gesperrtem Smartphone oder ausgeschaltetem Bildschirm ein Gefahrengeräusch zu hören ist, erscheint ein Hinweis auf dem Sperrbildschirm und der Bildschirm schaltet sich kurz ein. Dabei ertönt kein Ton.</string>
+    <string name="danger_alert_title">Gefahrengeräusch erkannt</string>
+    <string name="danger_alert_text_named">Erkannt: %1$s. Achten Sie auf Ihre Umgebung.</string>
+    <string name="danger_alert_text">Achten Sie auf Ihre Umgebung.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Tonvisualisierung</string>

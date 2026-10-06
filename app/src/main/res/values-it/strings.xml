@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Non è stato possibile mostrare la grafica sopra le altre app, quindi la visualizzazione si è disattivata. Verifica che l\'autorizzazione “Mostra sopra altre app” sia concessa.</string>
     <string name="stopped_turn_on">Riattiva</string>
     <string name="stopped_toast">Visualizzazione dei suoni disattivata. La grafica e gli avvisi con vibrazione sono disattivati.</string>
+    <string name="danger_alert_channel_name">Avvisi di suoni di pericolo</string>
+    <string name="danger_alert_channel_desc">Se si sente un suono di pericolo mentre il telefono è bloccato o lo schermo è spento, compare un avviso nella schermata di blocco e lo schermo si accende per qualche istante. Non emette suoni.</string>
+    <string name="danger_alert_title">Suono di pericolo rilevato</string>
+    <string name="danger_alert_text_named">Rilevato: %1$s. Controlla cosa succede intorno a te.</string>
+    <string name="danger_alert_text">Controlla cosa succede intorno a te.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualizza suoni</string>

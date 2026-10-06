@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Không thể hiển thị đồ họa lên trên các ứng dụng khác nên âm thanh trực quan đã tắt. Hãy kiểm tra xem quyền “Hiển thị trên các ứng dụng khác” đã được cấp chưa.</string>
     <string name="stopped_turn_on">Bật lại</string>
     <string name="stopped_toast">Âm thanh trực quan đã tắt. Đồ họa và thông báo rung đều tắt.</string>
+    <string name="danger_alert_channel_name">Cảnh báo âm thanh nguy hiểm</string>
+    <string name="danger_alert_channel_desc">Khi nghe thấy âm thanh nguy hiểm lúc điện thoại đang khóa hoặc màn hình đang tắt, ứng dụng sẽ hiện cảnh báo trên màn hình khóa và bật màn hình trong giây lát. Cảnh báo không phát ra âm thanh.</string>
+    <string name="danger_alert_title">Đã nghe thấy âm thanh nguy hiểm</string>
+    <string name="danger_alert_text_named">Đã nghe thấy: %1$s. Hãy kiểm tra xung quanh.</string>
+    <string name="danger_alert_text">Hãy kiểm tra xung quanh.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Âm thanh trực quan</string>

@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">无法在其他应用上方显示图形，可视化已关闭。请确认是否已允许“显示在其他应用的上层”。</string>
     <string name="stopped_turn_on">重新开启</string>
     <string name="stopped_toast">声音可视化已关闭。图形和振动提醒均已关闭。</string>
+    <string name="danger_alert_channel_name">危险音提醒</string>
+    <string name="danger_alert_channel_desc">手机锁定或屏幕关闭时听到危险音，会在锁定屏幕上提醒，并短暂点亮屏幕。不会发出声音。</string>
+    <string name="danger_alert_title">听到了危险音</string>
+    <string name="danger_alert_text_named">听到的声音：%1$s。请留意周围情况。</string>
+    <string name="danger_alert_text">请留意周围情况。</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">声音可视化</string>

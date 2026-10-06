@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Nie udało się wyświetlić grafiki nad innymi aplikacjami, więc wizualizacja została wyłączona. Sprawdź, czy uprawnienie „Wyświetlanie nad innymi aplikacjami” jest przyznane.</string>
     <string name="stopped_turn_on">Włącz ponownie</string>
     <string name="stopped_toast">Wizualizacja dźwięku wyłączona. Grafika i wibracje są wyłączone.</string>
+    <string name="danger_alert_channel_name">Alerty o dźwiękach zagrożenia</string>
+    <string name="danger_alert_channel_desc">Gdy przy zablokowanym telefonie lub wyłączonym ekranie słychać dźwięk zagrożenia, na ekranie blokady pojawia się alert, a ekran na chwilę się włącza. Alert nie wydaje dźwięku.</string>
+    <string name="danger_alert_title">Słychać dźwięk zagrożenia</string>
+    <string name="danger_alert_text_named">Usłyszano: %1$s. Sprawdź, co dzieje się wokół.</string>
+    <string name="danger_alert_text">Sprawdź, co dzieje się wokół.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Wizualizacja audio</string>
