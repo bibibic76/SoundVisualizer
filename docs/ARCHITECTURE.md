@@ -19,7 +19,7 @@ graph TD
 
 | 단계 | 코드 | 언어 |
 |---|---|---|
-| 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ColorPickerDialog`·`UiControls`·`UiColors`·`UiFonts` (화면), `SettingsManager`, `help/`, `language/` (앱 언어), `tutorial/` (처음 열 때의 튜토리얼) | Kotlin (Compose) |
+| 홈·설정·도움말 화면 | `MainActivity` (액티비티), `LauncherApp`·`HomeTab`·`SettingsTab`·`ClassifyTab`·`ColorPickerDialog`·`UiControls`·`UiColors`·`UiFonts` (화면), `SoundCatalog` (분류 탭의 소리 목록), `SettingsManager`, `help/`, `language/` (앱 언어), `tutorial/` (처음 열 때의 튜토리얼) | Kotlin (Compose) |
 | 켜기·끄기 | `VisualizerController`, `tile/` (빠른 설정 타일), `PendingStart` (권한을 켜고 돌아오면 이어서 켜기), `CaptureStartToken` (사용자가 켠 시작만 받고, 어디서 받을지 전하기), `StopReason`·`StopAlert` (꺼짐 알림) | Kotlin |
 | 캡처 | `AudioCaptureService`, `CaptureSource` (폰 안의 소리인지 마이크인지), `ScreenOffPause` (화면 꺼짐 일시정지), `BlockedCaptureNotice` (받을 수 없는 소리 안내), `MicSilenceNotice` (마이크가 막혔다는 안내), `NotificationActionReceiver` (실행 중 알림 버튼) | Kotlin |
 | 좌우 피크 측정 | `AudioEngine`, `cpp/native-lib.cpp` | C++ (JNI) |
@@ -475,6 +475,10 @@ lvl 0.14   shown Y   65ms (12/48)
   - 보는 사람에 대한 값이라 기기 전용 값(꺼짐 안내·타일 추가)처럼 복원할 때 비우지 않습니다. 새 폰으로 옮겨 가도 다시 뜨지 않습니다.
   - `TutorialSettingTest`가 판단·저장·복원을 봅니다. 기존 설정이 있는 폰에서 다시 보이게 하려면 앱을 멈춘 뒤 `run-as`로 `tutorial_seen`을 `false`로 **바꿉니다**. 키를 지우면 다른 값이 있어 다시 "본 것"으로 판단합니다.
 - "그래픽 덜 자주 그리기"(`reducedFrameRate`, 4장)의 기본값은 `REDUCED_FRAME_RATE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 소리를 눈으로 보는 앱이라 부드러운 쪽이 기본이고, 오래 켜 두는 사람이 고릅니다. 저장·복원과 엔진의 프레임 수까지 이어지는 배선은 `ReducedFrameRateTest`가 봅니다.
+- **분류 탭에서 바꾼 소리 종류**(`soundTypes`, 키 `sound_types`, #283): YAMNet 소리 이름(`yamnet_class_map.csv`의 display_name)을 키로, 고른 라벨을 값으로 한 JSON 객체 하나로 저장합니다. 기본 종류와 같은 값과 세 라벨이 아닌 값은 읽을 때 버리고, 읽을 수 없는 저장값은 바꾼 것이 없는 것으로 봅니다(`SoundTypeSettingsTest`).
+  - 기본 종류는 AI의 매핑(`YamnetThreeClassMapper.mapDisplayNameToCoarse`)을 **읽기만** 합니다(`defaultSoundType`). 매핑 규칙이 바뀌면 기본 종류도 함께 바뀌고, 그 결과 사용자가 고른 것과 같아진 소리는 다음에 읽을 때 "바꾼 소리"에서 빠집니다.
+  - **아직 AI 판정에는 쓰이지 않습니다.** AI가 읽어 갈 창구는 `soundTypeOverride(displayName)`(바꾸지 않았으면 null, 어느 스레드에서 불러도 됨)이고, 이것을 투표에 연결하는 일은 `ai/` 담당이 #291에서 맡습니다. 그 전까지 분류 탭은 **개발자 모드에서만** 맨 뒤 탭으로 보이고, 탭 맨 위에 아직 쓰이지 않는다는 안내가 있습니다. 맨 뒤에 붙으므로 홈·설정·도움말의 번호(`MainActivity.TAB_*`)는 개발자 모드와 상관없이 그대로입니다.
+  - 소리 이름 521개는 `res/values…/sound_names.xml`에 따로 있습니다(영어는 모델 이름 그대로, 한국어 번역). 다른 언어 번역은 탭을 모두에게 열 때 넣습니다.
 - 테스트는 `SettingsManager.load(SharedPreferences)`에 메모리 가짜 프리퍼런스를 넣어 값을 세웁니다(`init(context)`는 "처음 한 번만" 규칙을 지키고 이 함수를 부릅니다). 이 객체는 싱글턴이라 값을 바꾼 테스트는 `@After`에서 기본값으로 되돌립니다.
 
 ---

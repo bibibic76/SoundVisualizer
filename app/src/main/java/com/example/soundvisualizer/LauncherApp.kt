@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.help.HelpTab
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,9 +35,15 @@ fun LauncherApp(
     onAddTile: () -> Unit,
     onOpenTutorial: () -> Unit
 ) {
+    // 분류 탭은 AI 판정에 연결되기 전까지(#291) 개발자 모드에서만 맨 뒤에 붙는다. 맨 뒤라서 홈·설정·도움말의
+    // 번호([MainActivity] 의 TAB_*)는 개발자 모드와 상관없이 그대로다.
+    val developerMode = SettingsManager.developerMode.collectAsState()
+
     // 탭 이름은 화면 맨 위에 있다. 큰 화면에서 한 손으로 쓰면 거기까지 손이 가지 않으므로
     // 화면 아무 데서나 좌우로 밀어도 넘어가게 한다.
-    val pagerState = rememberPagerState(initialPage = selectedTab) { TAB_COUNT }
+    val pagerState = rememberPagerState(initialPage = selectedTab) {
+        if (developerMode.value) TAB_COUNT_WITH_CLASSIFY else TAB_COUNT
+    }
     val scope = rememberCoroutineScope()
 
     // 액티비티가 탭을 정해 주는 경로(타일 길게 누르기, 멈춤 안내의 홈 이동)를 그대로 살린다.
@@ -53,12 +61,18 @@ fun LauncherApp(
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.settledPage }.collect { onSelectTab(it) }
     }
+    // 분류 탭의 찾기 칸에 글자를 넣던 채로 다른 탭으로 넘기면, 칸이 포커스를 쥔 채 그 쪽을 붙들어 두어
+    // 자판이 다른 탭 위에 남을 수 있다. 탭이 바뀌면 포커스를 놓는다.
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.drop(1).collect { focusManager.clearFocus() }
+    }
 
     // 액티비티가 화면을 시스템 바 밑까지 그리므로, 탭과 내용은 상태 표시줄·내비게이션 바·카메라 구멍을 비켜 놓는다.
     // 비켜 놓은 자리에도 앱 배경색이 보이는 것은 바깥 Surface 가 창 전체를 칠하기 때문이다.
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
-        // selectableGroup 은 화면 읽어주기에 "셋 중 몇 번째"를 알려준다.
+        // selectableGroup 은 화면 읽어주기에 "셋(개발자 모드면 넷) 중 몇 번째"를 알려준다.
         //
         // 선택 표시는 액티비티가 든 값이 아니라 지금 보고 있는 쪽(currentPage)을 따른다. 밀다가 절반을
         // 넘기는 순간 밑줄이 따라오므로, 손을 떼기 전에도 어디로 가는지 보인다.
@@ -74,13 +88,20 @@ fun LauncherApp(
             TabButton(stringResource(R.string.tab_help), pagerState.currentPage == 2) {
                 scope.launch { pagerState.animateScrollToPage(2) }
             }
+            if (developerMode.value) {
+                Spacer(modifier = Modifier.width(24.dp))
+                TabButton(stringResource(R.string.tab_classify), pagerState.currentPage == TAB_CLASSIFY) {
+                    scope.launch { pagerState.animateScrollToPage(TAB_CLASSIFY) }
+                }
+            }
         }
 
-        // 남은 높이를 전부 준다. 세 탭 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
+        // 남은 높이를 전부 준다. 탭은 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             when (page) {
                 0 -> HomeTab(onStart, onStop, onOpenTutorial)
                 1 -> SettingsTab(onAddTile)
+                TAB_CLASSIFY -> ClassifyTab()
                 else -> HelpTab()
             }
         }
@@ -89,6 +110,10 @@ fun LauncherApp(
 
 /** 홈·설정·도움말. [LauncherApp] 의 탭 수와 [MainActivity] 의 TAB_* 이 같은 수를 가리킨다. */
 private const val TAB_COUNT = 3
+
+/** 개발자 모드에서만 맨 뒤에 붙는 분류 탭(#283). AI 판정에 연결되면(#291) 모두에게 보인다. */
+private const val TAB_CLASSIFY = 3
+private const val TAB_COUNT_WITH_CLASSIFY = 4
 
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
