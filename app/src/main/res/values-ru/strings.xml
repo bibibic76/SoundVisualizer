@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Не удалось показать графику поверх других приложений, поэтому визуализатор выключился. Проверьте, разрешено ли «Поверх других приложений».</string>
     <string name="stopped_turn_on">Включить снова</string>
     <string name="stopped_toast">Визуализатор звука выключен. Графика и вибрация отключены.</string>
+    <string name="danger_alert_channel_name">Оповещения об опасных звуках</string>
+    <string name="danger_alert_channel_desc">Если при заблокированном телефоне или выключенном экране слышен опасный звук, на экране блокировки появляется оповещение, а экран ненадолго включается. Звука при этом нет.</string>
+    <string name="danger_alert_title">Слышен опасный звук</string>
+    <string name="danger_alert_text_named">Услышано: %1$s. Проверьте, что происходит вокруг.</string>
+    <string name="danger_alert_text">Проверьте, что происходит вокруг.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Визуализатор звука</string>

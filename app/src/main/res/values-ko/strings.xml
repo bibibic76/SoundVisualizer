@@ -226,6 +226,11 @@
     <string name="stopped_text_overlay_failed">다른 앱 위에 그래픽을 띄우지 못해 시각화가 꺼졌습니다. ‘다른 앱 위에 표시’ 권한이 허용돼 있는지 확인해 주세요.</string>
     <string name="stopped_turn_on">다시 켜기</string>
     <string name="stopped_toast">소리 시각화가 꺼졌습니다. 그래픽과 진동 알림이 꺼져 있습니다.</string>
+    <string name="danger_alert_channel_name">위협음 알림</string>
+    <string name="danger_alert_channel_desc">폰이 잠겨 있거나 화면이 꺼진 동안 위협음이 들리면 잠금 화면에 알리고 화면을 잠깐 켭니다. 소리는 나지 않습니다.</string>
+    <string name="danger_alert_title">위협음이 들렸습니다</string>
+    <string name="danger_alert_text_named">들린 소리: %1$s. 주변을 확인하세요.</string>
+    <string name="danger_alert_text">주변을 확인하세요.</string>
 
     <!-- 빠른 설정 타일 -->
     <string name="tile_label">소리 시각화</string>

@@ -246,6 +246,13 @@
     <string name="stopped_turn_on">Turn on again</string>
     <string name="stopped_toast">Sound visualizer turned off. Graphics and vibration alerts are off.</string>
 
+    <!-- 잠금 화면의 위협음 알림(#310) -->
+    <string name="danger_alert_channel_name">Danger sound alerts</string>
+    <string name="danger_alert_channel_desc">When a danger sound is heard while your phone is locked or the screen is off, shows it on the lock screen and turns the screen on briefly. It makes no sound.</string>
+    <string name="danger_alert_title">Danger sound heard</string>
+    <string name="danger_alert_text_named">Heard: %1$s. Check your surroundings.</string>
+    <string name="danger_alert_text">Check your surroundings.</string>
+
     <!-- Quick Settings tile -->
     <string name="tile_label">Sound visualizer</string>
     <string name="tile_state_on">On</string>

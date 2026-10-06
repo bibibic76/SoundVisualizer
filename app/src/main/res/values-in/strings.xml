@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Grafik tidak dapat ditampilkan di atas aplikasi lain, sehingga visualisasi dimatikan. Pastikan izin “Tampilkan di atas aplikasi lain” sudah diberikan.</string>
     <string name="stopped_turn_on">Nyalakan lagi</string>
     <string name="stopped_toast">Visualisasi suara dimatikan. Grafik dan peringatan getar kini tidak aktif.</string>
+    <string name="danger_alert_channel_name">Peringatan suara bahaya</string>
+    <string name="danger_alert_channel_desc">Jika suara bahaya terdengar saat ponsel terkunci atau layar mati, peringatan muncul di layar kunci dan layar menyala sebentar. Tidak ada suara yang dibunyikan.</string>
+    <string name="danger_alert_title">Suara bahaya terdengar</string>
+    <string name="danger_alert_text_named">Terdengar: %1$s. Periksa sekitar Anda.</string>
+    <string name="danger_alert_text">Periksa sekitar Anda.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualisasi suara</string>

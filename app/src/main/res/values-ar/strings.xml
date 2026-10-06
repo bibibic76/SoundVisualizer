@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">تعذّر عرض الرسومات فوق التطبيقات الأخرى، لذا توقف الصوت المرئي. تأكّد من السماح بإذن «الظهور فوق التطبيقات الأخرى».</string>
     <string name="stopped_turn_on">إعادة التشغيل</string>
     <string name="stopped_toast">تم إيقاف الصوت المرئي. الرسومات وتنبيهات الاهتزاز معطّلة.</string>
+    <string name="danger_alert_channel_name">تنبيهات أصوات الخطر</string>
+    <string name="danger_alert_channel_desc">عند سماع صوت خطر أثناء قفل الهاتف أو إطفاء الشاشة، يظهر تنبيه على شاشة القفل وتُضاء الشاشة لفترة قصيرة. لا يصدر أي صوت.</string>
+    <string name="danger_alert_title">سُمع صوت خطر</string>
+    <string name="danger_alert_text_named">الصوت المسموع: %1$s. تحقّق مما حولك.</string>
+    <string name="danger_alert_text">تحقّق مما حولك.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">الصوت المرئي</string>

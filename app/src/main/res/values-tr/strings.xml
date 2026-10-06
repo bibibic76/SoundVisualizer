@@ -218,6 +218,11 @@
     <string name="stopped_text_overlay_failed">Grafikler diğer uygulamaların üzerinde gösterilemedi, bu yüzden görselleştirme kapandı. “Diğer uygulamaların üzerinde göster” izninin verili olduğundan emin olun.</string>
     <string name="stopped_turn_on">Yeniden aç</string>
     <string name="stopped_toast">Ses görselleştirme kapandı. Grafikler ve titreşim uyarıları kapalı.</string>
+    <string name="danger_alert_channel_name">Tehlike sesi uyarıları</string>
+    <string name="danger_alert_channel_desc">Telefon kilitliyken veya ekran kapalıyken bir tehlike sesi duyulursa kilit ekranında bir uyarı gösterilir ve ekran kısa bir süre açılır. Ses çıkarmaz.</string>
+    <string name="danger_alert_title">Tehlike sesi duyuldu</string>
+    <string name="danger_alert_text_named">Duyulan: %1$s. Çevrenizi kontrol edin.</string>
+    <string name="danger_alert_text">Çevrenizi kontrol edin.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Ses görselleştirme</string>

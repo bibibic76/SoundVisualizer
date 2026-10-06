@@ -456,6 +456,29 @@ lvl 0.14   shown Y   65ms (12/48)
 - **예전 설정**(켜기·패턴·약중강)은 처음 읽을 때 옮겨 적고 예전 키를 지웁니다(`HapticSettings.fromLegacy`): 꺼 두었으면 꺼짐, 소리 따라는 연속, 한 번·두 번·길게는 중간, 약·중·강은 30·60·100%.
 - **확인**: 디버그 빌드는 `logcat -s SvHaptic`에 기기의 진동 능력, 보낸 울림 한 줄씩, 10초마다 틱·울림 수를 남깁니다. `adb shell dumpsys vibrator_manager`로 보낸 진동과 그 상태를 볼 수 있습니다. 박자와 멈춤은 `HapticDriverTest`가 실제 알림처럼 깨어나며 흘려 확인합니다.
 
+### 잠금 화면 위협음 알림 (`DangerAlertPolicy`, `DangerAlert`, #310)
+
+폰이 잠겨 있거나 화면이 꺼진 동안에는 오버레이(`TYPE_APPLICATION_OVERLAY`)가 잠금 화면에 가려 보이지 않습니다. 그때 위협음이 들리면 잠금 화면에 알리고 꺼진 화면을 잠깐 켭니다.
+
+- **언제**: 캡처 서비스의 500ms 확인 틱(`blockedCheck`)이 받을 수 없는 소리 확인에 이어 `DangerAlertPolicy.onTick`을 부릅니다. 크기는 그 확인이 방금 읽은 지난 틱 이후의 최대값(`checkSample`)을 그대로 씁니다. 피크는 읽는 쪽이 하나여야 하기 때문입니다.
+  - 진동처럼 "위협음 라벨이면서 실제로 소리가 난다(0.01 초과)"일 때만 위협음으로 봅니다. AI 는 소리가 끝나도 마지막 라벨을 들고 있습니다.
+  - 위협음이 3초 동안 없으면 사건이 끝납니다. 한 사건에 한 번, 알린 뒤 30초 안에는 다시 알리지 않습니다.
+  - 잠겼거나(`KeyguardManager.isKeyguardLocked`) 화면이 꺼졌는지(`PowerManager.isInteractive`)는 아직 알리지 않은 사건 동안에만 묻습니다. 그래서 위협음이 이어지는 중에 잠그면 그때 알립니다.
+  - 위협음 표시를 껐거나 AI 가 동작하지 않으면(큰 소리 진동만 남는 경우) 알리지 않습니다.
+  - 화면이 꺼지면 쉬는 폰 안의 소리 모드에서는 받는 소리가 없어 알릴 일도 없습니다. 외부 사운드 모드와, '화면이 꺼지면 일시정지'를 끈 경우에 해당합니다.
+- **알림**: 새 채널(`DangerSoundAlertChannel`, 중요도 HIGH, 소리·진동 없음)에 알림 3번을 올립니다.
+  - 카테고리는 `ALARM` 입니다. 기본 방해 금지 설정은 알람을 통과시키므로 그때도 보입니다.
+  - 잠금 화면 공개(`VISIBILITY_PUBLIC`)는 채널 값을 시스템이 앱 설정으로 덮어쓰므로 알림에도 적습니다.
+  - `setSilent`는 쓰지 않습니다. 쓰면 SystemUI 가 팝업과 화면 깨움을 막습니다.
+  - 들린 소리 이름은 AI 상위 후보 가운데 기본 종류가 위협음인 첫 소리를 앱 언어로 적습니다(`sound_names`). 1순위가 음악이고 사이렌이 안전 신호로 올라온 경우에도 사이렌을 적기 위해서입니다.
+  - 잠금을 풀면(`ACTION_USER_PRESENT`) 치우고, 5분이 지나도 사라집니다.
+- **화면 깨우기**: 알림을 올린 뒤 화면이 꺼져 있으면 `SCREEN_BRIGHT_WAKE_LOCK | ACQUIRE_CAUSES_WAKEUP | ON_AFTER_RELEASE`를 3초 잡습니다.
+  - API 33 부터 deprecated 지만 동작합니다. Android 14~17 은 `TURN_SCREEN_ON` 권한이 없어도 허용합니다(그 강제는 아직 켜지지 않았습니다).
+  - 전체 화면 인텐트는 Android 14 부터 플레이 정책상 전화·알람 앱만 쓸 수 있어 쓰지 않습니다.
+  - 알림을 올리지 못했으면(알림 권한·채널 꺼짐) 화면도 켜지 않습니다. 권한은 `WAKE_LOCK`(일반 권한) 하나가 늘었습니다.
+- **삼성**: One UI 7 은 잠금 화면 알림을 기본으로 "아이콘만" 보여 줄 수 있습니다. 그때는 폰 설정에서 내용을 보이게 해야 글이 보입니다.
+- **확인**: `DangerAlertPolicyTest`가 사건·쿨다운·잠금 시점·조용한 라벨을 봅니다. 알림 자체는 `adb shell dumpsys notification --noredact`에서 importance=4, category=alarm, vis=PUBLIC 을 확인합니다.
+
 ---
 
 ## 6. 설정 저장 (`SettingsManager`)
