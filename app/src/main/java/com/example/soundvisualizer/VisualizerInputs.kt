@@ -24,6 +24,12 @@ interface VisualizerInputs {
      * 기본값을 둬서 테스트의 가짜 구현이 이 값을 신경 쓰지 않아도 되게 한다.
      */
     fun framesPerSecond(): Int = VisualizerEngine.FULL_FPS
+
+    /**
+     * 폰의 애니메이션이 켜져 있는지. 끈 사람(움직임 줄이기)에게는 위협음 맥박을 움직이지 않는다(#314).
+     * 기본값을 둬서 테스트의 가짜 구현이 신경 쓰지 않아도 되게 한다.
+     */
+    fun animationsEnabled(): Boolean = true
 }
 
 /** 실제 구동 배선. */
@@ -55,4 +61,7 @@ object LiveVisualizerInputs : VisualizerInputs {
 
     override fun framesPerSecond(): Int =
         if (SettingsManager.reducedFrameRate.value) VisualizerEngine.REDUCED_FPS else VisualizerEngine.FULL_FPS
+
+    /** 시스템의 애니메이터 길이 배율이 0 이면(개발자 옵션·접근성의 애니메이션 끄기) false. 정적 필드 읽기라 프레임마다 불러도 된다. */
+    override fun animationsEnabled(): Boolean = android.animation.ValueAnimator.areAnimatorsEnabled()
 }

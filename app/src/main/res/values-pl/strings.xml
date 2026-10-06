@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">Rodzaje dźwięków i wibracje</string>
     <string name="help_sound_kinds">AI dzieli to, co słychać, na dźwięki otoczenia, mowę i dźwięki zagrożenia. Domyślnie dźwięki otoczenia są oznaczane na biało, mowa na żółto, a dźwięki zagrożenia na czerwono. Na karcie „Ustawienia” możesz zmienić kolor każdego rodzaju i to, czy jest pokazywany.</string>
-    <string name="help_sound_danger">Gdy zostanie wykryty dźwięk zagrożenia (np. strzał), kolor zmienia się natychmiast, a nie stopniowo.</string>
+    <string name="help_sound_danger">Gdy zostanie wykryty dźwięk zagrożenia (np. strzał), kolor zmienia się natychmiast, a nie stopniowo. Dopóki trwa, grafika dodatkowo pulsuje, rozjaśniając się i przyciemniając, więc rozpoznasz go nawet wtedy, gdy trudno ci odróżnić kolory.</string>
     <string name="help_sound_haptic">Wibracje dadzą Ci znać o dźwięku, nawet gdy nie patrzysz na ekran. Domyślnie wibracje są włączone tylko dla dźwięków zagrożenia. Dla każdego rodzaju możesz wybrać tryb (Wyłączone, Wolne, Średnie, Szybkie, Ciągłe) i siłę.</string>
     <string name="help_sound_haptic_rule">Wibracje działają tylko dla rodzajów dźwięków pokazywanych na ekranie. Telefon wibruje, dopóki trwa dźwięk tego rodzaju, i przestaje, gdy dźwięk ucichnie. Tryb „Średnie” pulsuje co pół sekundy, „Wolne” dwa razy wolniej, a „Szybkie” dwa razy szybciej, natomiast „Ciągłe” wibruje bez przerwy. W każdym trybie wibracje mają wybraną przez Ciebie siłę.</string>
 
