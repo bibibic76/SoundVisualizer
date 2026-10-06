@@ -278,7 +278,7 @@ private fun FilterRow(filter: SoundFilter, typeColors: Map<String, Color>, onFil
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
-                    .background(if (selected) AccentColor else ChipColor)
+                    .background(if (selected) AccentFillColor else ChipColor)
                     .selectable(selected = selected, role = Role.RadioButton) { onFilter(option) }
                     .padding(horizontal = 14.dp, vertical = 8.dp)
             ) {

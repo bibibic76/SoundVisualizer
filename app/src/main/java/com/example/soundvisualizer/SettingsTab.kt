@@ -89,7 +89,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
                             Box(
                                 modifier = cellModifier
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(if (selected) AccentColor else Color(0xFF333A44))
+                                    .background(if (selected) AccentFillColor else Color(0xFF333A44))
                                     .selectable(selected = selected, role = Role.RadioButton) {
                                         SettingsManager.setVisualMode(mode)
                                     }
@@ -386,6 +386,8 @@ fun ColorSettingRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .weight(1f)
+                // 스위치(32dp)만큼만 높으면 누르는 자리가 작다. 줄 전체를 48dp 이상으로 둔다(#312).
+                .heightIn(min = 48.dp)
                 .toggleable(
                     value = checked,
                     // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 스위치가 움직이는 것으로 충분하다.
@@ -402,7 +404,7 @@ fun ColorSettingRow(
                 onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = AccentColor,
+                    checkedTrackColor = AccentFillColor,
                     uncheckedThumbColor = SecondaryTextColor,
                     uncheckedTrackColor = Color(0xFF333A44)
                 )

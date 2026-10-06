@@ -72,6 +72,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.BgColor
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.PrimaryTextColor
@@ -262,7 +263,7 @@ private fun SkipButton(visible: Boolean, onClick: () -> Unit) {
 private fun NextButton(isLast: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = AccentColor),
+        colors = ButtonDefaults.buttonColors(containerColor = AccentFillColor),
         shape = RoundedCornerShape(14.dp),
         modifier = modifier.heightIn(min = 56.dp)
     ) {

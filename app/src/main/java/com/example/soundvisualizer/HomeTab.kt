@@ -220,7 +220,7 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
         Button(
             onClick = onStart,
             enabled = !isRunning,
-            colors = ButtonDefaults.buttonColors(containerColor = AccentColor, disabledContainerColor = Color(0xFF333A44)),
+            colors = ButtonDefaults.buttonColors(containerColor = AccentFillColor, disabledContainerColor = Color(0xFF333A44)),
             shape = RoundedCornerShape(14.dp),
             contentPadding = HomeButtonPadding,
             modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
@@ -270,7 +270,7 @@ private fun MicSensitivitySlider() {
             steps = last - 1,
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,
-                activeTrackColor = AccentColor,
+                activeTrackColor = AccentFillColor,
                 inactiveTrackColor = Color(0xFF333A44)
             ),
             // 몇 번째 칸인지 읽힌다. 두지 않으면 슬라이더 위치를 퍼센트로 읽는데, 그 퍼센트는 실제 감도가 아니다.

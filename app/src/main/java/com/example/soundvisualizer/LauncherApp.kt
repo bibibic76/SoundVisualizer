@@ -120,14 +120,19 @@ fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
     Column(
         // 선택 여부가 색과 밑줄로만 보이면 화면 읽어주기 사용자는 어느 탭을 보고 있는지 알 수 없다.
         // selectable(Role.Tab) 이 "선택됨"과 탭이라는 것을 함께 읽어준다.
-        modifier = Modifier.selectable(
-            selected = isSelected,
-            // 기본 리플이 어두운 배경에서 검은 사각형처럼 번쩍인다. 탭에는 밑줄로 충분하다.
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            role = Role.Tab,
-            onClick = onClick
-        ),
+        modifier = Modifier
+            .selectable(
+                selected = isSelected,
+                // 기본 리플이 어두운 배경에서 검은 사각형처럼 번쩍인다. 탭에는 밑줄로 충분하다.
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                role = Role.Tab,
+                onClick = onClick
+            )
+            // 누르는 자리는 48dp 이상으로 둔다(#312). 글자와 밑줄은 약 35dp 라, 남는 높이는 글자 위에 둔다.
+            .heightIn(min = 48.dp)
+            .widthIn(min = 48.dp),
+        verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
