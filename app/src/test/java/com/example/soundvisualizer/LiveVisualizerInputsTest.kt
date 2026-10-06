@@ -38,12 +38,7 @@ class LiveVisualizerInputsTest {
         coarse = coarse,
         display = coarse,
         confidence = 1f,
-        gunshotScore = 0f,
-        boosterAvailable = true,
-        preBoosterCoarse = coarse,
-        boosterAccepted = false,
         meetsThreshold = true,
-        useBoosterDangerPreview = false,
         timestampMs = 0L
     )
 

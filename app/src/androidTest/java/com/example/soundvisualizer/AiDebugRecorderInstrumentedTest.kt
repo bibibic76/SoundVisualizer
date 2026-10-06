@@ -3,7 +3,6 @@ package com.example.soundvisualizer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.soundvisualizer.ai.AiClassificationResult
-import com.example.soundvisualizer.ai.AiFrontendMode
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import java.io.File
 import org.junit.After
@@ -37,23 +36,13 @@ class AiDebugRecorderInstrumentedTest {
         coarse = coarse,
         display = "Gunshot, gunfire",
         confidence = 0.5f,
-        gunshotScore = 0.8f,
         top5 = listOf(YamnetCoarseClassifier.TopClassHit(1, "Gunshot, gunfire", 0.5f)),
-        gunshotEvidence = 0.2f,
-        boosterReason = "booster_accepted",
         dangerCuePromoted = false,
-        boosterAvailable = true,
-        preBoosterCoarse = "ambient",
-        boosterAccepted = true,
         meetsThreshold = true,
-        useBoosterDangerPreview = false,
         timestampMs = timestampMs,
         preprocessMs = 1.0,
         yamnetMs = 2.0,
-        boosterMs = 0.5,
-        totalMs = 3.5,
-        frontendMode = AiFrontendMode.CURRENT,
-        boosterEnabled = true
+        totalMs = 3.5
     )
 
     /**
@@ -92,7 +81,7 @@ class AiDebugRecorderInstrumentedTest {
     @Test
     fun 켜지_않으면_폴더도_만들지_않는다() {
         // 기본이 꺼짐이라, 기록을 쓰지 않는 사용자의 기기에는 아무 흔적도 남지 않아야 한다.
-        AiDebugRecorder.offer(result(1_000L), nowMs = 1_000L, level = 0.5f, shown = true)
+        offer(result(1_000L), nowMs = 1_000L, level = 0.5f, shown = true)
         Thread.sleep(200)
         assertTrue("켜지 않았는데 폴더가 생겼다", !logDir.exists())
         assertNull(AiDebugRecorder.currentFile)
@@ -106,14 +95,14 @@ class AiDebugRecorderInstrumentedTest {
         assertTrue("이름이 ai-<날짜-시각>.csv 가 아니다: ${file.name}",
             Regex("""ai-\d{8}-\d{6}\.csv""").matches(file.name))
 
-        AiDebugRecorder.offer(result(2_000L), nowMs = 2_050L, level = 0.42f, shown = true)
+        offer(result(2_000L), nowMs = 2_050L, source = CaptureSource.Microphone, level = 0.42f, shown = true)
         // 줄마다 밀어 넣으므로, 끄지 않고도 파일에서 보여야 한다. 모아 두면 돌아가는 중에 받은 파일에
         // 최근 몇 초가 비어 그 구간을 "결과가 없었다" 로 읽게 된다.
         waitFor("넘긴 줄이 파일에 나타남") { text(file).lines().size >= 2 }
 
         val lines = text(file).trim().lines()
         assertEquals(AiDebugCsv.HEADER, lines[0])
-        assertEquals(AiDebugCsv.row(result(2_000L), 2_050L, 0.42f, true), lines[1])
+        assertEquals(AiDebugCsv.row(result(2_000L), 2_050L, CaptureSource.Microphone, 0.42f, true), lines[1])
     }
 
     @Test
@@ -131,9 +120,9 @@ class AiDebugRecorderInstrumentedTest {
         AiDebugRecorder.start(context)
         val file = startedFile()
         val same = result(3_000L)
-        AiDebugRecorder.offer(same, nowMs = 3_000L, level = 0.1f, shown = true)
-        AiDebugRecorder.offer(same, nowMs = 3_100L, level = 0.1f, shown = true)
-        AiDebugRecorder.offer(result(3_250L), nowMs = 3_250L, level = 0.1f, shown = true)
+        offer(same, nowMs = 3_000L, level = 0.1f, shown = true)
+        offer(same, nowMs = 3_100L, level = 0.1f, shown = true)
+        offer(result(3_250L), nowMs = 3_250L, level = 0.1f, shown = true)
         waitFor("세 번 넘긴 것이 두 줄로 남음") { text(file).trim().lines().size == 3 }
 
         Thread.sleep(300)   // 혹시 늦게 한 줄 더 들어오는지 본다
@@ -144,7 +133,7 @@ class AiDebugRecorderInstrumentedTest {
     fun 끄면_닫히고_다시_켜면_새_파일에_쓴다() {
         AiDebugRecorder.start(context)
         val first = startedFile()
-        AiDebugRecorder.offer(result(4_000L), nowMs = 4_000L, level = 0.2f, shown = true)
+        offer(result(4_000L), nowMs = 4_000L, level = 0.2f, shown = true)
         waitFor("첫 파일에 줄이 들어감") { text(first).contains(AiDebugCsv.HEADER) }
         AiDebugRecorder.stop()
 
@@ -155,7 +144,7 @@ class AiDebugRecorderInstrumentedTest {
         val second = startedFile()
         assertTrue("다시 켰는데 같은 파일에 이어 쓴다", first.name != second.name)
 
-        AiDebugRecorder.offer(result(5_000L), nowMs = 5_000L, level = 0.3f, shown = false)
+        offer(result(5_000L), nowMs = 5_000L, level = 0.3f, shown = false)
         waitFor("새 파일에 줄이 들어감") { text(second).trim().lines().size >= 2 }
 
         // 앞 파일은 그대로 남아 있어야 한다. 회차마다 파일이 갈려야 채점이 섞이지 않는다.
@@ -171,7 +160,7 @@ class AiDebugRecorderInstrumentedTest {
             AiDebugRecorder.start(context)
             // 끄면 currentFile 이 비므로, 끄기 전에 붙잡아 둔다.
             opened += startedFile()
-            AiDebugRecorder.offer(result(6_000L + it), nowMs = 6_000L + it, level = 0.1f, shown = true)
+            offer(result(6_000L + it), nowMs = 6_000L + it, level = 0.1f, shown = true)
             AiDebugRecorder.stop()
         }
         assertEquals("켤 때마다 파일이 열리지 않았다", 5, opened.size)
@@ -193,7 +182,7 @@ class AiDebugRecorderInstrumentedTest {
         // 스레드가 큐를 기다리는 동안 다시 켜면 두 스레드가 한 큐를 나눠 먹을 수 있었다(#208).
         AiDebugRecorder.start(context)
         val first = startedFile()
-        AiDebugRecorder.offer(result(7_000L), nowMs = 7_000L, level = 0.1f, shown = true)
+        offer(result(7_000L), nowMs = 7_000L, level = 0.1f, shown = true)
         waitFor("첫 파일에 한 줄") { text(first).trim().lines().size == 2 }
 
         AiDebugRecorder.stop()
@@ -203,7 +192,7 @@ class AiDebugRecorderInstrumentedTest {
         val second = startedFile()
         assertTrue("같은 파일을 다시 열었다", first.name != second.name)
 
-        repeat(6) { AiDebugRecorder.offer(result(8_000L + it), nowMs = 8_000L + it, level = 0.2f, shown = true) }
+        repeat(6) { offer(result(8_000L + it), nowMs = 8_000L + it, level = 0.2f, shown = true) }
         waitFor("새 파일에 여섯 줄") { text(second).trim().lines().size == 7 }
 
         Thread.sleep(400)
@@ -220,5 +209,15 @@ class AiDebugRecorderInstrumentedTest {
         // 다음 테스트와 실제 사용에 남기지 않는다.
         Thread.sleep(300)
         logDir.deleteRecursively()
+    }
+
+    private fun offer(
+        result: AiClassificationResult,
+        nowMs: Long,
+        source: CaptureSource = CaptureSource.InternalPlayback,
+        level: Float,
+        shown: Boolean
+    ) {
+        AiDebugRecorder.offer(result, nowMs, source, level, shown)
     }
 }

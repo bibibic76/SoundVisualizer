@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -53,6 +54,7 @@ import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsExpander
+import com.example.soundvisualizer.SettingsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -70,7 +72,14 @@ fun HelpTab() {
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
             SettingsExpander(stringResource(R.string.help_start_title), isExpanded = true) {
-                NumberedSteps(R.string.help_start_1, R.string.help_start_2, R.string.help_start_3, R.string.help_start_4)
+                // 외부 사운드 모드는 화면 녹화 동의를 묻지 않는다. 켤 때마다 묻는다고 하면 그 모드에서는 거짓이다(#226).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                NumberedSteps(
+                    R.string.help_start_1,
+                    if (externalSoundMode) R.string.help_start_2_external else R.string.help_start_2,
+                    R.string.help_start_3,
+                    R.string.help_start_4
+                )
             }
         }
         item {
@@ -81,7 +90,12 @@ fun HelpTab() {
         item {
             SettingsExpander(stringResource(R.string.help_permissions_title)) {
                 TitledItem(R.string.help_perm_overlay, R.string.help_perm_overlay_desc)
-                TitledItem(R.string.help_perm_mic, R.string.help_perm_mic_desc)
+                // 외부 사운드 모드를 켜면 이 권한으로 주변 소리를 듣는다. 그때는 "녹음하지 않는다" 고 말하지 않는다(#226).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                TitledItem(
+                    R.string.help_perm_mic,
+                    if (externalSoundMode) R.string.help_perm_mic_desc_external else R.string.help_perm_mic_desc
+                )
                 TitledItem(R.string.help_perm_capture, R.string.help_perm_capture_desc)
                 TitledItem(R.string.help_perm_notification, R.string.help_perm_notification_desc)
             }
@@ -107,11 +121,16 @@ fun HelpTab() {
         }
         item {
             SettingsExpander(stringResource(R.string.help_notes_title)) {
+                // 외부 사운드 모드에서는 방향·받는 소리·꺼지는 경우가 폰 안의 소리와 다르다(#268). 그 모드를 켜 둔 사람에게
+                // 폰 안의 소리 기준으로 말하면, 왼쪽에서 부르는 소리를 앞에서 난 소리로 읽거나 알람은 받지 않는다고 믿는다.
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
                 Bullets(
-                    R.string.help_note_direction,
+                    if (externalSoundMode) R.string.help_note_direction_external else R.string.help_note_direction,
                     R.string.help_note_mono,
-                    R.string.help_note_sources,
-                    R.string.help_note_stopped,
+                    if (externalSoundMode) R.string.help_note_sources_external else R.string.help_note_sources,
+                    R.string.help_note_volume,
+                    R.string.help_note_mic_sensitivity,
+                    if (externalSoundMode) R.string.help_note_stopped_external else R.string.help_note_stopped,
                     R.string.help_note_screen_off,
                     R.string.help_note_ai
                 )
@@ -120,9 +139,17 @@ fun HelpTab() {
         item {
             SettingsExpander(stringResource(R.string.help_faq_title)) {
                 // 직접 끄지 않았는데 꺼진 경우를 맨 위에 둔다. 알림을 못 봤으면 여기서 찾게 된다.
-                TitledItem(R.string.help_faq_stopped_q, R.string.help_faq_stopped_a)
-                TitledItem(R.string.help_faq_no_graphic_q, R.string.help_faq_no_graphic_a)
-                TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_a)
+                // 외부 사운드 모드는 화면 녹화 동의를 쓰지 않고, 소리가 안 들어오는 까닭도 다르다(#268).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                TitledItem(
+                    R.string.help_faq_stopped_q,
+                    if (externalSoundMode) R.string.help_faq_stopped_a_external else R.string.help_faq_stopped_a
+                )
+                TitledItem(
+                    R.string.help_faq_no_graphic_q,
+                    if (externalSoundMode) R.string.help_faq_no_graphic_a_external else R.string.help_faq_no_graphic_a
+                )
+                TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_answer)
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)
                 TitledItem(
                     R.string.help_faq_battery_q,

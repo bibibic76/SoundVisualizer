@@ -2,20 +2,62 @@
     <!-- Tabs -->
     <string name="tab_home">Startseite</string>
     <string name="tab_settings">Einstellungen</string>
+    <string name="tab_classify">Geräusche</string>
     <string name="tab_help">Hilfe</string>
 
     <!-- Home -->
     <string name="home_subtitle">Macht Geräusche direkt auf Ihrem Bildschirm sichtbar.\nOb Gaming oder Film – erleben Sie etwas ganz Neues.</string>
     <string name="home_status_running">Status: Aktiv</string>
+    <string name="home_status_running_external">Status: Aktiv · Außengeräusche</string>
+    <string name="home_mic_silenced">Über das Mikrofon kommt kein Ton an. Möglicherweise telefonieren Sie gerade, eine andere App verwendet das Mikrofon oder der Mikrofonzugriff ist in den Schnelleinstellungen ausgeschaltet.</string>
+    <string name="home_external_mode">Modus für Außengeräusche</string>
+    <string name="home_external_mode_desc">Hört über das Mikrofon auf die Geräusche in Ihrer Umgebung statt auf den Ton, der auf Ihrem Smartphone läuft. Der Ton selbst wird weder gespeichert noch irgendwohin gesendet.</string>
+    <string name="home_external_mode_locked">Kann während der Ausführung nicht geändert werden. Schalten Sie die Tonvisualisierung aus und ändern Sie die Einstellung. Sie gilt ab dem nächsten Start.</string>
+    <string name="home_mic_sensitivity">Mikrofonempfindlichkeit</string>
+    <string name="home_mic_sensitivity_value">%1$d %%</string>
     <string name="home_status_idle">Status: Bereit</string>
     <string name="home_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an, daher kann nichts dargestellt werden. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu (bei geschützten Videos ist das so), oder in dieser App ist der Ton ausgeschaltet.</string>
+    <string name="home_ai_unavailable_loud">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und nur laute Geräusche lösen eine Vibration aus – mit der Vibrationseinstellung für Gefahrengeräusche. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
     <string name="home_ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt und Vibrationswarnungen sind aus. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
     <string name="home_stopped_dismiss">Hinweis ausblenden</string>
     <string name="home_start">Starten</string>
     <string name="home_stop">Beenden</string>
-    <string name="home_add_tile">Schnelleinstellung hinzufügen</string>
-    <string name="home_add_tile_desc">Schalten Sie die Funktion in der Benachrichtigungsleiste ein und aus – direkt über Ihrem Spiel oder Video.</string>
-    <string name="home_add_tile_manual">Ziehen Sie die Benachrichtigungsleiste herunter, tippen Sie auf „Bearbeiten“ (Stiftsymbol) und fügen Sie „Tonvisualisierung“ hinzu. So können Sie die Funktion direkt über Ihrem Spiel oder Video ein- und ausschalten.</string>
+    <string name="tile_add">Schnelleinstellung hinzufügen</string>
+    <string name="tile_add_desc">Schalten Sie die Funktion in der Benachrichtigungsleiste ein und aus – direkt über Ihrem Spiel oder Video.</string>
+    <string name="tile_add_manual">Ziehen Sie die Benachrichtigungsleiste herunter, tippen Sie auf „Bearbeiten“ (Stiftsymbol) und fügen Sie „Tonvisualisierung“ hinzu. So können Sie die Funktion direkt über Ihrem Spiel oder Video ein- und ausschalten.</string>
+    <string name="settings_tile_title">Ein/Aus über die Benachrichtigungsleiste</string>
+    <string name="tile_added">„Tonvisualisierung“ ist in den Schnelleinstellungen der Benachrichtigungsleiste.</string>
+    <string name="home_tutorial">Tutorial ansehen</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tutorial</string>
+    <string name="tutorial_skip">Überspringen</string>
+    <string name="tutorial_back">Vorherige Seite</string>
+    <string name="tutorial_next">Weiter</string>
+    <string name="tutorial_done">Verstanden</string>
+    <string name="tutorial_page_status">Seite %1$d von %2$d</string>
+    <string name="tutorial_pause">Animation anhalten</string>
+    <string name="tutorial_play">Animation abspielen</string>
+    <string name="tutorial_sound_title">Geräusche auf dem Bildschirm sehen</string>
+    <string name="tutorial_sound_body">Der Ton Ihres Spiels oder Videos wird an den Bildschirmrändern dargestellt. Je lauter er ist, desto größer wird er gezeichnet. Angezeigt wird nur der Ton, der auf Ihrem Smartphone wiedergegeben wird. Geräusche um Sie herum werden nicht erfasst.</string>
+    <string name="tutorial_sound_body_external">Der Modus für Außengeräusche ist eingeschaltet. Daher werden die Geräusche um Sie herum, die das Mikrofon hört, an den Bildschirmrändern dargestellt. Je lauter ein Geräusch ist, desto größer wird es gezeichnet. Der auf Ihrem Smartphone wiedergegebene Ton wird in diesem Modus nicht angezeigt.</string>
+    <string name="tutorial_direction_title">Unterscheidet links und rechts</string>
+    <string name="tutorial_direction_title_external">Richtung vorerst nur in der Mitte</string>
+    <string name="tutorial_direction_body">Ein Geräusch von links wird auf der linken Seite größer dargestellt, ein Geräusch von rechts auf der rechten Seite. Vorne und hinten kann die App nicht unterscheiden.</string>
+    <string name="tutorial_direction_body_external">Im Modus für Außengeräusche zeigt die App noch nicht, aus welcher Richtung ein Geräusch kommt, und stellt alle Geräusche in der Mitte dar. Beim Ton Ihres Smartphones wird ein Geräusch von links auf der linken Seite größer dargestellt.</string>
+    <string name="tutorial_types_title">Jede Geräuschart hat ihre eigene Farbe</string>
+    <string name="tutorial_types_body">Die KI teilt Geräusche in drei Arten ein und stellt jede Art in einer eigenen Farbe dar. Die Farben können Sie im Tab „Einstellungen“ ändern.</string>
+    <string name="tutorial_type_ambient">Umgebungsgeräusche</string>
+    <string name="tutorial_type_ambient_examples">Musik, Regen und alles andere</string>
+    <string name="tutorial_type_speech">Stimmen</string>
+    <string name="tutorial_type_speech_examples">Menschen, die sprechen</string>
+    <string name="tutorial_type_danger">Gefahrengeräusche</string>
+    <string name="tutorial_type_danger_examples">Schüsse, Explosionen, Sirenen</string>
+    <string name="tutorial_vibration_title">Gefahrengeräusche lösen auch eine Vibration aus</string>
+    <string name="tutorial_vibration_body">Wenn in Ihrem Spiel oder Video ein Gefahrengeräusch ertönt, vibriert Ihr Smartphone. So bemerken Sie es auch, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Im Tab „Einstellungen“ können Sie die Vibration für jede Art ein- und ausschalten.</string>
+    <string name="tutorial_start_title">Ein- und ausschalten</string>
+    <string name="tutorial_privacy_note">Die Berechtigungen „Mikrofon“ und „Bildschirmaufnahme“ werden nur verwendet, um den auf Ihrem Smartphone wiedergegebenen Ton zu erfassen. Geräusche um Sie herum und Ihr Bildschirm werden nicht aufgezeichnet.</string>
+    <string name="tutorial_privacy_note_external">Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche um Sie herum. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet, und Ihr Bildschirm wird nicht aufgezeichnet.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">„Über anderen Apps einblenden“ zulassen</string>
@@ -23,8 +65,10 @@
     <string name="permission_record_audio_required">Zum Erfassen von Ton ist die Berechtigung „Mikrofon“ (Audioaufnahme) erforderlich.</string>
     <string name="permission_mic_rationale_title">Wozu die Mikrofonberechtigung?</string>
     <string name="permission_mic_rationale_message">Android verlangt die Mikrofonberechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
+    <string name="permission_mic_rationale_message_external">Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche in Ihrer Umgebung und zeigt sie auf dem Bildschirm und per Vibration an. Ab Android 12 erscheint in der Statusleiste ein Mikrofonsymbol, solange er zuhört. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet. Der Modus für Außengeräusche hört auch bei ausgeschaltetem Bildschirm weiter zu.</string>
     <string name="permission_mic_settings_title">Mikrofon in den Einstellungen zulassen</string>
     <string name="permission_mic_settings_message">Die Mikrofonberechtigung wurde nicht erteilt. Falls keine Berechtigungsanfrage mehr erscheint, tippen Sie auf „Einstellungen“, öffnen Sie „Berechtigungen“ und lassen Sie unter „Mikrofon“ den Zugriff zu. Die Berechtigung wird nur verwendet, um den auf Ihrem Smartphone wiedergegebenen Ton zu erfassen. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
+    <string name="permission_mic_settings_message_external">Die Mikrofonberechtigung wurde nicht erteilt. Falls keine Berechtigungsanfrage mehr erscheint, tippen Sie auf „Einstellungen“, öffnen Sie „Berechtigungen“ und lassen Sie unter „Mikrofon“ den Zugriff zu. Der Modus für Außengeräusche hört über das Mikrofon auf die Geräusche in Ihrer Umgebung. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet. Der Modus für Außengeräusche hört auch bei ausgeschaltetem Bildschirm weiter zu.</string>
     <string name="permission_continue">Weiter</string>
     <string name="permission_cancel">Abbrechen</string>
     <string name="permission_open_settings">Einstellungen</string>
@@ -62,7 +106,7 @@
     <string name="setting_max_opacity">Max. Deckkraft</string>
     <string name="setting_max_opacity_desc">Wie deckend die Grafiken beim lautesten Geräusch werden.</string>
     <string name="setting_size">Größe</string>
-    <string name="setting_size_desc">Legt fest, wie groß und voll die Grafiken wirken.</string>
+    <string name="setting_size_desc">Legt fest, wie groß die Grafik bei gleichem Ton gezeichnet wird. Leisere Geräusche werden dadurch nicht besser erfasst.</string>
     <string name="setting_radius">Radius</string>
     <string name="setting_radius_desc">Legt den Radius des Rings in der Bildschirmmitte im Modus „Kreis“ fest.</string>
     <string name="setting_opacity">Deckkraft</string>
@@ -70,7 +114,7 @@
     <string name="setting_speed">Tempo</string>
     <string name="setting_speed_desc">Wie schnell sich die Grafiken an eine neue Position bewegen, wenn sich die Richtung des Geräuschs ändert.</string>
     <string name="setting_sensitivity">Empfindlichkeit</string>
-    <string name="setting_sensitivity_desc">Wie schnell die Grafiken auf Änderungen der Lautstärke reagieren (pulsieren).</string>
+    <string name="setting_sensitivity_desc">Legt fest, wie schnell die Grafik größer und kleiner wird, wenn sich die Lautstärke ändert. Höhere Werte lassen sie im Takt pulsieren, niedrigere ändern sie sanft. Leisere Geräusche werden dadurch nicht besser erfasst.</string>
     <string name="setting_glow">Leuchten</string>
     <string name="setting_glow_desc">Fügt ein weiches Neonleuchten um die Grafiken hinzu. Hinweis: Dies beansprucht zusätzliche Ressourcen.</string>
     <string name="setting_glow_intensity">Leuchtstärke</string>
@@ -80,7 +124,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Pause bei ausgeschaltetem Bildschirm</string>
-    <string name="setting_pause_screen_off_desc">Solange der Bildschirm aus ist, werden Audioerfassung, Erkennung der Geräuscharten und Vibration angehalten, um Akku zu sparen; sobald Sie den Bildschirm einschalten, geht es weiter. Schalten Sie dies aus, um auch bei ausgeschaltetem Bildschirm Vibrationswarnungen zu erhalten.</string>
+    <string name="setting_pause_screen_off_desc">Solange der Bildschirm aus ist, werden Audioerfassung, Erkennung der Geräuscharten und Vibration angehalten, um Akku zu sparen; sobald Sie den Bildschirm einschalten, geht es weiter. Schalten Sie dies aus, um auch bei ausgeschaltetem Bildschirm Vibrationswarnungen zu erhalten. Der Modus für Außengeräusche hört unabhängig von dieser Einstellung auch bei ausgeschaltetem Bildschirm weiter zu.</string>
     <string name="setting_reduced_frame_rate">Grafiken seltener zeichnen</string>
     <string name="setting_reduced_frame_rate_desc">Zeichnet die Grafiken 30-mal statt 60-mal pro Sekunde neu. Das spart Akku, wenn Sie die App lange laufen lassen, dafür sind die Bewegungen weniger flüssig. Der Ton wird weiterhin genauso oft erfasst.</string>
 
@@ -89,23 +133,45 @@
     <string name="ai_show_speech">Stimmen zeigen</string>
     <string name="ai_show_danger">Gefahrengeräusche zeigen</string>
     <string name="ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
+    <string name="classify_title">Art für jedes Geräusch wählen</string>
+    <string name="classify_desc">Hier sehen Sie alle Geräusche, welche die KI erkennen kann, und die Art, zu der sie jeweils zählen. Wenn Sie die Art eines Geräuschs ändern, richten sich seine Farbe und Vibration sofort nach der neuen Art.</string>
+    <string name="classify_danger_note">Ein Geräusch, das Sie aus den Gefahrengeräuschen herausnehmen, erhält nicht mehr die Farbe und Vibration für Gefahrengeräusche. Ähnliche Geräusche stehen in eigenen Zeilen (bei Sirenen sind es fünf). Um alle herauszunehmen, ändern Sie jede dieser Zeilen.</string>
+    <string name="classify_search_hint">Geräusche suchen</string>
+    <string name="cd_classify_clear_search">Suchbegriff löschen</string>
+    <string name="classify_filter_all">Alle</string>
+    <string name="classify_filter_changed">Geändert</string>
+    <string name="sound_type_ambient">Umgebungsgeräusche</string>
+    <string name="sound_type_speech">Stimmen</string>
+    <string name="sound_type_danger">Gefahrengeräusche</string>
+    <string name="classify_type_default">%1$s (Standard)</string>
+    <string name="classify_changed_from">Standard: %1$s</string>
+    <string name="classify_changed_count">Geändert: %1$d</string>
+    <string name="classify_reset_all">Alle zurücksetzen</string>
+    <string name="classify_reset_title">Alle Geräusche zurücksetzen?</string>
+    <string name="classify_reset_message">Alle Geräusche, die Sie geändert haben, erhalten wieder ihre standardmäßige Art.</string>
+    <string name="classify_reset_confirm">Zurücksetzen</string>
+    <string name="classify_reset_cancel">Abbrechen</string>
+    <string name="classify_empty">Keine passenden Geräusche.</string>
+    <string name="cd_classify_sound">%1$s, Art: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, Art: %2$s, Standard: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrieren</string>
     <string name="haptic_requires_display">Vibriert nur, wenn diese Geräuschart angezeigt wird.</string>
+    <string name="haptic_ai_unavailable_danger">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert jedes laute Geräusch mit dieser Einstellung, solange es anhält, egal welcher Art.</string>
+    <string name="haptic_ai_unavailable_other">Solange die Erkennung der Geräuscharten nicht funktioniert, vibriert diese Art nicht. Laute Geräusche vibrieren mit der Einstellung für Gefahrengeräusche.</string>
     <string name="haptic_ai_unavailable">Solange die Erkennung der Geräuscharten nicht funktioniert, wird nicht vibriert.</string>
     <string name="haptic_unsupported">Dieses Gerät unterstützt keine Vibration.</string>
     <string name="haptic_no_amplitude">Dieses Gerät kann die Vibrationsstärke nicht anpassen und vibriert daher mit der Standardstärke.</string>
     <string name="haptic_strength">Stärke</string>
-    <string name="haptic_strength_weak">Leicht</string>
-    <string name="haptic_strength_medium">Mittel</string>
-    <string name="haptic_strength_strong">Stark</string>
-    <string name="haptic_pattern">Muster</string>
-    <string name="haptic_pattern_tap">Einmal</string>
-    <string name="haptic_pattern_double">Zweimal</string>
-    <string name="haptic_pattern_hold">Lang</string>
-    <string name="haptic_pattern_repeat">Wiederholt</string>
-    <string name="haptic_preview_hint">Tippen Sie auf eine Option, um die Vibration vorab zu spüren.</string>
+    <string name="haptic_level_percent">%1$d %%</string>
+    <string name="haptic_mode_off">Aus</string>
+    <string name="haptic_mode_slow">Langsam</string>
+    <string name="haptic_mode_medium">Mittel</string>
+    <string name="haptic_mode_fast">Schnell</string>
+    <string name="haptic_mode_continuous">Dauerhaft</string>
+    <string name="haptic_preview_hint">Tippen Sie auf einen Modus oder ändern Sie die Stärke, um die Vibration 2 Sekunden lang zu spüren.</string>
+    <string name="haptic_preview_hint_running">Während die Tonvisualisierung läuft, wird die Vorschau nicht abgespielt, damit sie nicht mit echten Vibrationen verwechselt wird.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Farbe auswählen</string>
@@ -133,8 +199,12 @@
     <!-- Notification -->
     <string name="notification_channel_name">Audioerfassung</string>
     <string name="notification_text">Geräusche werden visualisiert.</string>
+    <string name="notification_title_external">Außengeräusche · SoundVisualizer</string>
+    <string name="notification_text_external">Geräusche in Ihrer Umgebung werden gehört und visualisiert.</string>
+    <string name="notification_text_mic_silenced">Über das Mikrofon kommt kein Ton an. Möglicherweise telefonieren Sie gerade oder das Mikrofon ist blockiert.</string>
     <string name="notification_stop">Stopp</string>
     <string name="notification_mode_selected">%1$s, ausgewählt</string>
+    <string name="notification_text_ai_unavailable_loud">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher vibrieren nur laute Geräusche.</string>
     <string name="notification_text_ai_unavailable">Geräusche werden visualisiert. Die Erkennung der Geräuscharten funktioniert nicht, daher sind Vibrationswarnungen aus.</string>
     <string name="notification_text_capture_blocked">Bei der Tonvisualisierung kommt kein Ton an. Möglicherweise lässt die App, in der Sie gerade etwas abspielen, das Teilen ihres Tons nicht zu, oder in dieser App ist der Ton ausgeschaltet.</string>
 
@@ -159,11 +229,12 @@
     <string name="help_start_title">Erste Schritte</string>
     <string name="help_start_1">Tippen Sie im Tab „Startseite“ auf „Starten“.</string>
     <string name="help_start_2">Erteilen Sie die Berechtigungen. Android fragt bei jedem Einschalten erneut nach Ihrer Zustimmung zur Bildschirmaufnahme.</string>
+    <string name="help_start_2_external">Erteilen Sie die Berechtigungen. Im Modus für Außengeräusche wird keine Zustimmung zur Bildschirmaufnahme abgefragt.</string>
     <string name="help_start_3">Öffnen Sie ein Spiel oder Video. Geräusche werden dann an den Bildschirmrändern dargestellt.</string>
     <string name="help_start_4">Zum Ausschalten tippen Sie im Tab „Startseite“ auf „Beenden“ oder in der Benachrichtigung auf „Stopp“.</string>
 
     <string name="help_tile_title">Ein/Aus über die Benachrichtigungsleiste</string>
-    <string name="help_tile_body">Tippen Sie im Tab „Startseite“ auf „Schnelleinstellung hinzufügen“. Dann erscheint in Ihrer Benachrichtigungsleiste die Schaltfläche „Tonvisualisierung“. Damit schalten Sie die Funktion direkt über Ihrem Spiel oder Video ein und aus, ohne die App zu wechseln.</string>
+    <string name="help_tile_body">Tippen Sie im Tab „Einstellungen“ auf „Schnelleinstellung hinzufügen“. Dann erscheint in Ihrer Benachrichtigungsleiste die Schaltfläche „Tonvisualisierung“. Damit schalten Sie die Funktion direkt über Ihrem Spiel oder Video ein und aus, ohne die App zu wechseln.</string>
     <string name="help_tile_use">Tippen Sie darauf, um die Funktion einzuschalten, und tippen Sie erneut, um sie auszuschalten. Durch langes Drücken öffnen Sie die Einstellungen dieser App.</string>
     <string name="help_tile_old">Unter Android 12 und älter öffnen Sie die Benachrichtigungsleiste, tippen auf „Bearbeiten“ (Stiftsymbol) und ziehen „Tonvisualisierung“ selbst in die Schnelleinstellungen.</string>
 
@@ -172,6 +243,7 @@
     <string name="help_perm_overlay_desc">Wird benötigt, um Grafiken über Spielen und Videos anzuzeigen.</string>
     <string name="help_perm_mic">Mikrofon (Audioaufnahme)</string>
     <string name="help_perm_mic_desc">Android verlangt diese Berechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Geräusche aus Ihrer Umgebung werden nicht aufgenommen.</string>
+    <string name="help_perm_mic_desc_external">Android verlangt diese Berechtigung, damit der auf Ihrem Smartphone wiedergegebene Ton erfasst werden kann. Ist der Modus für Außengeräusche eingeschaltet, wird sie auch verwendet, um auf die Geräusche in Ihrer Umgebung zu hören. Der Ton selbst wird weder in einer Datei gespeichert noch irgendwohin gesendet. Der Modus für Außengeräusche hört auch bei ausgeschaltetem Bildschirm weiter zu.</string>
     <string name="help_perm_capture">Bildschirmaufnahme</string>
     <string name="help_perm_capture_desc">Android erlaubt Apps nur mit dieser Zustimmung, den Ton Ihres Smartphones zu erfassen. Ihr Bildschirm wird nicht aufgezeichnet.</string>
     <string name="help_perm_notification">Benachrichtigungen (ab Android 13)</string>
@@ -188,24 +260,31 @@
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
     <string name="help_sound_danger">Wird ein Gefahrengeräusch (z. B. ein Schuss) erkannt, wechselt die Farbe sofort statt allmählich.</string>
-    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie eine Stärke (Leicht, Mittel, Stark) und ein Muster (Einmal, Zweimal, Lang, Wiederholt) wählen.</string>
-    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Bei derselben Art vibriert das Smartphone frühestens nach 2 Sekunden erneut. Bei „Wiederholt“ vibriert es alle 1,5 Sekunden, solange das Geräusch anhält.</string>
+    <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie einen Modus (Aus, Langsam, Mittel, Schnell, Dauerhaft) und eine Stärke wählen.</string>
+    <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Das Smartphone vibriert, solange ein Geräusch dieser Art anhält, und hört mit dem Geräusch auf. „Mittel“ pulsiert jede halbe Sekunde, „Langsam“ halb so schnell und „Schnell“ doppelt so schnell, während „Dauerhaft“ ohne Unterbrechung vibriert. In jedem Modus bleibt die Vibration bei der gewählten Stärke.</string>
 
     <string name="help_notes_title">Gut zu wissen</string>
     <string name="help_note_direction">Links und rechts werden unterschieden, vorne und hinten jedoch nicht. Grafiken am oberen und unteren Bildschirmrand zeigen Geräusche, die auf beiden Seiten gleich stark zu hören sind, sowie den Raumeindruck.</string>
+    <string name="help_note_direction_external">Im Modus für Außengeräusche wird die Richtung noch nicht angezeigt, und alle Geräusche werden in der Mitte dargestellt. Beim Ton Ihres Smartphones werden links und rechts unterschieden, vorne und hinten jedoch nicht.</string>
     <string name="help_note_mono">Geräusche, die links und rechts identisch sind (Mono), werden nur als von vorne kommend angezeigt.</string>
     <string name="help_note_sources">Erfasst wird nur der Ton von Medien und Spielen. Anrufe, Benachrichtigungstöne und Wecker gehören nicht dazu. Der Ton von Apps, welche die Audioerfassung blockieren (z. B. manche Video-Apps), kann nicht visualisiert werden. Wenn Ton wiedergegeben wird, aber etwa 15 Sekunden lang nichts dargestellt wird, weisen der Tab „Startseite“ und die Benachrichtigung während der Ausführung darauf hin. Wenn sich eine App selbst stummgeschaltet hat, sieht das für uns aber genauso aus; welcher der beiden Fälle vorliegt, können wir Ihnen daher nicht sagen.</string>
+    <string name="help_note_sources_external">Der Modus für Außengeräusche nimmt alle Geräusche in Ihrer Umgebung auf, die das Mikrofon hört – auch Wecker, Türklingeln und den Ton Ihres eigenen Smartphones. Während eines Anrufs, wenn eine andere App das Mikrofon verwendet oder wenn das Mikrofon in den Schnelleinstellungen blockiert ist, kommt kein Ton an, und der Tab „Startseite“ und die Benachrichtigung während der Ausführung weisen darauf hin.</string>
+    <string name="help_note_volume">Ton, der auf Ihrem Smartphone wiedergegeben wird, wird in der Lautstärke erfasst, die die Medienlautstärke vorgibt. Wenn Sie die Lautstärke sehr weit herunterdrehen, reagieren Grafik und Vibration möglicherweise nicht, und bei null wird gar nichts erfasst. Wenn die Reaktion schwach ist, drehen Sie die Lautstärke etwas auf. Der Modus für Außengeräusche hängt nicht von der Lautstärke ab.</string>
+    <string name="help_note_mic_sensitivity">Im Modus für Außengeräusche ändert die Mikrofonempfindlichkeit nur, wie laut Geräusche für Grafik und Vibration wirken. Erhöhen Sie sie, wenn leise Geräusche kaum dargestellt werden, und senken Sie sie, wenn an einem lauten Ort auch Hintergrundgeräusche dargestellt werden. Den Ton, mit dem die KI die Geräuschart erkennt, ändert sie nicht.</string>
     <string name="help_note_stopped">Wenn eine Bildschirmaufnahme, eine Bildschirmfreigabe oder eine Übertragung startet, schaltet sich die Tonvisualisierung aus: Sie nutzt dieselbe Zustimmung zur Bildschirmaufnahme, und Android erlaubt sie immer nur einer App. Wenn eine andere App gerade den Bildschirm aufnimmt, freigibt oder überträgt, wird dieser Vorgang beim erneuten Einschalten beendet. Schaltet sie sich aus, ohne dass Sie sie beendet haben, vibriert Ihr Smartphone meist dreimal lang und zeigt eine Benachrichtigung mit der Schaltfläche „Wieder einschalten“. Beenden Sie die Audioerfassung über die Freigabeanzeige Ihres Smartphones, erscheint derselbe Hinweis; bei „Beenden erzwingen“ oder einem Absturz ist kein Hinweis möglich. Sind Benachrichtigungen ausgeschaltet, meldet nur die Vibration den Ausfall, und beim Öffnen der App zeigt der Tab „Startseite“, was sich ausgeschaltet hat.</string>
-    <string name="help_note_screen_off">Solange der Bildschirm aus ist, pausiert die App, um Akku zu sparen, und macht weiter, sobald Sie den Bildschirm einschalten. Sie können das im Tab „Einstellungen“ unter „Akku“ ändern.</string>
+    <string name="help_note_stopped_external">Der Modus für Außengeräusche bleibt eingeschaltet, unabhängig von Bildschirmaufnahme, Bildschirmfreigabe oder Übertragung. Schaltet er sich aus, ohne dass Sie ihn beendet haben, vibriert Ihr Smartphone meist dreimal lang und zeigt eine Benachrichtigung mit der Schaltfläche „Wieder einschalten“. Bei „Beenden erzwingen“ oder einem Absturz ist kein Hinweis möglich. Sind Benachrichtigungen ausgeschaltet, meldet nur die Vibration den Ausfall, und beim Öffnen der App zeigt der Tab „Startseite“, was sich ausgeschaltet hat.</string>
+    <string name="help_note_screen_off">Solange der Bildschirm aus ist, pausiert die App, um Akku zu sparen, und macht weiter, sobald Sie den Bildschirm einschalten. Sie können das im Tab „Einstellungen“ unter „Akku“ ändern. Der Modus für Außengeräusche hört auch bei ausgeschaltetem Bildschirm weiter zu.</string>
     <string name="help_note_ai">Die Einordnung durch die KI kann falsch sein. Verlassen Sie sich in Situationen, in denen es um Sicherheit geht, nicht allein auf diese App.</string>
 
     <string name="help_faq_title">Häufig gestellte Fragen</string>
     <string name="help_faq_stopped_q">Die Tonvisualisierung hat sich ausgeschaltet, ohne dass ich sie beendet habe.</string>
     <string name="help_faq_stopped_a">Sie schaltet sich aus, wenn eine Bildschirmaufnahme, eine Bildschirmfreigabe oder eine Übertragung startet oder wenn die Audioerfassung durch einen Fehler abbricht. Tippen Sie in der Benachrichtigung auf „Wieder einschalten“ oder schalten Sie sie im Tab „Startseite“ oder über die Schnelleinstellungen wieder ein. Android fragt jedes Mal erneut nach der Zustimmung zur Bildschirmaufnahme, und beim erneuten Einschalten wird eine laufende Aufnahme, Freigabe oder Übertragung beendet.</string>
+    <string name="help_faq_stopped_a_external">Sie schaltet sich aus, wenn die Audioerfassung durch einen Fehler abbricht. Tippen Sie in der Benachrichtigung auf „Wieder einschalten“ oder schalten Sie sie im Tab „Startseite“ oder über die Schnelleinstellungen wieder ein. Der Modus für Außengeräusche fragt nicht nach der Zustimmung zur Bildschirmaufnahme und bleibt eingeschaltet, auch wenn andere Apps den Bildschirm aufnehmen, freigeben oder übertragen.</string>
     <string name="help_faq_no_graphic_q">Ich sehe keine Grafiken.</string>
-    <string name="help_faq_no_graphic_a">Prüfen Sie, ob die App, in der Sie gerade etwas abspielen, die Audioerfassung blockiert und ob in dieser App der Ton ausgeschaltet ist. Wenn längere Zeit kein Ton bei der Tonvisualisierung ankommt, weisen der Tab „Startseite“ und die Benachrichtigung während der Ausführung darauf hin. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist.</string>
+    <string name="help_faq_no_graphic_a">Prüfen Sie, ob die App, in der Sie gerade etwas abspielen, die Audioerfassung blockiert und ob in dieser App der Ton ausgeschaltet ist. Wenn längere Zeit kein Ton bei der Tonvisualisierung ankommt, weisen der Tab „Startseite“ und die Benachrichtigung während der Ausführung darauf hin. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist. Wenn Sie den Ton Ihres Smartphones visualisieren und die Medienlautstärke sehr niedrig eingestellt ist, drehen Sie sie etwas auf.</string>
+    <string name="help_faq_no_graphic_a_external">Prüfen Sie, ob das Mikrofon blockiert ist. Während eines Anrufs, wenn eine andere App das Mikrofon verwendet oder wenn das Mikrofon in den Schnelleinstellungen blockiert ist, kommt kein Ton an, und der Tab „Startseite“ und die Benachrichtigung während der Ausführung weisen darauf hin. Wenn leise Geräusche kaum dargestellt werden, erhöhen Sie im Tab „Startseite“ die Mikrofonempfindlichkeit. Achten Sie außerdem im Tab „Einstellungen“ darauf, dass die „Deckkraft“ nicht zu niedrig eingestellt und die Anzeige der aktuellen Geräuschart nicht ausgeschaltet ist.</string>
     <string name="help_faq_no_vibration_q">Das Smartphone vibriert nicht.</string>
-    <string name="help_faq_no_vibration_a">Prüfen Sie im Tab „Einstellungen“ unter „Geräuscharten (KI)“, ob für die betreffende Art sowohl „… zeigen“ als auch „Vibrieren“ eingeschaltet sind. Wenn die Vibration in den Einstellungen Ihres Smartphones deaktiviert ist, vibriert es möglicherweise nicht.</string>
+    <string name="help_faq_no_vibration_answer">Prüfen Sie in den Einstellungen unter „Geräuscharten (KI)“, ob für die betreffende Art sowohl „… zeigen“ als auch „Vibrieren“ eingeschaltet sind. Bei ausgeschaltetem Bildschirm pausiert die App standardmäßig. Wenn Sie auch dann Vibrationen erhalten möchten, schalten Sie in den Einstellungen unter „Akku“ die Option „Pause bei ausgeschaltetem Bildschirm“ aus. Solange die Erkennung der Geräuscharten nicht funktioniert, vibrieren nur laute Geräusche – mit der Einstellung für Gefahrengeräusche. Wenn die Vibration in den Einstellungen Ihres Smartphones deaktiviert ist, vibriert es möglicherweise nicht. Wenn Sie den Ton Ihres Smartphones visualisieren und die Medienlautstärke sehr niedrig eingestellt ist, drehen Sie sie etwas auf.</string>
     <string name="help_faq_install_q">Eine neue Version lässt sich nicht installieren.</string>
     <string name="help_faq_install_a">Eine anderswo erstellte APK hat eine andere Signatur und kann daher nicht als Update für die vorhandene App installiert werden. Deinstallieren Sie zuerst die vorhandene App und installieren Sie dann die neue Version. Dabei werden Ihre Einstellungen zurückgesetzt.</string>
     <string name="help_faq_battery_q">Verbraucht die App viel Akku?</string>

@@ -2,20 +2,62 @@
     <!-- Tabs -->
     <string name="tab_home">Beranda</string>
     <string name="tab_settings">Setelan</string>
+    <string name="tab_classify">Suara</string>
     <string name="tab_help">Bantuan</string>
 
     <!-- Home -->
     <string name="home_subtitle">Suara yang tak terlihat kini tergambar langsung di layar Anda.\nDari bermain game hingga menonton film, rasakan pengalaman yang benar-benar baru.</string>
     <string name="home_status_running">Status: Berjalan</string>
+    <string name="home_status_running_external">Status: Berjalan · Suara luar</string>
+    <string name="home_mic_silenced">Tidak ada suara yang masuk melalui mikrofon. Anda mungkin sedang dalam panggilan, aplikasi lain mungkin sedang memakai mikrofon, atau akses mikrofon mungkin dimatikan di Setelan Cepat.</string>
+    <string name="home_external_mode">Mode suara luar</string>
+    <string name="home_external_mode_desc">Mendengarkan suara di sekitar Anda melalui mikrofon, bukan suara yang diputar di ponsel. Suaranya sendiri tidak pernah disimpan atau dikirim ke mana pun.</string>
+    <string name="home_external_mode_locked">Tidak dapat diubah saat berjalan. Hentikan visualisasi lalu ubah pengaturan ini; perubahan berlaku saat Anda memulainya lagi.</string>
+    <string name="home_mic_sensitivity">Sensitivitas mikrofon</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">Status: Siap</string>
     <string name="home_capture_blocked">Aplikasi ini tidak menerima suara apa pun, sehingga tidak ada yang dapat digambar. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan (video yang dilindungi memang begitu), atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
+    <string name="home_ai_unavailable_loud">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan hanya suara keras yang memicu getaran, dengan setelan getar suara bahaya. Coba matikan lalu nyalakan lagi visualisasinya.</string>
     <string name="home_ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar dan peringatan getar dimatikan. Coba matikan lalu nyalakan lagi visualisasinya.</string>
     <string name="home_stopped_dismiss">Tutup info</string>
     <string name="home_start">Mulai</string>
     <string name="home_stop">Hentikan</string>
-    <string name="home_add_tile">Tambahkan ke Setelan Cepat</string>
-    <string name="home_add_tile_desc">Nyalakan atau matikan dari panel notifikasi, langsung di atas game atau video Anda.</string>
-    <string name="home_add_tile_manual">Buka panel notifikasi, ketuk Edit (ikon pensil), lalu tambahkan “Visualisasi suara” untuk menyalakan atau mematikannya langsung di atas game atau video.</string>
+    <string name="tile_add">Tambahkan ke Setelan Cepat</string>
+    <string name="tile_add_desc">Nyalakan atau matikan dari panel notifikasi, langsung di atas game atau video Anda.</string>
+    <string name="tile_add_manual">Buka panel notifikasi, ketuk Edit (ikon pensil), lalu tambahkan “Visualisasi suara” untuk menyalakan atau mematikannya langsung di atas game atau video.</string>
+    <string name="settings_tile_title">Nyalakan/matikan dari panel notifikasi</string>
+    <string name="tile_added">“Visualisasi suara” sudah ada di Setelan Cepat pada panel notifikasi.</string>
+    <string name="home_tutorial">Lihat tutorial</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">Tutorial</string>
+    <string name="tutorial_skip">Lewati</string>
+    <string name="tutorial_back">Halaman sebelumnya</string>
+    <string name="tutorial_next">Berikutnya</string>
+    <string name="tutorial_done">Mengerti</string>
+    <string name="tutorial_page_status">Halaman %1$d dari %2$d</string>
+    <string name="tutorial_pause">Jeda animasi</string>
+    <string name="tutorial_play">Putar animasi</string>
+    <string name="tutorial_sound_title">Lihat suara di layar Anda</string>
+    <string name="tutorial_sound_body">Suara dari game atau video Anda digambar di sepanjang tepi layar. Makin keras suaranya, makin besar gambarnya. Hanya suara yang diputar di ponsel Anda yang ditampilkan. Aplikasi ini tidak mendengarkan suara di sekitar Anda.</string>
+    <string name="tutorial_sound_body_external">Mode suara luar sedang aktif, jadi suara di sekitar Anda yang ditangkap mikrofon digambar di sepanjang tepi layar. Makin keras suaranya, makin besar gambarnya. Di mode ini, suara yang diputar di ponsel Anda tidak ditampilkan.</string>
+    <string name="tutorial_direction_title">Membedakan kiri dan kanan</string>
+    <string name="tutorial_direction_title_external">Arah masih ditampilkan di tengah</string>
+    <string name="tutorial_direction_body">Suara dari kiri digambar lebih besar di sisi kiri, dan suara dari kanan di sisi kanan. Aplikasi tidak dapat membedakan depan dan belakang.</string>
+    <string name="tutorial_direction_body_external">Dalam Mode suara luar, aplikasi belum menunjukkan dari mana suara berasal dan menggambar semua suara di tengah. Untuk suara yang diputar di ponsel, suara dari kiri digambar lebih besar di sisi kiri.</string>
+    <string name="tutorial_types_title">Setiap jenis suara punya warnanya sendiri</string>
+    <string name="tutorial_types_body">AI mengelompokkan suara menjadi tiga jenis dan menggambar setiap jenis dengan warna yang berbeda. Anda dapat mengubah warnanya di tab Setelan.</string>
+    <string name="tutorial_type_ambient">Suara latar</string>
+    <string name="tutorial_type_ambient_examples">Musik, hujan, dan suara lainnya</string>
+    <string name="tutorial_type_speech">Percakapan</string>
+    <string name="tutorial_type_speech_examples">Suara manusia</string>
+    <string name="tutorial_type_danger">Suara bahaya</string>
+    <string name="tutorial_type_danger_examples">Tembakan, ledakan, sirene</string>
+    <string name="tutorial_vibration_title">Suara bahaya juga membuat ponsel bergetar</string>
+    <string name="tutorial_vibration_body">Saat ada suara bahaya di game atau video Anda, ponsel Anda bergetar. Anda tetap tahu meskipun tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat mengaktifkan atau menonaktifkan getaran untuk setiap jenis di tab Setelan.</string>
+    <string name="tutorial_start_title">Cara menyalakan dan mematikannya</string>
+    <string name="tutorial_privacy_note">Izin mikrofon dan persetujuan perekaman layar hanya digunakan untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda dan layar Anda tidak direkam.</string>
+    <string name="tutorial_privacy_note_external">Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun, dan layar Anda tidak direkam.</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">Izinkan “Tampilkan di atas aplikasi lain”</string>
@@ -23,8 +65,10 @@
     <string name="permission_record_audio_required">Izin mikrofon (rekam audio) diperlukan untuk menangkap audio.</string>
     <string name="permission_mic_rationale_title">Mengapa perlu izin mikrofon?</string>
     <string name="permission_mic_rationale_message">Android mewajibkan izin mikrofon untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
+    <string name="permission_mic_rationale_message_external">Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon lalu menampilkannya di layar dan lewat getaran. Di Android 12 dan yang lebih baru, indikator mikrofon muncul di status bar selama mendengarkan. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="permission_mic_settings_title">Izinkan mikrofon di Setelan</string>
     <string name="permission_mic_settings_message">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Izin ini hanya digunakan untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
+    <string name="permission_mic_settings_message_external">Izin mikrofon belum diberikan. Jika permintaan izin tidak muncul lagi, ketuk “Buka setelan”, pilih “Izin”, lalu izinkan “Mikrofon”. Mode suara luar mendengarkan suara di sekitar Anda melalui mikrofon. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="permission_continue">Lanjutkan</string>
     <string name="permission_cancel">Batal</string>
     <string name="permission_open_settings">Buka setelan</string>
@@ -62,7 +106,7 @@
     <string name="setting_max_opacity">Opasitas maks</string>
     <string name="setting_max_opacity_desc">Seberapa pekat grafik saat suara paling keras.</string>
     <string name="setting_size">Ukuran</string>
-    <string name="setting_size_desc">Mengatur seberapa besar dan penuh tampilan grafik.</string>
+    <string name="setting_size_desc">Mengatur seberapa besar grafik digambar untuk suara yang sama. Ini tidak membantu menangkap suara yang lebih pelan.</string>
     <string name="setting_radius">Radius</string>
     <string name="setting_radius_desc">Mengatur radius cincin di tengah layar pada mode Lingkar.</string>
     <string name="setting_opacity">Opasitas</string>
@@ -70,7 +114,7 @@
     <string name="setting_speed">Kecepatan</string>
     <string name="setting_speed_desc">Seberapa cepat grafik berpindah ke posisi baru saat arah suara berubah.</string>
     <string name="setting_sensitivity">Kepekaan</string>
-    <string name="setting_sensitivity_desc">Seberapa cepat grafik bereaksi (berdenyut) terhadap perubahan kerasnya suara.</string>
+    <string name="setting_sensitivity_desc">Mengatur seberapa cepat grafik membesar dan mengecil saat kerasnya suara berubah. Nilai tinggi membuatnya berdenyut mengikuti irama; nilai rendah membuatnya berubah dengan halus. Ini tidak membantu menangkap suara yang lebih pelan.</string>
     <string name="setting_glow">Efek cahaya</string>
     <string name="setting_glow_desc">Menambahkan pendar neon yang lembut di sekitar grafik. Catatan: menggunakan sumber daya tambahan.</string>
     <string name="setting_glow_intensity">Kuat cahaya</string>
@@ -80,7 +124,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">Jeda saat layar mati</string>
-    <string name="setting_pause_screen_off_desc">Saat layar mati, aplikasi berhenti menangkap suara, mendeteksi jenis suara, dan bergetar untuk menghemat baterai, lalu lanjut lagi begitu layar dinyalakan. Matikan opsi ini jika Anda tetap ingin menerima peringatan getar saat layar mati.</string>
+    <string name="setting_pause_screen_off_desc">Saat layar mati, aplikasi berhenti menangkap suara, mendeteksi jenis suara, dan bergetar untuk menghemat baterai, lalu lanjut lagi begitu layar dinyalakan. Matikan opsi ini jika Anda tetap ingin menerima peringatan getar saat layar mati. Mode suara luar tetap mendengarkan saat layar mati, apa pun setelan ini.</string>
     <string name="setting_reduced_frame_rate">Menggambar grafik lebih jarang</string>
     <string name="setting_reduced_frame_rate_desc">Grafik digambar ulang 30 kali per detik, bukan 60 kali. Ini menghemat baterai saat aplikasi dibiarkan berjalan lama, tetapi gerakannya menjadi kurang mulus. Suara tetap ditangkap sesering biasanya.</string>
 
@@ -89,23 +133,45 @@
     <string name="ai_show_speech">Tampilkan percakapan</string>
     <string name="ai_show_danger">Tampilkan suara bahaya</string>
     <string name="ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar. Coba matikan lalu nyalakan lagi visualisasinya.</string>
+    <string name="classify_title">Pilih jenis untuk setiap suara</string>
+    <string name="classify_desc">Berikut semua suara yang dapat dikenali AI beserta jenisnya. Jika Anda mengubah jenis suatu suara, warna dan getarannya langsung mengikuti jenis yang baru.</string>
+    <string name="classify_danger_note">Suara yang Anda pindahkan dari jenis suara bahaya tidak lagi mendapat warna maupun getaran suara bahaya. Suara yang mirip ada di baris terpisah (sirene ada di lima baris), jadi ubah setiap barisnya untuk memindahkan semuanya.</string>
+    <string name="classify_search_hint">Cari suara</string>
+    <string name="cd_classify_clear_search">Hapus pencarian</string>
+    <string name="classify_filter_all">Semua</string>
+    <string name="classify_filter_changed">Diubah</string>
+    <string name="sound_type_ambient">Suara latar</string>
+    <string name="sound_type_speech">Percakapan</string>
+    <string name="sound_type_danger">Suara bahaya</string>
+    <string name="classify_type_default">%1$s (default)</string>
+    <string name="classify_changed_from">Default: %1$s</string>
+    <string name="classify_changed_count">Diubah: %1$d</string>
+    <string name="classify_reset_all">Reset semua</string>
+    <string name="classify_reset_title">Reset semua suara?</string>
+    <string name="classify_reset_message">Semua suara yang telah Anda ubah akan kembali ke jenis default.</string>
+    <string name="classify_reset_confirm">Reset</string>
+    <string name="classify_reset_cancel">Batal</string>
+    <string name="classify_empty">Tidak ada suara yang cocok.</string>
+    <string name="cd_classify_sound">%1$s, jenis: %2$s</string>
+    <string name="cd_classify_sound_changed">%1$s, jenis: %2$s, default: %3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Getar</string>
     <string name="haptic_requires_display">Getaran hanya aktif jika jenis suara ini ditampilkan.</string>
+    <string name="haptic_ai_unavailable_danger">Selama deteksi jenis suara tidak berfungsi, setiap suara keras memicu getaran dengan setelan ini selama suaranya berlangsung, apa pun jenisnya.</string>
+    <string name="haptic_ai_unavailable_other">Selama deteksi jenis suara tidak berfungsi, jenis ini tidak memicu getaran. Suara keras bergetar dengan setelan suara bahaya.</string>
     <string name="haptic_ai_unavailable">Ponsel tidak akan bergetar selama deteksi jenis suara tidak berfungsi.</string>
     <string name="haptic_unsupported">Perangkat ini tidak mendukung getaran.</string>
     <string name="haptic_no_amplitude">Perangkat ini tidak dapat mengatur kekuatan getaran, sehingga bergetar dengan kekuatan default.</string>
     <string name="haptic_strength">Kekuatan</string>
-    <string name="haptic_strength_weak">Lemah</string>
-    <string name="haptic_strength_medium">Sedang</string>
-    <string name="haptic_strength_strong">Kuat</string>
-    <string name="haptic_pattern">Pola</string>
-    <string name="haptic_pattern_tap">Sekali</string>
-    <string name="haptic_pattern_double">Dua kali</string>
-    <string name="haptic_pattern_hold">Panjang</string>
-    <string name="haptic_pattern_repeat">Berulang</string>
-    <string name="haptic_preview_hint">Ketuk salah satu opsi untuk merasakan contoh getarannya.</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">Mati</string>
+    <string name="haptic_mode_slow">Lambat</string>
+    <string name="haptic_mode_medium">Sedang</string>
+    <string name="haptic_mode_fast">Cepat</string>
+    <string name="haptic_mode_continuous">Terus-menerus</string>
+    <string name="haptic_preview_hint">Ketuk salah satu mode atau ubah kekuatannya untuk merasakan getarannya selama 2 detik.</string>
+    <string name="haptic_preview_hint_running">Saat visualisasi berjalan, contoh getaran tidak diputar agar tidak tertukar dengan getaran yang sebenarnya.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pilih warna</string>
@@ -133,8 +199,12 @@
     <!-- Notification -->
     <string name="notification_channel_name">Penangkapan audio</string>
     <string name="notification_text">Memvisualisasikan suara.</string>
+    <string name="notification_title_external">Suara luar · SoundVisualizer</string>
+    <string name="notification_text_external">Mendengarkan suara di sekitar Anda dan memvisualisasikannya.</string>
+    <string name="notification_text_mic_silenced">Tidak ada suara yang masuk melalui mikrofon. Anda mungkin sedang dalam panggilan, atau mikrofon mungkin diblokir.</string>
     <string name="notification_stop">Hentikan</string>
     <string name="notification_mode_selected">%1$s, dipilih</string>
+    <string name="notification_text_ai_unavailable_loud">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga hanya suara keras yang memicu getaran.</string>
     <string name="notification_text_ai_unavailable">Memvisualisasikan suara. Deteksi jenis suara tidak berfungsi, sehingga peringatan getar dimatikan.</string>
     <string name="notification_text_capture_blocked">Aplikasi ini tidak menerima suara apa pun. Aplikasi yang sedang memutar suara mungkin tidak mengizinkan suaranya dibagikan, atau mungkin suara di aplikasi itu sendiri dimatikan.</string>
 
@@ -159,11 +229,12 @@
     <string name="help_start_title">Memulai</string>
     <string name="help_start_1">Di Beranda, ketuk “Mulai”.</string>
     <string name="help_start_2">Berikan izin yang diminta. Android meminta persetujuan perekaman layar setiap kali Anda menyalakannya.</string>
+    <string name="help_start_2_external">Berikan izin yang diminta. Mode suara luar tidak meminta persetujuan perekaman layar.</string>
     <string name="help_start_3">Buka game atau video, lalu suara akan digambar di sepanjang tepi layar.</string>
     <string name="help_start_4">Untuk mematikannya, ketuk “Hentikan” di Beranda atau di notifikasi.</string>
 
     <string name="help_tile_title">Nyalakan/matikan dari panel notifikasi</string>
-    <string name="help_tile_body">Ketuk “Tambahkan ke Setelan Cepat” di Beranda untuk menambahkan tombol “Visualisasi suara” ke panel notifikasi. Setelah itu, Anda bisa menyalakan atau mematikannya langsung di atas game atau video tanpa berpindah aplikasi.</string>
+    <string name="help_tile_body">Ketuk “Tambahkan ke Setelan Cepat” di tab Setelan untuk menambahkan tombol “Visualisasi suara” ke panel notifikasi. Setelah itu, Anda bisa menyalakan atau mematikannya langsung di atas game atau video tanpa berpindah aplikasi.</string>
     <string name="help_tile_use">Ketuk untuk menyalakan, lalu ketuk lagi untuk mematikan. Tekan lama untuk membuka setelan aplikasi ini.</string>
     <string name="help_tile_old">Di Android 12 dan versi sebelumnya, buka panel notifikasi, ketuk Edit (ikon pensil), lalu tarik sendiri “Visualisasi suara” ke dalam panel.</string>
 
@@ -172,6 +243,7 @@
     <string name="help_perm_overlay_desc">Diperlukan untuk menampilkan grafik di atas game dan video.</string>
     <string name="help_perm_mic">Mikrofon (rekam audio)</string>
     <string name="help_perm_mic_desc">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Suara di sekitar Anda tidak direkam.</string>
+    <string name="help_perm_mic_desc_external">Android mewajibkan izin ini untuk menangkap suara yang diputar di ponsel Anda. Saat mode suara luar aktif, izin ini juga dipakai untuk mendengarkan suara di sekitar Anda. Suaranya sendiri tidak pernah disimpan ke file atau dikirim ke mana pun. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="help_perm_capture">Perekaman layar</string>
     <string name="help_perm_capture_desc">Android hanya mengizinkan aplikasi menangkap suara ponsel Anda melalui persetujuan ini. Layar Anda tidak direkam.</string>
     <string name="help_perm_notification">Notifikasi (Android 13+)</string>
@@ -188,24 +260,31 @@
     <string name="help_sound_title">Jenis suara dan getaran</string>
     <string name="help_sound_kinds">AI mengelompokkan suara yang terdengar menjadi suara latar, percakapan, dan suara bahaya. Secara default, suara latar berwarna putih, percakapan kuning, dan suara bahaya merah. Di tab Setelan, Anda dapat mengubah warna setiap jenis dan memilih apakah jenis tersebut ditampilkan.</string>
     <string name="help_sound_danger">Saat suara bahaya (seperti suara tembakan) terdeteksi, warna langsung berubah tanpa memudar perlahan.</string>
-    <string name="help_sound_haptic">Getaran memberi tahu Anda meskipun Anda tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat memilih kekuatan (Lemah, Sedang, Kuat) dan pola (Sekali, Dua kali, Panjang, Berulang) untuk setiap jenis.</string>
-    <string name="help_sound_haptic_rule">Getaran hanya berlaku untuk jenis suara yang ditampilkan di layar. Jenis yang sama tidak akan memicu getaran lagi dalam 2 detik, dan pola “Berulang” bergetar setiap 1,5 detik selama suara masih terdengar.</string>
+    <string name="help_sound_haptic">Getaran memberi tahu Anda meskipun Anda tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat memilih mode (Mati, Lambat, Sedang, Cepat, Terus-menerus) dan kekuatan untuk setiap jenis.</string>
+    <string name="help_sound_haptic_rule">Getaran hanya berlaku untuk jenis suara yang ditampilkan di layar. Ponsel terus bergetar selama suara jenis itu masih terdengar dan berhenti saat suaranya berhenti. Sedang berdenyut setiap setengah detik, Lambat dengan setengah kecepatan itu, dan Cepat dengan dua kali kecepatan itu, sedangkan Terus-menerus bergetar tanpa jeda. Di semua mode, getaran tetap pada kekuatan yang Anda pilih.</string>
 
     <string name="help_notes_title">Perlu diketahui</string>
     <string name="help_note_direction">Aplikasi dapat membedakan kiri dan kanan, tetapi tidak dapat membedakan depan dan belakang. Grafik di bagian atas dan bawah layar menunjukkan suara yang terdengar sama kuat di kedua sisi, serta memberi kesan ruang.</string>
+    <string name="help_note_direction_external">Dalam Mode suara luar, arah belum ditampilkan dan semua suara digambar di tengah. Untuk suara yang diputar di ponsel, aplikasi dapat membedakan kiri dan kanan, tetapi tidak dapat membedakan depan dan belakang.</string>
     <string name="help_note_mono">Suara yang sama persis di kiri dan kanan (mono) hanya ditampilkan ke arah depan.</string>
     <string name="help_note_sources">Hanya suara media dan game yang ditangkap. Panggilan telepon, suara notifikasi, dan alarm tidak ditangkap. Aplikasi yang memblokir penangkapan audio (seperti beberapa aplikasi video) tidak dapat divisualisasikan. Jika ada suara yang diputar tetapi tidak ada yang digambar selama sekitar 15 detik, Beranda dan notifikasi saat aplikasi berjalan akan memberi tahu Anda. Aplikasi yang mematikan suaranya sendiri pun terlihat persis sama, sehingga tidak dapat diketahui mana di antara keduanya yang menjadi penyebabnya.</string>
+    <string name="help_note_sources_external">Mode suara luar menangkap semua suara di sekitar Anda yang terdengar oleh mikrofon, termasuk alarm, bel pintu, dan suara dari ponsel Anda sendiri. Saat panggilan berlangsung, saat aplikasi lain memakai mikrofon, atau jika mikrofon diblokir di Setelan Cepat, tidak ada suara yang masuk, dan Beranda serta notifikasi saat aplikasi berjalan akan memberi tahu Anda.</string>
+    <string name="help_note_volume">Suara yang diputar di ponsel ditangkap sesuai tingkat volume media. Jika volume diturunkan sangat rendah, grafik dan getaran mungkin tidak merespons, dan pada volume 0 tidak ada yang ditangkap. Jika responsnya lemah, naikkan sedikit volumenya. Mode suara luar tidak dipengaruhi volume.</string>
+    <string name="help_note_mic_sensitivity">Dalam Mode suara luar, Sensitivitas mikrofon hanya mengubah seberapa keras suara terlihat oleh grafik dan getaran. Naikkan jika suara pelan hampir tidak tampak, dan turunkan jika di tempat bising suara latar ikut tampak. Pengaturan ini tidak mengubah suara yang digunakan AI untuk membedakan jenis suara.</string>
     <string name="help_note_stopped">Memulai perekaman layar, berbagi layar, atau cast akan mematikan visualisasi, karena semuanya memakai persetujuan perekaman layar yang sama dan Android hanya mengizinkan satu aplikasi memakainya dalam satu waktu. Jika aplikasi lain sedang merekam, berbagi, atau melakukan cast, menyalakannya lagi akan menghentikan aplikasi tersebut. Umumnya, saat visualisasi mati tanpa Anda matikan sendiri, ponsel bergetar panjang tiga kali dan menampilkan notifikasi dengan tombol “Nyalakan lagi”. Menghentikan penangkapan suara dari kontrol berbagi layar di ponsel Anda memunculkan pemberitahuan yang sama, sedangkan penghentian paksa atau aplikasi yang berhenti mendadak tidak dapat memberi tahu Anda sama sekali. Jika notifikasi dimatikan, hanya getaran yang memberi tahu Anda, dan Beranda menunjukkan apa yang mati saat Anda membuka aplikasi.</string>
-    <string name="help_note_screen_off">Saat layar mati, aplikasi menjeda dirinya untuk menghemat baterai dan lanjut lagi begitu layar dinyalakan. Anda dapat mengubahnya di bagian Baterai pada tab Setelan.</string>
+    <string name="help_note_stopped_external">Mode suara luar tetap menyala meskipun ada perekaman layar, berbagi layar, atau cast. Umumnya, saat mode ini mati tanpa Anda matikan sendiri, ponsel bergetar panjang tiga kali dan menampilkan notifikasi dengan tombol “Nyalakan lagi”. Penghentian paksa atau aplikasi yang berhenti mendadak tidak dapat memberi tahu Anda sama sekali. Jika notifikasi dimatikan, hanya getaran yang memberi tahu Anda, dan Beranda menunjukkan apa yang mati saat Anda membuka aplikasi.</string>
+    <string name="help_note_screen_off">Saat layar mati, aplikasi menjeda dirinya untuk menghemat baterai dan lanjut lagi begitu layar dinyalakan. Anda dapat mengubahnya di bagian Baterai pada tab Setelan. Mode suara luar tetap mendengarkan meskipun layar mati.</string>
     <string name="help_note_ai">Klasifikasi AI bisa salah. Jangan mengandalkan aplikasi ini sebagai satu-satunya pengaman dalam situasi yang menyangkut keselamatan.</string>
 
     <string name="help_faq_title">Pertanyaan umum</string>
     <string name="help_faq_stopped_q">Visualisasi mati padahal saya tidak menghentikannya.</string>
     <string name="help_faq_stopped_a">Visualisasi mati saat perekaman layar, berbagi layar, atau cast dimulai, atau saat penangkapan suara berhenti karena kesalahan. Ketuk “Nyalakan lagi” di notifikasi, atau nyalakan dari Beranda atau Setelan Cepat. Android meminta persetujuan perekaman layar setiap kali, dan menyalakannya lagi akan menghentikan perekaman, berbagi, atau cast yang sedang berjalan.</string>
+    <string name="help_faq_stopped_a_external">Visualisasi mati saat penangkapan suara berhenti karena kesalahan. Ketuk “Nyalakan lagi” di notifikasi, atau nyalakan dari Beranda atau Setelan Cepat. Mode suara luar tidak meminta persetujuan perekaman layar dan tetap menyala meskipun aplikasi lain sedang merekam, berbagi, atau melakukan cast layar.</string>
     <string name="help_faq_no_graphic_q">Grafik tidak muncul.</string>
-    <string name="help_faq_no_graphic_a">Periksa apakah aplikasi yang sedang memutar suara memblokir penangkapan audio, dan apakah suara di aplikasi itu sendiri dimatikan. Jika aplikasi ini tidak menerima suara dalam waktu cukup lama, Beranda dan notifikasi saat aplikasi berjalan akan memberi tahu Anda. Pastikan juga Opasitas di tab Setelan tidak terlalu rendah, dan opsi Tampilkan untuk jenis suara yang sedang terdengar tidak dimatikan.</string>
+    <string name="help_faq_no_graphic_a">Periksa apakah aplikasi yang sedang memutar suara memblokir penangkapan audio, dan apakah suara di aplikasi itu sendiri dimatikan. Jika aplikasi ini tidak menerima suara dalam waktu cukup lama, Beranda dan notifikasi saat aplikasi berjalan akan memberi tahu Anda. Pastikan juga Opasitas di tab Setelan tidak terlalu rendah, dan opsi Tampilkan untuk jenis suara yang sedang terdengar tidak dimatikan. Saat memvisualisasikan suara di ponsel, jika volume media sangat rendah, naikkan sedikit.</string>
+    <string name="help_faq_no_graphic_a_external">Pastikan mikrofon tidak diblokir. Saat panggilan berlangsung, saat aplikasi lain memakai mikrofon, atau jika mikrofon diblokir di Setelan Cepat, tidak ada suara yang masuk, dan Beranda serta notifikasi saat aplikasi berjalan akan memberi tahu Anda. Jika suara pelan hampir tidak tampak, naikkan Sensitivitas mikrofon di Beranda. Pastikan juga Opasitas di tab Setelan tidak terlalu rendah, dan opsi Tampilkan untuk jenis suara yang sedang terdengar tidak dimatikan.</string>
     <string name="help_faq_no_vibration_q">Tidak ada getaran.</string>
-    <string name="help_faq_no_vibration_a">Di tab Setelan, pada bagian Jenis suara (AI), pastikan Tampilkan dan Getar sama-sama aktif untuk jenis tersebut. Jika getaran dimatikan di setelan ponsel Anda, ponsel mungkin tidak bergetar.</string>
+    <string name="help_faq_no_vibration_answer">Di Setelan, pada bagian Jenis suara (AI), pastikan Tampilkan dan Getar sama-sama aktif untuk jenis tersebut. Secara default, aplikasi dijeda saat layar mati. Agar tetap menerima peringatan getar saat itu, matikan “Jeda saat layar mati” di bagian Baterai pada Setelan. Selama deteksi jenis suara tidak berfungsi, hanya suara keras yang bergetar, dengan setelan suara bahaya. Jika getaran dimatikan di setelan ponsel Anda, ponsel mungkin tidak bergetar. Saat memvisualisasikan suara di ponsel, jika volume media sangat rendah, naikkan sedikit.</string>
     <string name="help_faq_install_q">Versi baru tidak dapat diinstal.</string>
     <string name="help_faq_install_a">APK yang dibuat di tempat lain memiliki tanda tangan yang berbeda, sehingga tidak dapat diinstal di atas aplikasi yang sudah ada. Uninstal aplikasi yang ada terlebih dahulu, lalu instal. Setelan Anda akan direset.</string>
     <string name="help_faq_battery_q">Apakah aplikasi ini boros baterai?</string>

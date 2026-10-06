@@ -18,13 +18,16 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import com.example.soundvisualizer.language.AppLanguage
 import com.example.soundvisualizer.tile.VisualizerTileService
+import com.example.soundvisualizer.tutorial.TutorialScreen
 import com.example.soundvisualizer.ui.theme.SoundVisualizerTheme
 import kotlinx.coroutines.launch
 
@@ -43,7 +46,7 @@ class MainActivity : ComponentActivity() {
     /** 실행에 필요한 권한을 받는다. 설정 화면으로 보내기 전에는 무엇을 해야 하는지 먼저 설명한다. */
     private val capturePermission = CapturePermissionFlow(
         this,
-        onGranted = ::launchProjectionRequest,
+        onGranted = ::startCapture,
         onOverlaySettings = { pendingStart.awaitPermission() }
     )
 
@@ -60,6 +63,15 @@ class MainActivity : ComponentActivity() {
 
     /** 꺼짐 안내로 홈 탭에 한 번만 옮기기 위한 상태. 다시 만들어져도 유지되도록 [KEY_ROUTED_STOP_NOTICE] 로 저장한다. */
     private var stopNoticeRouting = StopNoticeRouting()
+
+    /**
+     * 홈의 ‘튜토리얼 보기’로 튜토리얼을 연 상태인지. 화면을 돌리거나 언어를 바꿔 다시 만들어져도 닫히지 않게
+     * [KEY_TUTORIAL_REQUESTED] 로 저장한다.
+     *
+     * 처음 열 때 저절로 뜨는 것은 여기 담지 않고 [SettingsManager.tutorialSeen] 에서 바로 읽는다. 담아 두면 다른
+     * 창(타일이 권한을 받으러 새로 연 MainActivity 등)에서 닫았을 때 이 창에만 옛 값이 남는다.
+     */
+    private val tutorialRequested = mutableStateOf(false)
 
     // Android 12 이하에서는 고른 앱 언어를 여기서 입힌다. 13 이상은 시스템이 적용한다.
     override fun attachBaseContext(newBase: Context) {
@@ -89,6 +101,7 @@ class MainActivity : ComponentActivity() {
             stopNoticeRouting = StopNoticeRouting(
                 savedInstanceState.getInt(KEY_ROUTED_STOP_NOTICE, StopNoticeRouting.NONE)
             )
+            tutorialRequested.value = savedInstanceState.getBoolean(KEY_TUTORIAL_REQUESTED, false)
         }
         // 권한 화면에 보내 놓고 화면이 돌아가면 여기서 다시 만들어진다. 기다리던 실행을 잃지 않는다.
         @Suppress("DEPRECATION")
@@ -101,19 +114,60 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = BgColor
                 ) {
-                    LauncherApp(
-                        selectedTab = selectedTab.intValue,
-                        onSelectTab = { selectedTab.intValue = it },
-                        onStart = { capturePermission.start() },
-                        onStop = {
-                            // 직접 껐으면 기다리던 실행도 버린다. 권한을 켜고 돌아와도 다시 켜지지 않는다.
-                            pendingStart.cancel()
-                            VisualizerController.stop(this)
-                        },
-                        onAddTile = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
+                    // 본 적이 없으면 저절로, 홈에서 누르면 다시 연다.
+                    val tutorialSeen by SettingsManager.tutorialSeen.collectAsState()
+                    val tutorialOpen = tutorialRequested.value || !tutorialSeen
+                    // 튜토리얼이 아직 화면에 있는지. 닫으면 사라지는 전환(0.3초)이 끝나야 거짓이 된다.
+                    var tutorialOnScreen by remember { mutableStateOf(false) }
+                    // 튜토리얼과 탭 화면을 겹쳐 두지 않고 바꿔 끼운다. 겹쳐 두면 화면 읽어주기가 가려진 탭 화면까지 읽는다.
+                    Crossfade(targetState = tutorialOpen, label = "tutorial") { open ->
+                        if (open) {
+                            // Crossfade 는 사라지는 쪽을 전환이 끝날 때까지 남겨 두므로, 여기서 빠지는 순간이 전환이 끝난 때다.
+                            DisposableEffect(Unit) {
+                                tutorialOnScreen = true
+                                onDispose { tutorialOnScreen = false }
+                            }
+                            TutorialScreen(onClose = ::closeTutorial)
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                LauncherApp(
+                                    selectedTab = selectedTab.intValue,
+                                    onSelectTab = { selectedTab.intValue = it },
+                                    onStart = { capturePermission.start() },
+                                    onStop = {
+                                        // 직접 껐으면 기다리던 실행도 버린다. 권한을 켜고 돌아와도 다시 켜지지 않는다.
+                                        pendingStart.cancel()
+                                        VisualizerController.stop(this@MainActivity)
+                                    },
+                                    onAddTile = {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requestAddTile()
+                                    },
+                                    onOpenTutorial = {
+                                        // 튜토리얼이 사라지는 동안 탭 화면은 투명한 채 맨 위에서 누름을 받는다. ‘확인’을 빠르게 두 번
+                                        // 누르면 둘째 번이 그 자리의 ‘튜토리얼 보기’에 닿아 방금 닫은 튜토리얼이 다시 열렸다(#232).
+                                        // 튜토리얼이 화면에서 빠지기 전의 누름은 받지 않는다. 처음에는 닫은 뒤 0.5초를 실제 시계로
+                                        // 쟀는데, 화면이 멈추는 느린 기기에서는 전환이 그보다 길어 막지 못했다(#249). 전환은 화면
+                                        // 시계를 따르므로 기기 속도와 상관없다.
+                                        if (!tutorialOnScreen) tutorialRequested.value = true
+                                    }
+                                )
+                                // 튜토리얼이 사라지는 동안에는 탭 화면 전체의 누름을 막는다(#264). 위의 검사는 ‘튜토리얼 보기’ 하나만
+                                // 막아서, 가로 화면에서 ‘확인’·‘건너뛰기’를 두 번 누르면 둘째 번이 그 자리의 외부 사운드 모드 스위치를
+                                // 바꿨다. 그 모드는 동의 없이 켜지므로 다음 실행이 모르는 사이 마이크로 시작된다. 맨 위에 덮어 두어
+                                // 모든 누름을 여기서 삼킨다. 화면 읽어주기의 동작은 누름 이벤트가 아니라 여기서 막히지 않지만, 0.3초 안에
+                                // 두 번 동작시키는 일은 드물다.
+                                if (tutorialOnScreen) {
+                                    Box(
+                                        modifier = Modifier.matchParentSize().pointerInput(Unit) {
+                                            awaitPointerEventScope {
+                                                while (true) awaitPointerEvent().changes.forEach { it.consume() }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
-                    )
+                    }
                     CapturePermissionDialogs(capturePermission)
                 }
             }
@@ -124,6 +178,13 @@ class MainActivity : ComponentActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_SELECTED_TAB, selectedTab.intValue)
         outState.putInt(KEY_ROUTED_STOP_NOTICE, stopNoticeRouting.routedSeq)
+        outState.putBoolean(KEY_TUTORIAL_REQUESTED, tutorialRequested.value)
+    }
+
+    /** 튜토리얼을 닫는다. 끝까지 넘겼든 건너뛰었든 본 것으로 저장해, 다음에 열 때는 띄우지 않는다. */
+    private fun closeTutorial() {
+        tutorialRequested.value = false
+        SettingsManager.setTutorialSeen(true)
     }
 
     /** 화면 회전으로 다시 만들어지는 동안만 [pendingStart] 를 넘긴다. 프로세스가 죽으면 함께 사라져야 한다. */
@@ -144,7 +205,7 @@ class MainActivity : ComponentActivity() {
     private fun requestAddTile() {
         val statusBar = getSystemService(StatusBarManager::class.java)
         if (statusBar == null) {
-            Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.tile_add_manual, Toast.LENGTH_LONG).show()
             return
         }
         statusBar.requestAddTileService(
@@ -154,14 +215,14 @@ class MainActivity : ComponentActivity() {
             ContextCompat.getMainExecutor(this)
         ) { result ->
             when (result) {
-                // 이미 있는 경우도 추가된 것으로 기록해 홈의 권유 버튼을 숨긴다.
+                // 이미 있는 경우도 추가된 것으로 기록해 설정 탭의 추가 버튼을 "추가되어 있음" 으로 바꾼다.
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED,
                 StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> SettingsManager.setTileAdded(true)
                 // 추가되지 않았다: "추가 안 함"(TILE_NOT_ADDED), 창을 그냥 닫음, 요청 실패(TILE_ADD_REQUEST_ERROR_*).
                 // 세 번 거절하면 시스템이 그다음부터는 창을 띄우지 않고 바로 거절만 돌려주는데, 그대로 두면
                 // 버튼을 눌러도 아무 일도 일어나지 않는다. 어느 경우인지 결과로는 알 수 없으므로
                 // 모두 직접 추가하는 방법을 알린다.
-                else -> Toast.makeText(this, R.string.home_add_tile_manual, Toast.LENGTH_LONG).show()
+                else -> Toast.makeText(this, R.string.tile_add_manual, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -187,7 +248,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * 꺼짐 안내는 홈에만 있다. 설정·도움말 탭을 보다가 게임으로 나간 사이에 꺼졌으면, 최근 앱·런처·알림
+     * 꺼짐 안내는 홈에만 있다. 설정·분류·도움말 탭을 보다가 게임으로 나간 사이에 꺼졌으면, 최근 앱·런처·알림
      * 어디로 돌아와도 안내를 보게 홈으로 옮긴다.
      *
      * 안내 하나에 한 번만 옮긴다([StopNoticeRouting]). 안내마다 번호가 붙으므로, 닫거나 다시 켜서 지워진 뒤
@@ -205,7 +266,12 @@ class MainActivity : ComponentActivity() {
         SettingsManager.flushModeSettings()
     }
 
-    private fun launchProjectionRequest() {
+    /** 권한을 받았다. 폰 안의 소리는 화면 녹화 동의를 받아 켜고, 외부 사운드 모드는 동의 없이 바로 켠다(#226). */
+    private fun startCapture() {
+        if (!VisualizerController.captureSource.needsProjectionConsent) {
+            VisualizerController.startMicrophone(this)
+            return
+        }
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
     }
@@ -215,5 +281,6 @@ class MainActivity : ComponentActivity() {
         const val TAB_SETTINGS = 1
         const val KEY_SELECTED_TAB = "selected_tab"
         const val KEY_ROUTED_STOP_NOTICE = "routed_stop_notice"
+        const val KEY_TUTORIAL_REQUESTED = "tutorial_requested"
     }
 }

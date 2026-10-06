@@ -16,8 +16,11 @@ object AudioEngine {
     /**
      * 인터리브 스테레오 float PCM 을 direct [ByteBuffer] 로 넘긴다 (복사 없음).
      * [floatCount] 는 인덱스 0 부터의 float 개수다.
+     *
+     * @param levelGain 잰 크기(피크)에 곱할 값. 외부 사운드 모드의 마이크 감도([MicSensitivity])이고, 폰 안의 소리는 1.
+     *   크기에만 곱하고 1 에서 자르며, PCM 은 바꾸지 않는다. 그래서 같은 버퍼를 읽는 AI 는 감도와 상관없는 소리를 받는다.
      */
-    external fun pushAudioBuffer(buffer: ByteBuffer, floatCount: Int)
+    external fun pushAudioBuffer(buffer: ByteBuffer, floatCount: Int, levelGain: Float)
 
     /**
      * [out] (크기 3 이상) 에 `[좌 피크, 우 피크, 마지막 호출 이후 도착한 버퍼 수]` 를 채우고

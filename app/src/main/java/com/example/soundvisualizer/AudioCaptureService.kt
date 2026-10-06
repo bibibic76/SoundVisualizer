@@ -12,12 +12,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
@@ -37,25 +37,32 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
+import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticNotifier
+import com.example.soundvisualizer.feedback.HapticPlayer
 import com.example.soundvisualizer.language.AppLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.FloatBuffer
 
 /**
- * MediaProjection 기반 내부 오디오 캡처 포그라운드 서비스.
+ * 소리를 받는 포그라운드 서비스. 폰에서 재생되는 소리(MediaProjection 의 AudioPlaybackCapture)를 받고,
+ * 외부 사운드 모드에서는 마이크로 주변 소리를 받는다([CaptureSource], #226).
  *
  * 캡처 루프는 코루틴 대신 전용 스레드(URGENT_AUDIO 우선순위)에서 돌며,
  * AudioRecord → direct ByteBuffer → JNI 로 복사 없이 넘긴다.
  *
- * 사용자가 끈 게 아닌데 멈추면 [StopAlert] 로 알린다. 화면이 꺼지면 [ScreenOffPause] 에 따라 쉰다.
- * 재생 중인 소리를 아무것도 받지 못하면 [BlockedCaptureNotice] 에 따라 알린다.
+ * 사용자가 끈 게 아닌데 멈추면 [StopAlert] 로 알린다. 화면이 꺼지면 [ScreenOffPause] 에 따라 쉰다. 외부 사운드 모드는 쉬지 않는다(#260).
+ * 재생 중인 소리를 아무것도 받지 못하면 [BlockedCaptureNotice] 에 따라, 마이크로 아무것도 들어오지 않으면
+ * [MicSilenceNotice] 에 따라 알린다.
  */
 class AudioCaptureService : Service() {
 
@@ -81,7 +88,10 @@ class AudioCaptureService : Service() {
     /** 화면이 꺼져 AI 와 진동을 쉬는 중인지. 늦게 끝난 초기화가 쉬는 중에 추론을 시작하지 않도록 알린다. aiLock 으로 보호. */
     private var aiPaused = false
 
-    /** 분류 결과에 맞춰 진동을 준다. AI 파이프라인이 붙은 뒤에만 생긴다. aiLock 으로 보호. */
+    /**
+     * 분류 결과와 소리 크기에 맞춰 진동을 준다. 캡처가 도는 동안 있고, AI 와 따로 켜고 끈다([startHaptics]).
+     * 메인 스레드에서 만들고 없애며, 읽고 쓸 때는 aiLock 을 잡는다.
+     */
     private var hapticNotifier: HapticNotifier? = null
 
     /** 실제로 사용 중인 캡처 레이트. onCreate 에서 기기에 맞춰 정해진다. */
@@ -97,6 +107,29 @@ class AudioCaptureService : Service() {
      * 내려간 뒤 늦게 도착한 콜백은 다음 실행을 건드리면 안 된다. 메인 스레드 전용.
      */
     private val stopLatch = StopLatch()
+
+    /**
+     * 사용자가 켜지 않았는데 떠서 onCreate 가 아무것도 시작하지 않은 인스턴스인지. ([CaptureStartToken])
+     * 곧 내려가므로 onStartCommand 와 onDestroy 도 아무것도 하지 않는다. 메인 스레드 전용.
+     */
+    private var unrequestedStart = false
+
+    /**
+     * 이 실행이 소리를 받는 곳. onCreate 에서 시작 표로 받아 이 실행이 끝날 때까지 바꾸지 않는다(#226).
+     * 메인 스레드에서만 쓴다. 캡처 스레드에는 시작할 때 값으로 넘긴다.
+     */
+    private var captureSource = CaptureSource.InternalPlayback
+
+    /** 마이크로 아무것도 들어오지 않는지. 메인 스레드 전용. ([blockedCheck]) */
+    private val micSilence = MicSilenceNotice()
+
+    /**
+     * 통화 중이라 마이크 입력을 버리는 중인지(#226). 확인 틱이 세우고 캡처 스레드가 버퍼마다 읽는다.
+     * 통화 중에는 안드로이드도 다른 앱의 녹음을 막지만, 막지 않는 기기에서도 통화 소리가 오버레이·진동·AI 에
+     * 닿지 않게 한다.
+     */
+    @Volatile
+    private var micMutedForCall = false
 
     /** 화면이 꺼져 쉬는 중인지. 메인 스레드 전용. */
     private val screenPause = ScreenOffPause()
@@ -159,7 +192,21 @@ class AudioCaptureService : Service() {
 
         /** 실행 중 알림의 번호. 서비스보다 오래 남은 알림을 지우는지 계측 테스트가 같은 번호로 확인한다. */
         internal const val NOTIFICATION_ID = 1
+        /** 두 소스 모두 스테레오로 연다. 마이크가 하나뿐인 기기는 오디오 서버가 두 채널로 복제해 준다. */
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_STEREO
+
+        /**
+         * 외부 사운드 모드가 여는 마이크 소스(#226).
+         *
+         * `VOICE_RECOGNITION` 은 안드로이드가 자동 음량 조절과 잡음 제거를 끄고 주파수 응답을 고르게 두도록 정한
+         * 소스라, AI 가 가공되지 않은 소리를 듣는다. S25+ 에서 재 보니 아래쪽 마이크 하나를 두 채널로 복제해
+         * 주었다(좌우 상관 1.000). `MIC`·`CAMCORDER` 는 아래쪽과 뒷면 마이크를 따로 주어 크기가 약 4dB 달랐다.
+         * 기기마다 다를 수 있어 캡처 루프가 좌우를 늘 같게 만든다([toDualMono]).
+         *
+         * 입력 이득은 걸지 않는다. 같은 폰의 사무실 잡음이 이 소스로 피크 -40dBFS 안팎이라, 오버레이가 깨어나는
+         * 기준(0.01)에 이미 닿는다. 이득을 걸면 조용한 곳이 아니면 늘 그림이 켜져 있게 된다.
+         */
+        private const val MIC_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT
 
         /** 한 번에 읽는 float 개수 (스테레오 512 프레임 ≈ 11.6ms @44.1kHz). */
@@ -218,6 +265,27 @@ class AudioCaptureService : Service() {
             stopRequested = true
         }
 
+        /** 사용자가 켰는지 onCreate 가 가리는 표. 메인 스레드 전용. */
+        private val startToken = CaptureStartToken()
+
+        /**
+         * 사용자가 켜지 않았는데 떠서 onCreate 가 거른 횟수. 걸러진 인스턴스는 [isRunning] 을 세우지 않으므로,
+         * 서비스가 떴다 걸러졌는지는 계측 테스트가 이것으로 본다. 메인 스레드에서만 올린다.
+         */
+        @Volatile
+        internal var unrequestedStartCount: Int = 0
+            private set
+
+        /**
+         * 사용자가 켜기를 눌렀다고 서비스에 알린다. [VisualizerController] 가 서비스를 띄우기 바로 앞에서 부른다.
+         *
+         * @param source 이번 실행이 소리를 받을 곳. 서비스는 onCreate 에서 이 값으로 포그라운드 타입을 정한다.
+         */
+        @MainThread
+        fun markStartRequested(source: CaptureSource) {
+            startToken.issue(SystemClock.elapsedRealtime(), source)
+        }
+
         /**
          * 떠 있는 캡처 서비스. [stopForFailure] 가 서비스를 내리기 전에 알리도록 부른다.
          * onCreate 에서 넣고 onDestroy 에서 비우므로 서비스가 내려간 뒤까지 붙잡지 않는다. 메인 스레드 전용.
@@ -233,7 +301,8 @@ class AudioCaptureService : Service() {
          * stopService 로 내리면 이유를 넘길 수 없고, onDestroy 까지 기다리면 포그라운드에서 내려온 뒤라 진동이 막힌다.
          * 그래서 떠 있는 서비스에 직접 이유를 넘겨 알린 뒤 내리게 한다.
          * 이유를 인텐트에 실어 startService 로 보내지 않는 이유: 캡처 서비스가 이미 내려가는 중이면
-         * startService 가 새 인스턴스를 만들고, 동의 없이 mediaProjection 포그라운드 서비스를 띄우려다 죽는다.
+         * startService 가 새 인스턴스를 만든다. 그 인스턴스는 사용자가 켠 것이 아니라서 아무것도 하지 않고 내려가므로
+         * ([CaptureStartToken]) 이유가 전해지지 않는다.
          */
         @MainThread
         @SuppressLint("ImplicitSamInstance")
@@ -287,7 +356,21 @@ class AudioCaptureService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        // 사용자가 켜지 않았으면 아무것도 시작하지 않고 내린다. 아래에서 포그라운드부터 시작하면 Android 14 이상은
+        // 화면 녹화 동의가 없어 죽고, 그 아래는 캡처 없는 포그라운드 서비스가 떴다 내려간다. ([CaptureStartToken])
+        // 켜진 적이 없으니 꺼짐 알림도 없고, 실행 상태와 설정 값도 건드리지 않는다.
+        val source = startToken.consume(SystemClock.elapsedRealtime())
+        if (source == null) {
+            Log.w(TAG, "created without a start request; stopping")
+            unrequestedStart = true
+            unrequestedStartCount++
+            stopSelf()
+            return
+        }
+        captureSource = source
         SettingsManager.init(applicationContext)
+        // 홈은 설정값이 아니라 이 값을 보고 "주변 소리"를 적는다. 실행 상태보다 먼저 알린다.
+        SettingsManager.setRunningCaptureSource(source)
         instance = this
         // 지난 실행에서 눌린 끄기는 이번 실행과 상관없다.
         stopRequested = false
@@ -298,12 +381,15 @@ class AudioCaptureService : Service() {
         createNotificationChannel()
         StopAlert.createChannel(this)
         // Android 14+: getMediaProjection() 이전에 mediaProjection 타입 FGS 가 먼저 떠 있어야 한다.
+        // 마이크 모드는 microphone 타입이어야 다른 앱으로 나가 있어도 마이크가 막히지 않는다(Android 11+).
+        // 타입은 하나만 넘긴다([CaptureSource.foregroundServiceType]).
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
             createNotification(),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            captureSource.foregroundServiceType
         )
+        Log.i(TAG, "capture source: $captureSource")
         // 다시 켜졌으니 지난번에 꺼졌다고 알린 알림과 홈 안내는 틀린 정보다.
         StopAlert.cancel(this)
         AudioEngine.reset()
@@ -315,6 +401,7 @@ class AudioCaptureService : Service() {
 
         observeVisualMode()
         observeAppLanguage()
+        observeLoudAlertSettings()
 
         // 초기화 스레드가 쉬는 중인지 볼 수 있도록 AI 보다 먼저 등록한다.
         registerScreenReceiver()
@@ -347,8 +434,7 @@ class AudioCaptureService : Service() {
                 RealtimeAiPipeline.create(
                     appContext,
                     rate,
-                    channels = 2,
-                    diagnosticConfigProvider = SettingsManager::activeAiDiagnosticConfig
+                    channels = 2
                 )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
@@ -369,8 +455,9 @@ class AudioCaptureService : Service() {
             return
         }
         if (pipeline == null) {
-            // 캡처와 시각화는 계속한다. 대신 모든 소리가 환경음으로 그려지고 진동 알림이 돌지 않는다는 걸
-            // 홈·설정 화면과 실행 중 알림에 알린다. 알리지 않으면 위협음 진동이 켜진 줄 믿게 된다.
+            // 캡처와 시각화는 계속한다. 대신 모든 소리가 환경음으로 그려지고, 진동은 종류를 가리지 않고 큰 소리에만
+            // 울린다는 걸 홈·설정 화면과 실행 중 알림에 알린다. 알리지 않으면 종류별 진동이 그대로인 줄 믿게 된다.
+            // 진동 알림은 이 값을 보고 큰 소리 알림으로 바뀐다([startHaptics]).
             SettingsManager.setAiAvailable(false)
             mainHandler.post { refreshOngoingNotification() }
             return
@@ -383,21 +470,39 @@ class AudioCaptureService : Service() {
     }
 
     /**
-     * 추론과 진동 알림을 시작하고, 오버레이가 읽을 결과를 [AiClassification] 에 붙인다. aiLock 안에서 부른다.
-     * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
+     * 추론을 시작하고, 오버레이와 진동이 읽을 결과를 [AiClassification] 에 붙인다. aiLock 안에서 부른다.
      * start() 는 링버퍼·후처리·마지막 결과를 비우므로 쉬기 직전의 소리를 다시 분류하지 않는다.
      * 비우기 직전까지 돌던 추론 한 번이 뒤늦게 덮어쓰지 않도록 [scheduleAiResume] 가 그만큼 기다렸다 부른다.
      *
      * 붙이기는 비운 **뒤**에 한다. 파이프라인이 도는 동안에만 붙어 있어야, 쉬는 동안과 다시 켜기를 기다리는
-     * 동안 오버레이가 환경음으로 떨어진다([pauseForScreenOff] 가 뗀다).
+     * 동안 오버레이는 환경음으로 떨어지고 진동은 라벨이 없어 울리지 않는다([pauseForScreenOff] 가 뗀다).
      */
     private fun startAiLocked(pipeline: RealtimeAiPipeline) {
         pipeline.start()
         AiClassification.attach { pipeline.lastClassification() }
-        if (hapticNotifier != null) return
-        // 첫 분류 결과가 나오기 전(null)에는 울리지 않는다.
-        hapticNotifier = HapticNotifier(applicationContext) { pipeline.lastClassification()?.coarse }
-            .also { it.start() }
+    }
+
+    /**
+     * 진동 알림을 켠다. 캡처가 돌기 시작할 때([startCaptureLoop]) 부른다. 두 번 불러도 하나만 돈다.
+     *
+     * 예전에는 AI 가 로딩을 마친 뒤에만 켰다. 그러면 모델을 못 불러온 실행에서는 진동이 아예 없었다. 화면을 볼 수 없을 때
+     * (주머니 속, 잠자리) 진동이 유일한 알림이라, AI 와 떼어 캡처와 함께 켠다(#225).
+     *
+     * 라벨은 오버레이와 같은 곳([AiClassification.latest])에서 읽는다. 로딩 중이나 화면을 켠 직후처럼 AI 가 붙기 전에는
+     * 라벨이 없어 지금처럼 울리지 않는다. AI 를 쓸 수 없는 실행([SettingsManager.aiAvailable] 이 거짓)에서만 라벨 없이
+     * 큰 소리에 울린다([com.example.soundvisualizer.feedback.HapticPolicy]).
+     *
+     * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
+     */
+    private fun startHaptics() {
+        if (stopLatch.isStopping) return
+        synchronized(aiLock) {
+            if (hapticNotifier != null) return
+            hapticNotifier = HapticNotifier(
+                applicationContext,
+                unlabeledAlerts = { !SettingsManager.aiAvailable.value }
+            ) { AiClassification.latest()?.coarse }.also { it.start() }
+        }
     }
 
     /**
@@ -415,9 +520,12 @@ class AudioCaptureService : Service() {
      * 마이크 권한은 부르는 쪽이 확인한다. 예전에는 확인과 생성이 한 함수에 있어 Lint 가 짝을 볼 수
      * 있었는데, 여기로 떼어 내면서 보이지 않게 됐다. 필요한 권한을 표시해 Lint 가 호출부의 확인을
      * 다시 짝지을 수 있게 한다.
+     *
+     * @param configure 소스를 정한다. 내부 소리는 재생 캡처 설정을, 마이크는 [MIC_SOURCE] 를 넣는다.
+     *   어느 소스인지는 onCreate 가 따로 남긴다(`capture source`). 아래 형식 로그는 AI 진단용이라 그대로 둔다.
      */
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun openAudioRecord(config: AudioPlaybackCaptureConfiguration): AudioRecord? {
+    private fun openAudioRecord(configure: AudioRecord.Builder.() -> Unit): AudioRecord? {
         val reported = audioManager
             ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
             ?.toIntOrNull()
@@ -439,7 +547,7 @@ class AudioCaptureService : Service() {
                 AudioRecord.Builder()
                     .setAudioFormat(audioFormat)
                     .setBufferSizeInBytes(bufferSize)
-                    .setAudioPlaybackCaptureConfig(config)
+                    .apply(configure)
                     .build()
             } catch (e: Exception) {
                 // 기기 미지원, 확인 직후 권한 회수 등
@@ -469,25 +577,25 @@ class AudioCaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // onCreate 가 거른 시작이다. 곧 onDestroy 가 온다.
+        if (unrequestedStart) return START_NOT_STICKY
         // 알림 버튼은 이제 NotificationActionReceiver 가 받는다. 시작 요청에는 동작 이름이 없으므로, 이름이 있으면
-        // 서비스로 보내던 옛 버전의 알림이 남아 있다가 눌린 것이다. 캡처를 열지 않고, 그 때문에 새로 떴으면 조용히 내린다.
+        // 서비스로 보내던 옛 버전의 알림이 남아 있다가 눌린 것이다. 떠 있는 실행은 그대로 두고 캡처도 열지 않는다.
+        // 그 버튼 때문에 새로 뜬 경우는 onCreate 가 이미 걸렀다.
         // 시작 요청으로 읽으면 동의 결과가 없어 "켜지 못했다" 고 잘못 알린다.
-        if (intent?.action != null) {
-            if (audioRecord == null) stopEverything(StopReason.UserRequested)
-            return START_NOT_STICKY
-        }
+        if (intent?.action != null) return START_NOT_STICKY
         // 내려가기 전에 다시 켜면 onCreate 없이 여기로 온다. 지난 끄기는 이번 실행과 상관없다.
         stopRequested = false
         if (intent != null && audioRecord == null) {
-            val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
-            val resultData = IntentCompat.getParcelableExtra(intent, EXTRA_RESULT_DATA, Intent::class.java)
-            if (resultCode != 0 && resultData != null) {
-                if (!startAudioCapture(resultCode, resultData)) {
-                    stopEverything(StopReason.StartFailed)
+            val started = when (captureSource) {
+                CaptureSource.InternalPlayback -> {
+                    val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
+                    val resultData = IntentCompat.getParcelableExtra(intent, EXTRA_RESULT_DATA, Intent::class.java)
+                    resultCode != 0 && resultData != null && startAudioCapture(resultCode, resultData)
                 }
-            } else {
-                stopEverything(StopReason.StartFailed)
+                CaptureSource.Microphone -> startMicCapture()
             }
+            if (!started) stopEverything(StopReason.StartFailed)
         }
         return START_NOT_STICKY
     }
@@ -517,7 +625,7 @@ class AudioCaptureService : Service() {
         CAPTURED_USAGES.forEach { configBuilder.addMatchingUsage(it) }
         val config = configBuilder.build()
 
-        val record = openAudioRecord(config) ?: return false
+        val record = openAudioRecord { setAudioPlaybackCaptureConfig(config) } ?: return false
 
         audioRecord = record
         // AI 분류는 시각화 경로와 독립적으로 돈다. 초기화에 실패해도 캡처는 계속한다.
@@ -528,7 +636,26 @@ class AudioCaptureService : Service() {
         return startCaptureLoop(record)
     }
 
-    /** 녹음을 시작하고 캡처 스레드를 띄운다. 처음 켤 때와 화면이 다시 켜질 때 쓴다. 녹음이 시작되지 않으면 false. */
+    /**
+     * 외부 사운드 모드: 마이크로 주변 소리를 받는다(#226). 화면 녹화 동의는 없다. 녹음이 시작되지 않으면 false.
+     *
+     * 소리는 크기를 재고 분류하는 데만 쓰고 파일로 남기거나 밖으로 보내지 않는다. 받은 버퍼는 다음 버퍼가 덮어쓴다.
+     */
+    private fun startMicCapture(): Boolean {
+        // 액티비티가 권한을 받은 뒤에 시작하지만, 그 사이 시스템 설정에서 권한을 끌 수 있다.
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "RECORD_AUDIO not granted")
+            return false
+        }
+        val record = openAudioRecord { setAudioSource(MIC_SOURCE) } ?: return false
+
+        audioRecord = record
+        startAiPipelineAsync()
+        if (screenPause.isPaused) return true
+        return startCaptureLoop(record)
+    }
+
+    /** 녹음을 시작하고 캡처 스레드와 진동 알림을 띄운다. 처음 켤 때와 화면이 다시 켜질 때 쓴다. 녹음이 시작되지 않으면 false. */
     private fun startCaptureLoop(record: AudioRecord): Boolean {
         try {
             record.startRecording()
@@ -541,11 +668,13 @@ class AudioCaptureService : Service() {
             return false
         }
         isRecording = true
-        captureThread = Thread({ captureLoop(record) }, "SV-AudioCapture").apply {
+        val dualMono = captureSource == CaptureSource.Microphone
+        captureThread = Thread({ captureLoop(record, dualMono) }, "SV-AudioCapture").apply {
             isDaemon = true
             start()
         }
         startBlockedCheck()
+        startHaptics()
         return true
     }
 
@@ -576,7 +705,8 @@ class AudioCaptureService : Service() {
         return true
     }
 
-    private fun captureLoop(record: AudioRecord) {
+    /** @param dualMono 마이크 입력이라 좌우를 같게 만들지([toDualMono]) */
+    private fun captureLoop(record: AudioRecord, dualMono: Boolean) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val loopThread = Thread.currentThread()
         // direct buffer: AudioRecord 가 직접 채우고 JNI 가 주소로 읽는다 (Kotlin 힙 복사 0회, GC 0회).
@@ -588,7 +718,10 @@ class AudioCaptureService : Service() {
             val bytes = record.read(buffer, buffer.capacity(), AudioRecord.READ_BLOCKING)
             if (bytes > 0) {
                 val floats = bytes / BYTES_PER_FLOAT
-                AudioEngine.pushAudioBuffer(buffer, floats)
+                if (dualMono) toDualMono(floatView, floats, micMutedForCall)
+                // 마이크 감도는 실행 중에도 바꿀 수 있어 버퍼마다 읽는다(원자 읽기 하나). 크기에만 곱하고 AI 는 그대로 받는다.
+                val levelGain = if (dualMono) MicSensitivity.gain(SettingsManager.micSensitivity.value) else 1f
+                AudioEngine.pushAudioBuffer(buffer, floats, levelGain)
                 // 쉬는 오버레이를 소리가 난 이 버퍼에서 바로 깨운다(#170). 원자 변수를 읽고, 오버레이가 쉬는 중이면
                 // 소리 크기를 한 번 더 읽는다. 할당은 없다.
                 OverlayWake.onBuffer()
@@ -615,6 +748,24 @@ class AudioCaptureService : Service() {
         }
     }
 
+    /**
+     * 마이크 입력을 좌우가 같은 두 채널로 바꾼다(#226). 캡처 스레드에서 버퍼마다 부르며 할당은 없다.
+     *
+     * 오버레이는 좌우 크기 차이로 방향을 그린다. 마이크 두 개가 따로 들어오는 기기에서는 마이크 감도와 자리
+     * 차이만으로 한쪽으로 기운 그림이 나온다. 폰의 두 마이크는 긴 축으로 약 14cm 떨어져 있어, 세로로 들면 좌우를
+     * 가릴 수 없고 가로로 들 때만 도착 시간차로 가릴 수 있다. 그 계산(#248)을 넣기 전까지는 틀린 방향을 그리지 않도록
+     * 한가운데로 그린다. [mute] 면 모두 0 으로 버린다(통화 중).
+     */
+    private fun toDualMono(view: FloatBuffer, floats: Int, mute: Boolean) {
+        var i = 0
+        while (i + 1 < floats) {
+            val mono = if (mute) 0f else (view.get(i) + view.get(i + 1)) * 0.5f
+            view.put(i, mono)
+            view.put(i + 1, mono)
+            i += 2
+        }
+    }
+
     // ---------------- 보호된 소리 안내 ----------------
 
     /**
@@ -637,6 +788,7 @@ class AudioCaptureService : Service() {
     /** 캡처가 돌기 시작했다. 두 번 불러도 틱은 하나만 돈다. */
     private fun startBlockedCheck() {
         blockedNotice.reset()
+        micSilence.reset()
         // 지난번 캡처가 남긴 피크·버퍼 수를 버린다. 남겨 두면 첫 틱이 방금 받은 소리로 착각한다.
         AudioEngine.takePeakSinceLastCheck(checkSample)
         mainHandler.removeCallbacks(blockedCheck)
@@ -646,7 +798,9 @@ class AudioCaptureService : Service() {
     /** 확인을 멈추고 안내를 내린다. 여러 번 불러도 된다. */
     private fun stopBlockedCheck() {
         mainHandler.removeCallbacks(blockedCheck)
-        if (blockedNotice.reset()) {
+        micMutedForCall = false
+        // 둘 다 되돌려야 하므로 짧게 끊지 않는 or 를 쓴다.
+        if (blockedNotice.reset() or micSilence.reset()) {
             SettingsManager.setCaptureBlocked(false)
             refreshOngoingNotification()
         }
@@ -660,6 +814,10 @@ class AudioCaptureService : Service() {
      * 시스템에는 아예 묻지 않는다. 아무것도 재생하지 않는 흔한 상태에서는 한 번만 묻는다.
      */
     private fun updateBlockedNotice() {
+        if (!captureSource.watchesBlockedCapture) {
+            updateMicNotice()
+            return
+        }
         AudioEngine.takePeakSinceLastCheck(checkSample)
         val peak = checkSample[0]
         val buffers = checkSample[1].toInt()
@@ -678,6 +836,29 @@ class AudioCaptureService : Service() {
         if (!changed) return
         Log.i(TAG, "blocked capture notice: ${blockedNotice.isBlocked}")
         SettingsManager.setCaptureBlocked(blockedNotice.isBlocked)
+        refreshOngoingNotification()
+    }
+
+    /**
+     * 마이크 모드의 한 틱(#226). 통화 중이면 입력을 버리고, 마이크로 아무것도 들어오지 않으면 알린다.
+     *
+     * 통화는 `addOnModeChangedListener`(Android 12+) 대신 이 틱에서 본다. 버리는 동안은 0 만 들어오므로
+     * [MicSilenceNotice] 가 "들어오지 않는다" 로 알리고, 그 문구가 통화를 원인으로 든다.
+     * 재생 중인 앱은 묻지 않는다. 마이크가 조용한 이유와 상관이 없다.
+     */
+    private fun updateMicNotice() {
+        AudioEngine.takePeakSinceLastCheck(checkSample)
+        micMutedForCall = audioManager?.let { it.mode != AudioManager.MODE_NORMAL } ?: false
+        val silencedBySystem = audioRecord?.activeRecordingConfiguration?.isClientSilenced == true
+        val changed = micSilence.onTick(
+            SystemClock.elapsedRealtime(),
+            silencedBySystem,
+            checkSample[0],
+            checkSample[1].toInt()
+        )
+        if (!changed) return
+        Log.i(TAG, "mic silenced notice: ${micSilence.isSilenced} (system=$silencedBySystem call=$micMutedForCall)")
+        SettingsManager.setCaptureBlocked(micSilence.isSilenced)
         refreshOngoingNotification()
     }
 
@@ -738,7 +919,14 @@ class AudioCaptureService : Service() {
     private fun onScreenOff() {
         // 이미 내려가는 중이면 건드리지 않는다.
         if (stopLatch.isStopping) return
-        if (screenPause.onScreenOff(SettingsManager.pauseWhenScreenOff.value)) pauseForScreenOff()
+        // 외부 사운드 모드는 설정과 상관없이 화면이 꺼져도 듣는다([CaptureSource.followsScreenOffPause], #260).
+        val pause = captureSource.followsScreenOffPause && SettingsManager.pauseWhenScreenOff.value
+        if (screenPause.onScreenOff(pause)) {
+            pauseForScreenOff()
+        } else {
+            // 쉬지 않고 계속 듣는다. 안드로이드가 화면을 끄며 끊은 진동을 바로 다시 울리게 알린다(#288).
+            synchronized(aiLock) { hapticNotifier }?.onScreenOff()
+        }
     }
 
     private fun onScreenOn() {
@@ -783,7 +971,10 @@ class AudioCaptureService : Service() {
         AudioEngine.reset()
     }
 
-    /** 화면이 켜져 다시 켠다. 캡처를 먼저 켜고, AI 와 진동은 [scheduleAiResume] 가 조금 뒤에 켠다. */
+    /**
+     * 화면이 켜져 다시 켠다. 캡처와 진동을 먼저 켜고, AI 는 [scheduleAiResume] 가 조금 뒤에 켠다.
+     * 진동은 AI 가 다시 붙을 때까지 라벨이 없어, AI 를 쓸 수 있는 실행에서는 그사이 울리지 않는다.
+     */
     private fun resumeAfterScreenOff() {
         Log.i(TAG, "screen on: resuming capture, AI and haptics")
         // 동의 직후 꺼져서 아직 AudioRecord 가 없으면 onStartCommand 가 이어서 시작한다.
@@ -800,7 +991,7 @@ class AudioCaptureService : Service() {
     }
 
     /**
-     * AI 와 진동 알림만 [AI_RESUME_DELAY_MS] 뒤에 켠다. 캡처와 그래픽은 바로 켠다.
+     * AI 만 [AI_RESUME_DELAY_MS] 뒤에 켠다. 캡처와 그래픽과 진동은 바로 켠다.
      *
      * 쉴 때 부르는 파이프라인의 stop() 은 이미 돌고 있던 추론 한 번을 기다리지 않는다. 화면을 껐다 바로 켜서
      * 그 추론이 start() 로 비운 뒤에 끝나면, 쉬기 직전의 결과가 되살아나 첫 소리에 위협음 진동이 잘못 울린다.
@@ -860,7 +1051,8 @@ class AudioCaptureService : Service() {
 
     /**
      * 멈춤 진동을 울리기 전에 진동 알림을 떼어 멈춘다. 진동 알림의 cancel() 이 멈춤 진동까지 끊기 때문이다.
-     * aiPaused 를 세워, onDestroy 전에 모델 로딩이 끝나도 진동 알림을 새로 붙이지 않게 한다(추론도 시작하지 않는다).
+     * aiPaused 를 세워, onDestroy 전에 모델 로딩이 끝나도 추론을 시작하지 않게 한다. 진동 알림은 [startHaptics] 가
+     * 멈추는 중이면 새로 만들지 않는다.
      */
     private fun stopHapticsBeforeAlert() {
         val haptics = synchronized(aiLock) {
@@ -871,6 +1063,11 @@ class AudioCaptureService : Service() {
     }
 
     override fun onDestroy() {
+        if (unrequestedStart) {
+            // onCreate 가 아무것도 시작하지 않았다. 떠 있는 실행이 없다는 상태도 그대로 둔다.
+            super.onDestroy()
+            return
+        }
         stopLatch.onDestroy()
         // 내려가는 중에 모드가 바뀌어도 알림을 다시 올리지 않는다.
         serviceScope.cancel()
@@ -972,6 +1169,29 @@ class AudioCaptureService : Service() {
     }
 
     /**
+     * AI 를 쓸 수 없을 때의 알림 문구는 큰 소리에 실제로 울리는지를 따른다(#232). 설정에서 위협음의 표시나 진동을
+     * 바꾸면 알림도 맞춘다. 지금 값은 이미 알림에 들어 있으므로 첫 값은 흘린다.
+     */
+    private fun observeLoudAlertSettings() {
+        serviceScope.launch {
+            combine(SettingsManager.showDanger, SettingsManager.hapticSettings(AiClassification.DANGER)) { shown, haptic ->
+                shown && haptic.enabled
+            }.distinctUntilChanged().drop(1).collect {
+                if (!SettingsManager.aiAvailable.value) refreshOngoingNotification()
+            }
+        }
+    }
+
+    /** AI 를 쓸 수 없을 때 큰 소리에 실제로 울리는지. [HapticNotifier] 가 따르는 조건과 같다. */
+    private fun loudAlerts(): Boolean = AiUnavailableNotice.loudAlerts(
+        SettingsManager.showDanger.value,
+        SettingsManager.hapticSettings(AiClassification.DANGER).value.enabled,
+        hasVibrator
+    )
+
+    private val hasVibrator by lazy { HapticPlayer(this).hasVibrator }
+
+    /**
      * 알림 버튼이 보낼 인텐트. 서비스가 아니라 [NotificationActionReceiver] 로 보낸다.
      *
      * 누른 사람이 기다리고 있으므로 포그라운드 방송으로 보낸다. 백그라운드 방송은 시스템이 바쁘면 몇 초씩
@@ -998,15 +1218,21 @@ class AudioCaptureService : Service() {
         // 알림창만 보고도 왜 화면에 아무것도 없는지 알 수 있게 한다.
         // 받는 소리가 아예 없으면 분류할 소리도 없으므로, 둘 다 해당할 때는 받지 못한다는 쪽만 말한다.
         // AI 안내는 그때 숨겨도 소리가 다시 들어오면 나온다.
+        // 마이크 모드는 제목에 늘 적는다. 방 소리를 들어 확인할 수 없는 사람에게는 "지금 방을 듣고 있는가" 를
+        // 알 수 있는 곳이 여기뿐이다(#226).
+        val mic = captureSource == CaptureSource.Microphone
         val text = uiContext.getString(
             when {
-                SettingsManager.isCaptureBlocked.value -> R.string.notification_text_capture_blocked
-                !SettingsManager.aiAvailable.value -> R.string.notification_text_ai_unavailable
+                SettingsManager.isCaptureBlocked.value ->
+                    if (mic) R.string.notification_text_mic_silenced else R.string.notification_text_capture_blocked
+                !SettingsManager.aiAvailable.value -> AiUnavailableNotice.notification(loudAlerts())
+                mic -> R.string.notification_text_external
                 else -> R.string.notification_text
             }
         )
+        val title = if (mic) R.string.notification_title_external else R.string.notification_title
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(uiContext.getString(R.string.notification_title))
+            .setContentTitle(uiContext.getString(title))
             .setContentText(text)
             // 접은 알림은 시스템이 그리므로 위 setContentText 가 그대로 보인다.
             // 펼치면 아래 본문이 그 자리를 대신하면서 모드 칩이 함께 나온다.

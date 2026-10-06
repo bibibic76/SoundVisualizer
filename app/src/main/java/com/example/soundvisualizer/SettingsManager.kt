@@ -2,14 +2,16 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.edit
-import com.example.soundvisualizer.ai.AiDiagnosticConfig
-import com.example.soundvisualizer.ai.AiFrontendMode
+import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import com.example.soundvisualizer.feedback.HapticSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  * 표현 모드 하나의 설정.
@@ -49,6 +51,14 @@ object SettingsManager {
     internal const val PAUSE_WHEN_SCREEN_OFF_DEFAULT = true
 
     /**
+     * 홈의 "외부 사운드 모드" 기본값(#226). 꺼 두면 지금까지처럼 폰에서 재생되는 소리만 받는다.
+     *
+     * 켜면 마이크로 주변 소리를 듣는다. 사용자가 직접 골라야 하는 일이라 기본은 꺼짐이다.
+     * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
+     */
+    internal const val EXTERNAL_SOUND_MODE_DEFAULT = false
+
+    /**
      * 개발자 모드의 기본값. 팀이 AI 분류를 채점하는 도구라 사용자에게는 꺼져 있어야 한다.
      *
      * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다.
@@ -56,9 +66,6 @@ object SettingsManager {
     internal const val DEVELOPER_MODE_DEFAULT = false
 
     internal const val DEVELOPER_RECORD_DEFAULT = false
-
-    /** Developer A/B controls must not change the production path on a new install. */
-    internal val AI_DIAGNOSTIC_CONFIG_DEFAULT = AiDiagnosticConfig.DEFAULT
 
     /**
      * "그래픽 덜 자주 그리기"의 기본값. 꺼 두는 쪽이 부드럽다.
@@ -69,17 +76,23 @@ object SettingsManager {
     internal const val REDUCED_FRAME_RATE_DEFAULT = false
 
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
+    private const val KEY_EXTERNAL_SOUND_MODE = "external_sound_mode"
+    private const val KEY_MIC_SENSITIVITY = "mic_sensitivity"
     private const val KEY_DEVELOPER_MODE = "developer_mode"
     private const val KEY_DEVELOPER_RECORD = "developer_record"
-    private const val KEY_AI_FRONTEND_MODE = "ai_frontend_mode"
-    private const val KEY_AI_BOOSTER_ENABLED = "ai_booster_enabled"
     private const val KEY_REDUCED_FRAME_RATE = "reduced_frame_rate"
     private const val KEY_LAST_UNEXPECTED_STOP = "last_unexpected_stop"
     private const val KEY_LAST_UNEXPECTED_STOP_SEQ = "last_unexpected_stop_seq"
     private const val KEY_TILE_ADDED = "tile_added"
+    private const val KEY_TUTORIAL_SEEN = "tutorial_seen"
+    private const val KEY_SOUND_TYPES = "sound_types"
+
+    /** 분류 탭에서 고를 수 있는 종류. 화면·진동이 알아듣는 라벨과 같다. */
+    private val SOUND_TYPE_LABELS = setOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
 
     /** 이 설정을 쓴 기기 표시. 백업으로 옮겨 온 값인지 가리는 데만 쓴다. */
     private const val KEY_DEVICE_TAG = "device_tag"
+    private const val KEY_INSTALL_STAMP = "install_stamp"
 
     private val _visualMode = MutableStateFlow(VisualMode.Wave)
     val visualMode: StateFlow<VisualMode> = _visualMode
@@ -117,6 +130,16 @@ object SettingsManager {
     private val _colorDanger = MutableStateFlow(DEFAULT_COLOR_DANGER)
     val colorDanger: StateFlow<Int> = _colorDanger
 
+    /**
+     * 분류 탭에서 사용자가 바꾼 소리 종류. 키는 YAMNet 소리 이름(assets/ai/yamnet_class_map.csv 의 display_name),
+     * 값은 [AiClassification] 라벨. 기본 종류와 같은 것은 두지 않으므로, 여기 있으면 바꾼 소리다.
+     *
+     * **아직 AI 판정에는 쓰이지 않는다.** AI 쪽이 [soundTypeOverride] 로 읽어 투표에 반영하는 일은 #291 이 맡는다.
+     * 그 전까지 분류 탭은 개발자 모드에서만 보인다(#283).
+     */
+    private val _soundTypes = MutableStateFlow<Map<String, String>>(emptyMap())
+    val soundTypes: StateFlow<Map<String, String>> = _soundTypes
+
     // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
     private val hapticFlows: Map<String, MutableStateFlow<HapticSettings>> =
         listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
@@ -125,13 +148,44 @@ object SettingsManager {
     private val _isServiceRunning = MutableStateFlow(false)
     val isServiceRunning: StateFlow<Boolean> = _isServiceRunning
 
+    /**
+     * 이번 실행(꺼져 있으면 마지막 실행)이 실제로 연 소리 소스. 캡처 서비스가 켤 때마다 덮어쓴다.
+     * 실행 중인 화면은 설정값([externalSoundMode])이 아니라 이 값을 따라 "주변 소리"를 적는다. 설정은 다음 실행의 소스다.
+     */
+    private val _runningCaptureSource = MutableStateFlow(CaptureSource.InternalPlayback)
+    val runningCaptureSource: StateFlow<CaptureSource> = _runningCaptureSource
+
     // 빠른 설정 타일이 알림창에 추가돼 있는지. 타일 서비스가 추가·제거될 때 알려준다.
     private val _tileAdded = MutableStateFlow(false)
     val tileAdded: StateFlow<Boolean> = _tileAdded
 
+    /**
+     * 튜토리얼을 본 적이 있는지. 아직이면 앱을 열 때 튜토리얼부터 띄운다(MainActivity).
+     * 닫으면(끝까지 넘기거나 건너뛰면) true 가 되고, 그 뒤로는 홈의 ‘튜토리얼 보기’로만 연다.
+     *
+     * 보는 사람에 대한 값이라 기기 전용 값([dropOtherDeviceValues])이 아니다. 새 폰으로 옮겨 가도 다시 띄우지 않는다.
+     */
+    private val _tutorialSeen = MutableStateFlow(false)
+    val tutorialSeen: StateFlow<Boolean> = _tutorialSeen
+
     // 화면이 꺼지면 캡처·AI·진동을 쉴지. 배터리를 아끼는 쪽이 기본이다. (ScreenOffPause)
     private val _pauseWhenScreenOff = MutableStateFlow(PAUSE_WHEN_SCREEN_OFF_DEFAULT)
     val pauseWhenScreenOff: StateFlow<Boolean> = _pauseWhenScreenOff
+
+    /**
+     * 마이크로 주변 소리를 들을지(#226). 켜기를 누를 때 읽어 그 실행의 소스를 정한다([CaptureSource]).
+     * 실행 중에는 홈이 스위치를 잠가, 돌고 있는 실행과 표시가 어긋나지 않게 한다.
+     * 사용자의 선택이라 기기 전용 값([dropOtherDeviceValues])이 아니다.
+     */
+    private val _externalSoundMode = MutableStateFlow(EXTERNAL_SOUND_MODE_DEFAULT)
+    val externalSoundMode: StateFlow<Boolean> = _externalSoundMode
+
+    /**
+     * 외부 사운드 모드의 마이크 감도(%, [MicSensitivity]). 실행 중에도 바꿀 수 있고, 캡처 스레드가 버퍼마다 읽는다.
+     * 마이크는 기기마다 달라 기기 전용 값이다([dropOtherDeviceValues]).
+     */
+    private val _micSensitivity = MutableStateFlow(MicSensitivity.DEFAULT)
+    val micSensitivity: StateFlow<Int> = _micSensitivity
 
     // 켜면 오버레이에 AI 분류 결과를 그대로 띄운다. 팀이 정확도를 채점하는 도구다. (AiDebugOverlay)
     private val _developerMode = MutableStateFlow(DEVELOPER_MODE_DEFAULT)
@@ -141,10 +195,6 @@ object SettingsManager {
 
     /** 개발자 모드에서 AI 판정을 파일로 남길지 (#193). 개발자 모드를 꺼도 값은 남는다. */
     val developerRecord: StateFlow<Boolean> = _developerRecord
-
-    // Developer-only A/B choice. Kept as one value so an inference tick can read a coherent snapshot.
-    private val _aiDiagnosticConfig = MutableStateFlow(AI_DIAGNOSTIC_CONFIG_DEFAULT)
-    val aiDiagnosticConfig: StateFlow<AiDiagnosticConfig> = _aiDiagnosticConfig
 
     // 켜면 오버레이를 초당 30번만 그린다. 덜 부드러운 대신 배터리를 아낀다. (VisualizerEngine.framesPerSecond)
     private val _reducedFrameRate = MutableStateFlow(REDUCED_FRAME_RATE_DEFAULT)
@@ -190,7 +240,7 @@ object SettingsManager {
      *
      * 홈 탭으로 한 번만 옮기는 판단([StopNoticeRouting])에 쓴다. **이유와 함께 저장한다.** 액티비티는 이미 옮긴
      * 번호를 `onSaveInstanceState` 에 담아 프로세스가 죽어도 되살리는데, 이 번호만 0 부터 다시 세면 되살아난
-     * 번호와 새 안내의 번호가 겹쳐 새 안내를 이미 본 것으로 친다. 그러면 설정·도움말 탭에 있던 사용자는
+     * 번호와 새 안내의 번호가 겹쳐 새 안내를 이미 본 것으로 친다. 그러면 설정·분류·도움말 탭에 있던 사용자는
      * 안내를 한 번도 못 본다(#176).
      */
     private val _lastUnexpectedStopSeq = MutableStateFlow(0)
@@ -200,7 +250,19 @@ object SettingsManager {
     fun init(context: Context) {
         if (::prefs.isInitialized) return
         val app = context.applicationContext
-        load(app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), deviceTagOf(app))
+        load(app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), deviceTagOf(app), installStampOf(app))
+    }
+
+    /**
+     * 이 설치를 가리키는 표시. 같은 기기에서 지웠다 다시 깐 것을 가려내는 데만 쓴다([dropReinstalledValues]).
+     *
+     * 처음 설치한 시각(`firstInstallTime`)이다. 다시 깔면 바뀌고, 업데이트로는 바뀌지 않는다. 못 읽으면 null 이고,
+     * 그때는 확인하지 않는다.
+     */
+    internal fun installStampOf(context: Context): Long? = try {
+        context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime
+    } catch (e: PackageManager.NameNotFoundException) {
+        null
     }
 
     /**
@@ -227,7 +289,8 @@ object SettingsManager {
      *
      * 자동 백업은 프리퍼런스 파일을 통째로 옮기고, 백업 규칙은 파일 단위라 키 하나만 뺄 수 없다. 그대로 두면
      * 새 폰에서 앱을 처음 열었을 때 "꺼졌습니다" 안내가 뜬다. 그 기기에서는 켠 적도 없는데, 소리를 못 듣는
-     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다.
+     * 사용자에게는 "위협음 알림이 끊겼다" 는 뜻이다. 타일을 추가했는지도 기기마다 다르다. 마이크 감도도 기기의
+     * 마이크에 맞춘 값이라, 새 기기에서는 기본값에서 다시 맞추는 편이 낫다.
      *
      * 색·진동·모드 같은 사용자 설정은 새 기기로 옮겨 가는 게 맞으므로 건드리지 않는다.
      * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 기기의 값이 사라진다.
@@ -243,8 +306,35 @@ object SettingsManager {
                 remove(KEY_LAST_UNEXPECTED_STOP)
                 remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
                 remove(KEY_TILE_ADDED)
+                remove(KEY_MIC_SENSITIVITY)
             }
             putString(KEY_DEVICE_TAG, deviceTag)
+        }
+    }
+
+    /**
+     * 같은 기기에서 지웠다 다시 깔았을 때 백업이 되살린 값 중 **그 설치에만 뜻이 있는 것**을 비운다(#266).
+     *
+     * 자동 백업은 같은 기기에 다시 깔아도 설치할 때 프리퍼런스를 되살린다. 기기 표시([deviceTagOf])는 같은 서명·사용자·
+     * 기기면 그대로라 [dropOtherDeviceValues] 는 이것을 가리지 못한다. 앱을 지우면 시스템이 빠른 설정 타일도 지우는데,
+     * 되살아난 "타일 추가됨" 때문에 설정 탭이 "빠른 설정에 들어 있다" 고 말하고 추가 버튼을 숨겼다. 지난 설치의 꺼짐
+     * 안내도 이번 설치와 상관없다. 마이크 감도는 같은 기기의 마이크에 맞춘 값이라 그대로 둔다.
+     *
+     * 표시가 아직 없는 예전 설치(그냥 업데이트한 경우)는 지우지 않고 표시만 남긴다. 지우면 멀쩡한 값이 사라진다(#204).
+     *
+     * @param installStamp 지금 설치의 표시([installStampOf]). null 이면 확인하지 않는다.
+     */
+    private fun dropReinstalledValues(source: SharedPreferences, installStamp: Long?) {
+        if (installStamp == null) return
+        val saved = if (source.contains(KEY_INSTALL_STAMP)) source.getLong(KEY_INSTALL_STAMP, 0L) else null
+        if (saved == installStamp) return
+        source.edit {
+            if (saved != null) {
+                remove(KEY_LAST_UNEXPECTED_STOP)
+                remove(KEY_LAST_UNEXPECTED_STOP_SEQ)
+                remove(KEY_TILE_ADDED)
+            }
+            putLong(KEY_INSTALL_STAMP, installStamp)
         }
     }
 
@@ -254,9 +344,14 @@ object SettingsManager {
      *
      * [init] 의 "최초 한 번만" 규칙은 여기 없다. 테스트는 값을 달리 세운 가짜 프리퍼런스로 여러 번 부른다.
      */
-    internal fun load(source: SharedPreferences, deviceTag: String? = null) {
+    internal fun load(source: SharedPreferences, deviceTag: String? = null, installStamp: Long? = null) {
         prefs = source
+        // 기기 표시를 적기 전에 정한다. 적고 나면 새로 설치한 앱도 "저장된 값이 있는" 상태가 된다.
+        val tutorialSeen = loadTutorialSeen(source)
+        if (!source.contains(KEY_TUTORIAL_SEEN)) source.edit { putBoolean(KEY_TUTORIAL_SEEN, tutorialSeen) }
+        _tutorialSeen.value = tutorialSeen
         dropOtherDeviceValues(source, deviceTag)
+        dropReinstalledValues(source, installStamp)
 
         // 저장된 ordinal 이 현재 enum 범위를 벗어나면(모드 추가/삭제 후) 크래시하지 않고 기본값으로.
         _visualMode.value = VisualMode.values().getOrElse(prefs.getInt("visualMode", 0)) { VisualMode.Wave }
@@ -274,33 +369,82 @@ object SettingsManager {
 
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
+        applySoundTypes(loadSoundTypes(prefs))
 
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
+        _externalSoundMode.value = loadExternalSoundMode(prefs)
+        _micSensitivity.value = loadMicSensitivity(prefs)
         _developerMode.value = loadDeveloperMode(prefs)
         _developerRecord.value = loadDeveloperRecord(prefs)
-        _aiDiagnosticConfig.value = loadAiDiagnosticConfig(prefs)
         _reducedFrameRate.value = loadReducedFrameRate(prefs)
         _lastUnexpectedStop.value = loadLastUnexpectedStop(prefs)
         _lastUnexpectedStopSeq.value = loadLastUnexpectedStopSeq(prefs)
 
-        // enum 은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
-        hapticFlows.forEach { (label, flow) ->
-            val default = HapticSettings.defaultFor(label)
-            flow.value = HapticSettings(
-                enabled = prefs.getBoolean("haptic_${label}_enabled", default.enabled),
-                strength = enumByName(prefs.getString("haptic_${label}_strength", null), default.strength),
-                pattern = enumByName(prefs.getString("haptic_${label}_pattern", null), default.pattern)
-            )
+        hapticFlows.forEach { (label, flow) -> flow.value = loadHaptic(prefs, label) }
+    }
+
+    /**
+     * 한 종류의 진동 설정. 방식은 이름으로 저장한다. 모르는 이름(항목을 바꾼 뒤 등)이면 기본값으로 떨어진다.
+     *
+     * #242 전의 설정(켜기·패턴·세기)만 있으면 방식과 세기로 옮겨 곧바로 저장하고 예전 키는 지운다
+     * ([HapticSettings.fromLegacy]). 옮긴 뒤에는 새 키만 읽는다.
+     */
+    private fun loadHaptic(prefs: SharedPreferences, label: String): HapticSettings {
+        val default = HapticSettings.defaultFor(label)
+        val modeKey = "haptic_${label}_mode"
+        val levelKey = "haptic_${label}_level"
+        if (!prefs.contains(modeKey)) {
+            val enabledKey = "haptic_${label}_enabled"
+            val patternKey = "haptic_${label}_pattern"
+            val strengthKey = "haptic_${label}_strength"
+            val legacy = HapticSettings.fromLegacy(
+                label,
+                enabled = if (prefs.contains(enabledKey)) prefs.getBoolean(enabledKey, default.enabled) else null,
+                pattern = prefs.getString(patternKey, null),
+                strength = prefs.getString(strengthKey, null)
+            ) ?: return default
+            prefs.edit {
+                putString(modeKey, legacy.mode.name)
+                putInt(levelKey, legacy.level)
+                remove(enabledKey)
+                remove(patternKey)
+                remove(strengthKey)
+            }
+            return legacy
         }
+        return HapticSettings(
+            mode = enumByName(prefs.getString(modeKey, null), default.mode),
+            level = HapticSettings.clampLevel(prefs.getInt(levelKey, default.level))
+        )
     }
 
     private inline fun <reified T : Enum<T>> enumByName(name: String?, default: T): T =
         enumValues<T>().firstOrNull { it.name == name } ?: default
 
+    /**
+     * 튜토리얼을 본 적이 있는지. 저장된 적이 없으면 **이 기능 전부터 앱을 쓰던 사람인지**로 정한다.
+     *
+     * 다른 값이 하나라도 저장돼 있으면 이미 앱을 써 본 사람이라 본 것으로 치고, 아무것도 없으면(새로 설치) 안 본 것이다.
+     * [load] 는 이렇게 정한 값을 곧바로 저장한다. 저장하지 않으면 새로 설치한 앱도 첫 실행에 기기 표시가 적혀,
+     * 튜토리얼을 닫지 않고 나갔다 다시 열 때 본 것으로 잘못 친다.
+     * 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (TutorialSettingTest).
+     */
+    internal fun loadTutorialSeen(source: SharedPreferences): Boolean =
+        if (source.contains(KEY_TUTORIAL_SEEN)) source.getBoolean(KEY_TUTORIAL_SEEN, false)
+        else source.all.isNotEmpty()
+
     /** 저장된 적이 없으면 [PAUSE_WHEN_SCREEN_OFF_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadPauseWhenScreenOff(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, PAUSE_WHEN_SCREEN_OFF_DEFAULT)
+
+    /** 저장된 적이 없으면 [EXTERNAL_SOUND_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
+    internal fun loadExternalSoundMode(source: SharedPreferences): Boolean =
+        source.getBoolean(KEY_EXTERNAL_SOUND_MODE, EXTERNAL_SOUND_MODE_DEFAULT)
+
+    /** 저장된 적이 없으면 [MicSensitivity.DEFAULT]. 슬라이더에 없는 값은 가장 가까운 칸으로 맞춘다. */
+    internal fun loadMicSensitivity(source: SharedPreferences): Int =
+        MicSensitivity.clamp(source.getInt(KEY_MIC_SENSITIVITY, MicSensitivity.DEFAULT))
 
     /** 저장된 적이 없으면 [DEVELOPER_MODE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadDeveloperMode(source: SharedPreferences): Boolean =
@@ -310,22 +454,36 @@ object SettingsManager {
     internal fun loadDeveloperRecord(source: android.content.SharedPreferences): Boolean =
         source.getBoolean(KEY_DEVELOPER_RECORD, DEVELOPER_RECORD_DEFAULT)
 
-    /** Unknown enum names fall back to the unchanged production frontend. */
-    internal fun loadAiDiagnosticConfig(source: SharedPreferences): AiDiagnosticConfig =
-        AiDiagnosticConfig(
-            frontendMode = enumByName(
-                source.getString(KEY_AI_FRONTEND_MODE, null),
-                AI_DIAGNOSTIC_CONFIG_DEFAULT.frontendMode
-            ),
-            boosterEnabled = source.getBoolean(
-                KEY_AI_BOOSTER_ENABLED,
-                AI_DIAGNOSTIC_CONFIG_DEFAULT.boosterEnabled
-            )
-        )
-
     /** 저장된 적이 없으면 [REDUCED_FRAME_RATE_DEFAULT]. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다. */
     internal fun loadReducedFrameRate(source: SharedPreferences): Boolean =
         source.getBoolean(KEY_REDUCED_FRAME_RATE, REDUCED_FRAME_RATE_DEFAULT)
+
+    /**
+     * 분류 탭에서 바꾼 소리 종류. 소리 이름을 키로 한 JSON 객체 하나로 저장한다.
+     *
+     * 세 라벨이 아닌 값과 지금 기본 종류와 같은 값은 버리고, 읽을 수 없는 저장값은 바꾼 것이 없는 것으로 본다.
+     * 기본 종류는 AI 쪽 규칙이 바뀌면 달라질 수 있는데, 그때 사용자가 고른 것과 같아진 소리는 "바꾼 소리" 로
+     * 남아 있을 까닭이 없다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (SoundTypeSettingsTest).
+     */
+    internal fun loadSoundTypes(source: SharedPreferences): Map<String, String> {
+        val saved = source.getString(KEY_SOUND_TYPES, null) ?: return emptyMap()
+        val json = try {
+            JSONObject(saved)
+        } catch (_: JSONException) {
+            return emptyMap()
+        }
+        val types = LinkedHashMap<String, String>()
+        for (name in json.keys()) {
+            val label = json.optString(name)
+            if (label in SOUND_TYPE_LABELS && label != defaultSoundType(name)) types[name] = label
+        }
+        return types
+    }
+
+    /** [loadSoundTypes] 와 같은 키로 적는다. 비어 있으면 키를 지운다. */
+    internal fun putSoundTypes(editor: SharedPreferences.Editor, types: Map<String, String>) {
+        if (types.isEmpty()) editor.remove(KEY_SOUND_TYPES) else editor.putString(KEY_SOUND_TYPES, JSONObject(types).toString())
+    }
 
     /**
      * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
@@ -474,14 +632,57 @@ object SettingsManager {
         val flow = hapticFlows[label] ?: return
         flow.value = settings
         prefs.edit {
-            putBoolean("haptic_${label}_enabled", settings.enabled)
-            putString("haptic_${label}_strength", settings.strength.name)
-            putString("haptic_${label}_pattern", settings.pattern.name)
+            putString("haptic_${label}_mode", settings.mode.name)
+            putInt("haptic_${label}_level", settings.level)
         }
     }
 
+    /**
+     * [name] 소리를 [label] 종류로 본다. 기본 종류를 고르면 바꾼 것을 지운다. 세 라벨이 아니면 무시한다.
+     * 화면(메인 스레드)에서 부른다. 실행 중이면 다음 판정부터 따른다.
+     */
+    fun setSoundType(name: String, label: String) {
+        if (label !in SOUND_TYPE_LABELS) return
+        val current = _soundTypes.value
+        val updated = if (label == defaultSoundType(name)) current - name else current + (name to label)
+        if (updated == current) return
+        applySoundTypes(updated)
+        prefs.edit { putSoundTypes(this, updated) }
+    }
+
+    /** 바꾼 소리를 모두 기본 종류로 되돌린다. */
+    fun resetSoundTypes() {
+        applySoundTypes(emptyMap())
+        prefs.edit { putSoundTypes(this, emptyMap()) }
+    }
+
+    /** 화면이 보는 흐름을 바꾼다. 맵은 넣은 뒤 고치지 않는다. */
+    private fun applySoundTypes(types: Map<String, String>) {
+        _soundTypes.value = types
+    }
+
+    /**
+     * AI 가 읽어 갈 창구(#291). 사용자가 분류 탭에서 [displayName] 소리의 종류를 바꿨으면 그 라벨
+     * ([AiClassification.AMBIENT]·[AiClassification.SPEECH]·[AiClassification.DANGER]), 바꾸지 않았으면 null.
+     *
+     * [displayName] 은 assets/ai/yamnet_class_map.csv 의 display_name 과 같다. 기본 종류와 같은 값은 들어 있지 않다.
+     * 넣은 뒤 고치지 않는 맵을 읽기만 하므로 어느 스레드(추론 스레드 포함)에서 불러도 되고, 사용자가 바꾸면 다음
+     * 호출부터 바로 반영된다.
+     */
+    fun soundTypeOverride(displayName: String): String? = _soundTypes.value[displayName]
+
+    /**
+     * 사용자가 바꾸기 전의 종류. AI 의 키워드 매핑([YamnetThreeClassMapper.mapDisplayNameToCoarse])을 읽기만 한다.
+     * 매핑 규칙이 바뀌면 기본 종류도 함께 바뀐다.
+     */
+    internal fun defaultSoundType(displayName: String): String = YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName)
+
     fun setServiceRunning(isRunning: Boolean) {
         _isServiceRunning.value = isRunning
+    }
+
+    fun setRunningCaptureSource(source: CaptureSource) {
+        _runningCaptureSource.value = source
     }
 
     fun setTileAdded(added: Boolean) {
@@ -489,9 +690,27 @@ object SettingsManager {
         prefs.edit { putBoolean(KEY_TILE_ADDED, added) }
     }
 
+    fun setTutorialSeen(seen: Boolean) {
+        _tutorialSeen.value = seen
+        prefs.edit { putBoolean(KEY_TUTORIAL_SEEN, seen) }
+    }
+
     fun setPauseWhenScreenOff(enabled: Boolean) {
         _pauseWhenScreenOff.value = enabled
         prefs.edit { putBoolean(KEY_PAUSE_WHEN_SCREEN_OFF, enabled) }
+    }
+
+    /** 다음 실행부터 적용된다. 실행 중에는 홈이 스위치를 잠근다. */
+    fun setExternalSoundMode(enabled: Boolean) {
+        _externalSoundMode.value = enabled
+        prefs.edit { putBoolean(KEY_EXTERNAL_SOUND_MODE, enabled) }
+    }
+
+    /** 실행 중에도 바로 적용된다(캡처 스레드가 버퍼마다 읽는다). */
+    fun setMicSensitivity(percent: Int) {
+        val value = MicSensitivity.clamp(percent)
+        _micSensitivity.value = value
+        prefs.edit { putInt(KEY_MIC_SENSITIVITY, value) }
     }
 
     /** 오버레이가 프레임마다 읽으므로 켜고 끄면 실행 중에도 바로 적용된다. */
@@ -511,20 +730,6 @@ object SettingsManager {
         _developerRecord.value = enabled
         prefs.edit { putBoolean(KEY_DEVELOPER_RECORD, enabled) }
     }
-
-    fun setAiFrontendMode(mode: AiFrontendMode) {
-        _aiDiagnosticConfig.value = _aiDiagnosticConfig.value.copy(frontendMode = mode)
-        prefs.edit { putString(KEY_AI_FRONTEND_MODE, mode.name) }
-    }
-
-    fun setAiBoosterEnabled(enabled: Boolean) {
-        _aiDiagnosticConfig.value = _aiDiagnosticConfig.value.copy(boosterEnabled = enabled)
-        prefs.edit { putBoolean(KEY_AI_BOOSTER_ENABLED, enabled) }
-    }
-
-    /** Hidden A/B choices must never affect the runtime after developer mode is turned off. */
-    fun activeAiDiagnosticConfig(): AiDiagnosticConfig =
-        if (_developerMode.value) _aiDiagnosticConfig.value else AI_DIAGNOSTIC_CONFIG_DEFAULT
 
     /** 어느 스레드에서 불러도 된다 (AI 초기화 스레드가 부른다). */
     fun setAiAvailable(available: Boolean) {

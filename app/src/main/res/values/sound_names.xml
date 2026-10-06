@@ -1,0 +1,1055 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    분류 탭에 보이는 소리 이름. AI(YAMNet)가 알아듣는 521가지 소리를 모델의 클래스 번호 순서로 둔다.
+    영어는 모델의 이름(assets/ai/yamnet_class_map.csv 의 display_name) 그대로이고, 다른 언어는
+    values-xx/sound_names.xml 에 같은 키로 번역한다. 사용자가 고른 종류는 번역이 아니라 모델의 이름으로 저장한다.
+    이름과 번호가 CSV 와 맞는지, 번역이 빠지거나 겹치지 않는지는 SoundNamesResourceTest 가 확인한다.
+-->
+<resources>
+    <string name="sound_name_0">Speech</string>
+    <string name="sound_name_1">Child speech, kid speaking</string>
+    <string name="sound_name_2">Conversation</string>
+    <string name="sound_name_3">Narration, monologue</string>
+    <string name="sound_name_4">Babbling</string>
+    <string name="sound_name_5">Speech synthesizer</string>
+    <string name="sound_name_6">Shout</string>
+    <string name="sound_name_7">Bellow</string>
+    <string name="sound_name_8">Whoop</string>
+    <string name="sound_name_9">Yell</string>
+    <string name="sound_name_10">Children shouting</string>
+    <string name="sound_name_11">Screaming</string>
+    <string name="sound_name_12">Whispering</string>
+    <string name="sound_name_13">Laughter</string>
+    <string name="sound_name_14">Baby laughter</string>
+    <string name="sound_name_15">Giggle</string>
+    <string name="sound_name_16">Snicker</string>
+    <string name="sound_name_17">Belly laugh</string>
+    <string name="sound_name_18">Chuckle, chortle</string>
+    <string name="sound_name_19">Crying, sobbing</string>
+    <string name="sound_name_20">Baby cry, infant cry</string>
+    <string name="sound_name_21">Whimper</string>
+    <string name="sound_name_22">Wail, moan</string>
+    <string name="sound_name_23">Sigh</string>
+    <string name="sound_name_24">Singing</string>
+    <string name="sound_name_25">Choir</string>
+    <string name="sound_name_26">Yodeling</string>
+    <string name="sound_name_27">Chant</string>
+    <string name="sound_name_28">Mantra</string>
+    <string name="sound_name_29">Child singing</string>
+    <string name="sound_name_30">Synthetic singing</string>
+    <string name="sound_name_31">Rapping</string>
+    <string name="sound_name_32">Humming</string>
+    <string name="sound_name_33">Groan</string>
+    <string name="sound_name_34">Grunt</string>
+    <string name="sound_name_35">Whistling</string>
+    <string name="sound_name_36">Breathing</string>
+    <string name="sound_name_37">Wheeze</string>
+    <string name="sound_name_38">Snoring</string>
+    <string name="sound_name_39">Gasp</string>
+    <string name="sound_name_40">Pant</string>
+    <string name="sound_name_41">Snort</string>
+    <string name="sound_name_42">Cough</string>
+    <string name="sound_name_43">Throat clearing</string>
+    <string name="sound_name_44">Sneeze</string>
+    <string name="sound_name_45">Sniff</string>
+    <string name="sound_name_46">Run</string>
+    <string name="sound_name_47">Shuffle</string>
+    <string name="sound_name_48">Walk, footsteps</string>
+    <string name="sound_name_49">Chewing, mastication</string>
+    <string name="sound_name_50">Biting</string>
+    <string name="sound_name_51">Gargling</string>
+    <string name="sound_name_52">Stomach rumble</string>
+    <string name="sound_name_53">Burping, eructation</string>
+    <string name="sound_name_54">Hiccup</string>
+    <string name="sound_name_55">Fart</string>
+    <string name="sound_name_56">Hands</string>
+    <string name="sound_name_57">Finger snapping</string>
+    <string name="sound_name_58">Clapping</string>
+    <string name="sound_name_59">Heart sounds, heartbeat</string>
+    <string name="sound_name_60">Heart murmur</string>
+    <string name="sound_name_61">Cheering</string>
+    <string name="sound_name_62">Applause</string>
+    <string name="sound_name_63">Chatter</string>
+    <string name="sound_name_64">Crowd</string>
+    <string name="sound_name_65">Hubbub, speech noise, speech babble</string>
+    <string name="sound_name_66">Children playing</string>
+    <string name="sound_name_67">Animal</string>
+    <string name="sound_name_68">Domestic animals, pets</string>
+    <string name="sound_name_69">Dog</string>
+    <string name="sound_name_70">Bark</string>
+    <string name="sound_name_71">Yip</string>
+    <string name="sound_name_72">Howl</string>
+    <string name="sound_name_73">Bow-wow</string>
+    <string name="sound_name_74">Growling</string>
+    <string name="sound_name_75">Whimper (dog)</string>
+    <string name="sound_name_76">Cat</string>
+    <string name="sound_name_77">Purr</string>
+    <string name="sound_name_78">Meow</string>
+    <string name="sound_name_79">Hiss</string>
+    <string name="sound_name_80">Caterwaul</string>
+    <string name="sound_name_81">Livestock, farm animals, working animals</string>
+    <string name="sound_name_82">Horse</string>
+    <string name="sound_name_83">Clip-clop</string>
+    <string name="sound_name_84">Neigh, whinny</string>
+    <string name="sound_name_85">Cattle, bovinae</string>
+    <string name="sound_name_86">Moo</string>
+    <string name="sound_name_87">Cowbell</string>
+    <string name="sound_name_88">Pig</string>
+    <string name="sound_name_89">Oink</string>
+    <string name="sound_name_90">Goat</string>
+    <string name="sound_name_91">Bleat</string>
+    <string name="sound_name_92">Sheep</string>
+    <string name="sound_name_93">Fowl</string>
+    <string name="sound_name_94">Chicken, rooster</string>
+    <string name="sound_name_95">Cluck</string>
+    <string name="sound_name_96">Crowing, cock-a-doodle-doo</string>
+    <string name="sound_name_97">Turkey</string>
+    <string name="sound_name_98">Gobble</string>
+    <string name="sound_name_99">Duck</string>
+    <string name="sound_name_100">Quack</string>
+    <string name="sound_name_101">Goose</string>
+    <string name="sound_name_102">Honk</string>
+    <string name="sound_name_103">Wild animals</string>
+    <string name="sound_name_104">Roaring cats (lions, tigers)</string>
+    <string name="sound_name_105">Roar</string>
+    <string name="sound_name_106">Bird</string>
+    <string name="sound_name_107">Bird vocalization, bird call, bird song</string>
+    <string name="sound_name_108">Chirp, tweet</string>
+    <string name="sound_name_109">Squawk</string>
+    <string name="sound_name_110">Pigeon, dove</string>
+    <string name="sound_name_111">Coo</string>
+    <string name="sound_name_112">Crow</string>
+    <string name="sound_name_113">Caw</string>
+    <string name="sound_name_114">Owl</string>
+    <string name="sound_name_115">Hoot</string>
+    <string name="sound_name_116">Bird flight, flapping wings</string>
+    <string name="sound_name_117">Canidae, dogs, wolves</string>
+    <string name="sound_name_118">Rodents, rats, mice</string>
+    <string name="sound_name_119">Mouse</string>
+    <string name="sound_name_120">Patter</string>
+    <string name="sound_name_121">Insect</string>
+    <string name="sound_name_122">Cricket</string>
+    <string name="sound_name_123">Mosquito</string>
+    <string name="sound_name_124">Fly, housefly</string>
+    <string name="sound_name_125">Buzz</string>
+    <string name="sound_name_126">Bee, wasp, etc.</string>
+    <string name="sound_name_127">Frog</string>
+    <string name="sound_name_128">Croak</string>
+    <string name="sound_name_129">Snake</string>
+    <string name="sound_name_130">Rattle</string>
+    <string name="sound_name_131">Whale vocalization</string>
+    <string name="sound_name_132">Music</string>
+    <string name="sound_name_133">Musical instrument</string>
+    <string name="sound_name_134">Plucked string instrument</string>
+    <string name="sound_name_135">Guitar</string>
+    <string name="sound_name_136">Electric guitar</string>
+    <string name="sound_name_137">Bass guitar</string>
+    <string name="sound_name_138">Acoustic guitar</string>
+    <string name="sound_name_139">Steel guitar, slide guitar</string>
+    <string name="sound_name_140">Tapping (guitar technique)</string>
+    <string name="sound_name_141">Strum</string>
+    <string name="sound_name_142">Banjo</string>
+    <string name="sound_name_143">Sitar</string>
+    <string name="sound_name_144">Mandolin</string>
+    <string name="sound_name_145">Zither</string>
+    <string name="sound_name_146">Ukulele</string>
+    <string name="sound_name_147">Keyboard (musical)</string>
+    <string name="sound_name_148">Piano</string>
+    <string name="sound_name_149">Electric piano</string>
+    <string name="sound_name_150">Organ</string>
+    <string name="sound_name_151">Electronic organ</string>
+    <string name="sound_name_152">Hammond organ</string>
+    <string name="sound_name_153">Synthesizer</string>
+    <string name="sound_name_154">Sampler</string>
+    <string name="sound_name_155">Harpsichord</string>
+    <string name="sound_name_156">Percussion</string>
+    <string name="sound_name_157">Drum kit</string>
+    <string name="sound_name_158">Drum machine</string>
+    <string name="sound_name_159">Drum</string>
+    <string name="sound_name_160">Snare drum</string>
+    <string name="sound_name_161">Rimshot</string>
+    <string name="sound_name_162">Drum roll</string>
+    <string name="sound_name_163">Bass drum</string>
+    <string name="sound_name_164">Timpani</string>
+    <string name="sound_name_165">Tabla</string>
+    <string name="sound_name_166">Cymbal</string>
+    <string name="sound_name_167">Hi-hat</string>
+    <string name="sound_name_168">Wood block</string>
+    <string name="sound_name_169">Tambourine</string>
+    <string name="sound_name_170">Rattle (instrument)</string>
+    <string name="sound_name_171">Maraca</string>
+    <string name="sound_name_172">Gong</string>
+    <string name="sound_name_173">Tubular bells</string>
+    <string name="sound_name_174">Mallet percussion</string>
+    <string name="sound_name_175">Marimba, xylophone</string>
+    <string name="sound_name_176">Glockenspiel</string>
+    <string name="sound_name_177">Vibraphone</string>
+    <string name="sound_name_178">Steelpan</string>
+    <string name="sound_name_179">Orchestra</string>
+    <string name="sound_name_180">Brass instrument</string>
+    <string name="sound_name_181">French horn</string>
+    <string name="sound_name_182">Trumpet</string>
+    <string name="sound_name_183">Trombone</string>
+    <string name="sound_name_184">Bowed string instrument</string>
+    <string name="sound_name_185">String section</string>
+    <string name="sound_name_186">Violin, fiddle</string>
+    <string name="sound_name_187">Pizzicato</string>
+    <string name="sound_name_188">Cello</string>
+    <string name="sound_name_189">Double bass</string>
+    <string name="sound_name_190">Wind instrument, woodwind instrument</string>
+    <string name="sound_name_191">Flute</string>
+    <string name="sound_name_192">Saxophone</string>
+    <string name="sound_name_193">Clarinet</string>
+    <string name="sound_name_194">Harp</string>
+    <string name="sound_name_195">Bell</string>
+    <string name="sound_name_196">Church bell</string>
+    <string name="sound_name_197">Jingle bell</string>
+    <string name="sound_name_198">Bicycle bell</string>
+    <string name="sound_name_199">Tuning fork</string>
+    <string name="sound_name_200">Chime</string>
+    <string name="sound_name_201">Wind chime</string>
+    <string name="sound_name_202">Change ringing (campanology)</string>
+    <string name="sound_name_203">Harmonica</string>
+    <string name="sound_name_204">Accordion</string>
+    <string name="sound_name_205">Bagpipes</string>
+    <string name="sound_name_206">Didgeridoo</string>
+    <string name="sound_name_207">Shofar</string>
+    <string name="sound_name_208">Theremin</string>
+    <string name="sound_name_209">Singing bowl</string>
+    <string name="sound_name_210">Scratching (performance technique)</string>
+    <string name="sound_name_211">Pop music</string>
+    <string name="sound_name_212">Hip hop music</string>
+    <string name="sound_name_213">Beatboxing</string>
+    <string name="sound_name_214">Rock music</string>
+    <string name="sound_name_215">Heavy metal</string>
+    <string name="sound_name_216">Punk rock</string>
+    <string name="sound_name_217">Grunge</string>
+    <string name="sound_name_218">Progressive rock</string>
+    <string name="sound_name_219">Rock and roll</string>
+    <string name="sound_name_220">Psychedelic rock</string>
+    <string name="sound_name_221">Rhythm and blues</string>
+    <string name="sound_name_222">Soul music</string>
+    <string name="sound_name_223">Reggae</string>
+    <string name="sound_name_224">Country</string>
+    <string name="sound_name_225">Swing music</string>
+    <string name="sound_name_226">Bluegrass</string>
+    <string name="sound_name_227">Funk</string>
+    <string name="sound_name_228">Folk music</string>
+    <string name="sound_name_229">Middle Eastern music</string>
+    <string name="sound_name_230">Jazz</string>
+    <string name="sound_name_231">Disco</string>
+    <string name="sound_name_232">Classical music</string>
+    <string name="sound_name_233">Opera</string>
+    <string name="sound_name_234">Electronic music</string>
+    <string name="sound_name_235">House music</string>
+    <string name="sound_name_236">Techno</string>
+    <string name="sound_name_237">Dubstep</string>
+    <string name="sound_name_238">Drum and bass</string>
+    <string name="sound_name_239">Electronica</string>
+    <string name="sound_name_240">Electronic dance music</string>
+    <string name="sound_name_241">Ambient music</string>
+    <string name="sound_name_242">Trance music</string>
+    <string name="sound_name_243">Music of Latin America</string>
+    <string name="sound_name_244">Salsa music</string>
+    <string name="sound_name_245">Flamenco</string>
+    <string name="sound_name_246">Blues</string>
+    <string name="sound_name_247">Music for children</string>
+    <string name="sound_name_248">New-age music</string>
+    <string name="sound_name_249">Vocal music</string>
+    <string name="sound_name_250">A capella</string>
+    <string name="sound_name_251">Music of Africa</string>
+    <string name="sound_name_252">Afrobeat</string>
+    <string name="sound_name_253">Christian music</string>
+    <string name="sound_name_254">Gospel music</string>
+    <string name="sound_name_255">Music of Asia</string>
+    <string name="sound_name_256">Carnatic music</string>
+    <string name="sound_name_257">Music of Bollywood</string>
+    <string name="sound_name_258">Ska</string>
+    <string name="sound_name_259">Traditional music</string>
+    <string name="sound_name_260">Independent music</string>
+    <string name="sound_name_261">Song</string>
+    <string name="sound_name_262">Background music</string>
+    <string name="sound_name_263">Theme music</string>
+    <string name="sound_name_264">Jingle (music)</string>
+    <string name="sound_name_265">Soundtrack music</string>
+    <string name="sound_name_266">Lullaby</string>
+    <string name="sound_name_267">Video game music</string>
+    <string name="sound_name_268">Christmas music</string>
+    <string name="sound_name_269">Dance music</string>
+    <string name="sound_name_270">Wedding music</string>
+    <string name="sound_name_271">Happy music</string>
+    <string name="sound_name_272">Sad music</string>
+    <string name="sound_name_273">Tender music</string>
+    <string name="sound_name_274">Exciting music</string>
+    <string name="sound_name_275">Angry music</string>
+    <string name="sound_name_276">Scary music</string>
+    <string name="sound_name_277">Wind</string>
+    <string name="sound_name_278">Rustling leaves</string>
+    <string name="sound_name_279">Wind noise (microphone)</string>
+    <string name="sound_name_280">Thunderstorm</string>
+    <string name="sound_name_281">Thunder</string>
+    <string name="sound_name_282">Water</string>
+    <string name="sound_name_283">Rain</string>
+    <string name="sound_name_284">Raindrop</string>
+    <string name="sound_name_285">Rain on surface</string>
+    <string name="sound_name_286">Stream</string>
+    <string name="sound_name_287">Waterfall</string>
+    <string name="sound_name_288">Ocean</string>
+    <string name="sound_name_289">Waves, surf</string>
+    <string name="sound_name_290">Steam</string>
+    <string name="sound_name_291">Gurgling</string>
+    <string name="sound_name_292">Fire</string>
+    <string name="sound_name_293">Crackle</string>
+    <string name="sound_name_294">Vehicle</string>
+    <string name="sound_name_295">Boat, Water vehicle</string>
+    <string name="sound_name_296">Sailboat, sailing ship</string>
+    <string name="sound_name_297">Rowboat, canoe, kayak</string>
+    <string name="sound_name_298">Motorboat, speedboat</string>
+    <string name="sound_name_299">Ship</string>
+    <string name="sound_name_300">Motor vehicle (road)</string>
+    <string name="sound_name_301">Car</string>
+    <string name="sound_name_302">Vehicle horn, car horn, honking</string>
+    <string name="sound_name_303">Toot</string>
+    <string name="sound_name_304">Car alarm</string>
+    <string name="sound_name_305">Power windows, electric windows</string>
+    <string name="sound_name_306">Skidding</string>
+    <string name="sound_name_307">Tire squeal</string>
+    <string name="sound_name_308">Car passing by</string>
+    <string name="sound_name_309">Race car, auto racing</string>
+    <string name="sound_name_310">Truck</string>
+    <string name="sound_name_311">Air brake</string>
+    <string name="sound_name_312">Air horn, truck horn</string>
+    <string name="sound_name_313">Reversing beeps</string>
+    <string name="sound_name_314">Ice cream truck, ice cream van</string>
+    <string name="sound_name_315">Bus</string>
+    <string name="sound_name_316">Emergency vehicle</string>
+    <string name="sound_name_317">Police car (siren)</string>
+    <string name="sound_name_318">Ambulance (siren)</string>
+    <string name="sound_name_319">Fire engine, fire truck (siren)</string>
+    <string name="sound_name_320">Motorcycle</string>
+    <string name="sound_name_321">Traffic noise, roadway noise</string>
+    <string name="sound_name_322">Rail transport</string>
+    <string name="sound_name_323">Train</string>
+    <string name="sound_name_324">Train whistle</string>
+    <string name="sound_name_325">Train horn</string>
+    <string name="sound_name_326">Railroad car, train wagon</string>
+    <string name="sound_name_327">Train wheels squealing</string>
+    <string name="sound_name_328">Subway, metro, underground</string>
+    <string name="sound_name_329">Aircraft</string>
+    <string name="sound_name_330">Aircraft engine</string>
+    <string name="sound_name_331">Jet engine</string>
+    <string name="sound_name_332">Propeller, airscrew</string>
+    <string name="sound_name_333">Helicopter</string>
+    <string name="sound_name_334">Fixed-wing aircraft, airplane</string>
+    <string name="sound_name_335">Bicycle</string>
+    <string name="sound_name_336">Skateboard</string>
+    <string name="sound_name_337">Engine</string>
+    <string name="sound_name_338">Light engine (high frequency)</string>
+    <string name="sound_name_339">Dental drill, dentist\'s drill</string>
+    <string name="sound_name_340">Lawn mower</string>
+    <string name="sound_name_341">Chainsaw</string>
+    <string name="sound_name_342">Medium engine (mid frequency)</string>
+    <string name="sound_name_343">Heavy engine (low frequency)</string>
+    <string name="sound_name_344">Engine knocking</string>
+    <string name="sound_name_345">Engine starting</string>
+    <string name="sound_name_346">Idling</string>
+    <string name="sound_name_347">Accelerating, revving, vroom</string>
+    <string name="sound_name_348">Door</string>
+    <string name="sound_name_349">Doorbell</string>
+    <string name="sound_name_350">Ding-dong</string>
+    <string name="sound_name_351">Sliding door</string>
+    <string name="sound_name_352">Slam</string>
+    <string name="sound_name_353">Knock</string>
+    <string name="sound_name_354">Tap</string>
+    <string name="sound_name_355">Squeak</string>
+    <string name="sound_name_356">Cupboard open or close</string>
+    <string name="sound_name_357">Drawer open or close</string>
+    <string name="sound_name_358">Dishes, pots, and pans</string>
+    <string name="sound_name_359">Cutlery, silverware</string>
+    <string name="sound_name_360">Chopping (food)</string>
+    <string name="sound_name_361">Frying (food)</string>
+    <string name="sound_name_362">Microwave oven</string>
+    <string name="sound_name_363">Blender</string>
+    <string name="sound_name_364">Water tap, faucet</string>
+    <string name="sound_name_365">Sink (filling or washing)</string>
+    <string name="sound_name_366">Bathtub (filling or washing)</string>
+    <string name="sound_name_367">Hair dryer</string>
+    <string name="sound_name_368">Toilet flush</string>
+    <string name="sound_name_369">Toothbrush</string>
+    <string name="sound_name_370">Electric toothbrush</string>
+    <string name="sound_name_371">Vacuum cleaner</string>
+    <string name="sound_name_372">Zipper (clothing)</string>
+    <string name="sound_name_373">Keys jangling</string>
+    <string name="sound_name_374">Coin (dropping)</string>
+    <string name="sound_name_375">Scissors</string>
+    <string name="sound_name_376">Electric shaver, electric razor</string>
+    <string name="sound_name_377">Shuffling cards</string>
+    <string name="sound_name_378">Typing</string>
+    <string name="sound_name_379">Typewriter</string>
+    <string name="sound_name_380">Computer keyboard</string>
+    <string name="sound_name_381">Writing</string>
+    <string name="sound_name_382">Alarm</string>
+    <string name="sound_name_383">Telephone</string>
+    <string name="sound_name_384">Telephone bell ringing</string>
+    <string name="sound_name_385">Ringtone</string>
+    <string name="sound_name_386">Telephone dialing, DTMF</string>
+    <string name="sound_name_387">Dial tone</string>
+    <string name="sound_name_388">Busy signal</string>
+    <string name="sound_name_389">Alarm clock</string>
+    <string name="sound_name_390">Siren</string>
+    <string name="sound_name_391">Civil defense siren</string>
+    <string name="sound_name_392">Buzzer</string>
+    <string name="sound_name_393">Smoke detector, smoke alarm</string>
+    <string name="sound_name_394">Fire alarm</string>
+    <string name="sound_name_395">Foghorn</string>
+    <string name="sound_name_396">Whistle</string>
+    <string name="sound_name_397">Steam whistle</string>
+    <string name="sound_name_398">Mechanisms</string>
+    <string name="sound_name_399">Ratchet, pawl</string>
+    <string name="sound_name_400">Clock</string>
+    <string name="sound_name_401">Tick</string>
+    <string name="sound_name_402">Tick-tock</string>
+    <string name="sound_name_403">Gears</string>
+    <string name="sound_name_404">Pulleys</string>
+    <string name="sound_name_405">Sewing machine</string>
+    <string name="sound_name_406">Mechanical fan</string>
+    <string name="sound_name_407">Air conditioning</string>
+    <string name="sound_name_408">Cash register</string>
+    <string name="sound_name_409">Printer</string>
+    <string name="sound_name_410">Camera</string>
+    <string name="sound_name_411">Single-lens reflex camera</string>
+    <string name="sound_name_412">Tools</string>
+    <string name="sound_name_413">Hammer</string>
+    <string name="sound_name_414">Jackhammer</string>
+    <string name="sound_name_415">Sawing</string>
+    <string name="sound_name_416">Filing (rasp)</string>
+    <string name="sound_name_417">Sanding</string>
+    <string name="sound_name_418">Power tool</string>
+    <string name="sound_name_419">Drill</string>
+    <string name="sound_name_420">Explosion</string>
+    <string name="sound_name_421">Gunshot, gunfire</string>
+    <string name="sound_name_422">Machine gun</string>
+    <string name="sound_name_423">Fusillade</string>
+    <string name="sound_name_424">Artillery fire</string>
+    <string name="sound_name_425">Cap gun</string>
+    <string name="sound_name_426">Fireworks</string>
+    <string name="sound_name_427">Firecracker</string>
+    <string name="sound_name_428">Burst, pop</string>
+    <string name="sound_name_429">Eruption</string>
+    <string name="sound_name_430">Boom</string>
+    <string name="sound_name_431">Wood</string>
+    <string name="sound_name_432">Chop</string>
+    <string name="sound_name_433">Splinter</string>
+    <string name="sound_name_434">Crack</string>
+    <string name="sound_name_435">Glass</string>
+    <string name="sound_name_436">Chink, clink</string>
+    <string name="sound_name_437">Shatter</string>
+    <string name="sound_name_438">Liquid</string>
+    <string name="sound_name_439">Splash, splatter</string>
+    <string name="sound_name_440">Slosh</string>
+    <string name="sound_name_441">Squish</string>
+    <string name="sound_name_442">Drip</string>
+    <string name="sound_name_443">Pour</string>
+    <string name="sound_name_444">Trickle, dribble</string>
+    <string name="sound_name_445">Gush</string>
+    <string name="sound_name_446">Fill (with liquid)</string>
+    <string name="sound_name_447">Spray</string>
+    <string name="sound_name_448">Pump (liquid)</string>
+    <string name="sound_name_449">Stir</string>
+    <string name="sound_name_450">Boiling</string>
+    <string name="sound_name_451">Sonar</string>
+    <string name="sound_name_452">Arrow</string>
+    <string name="sound_name_453">Whoosh, swoosh, swish</string>
+    <string name="sound_name_454">Thump, thud</string>
+    <string name="sound_name_455">Thunk</string>
+    <string name="sound_name_456">Electronic tuner</string>
+    <string name="sound_name_457">Effects unit</string>
+    <string name="sound_name_458">Chorus effect</string>
+    <string name="sound_name_459">Basketball bounce</string>
+    <string name="sound_name_460">Bang</string>
+    <string name="sound_name_461">Slap, smack</string>
+    <string name="sound_name_462">Whack, thwack</string>
+    <string name="sound_name_463">Smash, crash</string>
+    <string name="sound_name_464">Breaking</string>
+    <string name="sound_name_465">Bouncing</string>
+    <string name="sound_name_466">Whip</string>
+    <string name="sound_name_467">Flap</string>
+    <string name="sound_name_468">Scratch</string>
+    <string name="sound_name_469">Scrape</string>
+    <string name="sound_name_470">Rub</string>
+    <string name="sound_name_471">Roll</string>
+    <string name="sound_name_472">Crushing</string>
+    <string name="sound_name_473">Crumpling, crinkling</string>
+    <string name="sound_name_474">Tearing</string>
+    <string name="sound_name_475">Beep, bleep</string>
+    <string name="sound_name_476">Ping</string>
+    <string name="sound_name_477">Ding</string>
+    <string name="sound_name_478">Clang</string>
+    <string name="sound_name_479">Squeal</string>
+    <string name="sound_name_480">Creak</string>
+    <string name="sound_name_481">Rustle</string>
+    <string name="sound_name_482">Whir</string>
+    <string name="sound_name_483">Clatter</string>
+    <string name="sound_name_484">Sizzle</string>
+    <string name="sound_name_485">Clicking</string>
+    <string name="sound_name_486">Clickety-clack</string>
+    <string name="sound_name_487">Rumble</string>
+    <string name="sound_name_488">Plop</string>
+    <string name="sound_name_489">Jingle, tinkle</string>
+    <string name="sound_name_490">Hum</string>
+    <string name="sound_name_491">Zing</string>
+    <string name="sound_name_492">Boing</string>
+    <string name="sound_name_493">Crunch</string>
+    <string name="sound_name_494">Silence</string>
+    <string name="sound_name_495">Sine wave</string>
+    <string name="sound_name_496">Harmonic</string>
+    <string name="sound_name_497">Chirp tone</string>
+    <string name="sound_name_498">Sound effect</string>
+    <string name="sound_name_499">Pulse</string>
+    <string name="sound_name_500">Inside, small room</string>
+    <string name="sound_name_501">Inside, large room or hall</string>
+    <string name="sound_name_502">Inside, public space</string>
+    <string name="sound_name_503">Outside, urban or manmade</string>
+    <string name="sound_name_504">Outside, rural or natural</string>
+    <string name="sound_name_505">Reverberation</string>
+    <string name="sound_name_506">Echo</string>
+    <string name="sound_name_507">Noise</string>
+    <string name="sound_name_508">Environmental noise</string>
+    <string name="sound_name_509">Static</string>
+    <string name="sound_name_510">Mains hum</string>
+    <string name="sound_name_511">Distortion</string>
+    <string name="sound_name_512">Sidetone</string>
+    <string name="sound_name_513">Cacophony</string>
+    <string name="sound_name_514">White noise</string>
+    <string name="sound_name_515">Pink noise</string>
+    <string name="sound_name_516">Throbbing</string>
+    <string name="sound_name_517">Vibration</string>
+    <string name="sound_name_518">Television</string>
+    <string name="sound_name_519">Radio</string>
+    <string name="sound_name_520">Field recording</string>
+
+    <!-- 클래스 번호 순서. 앱 언어에 맞는 이름으로 풀린다. -->
+    <string-array name="sound_names" translatable="false">
+        <item>@string/sound_name_0</item>
+        <item>@string/sound_name_1</item>
+        <item>@string/sound_name_2</item>
+        <item>@string/sound_name_3</item>
+        <item>@string/sound_name_4</item>
+        <item>@string/sound_name_5</item>
+        <item>@string/sound_name_6</item>
+        <item>@string/sound_name_7</item>
+        <item>@string/sound_name_8</item>
+        <item>@string/sound_name_9</item>
+        <item>@string/sound_name_10</item>
+        <item>@string/sound_name_11</item>
+        <item>@string/sound_name_12</item>
+        <item>@string/sound_name_13</item>
+        <item>@string/sound_name_14</item>
+        <item>@string/sound_name_15</item>
+        <item>@string/sound_name_16</item>
+        <item>@string/sound_name_17</item>
+        <item>@string/sound_name_18</item>
+        <item>@string/sound_name_19</item>
+        <item>@string/sound_name_20</item>
+        <item>@string/sound_name_21</item>
+        <item>@string/sound_name_22</item>
+        <item>@string/sound_name_23</item>
+        <item>@string/sound_name_24</item>
+        <item>@string/sound_name_25</item>
+        <item>@string/sound_name_26</item>
+        <item>@string/sound_name_27</item>
+        <item>@string/sound_name_28</item>
+        <item>@string/sound_name_29</item>
+        <item>@string/sound_name_30</item>
+        <item>@string/sound_name_31</item>
+        <item>@string/sound_name_32</item>
+        <item>@string/sound_name_33</item>
+        <item>@string/sound_name_34</item>
+        <item>@string/sound_name_35</item>
+        <item>@string/sound_name_36</item>
+        <item>@string/sound_name_37</item>
+        <item>@string/sound_name_38</item>
+        <item>@string/sound_name_39</item>
+        <item>@string/sound_name_40</item>
+        <item>@string/sound_name_41</item>
+        <item>@string/sound_name_42</item>
+        <item>@string/sound_name_43</item>
+        <item>@string/sound_name_44</item>
+        <item>@string/sound_name_45</item>
+        <item>@string/sound_name_46</item>
+        <item>@string/sound_name_47</item>
+        <item>@string/sound_name_48</item>
+        <item>@string/sound_name_49</item>
+        <item>@string/sound_name_50</item>
+        <item>@string/sound_name_51</item>
+        <item>@string/sound_name_52</item>
+        <item>@string/sound_name_53</item>
+        <item>@string/sound_name_54</item>
+        <item>@string/sound_name_55</item>
+        <item>@string/sound_name_56</item>
+        <item>@string/sound_name_57</item>
+        <item>@string/sound_name_58</item>
+        <item>@string/sound_name_59</item>
+        <item>@string/sound_name_60</item>
+        <item>@string/sound_name_61</item>
+        <item>@string/sound_name_62</item>
+        <item>@string/sound_name_63</item>
+        <item>@string/sound_name_64</item>
+        <item>@string/sound_name_65</item>
+        <item>@string/sound_name_66</item>
+        <item>@string/sound_name_67</item>
+        <item>@string/sound_name_68</item>
+        <item>@string/sound_name_69</item>
+        <item>@string/sound_name_70</item>
+        <item>@string/sound_name_71</item>
+        <item>@string/sound_name_72</item>
+        <item>@string/sound_name_73</item>
+        <item>@string/sound_name_74</item>
+        <item>@string/sound_name_75</item>
+        <item>@string/sound_name_76</item>
+        <item>@string/sound_name_77</item>
+        <item>@string/sound_name_78</item>
+        <item>@string/sound_name_79</item>
+        <item>@string/sound_name_80</item>
+        <item>@string/sound_name_81</item>
+        <item>@string/sound_name_82</item>
+        <item>@string/sound_name_83</item>
+        <item>@string/sound_name_84</item>
+        <item>@string/sound_name_85</item>
+        <item>@string/sound_name_86</item>
+        <item>@string/sound_name_87</item>
+        <item>@string/sound_name_88</item>
+        <item>@string/sound_name_89</item>
+        <item>@string/sound_name_90</item>
+        <item>@string/sound_name_91</item>
+        <item>@string/sound_name_92</item>
+        <item>@string/sound_name_93</item>
+        <item>@string/sound_name_94</item>
+        <item>@string/sound_name_95</item>
+        <item>@string/sound_name_96</item>
+        <item>@string/sound_name_97</item>
+        <item>@string/sound_name_98</item>
+        <item>@string/sound_name_99</item>
+        <item>@string/sound_name_100</item>
+        <item>@string/sound_name_101</item>
+        <item>@string/sound_name_102</item>
+        <item>@string/sound_name_103</item>
+        <item>@string/sound_name_104</item>
+        <item>@string/sound_name_105</item>
+        <item>@string/sound_name_106</item>
+        <item>@string/sound_name_107</item>
+        <item>@string/sound_name_108</item>
+        <item>@string/sound_name_109</item>
+        <item>@string/sound_name_110</item>
+        <item>@string/sound_name_111</item>
+        <item>@string/sound_name_112</item>
+        <item>@string/sound_name_113</item>
+        <item>@string/sound_name_114</item>
+        <item>@string/sound_name_115</item>
+        <item>@string/sound_name_116</item>
+        <item>@string/sound_name_117</item>
+        <item>@string/sound_name_118</item>
+        <item>@string/sound_name_119</item>
+        <item>@string/sound_name_120</item>
+        <item>@string/sound_name_121</item>
+        <item>@string/sound_name_122</item>
+        <item>@string/sound_name_123</item>
+        <item>@string/sound_name_124</item>
+        <item>@string/sound_name_125</item>
+        <item>@string/sound_name_126</item>
+        <item>@string/sound_name_127</item>
+        <item>@string/sound_name_128</item>
+        <item>@string/sound_name_129</item>
+        <item>@string/sound_name_130</item>
+        <item>@string/sound_name_131</item>
+        <item>@string/sound_name_132</item>
+        <item>@string/sound_name_133</item>
+        <item>@string/sound_name_134</item>
+        <item>@string/sound_name_135</item>
+        <item>@string/sound_name_136</item>
+        <item>@string/sound_name_137</item>
+        <item>@string/sound_name_138</item>
+        <item>@string/sound_name_139</item>
+        <item>@string/sound_name_140</item>
+        <item>@string/sound_name_141</item>
+        <item>@string/sound_name_142</item>
+        <item>@string/sound_name_143</item>
+        <item>@string/sound_name_144</item>
+        <item>@string/sound_name_145</item>
+        <item>@string/sound_name_146</item>
+        <item>@string/sound_name_147</item>
+        <item>@string/sound_name_148</item>
+        <item>@string/sound_name_149</item>
+        <item>@string/sound_name_150</item>
+        <item>@string/sound_name_151</item>
+        <item>@string/sound_name_152</item>
+        <item>@string/sound_name_153</item>
+        <item>@string/sound_name_154</item>
+        <item>@string/sound_name_155</item>
+        <item>@string/sound_name_156</item>
+        <item>@string/sound_name_157</item>
+        <item>@string/sound_name_158</item>
+        <item>@string/sound_name_159</item>
+        <item>@string/sound_name_160</item>
+        <item>@string/sound_name_161</item>
+        <item>@string/sound_name_162</item>
+        <item>@string/sound_name_163</item>
+        <item>@string/sound_name_164</item>
+        <item>@string/sound_name_165</item>
+        <item>@string/sound_name_166</item>
+        <item>@string/sound_name_167</item>
+        <item>@string/sound_name_168</item>
+        <item>@string/sound_name_169</item>
+        <item>@string/sound_name_170</item>
+        <item>@string/sound_name_171</item>
+        <item>@string/sound_name_172</item>
+        <item>@string/sound_name_173</item>
+        <item>@string/sound_name_174</item>
+        <item>@string/sound_name_175</item>
+        <item>@string/sound_name_176</item>
+        <item>@string/sound_name_177</item>
+        <item>@string/sound_name_178</item>
+        <item>@string/sound_name_179</item>
+        <item>@string/sound_name_180</item>
+        <item>@string/sound_name_181</item>
+        <item>@string/sound_name_182</item>
+        <item>@string/sound_name_183</item>
+        <item>@string/sound_name_184</item>
+        <item>@string/sound_name_185</item>
+        <item>@string/sound_name_186</item>
+        <item>@string/sound_name_187</item>
+        <item>@string/sound_name_188</item>
+        <item>@string/sound_name_189</item>
+        <item>@string/sound_name_190</item>
+        <item>@string/sound_name_191</item>
+        <item>@string/sound_name_192</item>
+        <item>@string/sound_name_193</item>
+        <item>@string/sound_name_194</item>
+        <item>@string/sound_name_195</item>
+        <item>@string/sound_name_196</item>
+        <item>@string/sound_name_197</item>
+        <item>@string/sound_name_198</item>
+        <item>@string/sound_name_199</item>
+        <item>@string/sound_name_200</item>
+        <item>@string/sound_name_201</item>
+        <item>@string/sound_name_202</item>
+        <item>@string/sound_name_203</item>
+        <item>@string/sound_name_204</item>
+        <item>@string/sound_name_205</item>
+        <item>@string/sound_name_206</item>
+        <item>@string/sound_name_207</item>
+        <item>@string/sound_name_208</item>
+        <item>@string/sound_name_209</item>
+        <item>@string/sound_name_210</item>
+        <item>@string/sound_name_211</item>
+        <item>@string/sound_name_212</item>
+        <item>@string/sound_name_213</item>
+        <item>@string/sound_name_214</item>
+        <item>@string/sound_name_215</item>
+        <item>@string/sound_name_216</item>
+        <item>@string/sound_name_217</item>
+        <item>@string/sound_name_218</item>
+        <item>@string/sound_name_219</item>
+        <item>@string/sound_name_220</item>
+        <item>@string/sound_name_221</item>
+        <item>@string/sound_name_222</item>
+        <item>@string/sound_name_223</item>
+        <item>@string/sound_name_224</item>
+        <item>@string/sound_name_225</item>
+        <item>@string/sound_name_226</item>
+        <item>@string/sound_name_227</item>
+        <item>@string/sound_name_228</item>
+        <item>@string/sound_name_229</item>
+        <item>@string/sound_name_230</item>
+        <item>@string/sound_name_231</item>
+        <item>@string/sound_name_232</item>
+        <item>@string/sound_name_233</item>
+        <item>@string/sound_name_234</item>
+        <item>@string/sound_name_235</item>
+        <item>@string/sound_name_236</item>
+        <item>@string/sound_name_237</item>
+        <item>@string/sound_name_238</item>
+        <item>@string/sound_name_239</item>
+        <item>@string/sound_name_240</item>
+        <item>@string/sound_name_241</item>
+        <item>@string/sound_name_242</item>
+        <item>@string/sound_name_243</item>
+        <item>@string/sound_name_244</item>
+        <item>@string/sound_name_245</item>
+        <item>@string/sound_name_246</item>
+        <item>@string/sound_name_247</item>
+        <item>@string/sound_name_248</item>
+        <item>@string/sound_name_249</item>
+        <item>@string/sound_name_250</item>
+        <item>@string/sound_name_251</item>
+        <item>@string/sound_name_252</item>
+        <item>@string/sound_name_253</item>
+        <item>@string/sound_name_254</item>
+        <item>@string/sound_name_255</item>
+        <item>@string/sound_name_256</item>
+        <item>@string/sound_name_257</item>
+        <item>@string/sound_name_258</item>
+        <item>@string/sound_name_259</item>
+        <item>@string/sound_name_260</item>
+        <item>@string/sound_name_261</item>
+        <item>@string/sound_name_262</item>
+        <item>@string/sound_name_263</item>
+        <item>@string/sound_name_264</item>
+        <item>@string/sound_name_265</item>
+        <item>@string/sound_name_266</item>
+        <item>@string/sound_name_267</item>
+        <item>@string/sound_name_268</item>
+        <item>@string/sound_name_269</item>
+        <item>@string/sound_name_270</item>
+        <item>@string/sound_name_271</item>
+        <item>@string/sound_name_272</item>
+        <item>@string/sound_name_273</item>
+        <item>@string/sound_name_274</item>
+        <item>@string/sound_name_275</item>
+        <item>@string/sound_name_276</item>
+        <item>@string/sound_name_277</item>
+        <item>@string/sound_name_278</item>
+        <item>@string/sound_name_279</item>
+        <item>@string/sound_name_280</item>
+        <item>@string/sound_name_281</item>
+        <item>@string/sound_name_282</item>
+        <item>@string/sound_name_283</item>
+        <item>@string/sound_name_284</item>
+        <item>@string/sound_name_285</item>
+        <item>@string/sound_name_286</item>
+        <item>@string/sound_name_287</item>
+        <item>@string/sound_name_288</item>
+        <item>@string/sound_name_289</item>
+        <item>@string/sound_name_290</item>
+        <item>@string/sound_name_291</item>
+        <item>@string/sound_name_292</item>
+        <item>@string/sound_name_293</item>
+        <item>@string/sound_name_294</item>
+        <item>@string/sound_name_295</item>
+        <item>@string/sound_name_296</item>
+        <item>@string/sound_name_297</item>
+        <item>@string/sound_name_298</item>
+        <item>@string/sound_name_299</item>
+        <item>@string/sound_name_300</item>
+        <item>@string/sound_name_301</item>
+        <item>@string/sound_name_302</item>
+        <item>@string/sound_name_303</item>
+        <item>@string/sound_name_304</item>
+        <item>@string/sound_name_305</item>
+        <item>@string/sound_name_306</item>
+        <item>@string/sound_name_307</item>
+        <item>@string/sound_name_308</item>
+        <item>@string/sound_name_309</item>
+        <item>@string/sound_name_310</item>
+        <item>@string/sound_name_311</item>
+        <item>@string/sound_name_312</item>
+        <item>@string/sound_name_313</item>
+        <item>@string/sound_name_314</item>
+        <item>@string/sound_name_315</item>
+        <item>@string/sound_name_316</item>
+        <item>@string/sound_name_317</item>
+        <item>@string/sound_name_318</item>
+        <item>@string/sound_name_319</item>
+        <item>@string/sound_name_320</item>
+        <item>@string/sound_name_321</item>
+        <item>@string/sound_name_322</item>
+        <item>@string/sound_name_323</item>
+        <item>@string/sound_name_324</item>
+        <item>@string/sound_name_325</item>
+        <item>@string/sound_name_326</item>
+        <item>@string/sound_name_327</item>
+        <item>@string/sound_name_328</item>
+        <item>@string/sound_name_329</item>
+        <item>@string/sound_name_330</item>
+        <item>@string/sound_name_331</item>
+        <item>@string/sound_name_332</item>
+        <item>@string/sound_name_333</item>
+        <item>@string/sound_name_334</item>
+        <item>@string/sound_name_335</item>
+        <item>@string/sound_name_336</item>
+        <item>@string/sound_name_337</item>
+        <item>@string/sound_name_338</item>
+        <item>@string/sound_name_339</item>
+        <item>@string/sound_name_340</item>
+        <item>@string/sound_name_341</item>
+        <item>@string/sound_name_342</item>
+        <item>@string/sound_name_343</item>
+        <item>@string/sound_name_344</item>
+        <item>@string/sound_name_345</item>
+        <item>@string/sound_name_346</item>
+        <item>@string/sound_name_347</item>
+        <item>@string/sound_name_348</item>
+        <item>@string/sound_name_349</item>
+        <item>@string/sound_name_350</item>
+        <item>@string/sound_name_351</item>
+        <item>@string/sound_name_352</item>
+        <item>@string/sound_name_353</item>
+        <item>@string/sound_name_354</item>
+        <item>@string/sound_name_355</item>
+        <item>@string/sound_name_356</item>
+        <item>@string/sound_name_357</item>
+        <item>@string/sound_name_358</item>
+        <item>@string/sound_name_359</item>
+        <item>@string/sound_name_360</item>
+        <item>@string/sound_name_361</item>
+        <item>@string/sound_name_362</item>
+        <item>@string/sound_name_363</item>
+        <item>@string/sound_name_364</item>
+        <item>@string/sound_name_365</item>
+        <item>@string/sound_name_366</item>
+        <item>@string/sound_name_367</item>
+        <item>@string/sound_name_368</item>
+        <item>@string/sound_name_369</item>
+        <item>@string/sound_name_370</item>
+        <item>@string/sound_name_371</item>
+        <item>@string/sound_name_372</item>
+        <item>@string/sound_name_373</item>
+        <item>@string/sound_name_374</item>
+        <item>@string/sound_name_375</item>
+        <item>@string/sound_name_376</item>
+        <item>@string/sound_name_377</item>
+        <item>@string/sound_name_378</item>
+        <item>@string/sound_name_379</item>
+        <item>@string/sound_name_380</item>
+        <item>@string/sound_name_381</item>
+        <item>@string/sound_name_382</item>
+        <item>@string/sound_name_383</item>
+        <item>@string/sound_name_384</item>
+        <item>@string/sound_name_385</item>
+        <item>@string/sound_name_386</item>
+        <item>@string/sound_name_387</item>
+        <item>@string/sound_name_388</item>
+        <item>@string/sound_name_389</item>
+        <item>@string/sound_name_390</item>
+        <item>@string/sound_name_391</item>
+        <item>@string/sound_name_392</item>
+        <item>@string/sound_name_393</item>
+        <item>@string/sound_name_394</item>
+        <item>@string/sound_name_395</item>
+        <item>@string/sound_name_396</item>
+        <item>@string/sound_name_397</item>
+        <item>@string/sound_name_398</item>
+        <item>@string/sound_name_399</item>
+        <item>@string/sound_name_400</item>
+        <item>@string/sound_name_401</item>
+        <item>@string/sound_name_402</item>
+        <item>@string/sound_name_403</item>
+        <item>@string/sound_name_404</item>
+        <item>@string/sound_name_405</item>
+        <item>@string/sound_name_406</item>
+        <item>@string/sound_name_407</item>
+        <item>@string/sound_name_408</item>
+        <item>@string/sound_name_409</item>
+        <item>@string/sound_name_410</item>
+        <item>@string/sound_name_411</item>
+        <item>@string/sound_name_412</item>
+        <item>@string/sound_name_413</item>
+        <item>@string/sound_name_414</item>
+        <item>@string/sound_name_415</item>
+        <item>@string/sound_name_416</item>
+        <item>@string/sound_name_417</item>
+        <item>@string/sound_name_418</item>
+        <item>@string/sound_name_419</item>
+        <item>@string/sound_name_420</item>
+        <item>@string/sound_name_421</item>
+        <item>@string/sound_name_422</item>
+        <item>@string/sound_name_423</item>
+        <item>@string/sound_name_424</item>
+        <item>@string/sound_name_425</item>
+        <item>@string/sound_name_426</item>
+        <item>@string/sound_name_427</item>
+        <item>@string/sound_name_428</item>
+        <item>@string/sound_name_429</item>
+        <item>@string/sound_name_430</item>
+        <item>@string/sound_name_431</item>
+        <item>@string/sound_name_432</item>
+        <item>@string/sound_name_433</item>
+        <item>@string/sound_name_434</item>
+        <item>@string/sound_name_435</item>
+        <item>@string/sound_name_436</item>
+        <item>@string/sound_name_437</item>
+        <item>@string/sound_name_438</item>
+        <item>@string/sound_name_439</item>
+        <item>@string/sound_name_440</item>
+        <item>@string/sound_name_441</item>
+        <item>@string/sound_name_442</item>
+        <item>@string/sound_name_443</item>
+        <item>@string/sound_name_444</item>
+        <item>@string/sound_name_445</item>
+        <item>@string/sound_name_446</item>
+        <item>@string/sound_name_447</item>
+        <item>@string/sound_name_448</item>
+        <item>@string/sound_name_449</item>
+        <item>@string/sound_name_450</item>
+        <item>@string/sound_name_451</item>
+        <item>@string/sound_name_452</item>
+        <item>@string/sound_name_453</item>
+        <item>@string/sound_name_454</item>
+        <item>@string/sound_name_455</item>
+        <item>@string/sound_name_456</item>
+        <item>@string/sound_name_457</item>
+        <item>@string/sound_name_458</item>
+        <item>@string/sound_name_459</item>
+        <item>@string/sound_name_460</item>
+        <item>@string/sound_name_461</item>
+        <item>@string/sound_name_462</item>
+        <item>@string/sound_name_463</item>
+        <item>@string/sound_name_464</item>
+        <item>@string/sound_name_465</item>
+        <item>@string/sound_name_466</item>
+        <item>@string/sound_name_467</item>
+        <item>@string/sound_name_468</item>
+        <item>@string/sound_name_469</item>
+        <item>@string/sound_name_470</item>
+        <item>@string/sound_name_471</item>
+        <item>@string/sound_name_472</item>
+        <item>@string/sound_name_473</item>
+        <item>@string/sound_name_474</item>
+        <item>@string/sound_name_475</item>
+        <item>@string/sound_name_476</item>
+        <item>@string/sound_name_477</item>
+        <item>@string/sound_name_478</item>
+        <item>@string/sound_name_479</item>
+        <item>@string/sound_name_480</item>
+        <item>@string/sound_name_481</item>
+        <item>@string/sound_name_482</item>
+        <item>@string/sound_name_483</item>
+        <item>@string/sound_name_484</item>
+        <item>@string/sound_name_485</item>
+        <item>@string/sound_name_486</item>
+        <item>@string/sound_name_487</item>
+        <item>@string/sound_name_488</item>
+        <item>@string/sound_name_489</item>
+        <item>@string/sound_name_490</item>
+        <item>@string/sound_name_491</item>
+        <item>@string/sound_name_492</item>
+        <item>@string/sound_name_493</item>
+        <item>@string/sound_name_494</item>
+        <item>@string/sound_name_495</item>
+        <item>@string/sound_name_496</item>
+        <item>@string/sound_name_497</item>
+        <item>@string/sound_name_498</item>
+        <item>@string/sound_name_499</item>
+        <item>@string/sound_name_500</item>
+        <item>@string/sound_name_501</item>
+        <item>@string/sound_name_502</item>
+        <item>@string/sound_name_503</item>
+        <item>@string/sound_name_504</item>
+        <item>@string/sound_name_505</item>
+        <item>@string/sound_name_506</item>
+        <item>@string/sound_name_507</item>
+        <item>@string/sound_name_508</item>
+        <item>@string/sound_name_509</item>
+        <item>@string/sound_name_510</item>
+        <item>@string/sound_name_511</item>
+        <item>@string/sound_name_512</item>
+        <item>@string/sound_name_513</item>
+        <item>@string/sound_name_514</item>
+        <item>@string/sound_name_515</item>
+        <item>@string/sound_name_516</item>
+        <item>@string/sound_name_517</item>
+        <item>@string/sound_name_518</item>
+        <item>@string/sound_name_519</item>
+        <item>@string/sound_name_520</item>
+    </string-array>
+</resources>

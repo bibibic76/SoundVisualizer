@@ -64,7 +64,8 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
                                                              jobject thiz,
                                                              jobject buffer,
-                                                             jint floatCount) {
+                                                             jint floatCount,
+                                                             jfloat levelGain) {
   if (buffer == nullptr)
     return;
   auto *samples = static_cast<const float *>(env->GetDirectBufferAddress(buffer));
@@ -86,6 +87,13 @@ Java_com_example_soundvisualizer_AudioEngine_pushAudioBuffer(JNIEnv *env,
       l = a;
     if (b > r)
       r = b;
+  }
+  // 외부 사운드 모드의 마이크 감도(#226). 잰 크기에만 곱하고 PCM 은 그대로 둔다(AI 는 같은 버퍼를 읽는다).
+  // 모든 소비자가 0..1 을 기대하므로 1 에서 자른다. 폰 안의 소리는 늘 1 이 온다.
+  if (levelGain != 1.0f) {
+    const float g = levelGain > 0.0f ? levelGain : 0.0f;
+    l = fminf(l * g, 1.0f);
+    r = fminf(r * g, 1.0f);
   }
   const float peak = l > r ? l : r;
   atomicMax(peakLeft, l);

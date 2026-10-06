@@ -29,7 +29,13 @@ object YamnetThreeClassMapper {
 
     private fun matchesDanger(s: String): Boolean {
         if (matchesTemporaryGunshotProxyDanger(s)) return true
-        if ("footstep" in s || "footsteps" in s) return true
+        // Product policy: footsteps are Ambient; only explicit vehicle-horn
+        // YAMNet classes are promoted to Danger (not every generic "horn").
+        if (s == "vehicle horn, car horn, honking") return true
+        if (s == "air horn, truck horn") return true
+        // Product policy: these exact source labels require immediate attention.
+        // Keep exact matching so Rain/Wind and similarly named labels stay Ambient.
+        if (s == "chainsaw" || s == "thunder" || s == "thunderstorm") return true
         if (
             "gunshot" in s || "gunfire" in s || "machine gun" in s ||
             "artillery" in s || "fusillade" in s || "cap gun" in s
@@ -37,6 +43,14 @@ object YamnetThreeClassMapper {
             return true
         }
         if ("explosion" in s || "fireworks" in s || "firecracker" in s) return true
+        // Product policy: sudden explosive or destructive events are Danger even when
+        // YAMNet cannot identify their precise source (for example, a gunshot vs. a pop).
+        if (
+            s == "burst, pop" || s == "boom" || s == "bang" ||
+            s == "smash, crash" || s == "breaking" || s == "shatter"
+        ) {
+            return true
+        }
         if ("civil defense siren" in s) return true
         if ("police car" in s && "siren" in s) return true
         if ("ambulance" in s && "siren" in s) return true

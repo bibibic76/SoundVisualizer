@@ -7,6 +7,13 @@
     <color name="app_background">#2A2C31</color>
 
     <!--
+        Android 12 이상 스플래시에서 로고 뒤에 까는 원의 색(values-v31/themes.xml).
+        런처 아이콘의 배경 레이어(mipmap-*/adaptive_icon_background.png)와 같은 흰색이라, 전경 PNG 의 흰 사각 판이
+        이 원에 묻힌다(#275). 배경 레이어 색이 바뀌면 함께 바꾼다. 어긋나면 AppWindowThemeTest 가 실패한다.
+    -->
+    <color name="splash_icon_background">#FFFFFF</color>
+
+    <!--
         실행 중 알림의 모드 칩. 알림 배경색은 기기·테마마다 달라서 밝을 수도 어두울 수도 있는데,
         RemoteViews 에서는 테마 속성을 믿고 쓰기 어렵다. 그래서 칩을 진한 색으로 채우고 글자를 밝게 둬서
         배경이 어느 쪽이든 읽히게 한다. 고른 칩은 앱의 강조색(MainActivity.kt 의 AccentColor)과 같은 값이다.

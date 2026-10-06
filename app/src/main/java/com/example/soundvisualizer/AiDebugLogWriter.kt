@@ -36,7 +36,13 @@ class AiDebugLogWriter(
      *
      * @return 실제로 한 줄을 썼으면 true. 같은 결과라 건너뛰었거나 상한에 닿았으면 false.
      */
-    fun write(result: AiClassificationResult, nowMs: Long, level: Float, shown: Boolean): Boolean {
+    fun write(
+        result: AiClassificationResult,
+        nowMs: Long,
+        captureSource: CaptureSource,
+        level: Float,
+        shown: Boolean
+    ): Boolean {
         if (stopped) return false
         if (result.timestampMs == lastResultMs) return false
 
@@ -44,7 +50,7 @@ class AiDebugLogWriter(
             append(AiDebugCsv.HEADER)
             wroteHeader = true
         }
-        append(AiDebugCsv.row(result, nowMs, level, shown))
+        append(AiDebugCsv.row(result, nowMs, captureSource, level, shown))
         lastResultMs = result.timestampMs
         rows++
         if (written >= maxBytes) stopped = true

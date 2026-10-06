@@ -18,7 +18,7 @@ It draws where the sound on your phone is coming from, how loud it is and what k
 
 ## 🔍 How it works
 
-1. **It captures the sound playing inside your phone.** It doesn't listen to the room through the microphone. It receives the sound that apps and games play.
+1. **It captures the sound playing inside your phone.** It doesn't listen to the room through the microphone. It receives the sound that apps and games play. Turn on **External sound mode** on Home and it listens to the sounds around you through the microphone instead (see below).
 2. **It compares the loudness of the left and right channels** to work out direction and strength.
 3. **AI decides what kind of sound it is every 0.25 seconds**: ambient, speech or danger.
 4. **It draws the result along the edges of the screen.** The side the sound comes from reacts more strongly, and the color changes with the sound type.
@@ -41,22 +41,36 @@ You can see the same sound in four shapes and switch between them any time in Se
 ### 🧠 Sound types (AI)
 
 - Sorts what you hear into **ambient, speech and danger** sounds.
-- Gunshots are double-checked by a dedicated model so they aren't missed.
+- Sirens and alarms count as danger sounds when they clearly show up among the AI's top candidates, even if they aren't its first pick.
 - **Pick a color for each type.** Choose any color in the color picker, or tap a common color.
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
 - When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away.
 - Even with only danger sounds shown, short danger sounds like gunshots that end before the AI decides are still drawn at their real size.
-- In the rare case the AI model can't be loaded, Home and Settings show that **sound type detection isn't working**. Every sound is then shown in the ambient color and vibration alerts don't go off. The model is only loaded when it starts, so turning it off and on again gives it another try.
+- In the rare case the AI model can't be loaded, Home and Settings show that **sound type detection isn't working**. Every sound is then shown in the ambient color, and only loud sounds vibrate, using the danger sound vibration setting. The model is only loaded when it starts, so turning it off and on again gives it another try.
 
 ### 📳 Vibration alerts
 
 Vibration lets you know a sound happened even when you're not looking at the screen.
 
-- **Turn vibration on or off for each sound type.** At first only danger sounds vibrate.
-- **Pick a strength (Light, Medium, Strong) and a pattern (Once, Twice, Long, Repeat) for each type.** Set them differently per type and you can tell sounds apart by touch alone.
-- Tap an option in Settings to feel it right away.
+- **Pick a vibration mode for each sound type: Off, Slow, Medium, Fast or Continuous.** At first only danger sounds vibrate, on Medium.
+  - Medium pulses every half second, Slow at half that pace and Fast at twice that pace. Continuous vibrates without a break.
+- **Set the strength for each type with a slider (10–100%).** Every mode vibrates at the strength you picked. Give each type a different mode and you can tell sounds apart by touch alone.
+- **It keeps vibrating while a sound of that type lasts and stops when the sound does.** Pauses shorter than 0.4 seconds, like the gaps between words, count as the same sound.
+- Tap a mode or change the strength in Settings to feel it for 2 seconds. While the visualizer is running, previews don't play, so they aren't mixed up with real alerts.
 - **Only types shown on screen vibrate.**
-- So rapid gunfire doesn't buzz nonstop, the same type won't vibrate again within 2 seconds. "Repeat" vibrates every 1.5 seconds while the sound continues.
+- While the phone keeps vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
+
+### 🎤 External sound mode
+
+Turn on **External sound mode** on Home and start, and it listens to **the sounds around you through the microphone** instead of sound playing on your phone, showing them with the same graphics and vibration. You can notice sounds outside the phone, like a doorbell, a fire alarm or someone calling you.
+
+- It's off by default. When it's on, it starts without screen recording consent, and on Android 12 and later a microphone indicator shows in the status bar while it listens. The running notification title and the Home status also say **Surrounding sound**.
+- What it hears is only used to measure loudness and tell the type of sound. **The audio itself is never saved to a file or sent anywhere.** If you turn on result recording in developer mode, the names of the sounds the AI heard and their times are written to a CSV file in the app folder.
+- It can't be changed while running. Stop the visualizer, change it, and it applies the next time you start.
+- **It keeps listening while the screen is off.** The mode is meant to tell you about a doorbell or a fire alarm while your phone is lying there with the screen off, so it listens regardless of **Pause while the screen is off** in the Battery settings. It uses more battery as a result.
+- **Microphone sensitivity** appears under the switch when the mode is on (50–800%, 100% by default). Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It takes effect right away, even while running. It only changes the loudness the graphics and vibration see; the AI that tells sound types apart hears the same sound.
+- For now it always draws sound in the center. The phone's two microphones sit apart along its long side, so it can't tell left from right when you hold it upright, only when you hold it sideways. Showing left and right in landscape comes later.
+- If you're on a call, another app is using the microphone, or microphone access is turned off in Quick Settings, no sound comes in. Home and the running notification tell you when that happens.
 
 ### ⚙️ Settings for each mode
 
@@ -64,9 +78,9 @@ All settings are **saved separately for each mode**, so you can make Wave mode b
 
 | Setting | What it does |
 |---|---|
-| **Size** | How far the graphics reach. At 100 they get close to the center of the screen. |
+| **Size** | How large the graphics are drawn for the same sound. At 100 they get close to the center of the screen. It doesn't help pick up quieter sounds. |
 | **Opacity** | Higher values look bolder; lower values look fainter and more transparent. |
-| **Sensitivity** | How quickly the graphics react when loudness changes. |
+| **Sensitivity** | How quickly the graphics grow and shrink as the loudness changes. Higher values pulse with the beat; lower values change smoothly. It doesn't help pick up quieter sounds. |
 | **Speed** | How fast the graphics move to a new position when the sound changes direction. |
 | **Lock size** | Keeps the graphics at a fixed size and shows loudness only as opacity. Turn it on to use **Fixed size** and **Max opacity**. |
 | **Radius** | (Circle mode only) The size of the ring in the center. |
@@ -88,7 +102,7 @@ To use a different language from your phone, tap **Language** at the top of the 
 - Built to run smoothly over games. Even on 120Hz screens it's capped at 60 frames per second to save battery and reduce heat.
 - **To save even more**, turn on **Draw the graphic less often** under **Battery** in the Settings tab. It redraws only 30 times a second, which saves battery when you leave it running for a long time. Movement is less smooth, but sound is still picked up just as often.
 - When there's no sound, it stops drawing and goes idle.
-- **It pauses while the screen is off.** It stops capturing sound, running the AI and vibrating while the screen is off, and picks up again when you turn the screen on. To keep getting vibration alerts with the screen off, turn off **Pause while the screen is off** under **Battery** in the Settings tab.
+- **It pauses while the screen is off.** It stops capturing sound, running the AI and vibrating while the screen is off, and picks up again when you turn the screen on. To keep getting vibration alerts with the screen off, turn off **Pause while the screen is off** under **Battery** in the Settings tab. External sound mode keeps listening with the screen off, whatever this setting is.
 - A notification is shown while it's running, and its **Stop** button turns it off right away. Expand the notification to switch the **visual mode** too.
 
 ---
@@ -108,14 +122,16 @@ To use a different language from your phone, tap **Language** at the top of the 
 
 You can also find how to use it, why permissions are needed and the FAQ in the app's **Help** tab.
 
+The first time you open the app, a **tutorial** shows up first. In five pages it shows what the app does (drawing sound along the edges of the screen, telling left from right, a color for each type of sound, vibration for danger sounds) and how to turn it on and off. Its pictures move exactly the way the app draws. Once you skip it or reach the end, it won't open by itself again; tap **View tutorial** at the bottom of the Home tab to see it any time.
+
 1. Open the app and tap **Start**.
 2. Allow the permissions below. Some are asked only once, and some are asked every time you turn it on because of Android's rules.
 
    | Permission | Why it's needed |
    |---|---|
    | **Display over other apps** | To show graphics on top of games and videos. |
-   | **Microphone (audio recording)** | To capture sound playing on your phone. The permission is called microphone, but **sounds around you are not recorded.** |
-   | **Screen recording / casting** | Android only lets apps capture your phone's sound through this permission. **Your screen itself is not captured.** |
+   | **Microphone (audio recording)** | To capture sound playing on your phone. The permission is called microphone, but unless External sound mode is on, **it doesn't listen to the sounds around you.** When it's on, it uses this permission to listen to them, and the audio itself is never saved to a file or sent anywhere. |
+   | **Screen recording / casting** | Android only lets apps capture your phone's sound through this permission. **Your screen itself is not captured.** It isn't asked in External sound mode. |
    | **Notifications** (Android 13+) | To show the running notification and its Stop button, and to tell you when it turns off without you stopping it. The app still works if you deny it. If it then turns off, only the vibration tells you, and Home shows what turned off when you open the app. |
 
    If **Display over other apps** isn't allowed, the app tells you what to do before opening Settings. If that screen lists apps, find **SoundVisualizer** and turn its switch on, then come back — it goes on with the start you asked for.
@@ -130,7 +146,7 @@ You can also find how to use it, why permissions are needed and the FAQ in the a
 
 You can turn it on and off from a Quick Settings button in the notification shade without switching apps.
 
-1. Tap **Add to Quick Settings** on the app's Home tab and allow it. If it isn't added, the app tells you how to add it yourself. (On Android 12 and earlier, pull down the notification shade, tap Edit (pencil) and drag **Sound visualizer** in.)
+1. Tap **Add to Quick Settings** at the top of the app's Settings tab and allow it. If it isn't added, the app tells you how to add it yourself. (On Android 12 and earlier, pull down the notification shade, tap Edit (pencil) and drag **Sound visualizer** in.)
 2. While playing a game or watching a video, pull down the notification shade and tap **Sound visualizer** to turn it on. Android shows the screen recording consent every time you turn it on.
 3. Tap it again to turn it off. Long-press it to open the app's settings.
 
@@ -143,6 +159,7 @@ The first time you turn it on, the microphone and notification permissions are a
 - **It can tell left from right, but not front from back.** Phone audio has two channels, left and right, and direction comes from the difference between them. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space. They don't pick out sounds actually coming from behind you.
 - **Sounds that are identical on the left and right (mono) have no direction.** They're shown only toward the front.
 - **Not every sound is captured.** Only media and game sounds are captured. Phone calls, notification sounds and alarms are not. Some apps (such as copy-protected video apps) block audio capture and can't be visualized. In that case **sound is playing but nothing is drawn**, so after about 15 seconds Home and the running notification tell you that no sound is reaching the visualizer. An app that has muted itself (a feed video autoplaying without sound, a game with its music turned off) looks exactly the same to us, so we can't tell you which of the two it is. The notice clears as soon as sound comes through again. It is not shown when the volume is at zero or during a call, because then we cannot tell why it is quiet. It works the same way with headphones or Bluetooth in use.
+- **Sound playing on your phone follows the media volume.** The captured sound has the media volume applied, so if you turn the volume very low, the graphics and vibration may not respond, and at zero nothing is captured. If it isn't responding well, turn the volume up a little. External sound mode isn't affected by the volume.
 - **Starting screen recording, screen sharing or casting turns it off.** The app captures sound through the screen recording consent, and Android lets only one app use it at a time. For the same reason, if another app is recording, sharing or casting, turning it on again ends it. In most cases, when it turns off without you stopping it, your phone **vibrates three long times** and shows a notification with a **Turn on again** button. Stopping sound capture from your phone's screen-sharing controls shows the same alert, and a force stop or a crash can't tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.
 - **AI classification is for reference only.** It can get the sound type wrong. Don't rely on this app as your only safeguard when safety is at stake.
 
@@ -151,19 +168,19 @@ The first time you turn it on, the microphone and notification permissions are a
 ## ❓ FAQ
 
 **It turned off without me stopping it.**
-It turns off when screen recording, screen sharing or casting starts, or when sound capture stops because of an error. Tap **Turn on again** in the notification, or turn it on again from the app or Quick Settings. Android asks for the screen recording consent every time you turn it on, and if another app is recording, sharing or casting, turning it on again ends it.
+It turns off when screen recording, screen sharing or casting starts, or when sound capture stops because of an error. Tap **Turn on again** in the notification, or turn it on again from the app or Quick Settings. Android asks for the screen recording consent every time you turn it on, and if another app is recording, sharing or casting, turning it on again ends it. External sound mode doesn't use the screen recording consent, so it stays on regardless of other apps' screen recording, sharing or casting.
 
 **I don't see any graphics.**
-Check whether the app you're playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off.
+Check whether the app you're playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off. In External sound mode, also check that the microphone isn't blocked (a call, another app using the microphone, or the microphone block in Quick Settings) and check **Microphone sensitivity** on Home. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
 
 **It doesn't vibrate.**
-In Settings, under Sound types, make sure both **Show** and **Vibrate** are on for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. It also doesn't vibrate while sound type detection isn't working. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate.
+In Settings, under Sound types, make sure **Show** is on and **Vibrate** isn't set to **Off** for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. External sound mode keeps listening while the screen is off. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
 
 **A new version won't install.**
 An APK built on a different computer has a different signature and can't be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.
 
 **Does it use a lot of battery?**
-It only draws while there's sound and goes idle when it's quiet. While the screen is off, by default it also stops capturing sound and running the AI. Because it keeps capturing sound while the screen is on, it does use some battery while running. We recommend turning it off when you're not using it.
+It only draws while there's sound and goes idle when it's quiet. While the screen is off, by default it also stops capturing sound and running the AI (External sound mode keeps listening). Because it keeps capturing sound while the screen is on, it does use some battery while running. We recommend turning it off when you're not using it.
 
 **How do I change the app language?**
 Tap **Language** at the top of the **Settings** tab and pick one. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.

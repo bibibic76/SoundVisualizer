@@ -148,6 +148,43 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
+    fun approvedFootstepAndVehicleHornPolicy() {
+        listOf("Footstep", "Footsteps").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Vehicle horn, car horn, honking", "Air horn, truck horn").forEach { displayName ->
+            assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
+    fun approvedSuddenImpactPolicy() {
+        listOf(
+            "Burst, pop",
+            "Boom",
+            "Bang",
+            "Smash, crash",
+            "Breaking",
+            "Shatter"
+        ).forEach { displayName ->
+            assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Glass", "Door", "Knock", "Thump, thud", "Whack, thwack", "Clang").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
+    fun approvedChainsawAndThunderPolicyUsesExactLabels() {
+        listOf("Chainsaw", "Thunder", "Thunderstorm").forEach { displayName ->
+            assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Rain", "Wind", "Distant thunder", "Chainsaw-like sound").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
     fun waterSoundsDoNotProduceDangerCoarseClassification() {
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             val probabilities = FloatArray(classNames.size)

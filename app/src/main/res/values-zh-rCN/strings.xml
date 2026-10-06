@@ -2,20 +2,62 @@
     <!-- Tabs -->
     <string name="tab_home">首页</string>
     <string name="tab_settings">设置</string>
+    <string name="tab_classify">分类</string>
     <string name="tab_help">帮助</string>
 
     <!-- Home -->
     <string name="home_subtitle">将看不见的声音呈现在屏幕上。\n从游戏到观影，开启全新体验。</string>
     <string name="home_status_running">状态：运行中</string>
+    <string name="home_status_running_external">状态：运行中 · 周围声音</string>
+    <string name="home_mic_silenced">麦克风没有收到任何声音。可能您正在通话、其他应用正在使用麦克风，或者在快捷设置中关闭了麦克风使用权限。</string>
+    <string name="home_external_mode">外部声音模式</string>
+    <string name="home_external_mode_desc">通过麦克风收听您周围的声音，而不是手机上播放的声音。声音本身不会被保存，也不会发送到任何地方。</string>
+    <string name="home_external_mode_locked">运行时无法更改。请先停止可视化再更改，更改会在下次开启时生效。</string>
+    <string name="home_mic_sensitivity">麦克风灵敏度</string>
+    <string name="home_mic_sensitivity_value">%1$d%%</string>
     <string name="home_status_idle">状态：待启动</string>
     <string name="home_capture_blocked">本应用当前接收不到声音，因此无法绘制任何图形。可能是正在播放声音的应用不允许共享自己的声音（受保护的视频就属于这种情况），也可能是该应用自身已静音。</string>
+    <string name="home_ai_unavailable_loud">当前无法识别声音类型，所有声音都以环境音的颜色显示，并且只有较大的声音会按危险音的振动设置振动。请尝试将可视化关闭后重新开启。</string>
     <string name="home_ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示，振动提醒也已关闭。请尝试将可视化关闭后重新开启。</string>
     <string name="home_stopped_dismiss">关闭提示</string>
     <string name="home_start">启动</string>
     <string name="home_stop">停止</string>
-    <string name="home_add_tile">添加到快捷设置</string>
-    <string name="home_add_tile_desc">下拉通知栏，即可在游戏或视频画面上直接开启或关闭。</string>
-    <string name="home_add_tile_manual">下拉通知栏，点按“修改”（铅笔图标）并添加“声音可视化”，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="tile_add">添加到快捷设置</string>
+    <string name="tile_add_desc">下拉通知栏，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="tile_add_manual">下拉通知栏，点按“修改”（铅笔图标）并添加“声音可视化”，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="settings_tile_title">在通知栏中开启和关闭</string>
+    <string name="tile_added">通知栏的快捷设置中已有“声音可视化”按钮。</string>
+    <string name="home_tutorial">查看教程</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_pane_title">教程</string>
+    <string name="tutorial_skip">跳过</string>
+    <string name="tutorial_back">上一页</string>
+    <string name="tutorial_next">下一步</string>
+    <string name="tutorial_done">知道了</string>
+    <string name="tutorial_page_status">第 %1$d 页，共 %2$d 页</string>
+    <string name="tutorial_pause">暂停动画</string>
+    <string name="tutorial_play">播放动画</string>
+    <string name="tutorial_sound_title">在屏幕上看见声音</string>
+    <string name="tutorial_sound_body">游戏或视频中的声音会以图形显示在屏幕边缘。声音越大，图形就越大。只显示手机上播放的声音。本应用不会捕获您周围的声音。</string>
+    <string name="tutorial_sound_body_external">外部声音模式已开启，因此麦克风听到的您周围的声音会以图形显示在屏幕边缘。声音越大，图形就越大。在此模式下，不显示手机上播放的声音。</string>
+    <string name="tutorial_direction_title">可以分辨左右</string>
+    <string name="tutorial_direction_title_external">方向目前只显示在中间</string>
+    <string name="tutorial_direction_body">来自左边的声音会在左侧显示得更大，来自右边的声音会在右侧显示得更大。无法分辨前后。</string>
+    <string name="tutorial_direction_body_external">在外部声音模式下，应用暂时不会显示声音来自哪一侧，所有声音都显示在中间。对于手机内播放的声音，来自左边的声音会在左侧显示得更大。</string>
+    <string name="tutorial_types_title">用颜色区分声音类型</string>
+    <string name="tutorial_types_body">AI 会将声音分为三种类型，并用不同的颜色显示。您可以在“设置”标签页中更改颜色。</string>
+    <string name="tutorial_type_ambient">环境音</string>
+    <string name="tutorial_type_ambient_examples">音乐、雨声等其他声音</string>
+    <string name="tutorial_type_speech">人声</string>
+    <string name="tutorial_type_speech_examples">说话声</string>
+    <string name="tutorial_type_danger">危险音</string>
+    <string name="tutorial_type_danger_examples">枪声、爆炸声、警报声</string>
+    <string name="tutorial_vibration_title">危险音还会以振动提醒</string>
+    <string name="tutorial_vibration_body">游戏或视频中出现危险音时，手机会振动。即使您没有看着屏幕，也能察觉到。默认只有危险音会振动。您可以在“设置”标签页中为每种类型开启或关闭振动。</string>
+    <string name="tutorial_start_title">如何开启和关闭</string>
+    <string name="tutorial_privacy_note">麦克风和屏幕录制权限仅用于捕获手机上播放的声音。您周围的声音和屏幕画面都不会被录制。</string>
+    <string name="tutorial_privacy_note_external">外部声音模式会通过麦克风收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方，屏幕画面也不会被录制。</string>
 
     <!-- Permissions -->
     <string name="permission_overlay_title">请允许“显示在其他应用的上层”</string>
@@ -23,8 +65,10 @@
     <string name="permission_record_audio_required">需要麦克风（录音）权限才能捕获音频。</string>
     <string name="permission_mic_rationale_title">为什么需要麦克风权限？</string>
     <string name="permission_mic_rationale_message">根据 Android 的要求，需要麦克风权限才能捕获手机上播放的声音。本应用不会录制您周围的声音。</string>
+    <string name="permission_mic_rationale_message_external">外部声音模式会通过麦克风收听您周围的声音，并通过屏幕和振动告诉您。在 Android 12 及更高版本中，收听期间状态栏会显示麦克风图标。声音本身不会保存为文件，也不会发送到任何地方。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="permission_mic_settings_title">请在设置中允许使用麦克风</string>
     <string name="permission_mic_settings_message">未获得麦克风权限。如果权限请求窗口没有再次出现，请点按“打开设置”，然后在“权限”中允许“麦克风”。此权限仅用于捕获手机上播放的声音，不会录制您周围的声音。</string>
+    <string name="permission_mic_settings_message_external">未获得麦克风权限。如果权限请求窗口没有再次出现，请点按“打开设置”，然后在“权限”中允许“麦克风”。外部声音模式会通过麦克风收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="permission_continue">继续</string>
     <string name="permission_cancel">取消</string>
     <string name="permission_open_settings">打开设置</string>
@@ -62,7 +106,7 @@
     <string name="setting_max_opacity">最大不透明度</string>
     <string name="setting_max_opacity_desc">声音最大时图形达到的不透明度。</string>
     <string name="setting_size">大小</string>
-    <string name="setting_size_desc">调整图形的大小和整体饱满程度。</string>
+    <string name="setting_size_desc">调整同样的声音要把图形画多大。该设置不会让更小的声音更容易被捕获。</string>
     <string name="setting_radius">半径</string>
     <string name="setting_radius_desc">调整圆环模式下中央圆环的半径。</string>
     <string name="setting_opacity">不透明度</string>
@@ -70,7 +114,7 @@
     <string name="setting_speed">速度</string>
     <string name="setting_speed_desc">声音方向改变时，图形移动到新位置的速度。</string>
     <string name="setting_sensitivity">灵敏度</string>
-    <string name="setting_sensitivity_desc">图形对声音大小变化的反应（跳动）速度。</string>
+    <string name="setting_sensitivity_desc">调整声音大小变化时，图形放大和缩小的快慢。数值高时会随节奏跳动，数值低时变化更平缓。该设置不会让更小的声音更容易被捕获。</string>
     <string name="setting_glow">发光</string>
     <string name="setting_glow_desc">在图形周围添加柔和的霓虹光晕效果。注意：会占用额外资源。</string>
     <string name="setting_glow_intensity">发光强度</string>
@@ -80,7 +124,7 @@
 
     <!-- Battery -->
     <string name="setting_pause_screen_off">屏幕关闭时暂停</string>
-    <string name="setting_pause_screen_off_desc">屏幕关闭期间停止捕获声音、识别声音类型和振动，以节省电量，屏幕点亮后自动继续。如果希望屏幕关闭时仍收到振动提醒，请关闭此项。</string>
+    <string name="setting_pause_screen_off_desc">屏幕关闭期间停止捕获声音、识别声音类型和振动，以节省电量，屏幕点亮后自动继续。如果希望屏幕关闭时仍收到振动提醒，请关闭此项。无论此设置如何，外部声音模式在屏幕关闭时都会继续收听。</string>
     <string name="setting_reduced_frame_rate">降低图形绘制频率</string>
     <string name="setting_reduced_frame_rate_desc">图形每秒重绘 30 次，而不是 60 次。让应用长时间运行时可以节省电量，但图形的动画会不那么流畅。声音捕获的间隔保持不变。</string>
 
@@ -89,23 +133,45 @@
     <string name="ai_show_speech">显示人声</string>
     <string name="ai_show_danger">显示危险音</string>
     <string name="ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示。请尝试将可视化关闭后重新开启。</string>
+    <string name="classify_title">为每种声音选择类型</string>
+    <string name="classify_desc">这里列出 AI 能识别的所有声音，以及每种声音目前归为哪种类型。更改声音的类型后，该声音会立即改用新类型的颜色和振动。</string>
+    <string name="classify_danger_note">从危险音中移出的声音，将不再使用危险音的颜色和振动。相似的声音分在不同的行（警笛有 5 行），要全部移出，就需要逐行更改。</string>
+    <string name="classify_search_hint">搜索声音</string>
+    <string name="cd_classify_clear_search">清除搜索内容</string>
+    <string name="classify_filter_all">全部</string>
+    <string name="classify_filter_changed">已更改</string>
+    <string name="sound_type_ambient">环境音</string>
+    <string name="sound_type_speech">人声</string>
+    <string name="sound_type_danger">危险音</string>
+    <string name="classify_type_default">%1$s（默认）</string>
+    <string name="classify_changed_from">默认：%1$s</string>
+    <string name="classify_changed_count">已更改：%1$d 个</string>
+    <string name="classify_reset_all">全部恢复默认</string>
+    <string name="classify_reset_title">要将所有声音恢复默认吗？</string>
+    <string name="classify_reset_message">您更改过的所有声音都将恢复为默认类型。</string>
+    <string name="classify_reset_confirm">恢复默认</string>
+    <string name="classify_reset_cancel">取消</string>
+    <string name="classify_empty">没有符合条件的声音。</string>
+    <string name="cd_classify_sound">%1$s，类型：%2$s</string>
+    <string name="cd_classify_sound_changed">%1$s，类型：%2$s，默认：%3$s</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">振动</string>
     <string name="haptic_requires_display">需开启此声音类型的显示才会振动。</string>
+    <string name="haptic_ai_unavailable_danger">无法识别声音类型时，无论什么类型，较大的声音持续多久，就会按此设置振动多久。</string>
+    <string name="haptic_ai_unavailable_other">无法识别声音类型时，此类型不会振动。较大的声音会按危险音的设置振动。</string>
     <string name="haptic_ai_unavailable">无法识别声音类型时不会振动。</string>
     <string name="haptic_unsupported">此设备不支持振动。</string>
     <string name="haptic_no_amplitude">此设备无法调节振动强度，将以默认强度振动。</string>
     <string name="haptic_strength">强度</string>
-    <string name="haptic_strength_weak">弱</string>
-    <string name="haptic_strength_medium">中</string>
-    <string name="haptic_strength_strong">强</string>
-    <string name="haptic_pattern">振动方式</string>
-    <string name="haptic_pattern_tap">一次</string>
-    <string name="haptic_pattern_double">两次</string>
-    <string name="haptic_pattern_hold">长振动</string>
-    <string name="haptic_pattern_repeat">重复</string>
-    <string name="haptic_preview_hint">点按选项即可预览振动效果。</string>
+    <string name="haptic_level_percent">%1$d%%</string>
+    <string name="haptic_mode_off">关闭</string>
+    <string name="haptic_mode_slow">慢</string>
+    <string name="haptic_mode_medium">中</string>
+    <string name="haptic_mode_fast">快</string>
+    <string name="haptic_mode_continuous">连续</string>
+    <string name="haptic_preview_hint">点按一种振动方式或调整强度，即可预览 2 秒振动效果。</string>
+    <string name="haptic_preview_hint_running">可视化运行时不会播放预览振动，以免与真实振动混淆。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">选择颜色</string>
@@ -133,8 +199,12 @@
     <!-- Notification -->
     <string name="notification_channel_name">音频捕获</string>
     <string name="notification_text">正在进行声音可视化。</string>
+    <string name="notification_title_external">周围声音 · SoundVisualizer</string>
+    <string name="notification_text_external">正在收听并可视化您周围的声音。</string>
+    <string name="notification_text_mic_silenced">麦克风没有收到任何声音。可能您正在通话，或者麦克风已被阻止。</string>
     <string name="notification_stop">停止</string>
     <string name="notification_mode_selected">%1$s，已选中</string>
+    <string name="notification_text_ai_unavailable_loud">正在进行声音可视化。由于无法识别声音类型，只有较大的声音会振动。</string>
     <string name="notification_text_ai_unavailable">正在进行声音可视化。由于无法识别声音类型，振动提醒已关闭。</string>
     <string name="notification_text_capture_blocked">本应用当前接收不到声音。可能是正在播放声音的应用不允许共享自己的声音，也可能是该应用自身已静音。</string>
 
@@ -159,11 +229,12 @@
     <string name="help_start_title">开始使用</string>
     <string name="help_start_1">在“首页”点按“启动”。</string>
     <string name="help_start_2">允许所需权限。根据 Android 的规定，每次开启时都会询问是否同意屏幕录制。</string>
+    <string name="help_start_2_external">允许所需权限。外部声音模式不会询问是否同意屏幕录制。</string>
     <string name="help_start_3">打开游戏或视频后，声音就会以图形显示在屏幕边缘。</string>
     <string name="help_start_4">如需关闭，请在“首页”或通知中点按“停止”。</string>
 
     <string name="help_tile_title">在通知栏中开启和关闭</string>
-    <string name="help_tile_body">在“首页”点按“添加到快捷设置”，通知栏中就会出现“声音可视化”按钮。无需切换应用，即可在游戏或视频画面上直接开启或关闭。</string>
+    <string name="help_tile_body">在“设置”中点按“添加到快捷设置”，通知栏中就会出现“声音可视化”按钮。无需切换应用，即可在游戏或视频画面上直接开启或关闭。</string>
     <string name="help_tile_use">点按即可开启，开启后再次点按即可关闭。长按可打开本应用的设置。</string>
     <string name="help_tile_old">在 Android 12 及更低版本中，请打开通知栏，点按“修改”（铅笔图标），然后手动将“声音可视化”拖入。</string>
 
@@ -172,6 +243,7 @@
     <string name="help_perm_overlay_desc">用于在游戏和视频上方显示图形。</string>
     <string name="help_perm_mic">麦克风（录音）</string>
     <string name="help_perm_mic_desc">根据 Android 的要求，需要此权限才能捕获手机上播放的声音。不会录制您周围的声音。</string>
+    <string name="help_perm_mic_desc_external">根据 Android 的要求，需要此权限才能捕获手机上播放的声音。开启外部声音模式后，也会用此权限收听您周围的声音。声音本身不会保存为文件，也不会发送到任何地方。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="help_perm_capture">屏幕录制</string>
     <string name="help_perm_capture_desc">Android 仅允许应用在获得此项同意后捕获手机上的声音。不会录制您的屏幕画面。</string>
     <string name="help_perm_notification">通知（Android 13 及更高版本）</string>
@@ -188,24 +260,31 @@
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
-    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择强度（弱、中、强）和振动方式（一次、两次、长振动、重复）。</string>
-    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。同一类型在 2 秒内不会再次振动；选择“重复”时，只要声音持续，每 1.5 秒振动一次。</string>
+    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
+    <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>
 
     <string name="help_notes_title">注意事项</string>
     <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>
+    <string name="help_note_direction_external">在外部声音模式下，暂时不显示方向，所有声音都显示在中间。对于手机内播放的声音，可以分辨左右，但无法分辨前后。</string>
     <string name="help_note_mono">左右声道完全相同的声音（单声道）只会显示为来自正前方。</string>
     <string name="help_note_sources">仅捕获媒体和游戏声音。电话通话、通知提示音和闹钟不在捕获范围内；禁止音频捕获的应用（如部分视频应用）的声音无法可视化。如果声音正在播放，却持续约 15 秒都没有绘制出任何图形，“首页”和运行中的通知会提示您。不过，应用自行静音时的表现完全相同，因此无法告知您究竟属于哪一种情况。</string>
+    <string name="help_note_sources_external">外部声音模式会接收麦克风听到的周围所有声音，包括闹钟、门铃以及手机自身发出的声音。通话时、其他应用正在使用麦克风时，或在快捷设置中屏蔽了麦克风时，不会有任何声音进来，“首页”和运行中的通知会提示您。</string>
+    <string name="help_note_volume">手机内播放的声音会按媒体音量设定的大小被捕获。如果把音量调得很低，图形和振动可能不会有反应；音量为 0 时则完全捕获不到。如果反应不明显，请把音量调高一些。外部声音模式不受音量影响。</string>
+    <string name="help_note_mic_sensitivity">外部声音模式中的“麦克风灵敏度”只改变图形和振动所感知的声音大小。较小的声音几乎显示不出来时请调高，在嘈杂的地方连背景噪音也显示出来时请调低。它不会改变 AI 用来区分声音类型的声音。</string>
     <string name="help_note_stopped">开始屏幕录制、屏幕共享或投屏会让可视化关闭，因为它们使用同一项屏幕录制授权，而 Android 一次只允许一个应用使用。如果其他应用正在录制、共享或投屏，重新开启会使其结束。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。从手机的屏幕共享通知中结束声音捕获时，也会显示同样的提醒；如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
-    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。</string>
+    <string name="help_note_stopped_external">外部声音模式不受屏幕录制、屏幕共享或投屏影响，会保持开启。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
+    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="help_note_ai">AI 分类可能出错。在涉及安全的情况下，请勿将本应用作为唯一的保障手段。</string>
 
     <string name="help_faq_title">常见问题</string>
     <string name="help_faq_stopped_q">我没有手动停止，它却自己关闭了。</string>
     <string name="help_faq_stopped_a">开始屏幕录制、屏幕共享或投屏时，或声音捕获因出错而中断时，可视化会关闭。请点按通知中的“重新开启”，或从“首页”或“快捷设置”中重新开启。每次开启时 Android 都会再次询问是否同意屏幕录制；重新开启会结束正在进行的录制、共享或投屏。</string>
+    <string name="help_faq_stopped_a_external">声音捕获因出错而中断时，可视化会关闭。请点按通知中的“重新开启”，或从“首页”或“快捷设置”中重新开启。外部声音模式不会请求屏幕录制授权，其他应用进行屏幕录制、共享或投屏时也会保持开启。</string>
     <string name="help_faq_no_graphic_q">看不到任何图形。</string>
-    <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
+    <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。可视化手机内的声音时，如果媒体音量调得很低，请调高一些。</string>
+    <string name="help_faq_no_graphic_a_external">请检查麦克风是否被屏蔽。通话时、其他应用正在使用麦克风时，或在快捷设置中屏蔽了麦克风时，不会有任何声音进来，“首页”和运行中的通知会提示您。如果较小的声音几乎显示不出来，请在“首页”调高“麦克风灵敏度”。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
     <string name="help_faq_no_vibration_q">没有振动。</string>
-    <string name="help_faq_no_vibration_a">请在“设置”标签页的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。如果在手机设置中关闭了振动，则可能不会振动。</string>
+    <string name="help_faq_no_vibration_answer">请在“设置”的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。默认情况下，屏幕关闭时应用会暂停；如需在此期间也收到振动提醒，请在“设置”的“电池”中关闭“屏幕关闭时暂停”。无法识别声音类型时，只有较大的声音会按危险音的设置振动。如果在手机设置中关闭了振动，则可能不会振动。可视化手机内的声音时，如果媒体音量调得很低，请调高一些。</string>
     <string name="help_faq_install_q">无法安装新版本。</string>
     <string name="help_faq_install_a">在其他地方构建的 APK 签名不同，无法在现有应用上覆盖安装。请先卸载现有应用，然后再安装。此操作会重置您的设置。</string>
     <string name="help_faq_battery_q">耗电量大吗？</string>
