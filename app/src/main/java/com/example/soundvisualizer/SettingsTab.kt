@@ -9,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -80,17 +79,19 @@ fun SettingsTab(onAddTile: () -> Unit) {
                     Text(stringResource(R.string.settings_mode_picker_desc), fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
 
                     // 번역된 이름이 칸보다 길면 가운데 정렬로 줄을 바꾸고, 네 칸 높이를 함께 맞춘다.
+                    // 글꼴을 키워 단어가 칸에 들어가지 않으면 두 칸씩 두 줄로 둔다([choicesPerRow], #304).
                     // 고른 칸은 색으로만 보이므로, 화면 읽어주기에는 selectableGroup 과 selectable 로 알린다.
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.height(IntrinsicSize.Min).selectableGroup()
-                    ) {
-                        VisualMode.values().forEach { mode ->
+                    val modes = VisualMode.values().toList()
+                    val modeLabels = modes.map { stringResource(it.labelRes) }
+                    val modeLabelStyle = wrappingLabelStyle().copy(fontWeight = FontWeight.SemiBold)
+                    BoxWithConstraints {
+                        val perRow = choicesPerRow(
+                            modeLabels, maxPerRow = modes.size, rowWidth = maxWidth, gap = 8.dp, cellPadding = 4.dp, style = modeLabelStyle
+                        )
+                        EqualChoiceRows(modes, perRow, gap = 8.dp) { mode, cellModifier ->
                             val selected = currentMode == mode
                             Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
+                                modifier = cellModifier
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(if (selected) AccentColor else Color(0xFF333A44))
                                     .selectable(selected = selected, role = Role.RadioButton) {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -30,7 +32,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
@@ -42,6 +46,69 @@ import java.util.Locale
  */
 @Composable
 fun wrappingLabelStyle(): TextStyle = LocalTextStyle.current.copy(hyphens = Hyphens.Auto)
+
+/**
+ * 같은 너비의 선택지 칸을 한 줄에 몇 개씩 둘지.
+ *
+ * 보통 글꼴에서는 [maxPerRow] 개를 한 줄에 둔다(예전 모양 그대로, 긴 번역어는 하이픈으로 끊는다). 글꼴을 키우면
+ * 칸은 그대로인데 글자만 커져, "Medium" 이 "Med/ium", "느림" 이 "느/림" 처럼 글자 중간에서 끊긴다(#304).
+ * 그래서 글꼴을 키웠을 때만, 어느 이름의 한 단어라도 칸에 들어가지 않으면 들어갈 때까지 한 줄의 칸 수를 줄인다.
+ * 두 칸으로도 안 들어가는 단어는 두 칸에 두고 지금처럼 하이픈으로 끊는다.
+ *
+ * @param rowWidth 칸들이 차지할 줄 전체 너비
+ * @param cellPadding 칸 안쪽의 좌우 여백 한쪽
+ * @param style 칸 안 글자의 모양(크기·굵기까지 칸과 같게)
+ */
+@Composable
+fun choicesPerRow(
+    labels: List<String>,
+    maxPerRow: Int,
+    rowWidth: Dp,
+    gap: Dp,
+    cellPadding: Dp,
+    style: TextStyle
+): Int {
+    val density = LocalDensity.current
+    if (density.fontScale <= 1f) return maxPerRow
+    val measurer = rememberTextMeasurer()
+    val widestWordPx = remember(labels, style, density) {
+        labels.flatMap { it.split(' ', '\n') }
+            .filter { it.isNotBlank() }
+            .maxOfOrNull { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width } ?: 0
+    }
+    // 마지막 줄에 한 칸만 남는 나눔(다섯 칸의 4+1, 네 칸의 3+1)은 건너뛴다. 다섯 칸은 3+2, 네 칸은 2+2 가 된다.
+    val count = labels.size
+    val candidates = (maxPerRow downTo 2).filter { it == maxPerRow || count % it == 0 || count % it >= it - 1 }
+    for (perRow in candidates) {
+        val cellText = (rowWidth - gap * (perRow - 1)) / perRow - cellPadding * 2
+        if (with(density) { cellText.toPx() } >= widestWordPx) return perRow
+    }
+    return candidates.last()
+}
+
+/**
+ * 같은 너비의 선택지 칸을 [perRow] 개씩 줄지어 둔다. 마지막 줄이 덜 차도 칸 너비는 위 줄과 같다.
+ * 한 줄 안의 칸은 높이를 맞춘다. 화면 읽어주기에는 전체를 한 선택지 묶음(selectableGroup)으로 알린다.
+ *
+ * @param cell 선택지 하나를 그린다. 받은 Modifier(줄 안의 너비와 높이)를 칸의 맨 앞에 붙인다.
+ */
+@Composable
+fun <T> EqualChoiceRows(
+    options: List<T>,
+    perRow: Int,
+    gap: Dp,
+    modifier: Modifier = Modifier,
+    cell: @Composable (option: T, modifier: Modifier) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(gap), modifier = modifier.selectableGroup()) {
+        options.chunked(perRow.coerceAtLeast(1)).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(gap), modifier = Modifier.height(IntrinsicSize.Min)) {
+                row.forEach { option -> cell(option, Modifier.weight(1f).fillMaxHeight()) }
+                repeat(perRow - row.size) { Spacer(modifier = Modifier.weight(1f)) }
+            }
+        }
+    }
+}
 
 /**
  * 스위치를 켜야 쓰이는 세부 설정을 감싼다. 꺼져 있으면 자리를 차지하지 않고, 켜면 위아래로 펼쳐진다.
