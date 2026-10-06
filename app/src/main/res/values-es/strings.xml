@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">Tipos de sonido y vibración</string>
     <string name="help_sound_kinds">La IA clasifica el audio en sonido ambiente, voz y peligro. De forma predeterminada, el sonido ambiente se muestra en blanco, la voz en amarillo y el peligro en rojo. En la pestaña Ajustes puedes cambiar el color de cada tipo y elegir si se muestra o no.</string>
-    <string name="help_sound_danger">Cuando se detecta un sonido de peligro (como un disparo), el color cambia al instante en lugar de hacerlo poco a poco. Mientras dura, el dibujo además late haciéndose más claro y más oscuro, para que lo reconozcas aunque te cueste distinguir los colores.</string>
+    <string name="help_sound_danger">Cuando se detecta un sonido de peligro (como un disparo), el color cambia al instante en lugar de hacerlo poco a poco.</string>
     <string name="help_sound_haptic">La vibración te avisa aunque no estés mirando la pantalla. Al principio solo está activada para el peligro, y puedes elegir el modo (Desactivada, Lenta, Media, Rápida, Continua) y la intensidad de cada tipo.</string>
     <string name="help_sound_haptic_rule">Solo vibran los tipos que se muestran en pantalla. El teléfono vibra mientras dura un sonido de ese tipo y se detiene cuando termina. Media late cada medio segundo, Lenta a la mitad de ese ritmo y Rápida al doble, mientras que Continua vibra sin interrupción. En todos los modos la vibración mantiene la intensidad que elegiste.</string>
 

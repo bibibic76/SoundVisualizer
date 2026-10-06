@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
-    <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。危险音持续期间，图形还会像脉搏一样忽明忽暗，即使难以分辨颜色也能认出来。</string>
+    <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
     <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
     <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>
 

@@ -293,7 +293,7 @@
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
-    <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading. While it lasts, the graphics also pulse brighter and dimmer, so you can tell it apart even if the colors are hard to tell apart.</string>
+    <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>
 

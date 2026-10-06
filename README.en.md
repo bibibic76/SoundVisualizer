@@ -44,7 +44,7 @@ You can see the same sound in four shapes and switch between them any time in Se
 - Sirens and alarms count as danger sounds when they clearly show up among the AI's top candidates, even if they aren't its first pick.
 - **Pick a color for each type.** Choose any color in the color picker, or tap a common color.
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
-- When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away. So you can tell it apart even if the colors are hard to tell apart, the graphics also pulse brighter and dimmer while it lasts (about every 0.7 seconds; it stops if you turn off animations on your phone).
+- When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away.
 - Even with only danger sounds shown, short danger sounds like gunshots that end before the AI decides are still drawn at their real size.
 - In the rare case the AI model can't be loaded, Home and Settings show that **sound type detection isn't working**. Every sound is then shown in the ambient color, and only loud sounds vibrate, using the danger sound vibration setting. The model is only loaded when it starts, so turning it off and on again gives it another try.
 

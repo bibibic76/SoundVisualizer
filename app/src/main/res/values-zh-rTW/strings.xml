@@ -264,7 +264,7 @@
 
     <string name="help_sound_title">聲音類型與震動</string>
     <string name="help_sound_kinds">AI 會將聽到的聲音分為環境音、人聲和危險音。預設情況下，環境音為白色、人聲為黃色、危險音為紅色。你可以在「設定」分頁中變更各類型的顏色，以及是否顯示。</string>
-    <string name="help_sound_danger">偵測到危險音 (例如槍聲) 時，顏色會立即改變，而不是逐漸轉變。危險音持續期間，圖形還會像脈搏一樣忽明忽暗，即使難以分辨顏色也能認出來。</string>
+    <string name="help_sound_danger">偵測到危險音 (例如槍聲) 時，顏色會立即改變，而不是逐漸轉變。</string>
     <string name="help_sound_haptic">即使沒有看著螢幕，也能透過震動得知聲音。預設只有危險音會震動；你可以為每種類型選擇震動方式 (關閉、慢、中、快、連續) 和強度。</string>
     <string name="help_sound_haptic_rule">只有在螢幕上顯示的類型才會震動。該類型的聲音持續期間會一直震動，聲音停止時震動也會停止。「中」每半秒震動一下，「慢」的速度是它的一半，「快」是它的兩倍，「連續」則不間斷地震動。無論哪種震動方式，震動都會維持你選擇的強度。</string>
 
