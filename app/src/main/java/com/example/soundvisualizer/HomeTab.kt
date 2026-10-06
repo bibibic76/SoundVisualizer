@@ -233,7 +233,7 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
 }
 
 /**
- * 외부 사운드 모드의 마이크 감도(#226). 칸마다 약 3dB 이고, 끄는 동안 바로 적용한다.
+ * 외부 사운드 모드의 마이크 감도(#226). 16칸이고 칸마다 약 2.5dB 이며(맨 오른쪽 ×32), 끄는 동안 바로 적용한다.
  *
  * 올리면 작은 소리도 그리지만 조용하지 않은 곳의 잡음도 그리므로, 기본은 감도를 조절하기 전과 같은 100% 다.
  * 오버레이·진동이 보는 크기에만 곱하고 AI 가 받는 소리는 그대로다([MicSensitivity]).
@@ -242,16 +242,18 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
 private fun MicSensitivitySlider() {
     val percent by SettingsManager.micSensitivity.collectAsState()
     val name = stringResource(R.string.home_mic_sensitivity)
-    // 퍼센트가 아니라 단계(1~10)로 보인다(#306). 곱하는 값은 칸마다 약 3dB 씩 커진다.
-    val value = stringResource(R.string.home_mic_sensitivity_value, MicSensitivity.level(percent))
     val last = MicSensitivity.STEPS.size - 1
+    // 화면에는 숫자 없이 슬라이더의 칸만 보인다(#306). 화면 읽어주기는 칸을 볼 수 없으므로 "4/16" 처럼 몇 번째 칸인지 읽는다.
+    val position = stringResource(R.string.home_mic_sensitivity_value, MicSensitivity.level(percent), last + 1)
     Column(modifier = Modifier.padding(bottom = 20.dp)) {
-        // 이름과 값은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clearAndSetSemantics { }) {
-            Text(name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor)
-        }
+        // 이름은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
+        Text(
+            name,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryTextColor,
+            modifier = Modifier.clearAndSetSemantics { }
+        )
         Slider(
             value = MicSensitivity.indexOf(percent).toFloat(),
             onValueChange = { SettingsManager.setMicSensitivity(MicSensitivity.STEPS[it.roundToInt().coerceIn(0, last)]) },
@@ -262,10 +264,10 @@ private fun MicSensitivitySlider() {
                 activeTrackColor = AccentColor,
                 inactiveTrackColor = Color(0xFF333A44)
             ),
-            // 값을 화면 글자 그대로 읽힌다. 두지 않으면 슬라이더 위치(칸 번호)를 퍼센트로 읽는다.
+            // 몇 번째 칸인지 읽힌다. 두지 않으면 슬라이더 위치를 퍼센트로 읽는데, 그 퍼센트는 실제 감도가 아니다.
             modifier = Modifier.fillMaxWidth().semantics {
                 contentDescription = name
-                stateDescription = value
+                stateDescription = position
             }
         )
     }

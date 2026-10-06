@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Nghe âm thanh xung quanh bạn qua micrô thay vì âm thanh đang phát trên điện thoại. Bản thân âm thanh không bao giờ được lưu hay gửi đi đâu cả.</string>
     <string name="home_external_mode_locked">Không thể thay đổi khi đang chạy. Hãy dừng âm thanh trực quan rồi thay đổi, thay đổi sẽ áp dụng từ lần bật tiếp theo.</string>
     <string name="home_mic_sensitivity">Độ nhạy micrô</string>
-    <string name="home_mic_sensitivity_value">%1$d</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
     <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
     <string name="home_ai_unavailable_loud">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường, và chỉ âm thanh lớn mới rung, theo cài đặt rung của âm thanh nguy hiểm. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>

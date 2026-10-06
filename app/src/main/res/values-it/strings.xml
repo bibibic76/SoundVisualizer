@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Ascolta i suoni intorno a te con il microfono invece dell\'audio riprodotto sul telefono. L\'audio in sé non viene mai salvato né inviato altrove.</string>
     <string name="home_external_mode_locked">Non si può cambiare mentre è in esecuzione. Interrompi la visualizzazione e cambialo: varrà dal prossimo avvio.</string>
     <string name="home_mic_sensitivity">Sensibilità del microfono</string>
-    <string name="home_mic_sensitivity_value">%1$d</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Stato: pronto</string>
     <string name="home_capture_blocked">Questa app non riceve nessun suono, quindi non c\'è niente da disegnare. L\'app che sta riproducendo il suono potrebbe non consentire la condivisione del suo audio (i video protetti funzionano così), oppure l\'audio di quell\'app potrebbe essere disattivato.</string>
     <string name="home_ai_unavailable_loud">Il riconoscimento del tipo di suono non funziona: tutti i suoni vengono mostrati con il colore dei suoni ambientali e vibrano solo i suoni forti, con l\'impostazione di vibrazione dei suoni di pericolo. Prova a disattivare e riattivare la visualizzazione.</string>
