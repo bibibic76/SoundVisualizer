@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Elle ne dessine que lorsqu\'il y a du son et se met en veille quand tout est silencieux. Comme elle capture le son en continu, nous vous recommandons toutefois de la désactiver quand vous ne l\'utilisez pas.</string>
     <string name="help_faq_battery_less_drawing">Quand du son est diffusé, c\'est le dessin des graphismes qui consomme le plus d\'énergie. Si vous activez « Dessiner les graphismes moins souvent » sous « Batterie », dans l\'onglet Paramètres, l\'application consomme moins, mais les mouvements sont moins fluides.</string>
     <string name="help_faq_language_q">Comment changer la langue de l\'application ?</string>
-    <string name="help_faq_language_a">Appuyez sur « Langue » en haut de l\'onglet Paramètres, puis choisissez une langue. Avec « Langue du système », l\'application suit la langue de votre téléphone. Sous Android 13 ou version ultérieure, vous pouvez aussi changer la langue de l\'application depuis « Langues des applis », dans les paramètres de votre téléphone.</string>
+    <string name="help_faq_language_a">Appuyez sur le bouton en forme de globe en bas à droite de l\'onglet Accueil, puis choisissez une langue. Avec « Langue du système », l\'application suit la langue de votre téléphone. Sous Android 13 ou version ultérieure, vous pouvez aussi changer la langue de l\'application depuis « Langues des applis », dans les paramètres de votre téléphone.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Signaler un problème</string>

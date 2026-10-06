@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">Die App stellt nur dann Grafiken dar, wenn Ton wiedergegeben wird, und ruht bei Stille. Da sie aber laufend Ton erfasst, empfehlen wir, sie auszuschalten, wenn Sie sie nicht verwenden.</string>
     <string name="help_faq_battery_less_drawing">Während Ton wiedergegeben wird, verbraucht das Zeichnen der Grafiken den meisten Strom. Wenn Sie im Tab „Einstellungen“ unter „Akku“ die Option „Grafiken seltener zeichnen“ einschalten, verbraucht die App weniger Strom, dafür sind die Bewegungen weniger flüssig.</string>
     <string name="help_faq_language_q">Wie ändere ich die App-Sprache?</string>
-    <string name="help_faq_language_a">Tippen Sie oben im Tab „Einstellungen“ auf „Sprache“ und wählen Sie eine Sprache aus. „Systemstandard“ übernimmt die Sprache Ihres Smartphones. Ab Android 13 können Sie die Sprache auch in den Einstellungen Ihres Smartphones unter „App-Sprachen“ ändern.</string>
+    <string name="help_faq_language_a">Tippen Sie unten rechts im Tab „Startseite“ auf das Globus-Symbol und wählen Sie eine Sprache aus. „Systemstandard“ übernimmt die Sprache Ihres Smartphones. Ab Android 13 können Sie die Sprache auch in den Einstellungen Ihres Smartphones unter „App-Sprachen“ ändern.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Problem melden</string>

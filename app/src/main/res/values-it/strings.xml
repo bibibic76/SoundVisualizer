@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">L\'app disegna solo quando c\'è un suono e resta inattiva quando c\'è silenzio. Dato che continua ad acquisire l\'audio, però, ti consigliamo di disattivarla quando non la usi.</string>
     <string name="help_faq_battery_less_drawing">Quando c\'è un suono, è il disegno della grafica a consumare più energia. Se attivi “Disegna la grafica meno spesso” in Batteria, nella scheda Impostazioni, l\'app consuma meno, ma il movimento è meno fluido.</string>
     <string name="help_faq_language_q">Come cambio la lingua dell\'app?</string>
-    <string name="help_faq_language_a">Tocca “Lingua” in cima alla scheda Impostazioni e scegline una. “Predefinita di sistema” segue la lingua del telefono. Su Android 13 e versioni successive puoi cambiarla anche in “Lingue delle app” nelle impostazioni del telefono.</string>
+    <string name="help_faq_language_a">Tocca il pulsante a forma di globo in basso a destra nella scheda Home e scegli una lingua. “Predefinita di sistema” segue la lingua del telefono. Su Android 13 e versioni successive puoi cambiarla anche in “Lingue delle app” nelle impostazioni del telefono.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Segnala un problema</string>

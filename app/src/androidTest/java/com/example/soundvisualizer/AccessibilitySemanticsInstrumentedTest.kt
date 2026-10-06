@@ -74,6 +74,17 @@ class AccessibilitySemanticsInstrumentedTest {
     }
 
     @Test
+    fun homeLanguageButtonSaysWhatItIs() {
+        // 홈 오른쪽 아래의 언어 버튼(#308)은 화면에 지구본과 언어 이름뿐이라, "언어, 한국어" 처럼 무엇의 버튼인지 함께 읽혀야 한다.
+        val title = string(R.string.settings_language_title)
+        rule.onNode(
+            SemanticsMatcher("언어 버튼") { node ->
+                node.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty().any { it.startsWith("$title, ") }
+            }
+        ).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+    }
+
+    @Test
     fun settingsSectionTitleIsHeading() {
         openTab(R.string.tab_settings)
         rule.onNodeWithText(string(R.string.settings_section_mode)).assert(isHeading)

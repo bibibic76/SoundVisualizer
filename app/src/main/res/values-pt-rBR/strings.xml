@@ -291,7 +291,7 @@
     <string name="help_faq_battery_a">O app só desenha quando há som e fica em espera quando está tudo em silêncio. Mas, como continua capturando o som, recomendamos desligar quando não estiver usando.</string>
     <string name="help_faq_battery_less_drawing">Quando há som, desenhar os gráficos é o que mais consome energia. Se você ativar “Desenhar os gráficos com menos frequência” em Bateria, na aba Ajustes, o app passa a consumir menos energia, mas o movimento fica menos suave.</string>
     <string name="help_faq_language_q">Como mudo o idioma do app?</string>
-    <string name="help_faq_language_a">Toque em “Idioma” no topo da aba Ajustes e escolha um. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
+    <string name="help_faq_language_a">Toque no botão de globo no canto inferior direito da aba Início e escolha um idioma. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Relatar um problema</string>

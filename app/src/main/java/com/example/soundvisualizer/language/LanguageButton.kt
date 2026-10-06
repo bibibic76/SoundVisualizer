@@ -46,6 +46,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.dp
@@ -59,13 +61,13 @@ import java.util.Locale
 import kotlin.math.sqrt
 
 /**
- * 설정 탭 맨 위의 언어 카드. 지금 언어를 보여주고, 누르면 언어 선택 창을 연다.
+ * 홈 오른쪽 아래의 작은 언어 버튼(#308). 지구본과 지금 언어 이름을 보여주고, 누르면 언어 선택 창을 연다.
  *
- * 맨 위에 두는 이유: 읽지 못하는 언어로 바뀌었을 때도 설정 탭을 열자마자 지구본과 언어 이름으로 찾을 수 있어야 한다.
+ * 앱을 열면 처음 보이는 홈에 두어, 읽지 못하는 언어로 바뀌었을 때도 지구본과 그 언어 스스로의 이름으로 찾을 수 있게 한다.
  * 선택 창의 언어 이름은 번역하지 않고 각 언어로 적는다.
  */
 @Composable
-fun LanguageSettingCard() {
+fun LanguageButton(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     // 언어가 바뀌면 액티비티가 다시 만들어지므로 처음 한 번만 읽는다.
     val selectedTag = remember(context) { AppLanguage.selectedTag(context) }
@@ -79,36 +81,26 @@ fun LanguageSettingCard() {
         else -> Locale.forLanguageTag(selectedTag).let { it.getDisplayName(it) }
     }
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = CardColor),
-        shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+    // 화면에는 지구본과 언어 이름만 있으므로, 화면 읽어주기에는 "언어, 한국어" 처럼 무엇의 버튼인지 함께 읽힌다.
+    val spoken = stringResource(R.string.settings_language_title) + ", " + currentLabel
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(role = Role.Button, onClickLabel = stringResource(R.string.cd_change_language)) { showDialog = true }
+            .clearAndSetSemantics { contentDescription = spoken }
+            .padding(horizontal = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(
-                    // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 선택 창이 뜨는 것으로 충분하다.
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClickLabel = stringResource(R.string.cd_change_language)
-                ) { showDialog = true }
-                .padding(horizontal = 24.dp, vertical = 20.dp)
-        ) {
-            GlobeIcon(color = AccentColor, modifier = Modifier.size(24.dp))
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.settings_language_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)
-                Text(
-                    currentLabel,
-                    fontSize = 13.sp,
-                    color = SecondaryTextColor,
-                    style = LocalTextStyle.current.copy(localeList = selected?.let { LocaleList(it.tag) })
-                )
-            }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = SecondaryTextColor)
-        }
+        GlobeIcon(color = SecondaryTextColor, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            currentLabel,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = SecondaryTextColor,
+            style = LocalTextStyle.current.copy(localeList = selected?.let { LocaleList(it.tag) })
+        )
     }
 
     if (showDialog) {

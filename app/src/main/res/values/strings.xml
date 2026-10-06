@@ -318,7 +318,7 @@
     <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. While the screen is off it stops capturing sound by default. Because it keeps capturing while the screen is on, though, we recommend turning it off when you\'re not using it.</string>
     <string name="help_faq_battery_less_drawing">While sound is playing, drawing the graphic uses the most power. Turning on “Draw the graphic less often” under Battery in Settings uses less, though the movement is less smooth.</string>
     <string name="help_faq_language_q">How do I change the app language?</string>
-    <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
+    <string name="help_faq_language_a">Tap the globe button at the bottom right of the Home tab and pick a language. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Report a problem</string>
