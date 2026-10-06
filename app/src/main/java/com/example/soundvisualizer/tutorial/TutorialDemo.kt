@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.BgColor
 import com.example.soundvisualizer.CardColor
@@ -436,14 +437,14 @@ private fun HomePhone(width: Dp, height: Dp, running: Boolean) {
                             val p = pulse?.value ?: 0.35f
                             val grow = 7.dp.toPx() * p
                             drawRoundRect(
-                                color = AccentColor.copy(alpha = 0.8f * (1f - p)),
+                                color = AccentFillColor.copy(alpha = 0.8f * (1f - p)),
                                 topLeft = Offset(-grow, -grow),
                                 size = Size(size.width + grow * 2, size.height + grow * 2),
                                 cornerRadius = CornerRadius(corner.toPx() + grow),
                                 style = Stroke(width = 1.5.dp.toPx())
                             )
                         }
-                        .background(AccentColor, RoundedCornerShape(corner))
+                        .background(AccentFillColor, RoundedCornerShape(corner))
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {

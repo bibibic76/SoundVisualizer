@@ -229,7 +229,7 @@ fun ModernSlider(
             enabled = enabled,
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,
-                activeTrackColor = AccentColor,
+                activeTrackColor = AccentFillColor,
                 inactiveTrackColor = Color(0xFF333A44),
                 disabledThumbColor = Color(0xFF6B7684),
                 disabledActiveTrackColor = Color(0xFF3A4351),
@@ -293,7 +293,7 @@ fun ModernSwitch(
                 enabled = enabled,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = AccentColor,
+                    checkedTrackColor = AccentFillColor,
                     uncheckedThumbColor = SecondaryTextColor,
                     uncheckedTrackColor = Color(0xFF333A44),
                     disabledCheckedThumbColor = Color(0xFFB0B8C1),

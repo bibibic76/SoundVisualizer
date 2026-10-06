@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.DependentSettings
 import com.example.soundvisualizer.EqualChoiceRows
@@ -105,16 +107,22 @@ fun HapticSettingRow(label: String, shown: Boolean) {
         else -> null
     }
 
+    // 종류마다 같은 "진동"·"세기" 줄이 셋 있어서, 화면 읽어주기에는 어느 종류의 것인지 함께 읽힌다(#312).
+    // 눈으로는 바로 위의 종류 줄로 알 수 있지만, 손으로 더듬으면 "세기, 50%" 만 들린다.
+    val typeName = stringResource(soundTypeName(label))
+    val vibrateLabel = stringResource(R.string.haptic_vibrate)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, bottom = 20.dp)
     ) {
         Text(
-            stringResource(R.string.haptic_vibrate),
+            vibrateLabel,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = if (rowEnabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f)
+            color = if (rowEnabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f),
+            modifier = Modifier.semantics { contentDescription = "$typeName, $vibrateLabel" }
         )
 
         if (noteRes != null) {
@@ -140,6 +148,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
 
         DependentSettings(rowEnabled && settings.enabled) {
             LevelSlider(
+                typeName = typeName,
                 level = settings.level,
                 enabled = player.hasAmplitudeControl,
                 onFinished = { level ->
@@ -172,7 +181,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
  * 끊겨 어느 세기인지 느낄 수 없다.
  */
 @Composable
-private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit) {
+private fun LevelSlider(typeName: String, level: Int, enabled: Boolean, onFinished: (Int) -> Unit) {
     var dragging by remember { mutableStateOf<Float?>(null) }
     val value = dragging ?: level.toFloat()
     val name = stringResource(R.string.haptic_strength)
@@ -209,20 +218,28 @@ private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit)
             enabled = enabled,
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,
-                activeTrackColor = AccentColor,
+                activeTrackColor = AccentFillColor,
                 inactiveTrackColor = Color(0xFF333A44),
                 disabledThumbColor = Color(0xFF6B7684),
                 disabledActiveTrackColor = Color(0xFF3A4351),
                 disabledInactiveTrackColor = Color(0xFF2A3038)
             ),
-            // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다.
-            // 값도 화면과 같은 글자로 읽힌다. 두지 않으면 슬라이더가 범위 안의 위치로 읽어 50% 가 "44퍼센트" 가 된다(범위가 10부터라).
+            // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다. 종류 이름까지 붙여
+            // "위협음, 세기" 로 읽힌다(#312). 값도 화면과 같은 글자로 읽힌다. 두지 않으면 슬라이더가 범위 안의 위치로 읽어
+            // 50% 가 "44퍼센트" 가 된다(범위가 10부터라).
             modifier = Modifier.fillMaxWidth().semantics {
-                contentDescription = name
+                contentDescription = "$typeName, $name"
                 stateDescription = percent
             }
         )
     }
+}
+
+/** 소리 종류의 이름(분류 탭과 같은 "환경음"·"대화음"·"위협음"). */
+private fun soundTypeName(label: String): Int = when (label) {
+    AiClassification.DANGER -> R.string.sound_type_danger
+    AiClassification.SPEECH -> R.string.sound_type_speech
+    else -> R.string.sound_type_ambient
 }
 
 /** 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄. */
@@ -248,12 +265,14 @@ private fun <T> HapticChoiceRow(
         EqualChoiceRows(options, perRow, gap = 4.dp) { option, cellModifier ->
             val isSelected = option == selected
             Box(
+                // 칸 높이는 48dp 이상으로 둔다(#312, 글자와 안쪽 여백만으로는 약 44dp).
                 modifier = cellModifier
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         when {
                             !enabled -> Color(0xFF2A3038)
-                            isSelected -> AccentColor
+                            isSelected -> AccentFillColor
                             else -> Color(0xFF333A44)
                         }
                     )
