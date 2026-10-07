@@ -48,8 +48,11 @@ https://github.com/tensorflow/models/blob/master/LICENSE
 Apache License 2.0 전문은 이 저장소의 LICENSE 파일과 동일합니다.
 
 클래스 이름은 AudioSet 온톨로지에서 유래하며, 해당 온톨로지는
-Creative Commons Attribution 4.0 International (CC BY 4.0) 으로 배포됩니다.
+Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+으로 배포됩니다. AudioSet 데이터셋은 Creative Commons Attribution 4.0
+International (CC BY 4.0) 으로 배포됩니다.
 https://research.google.com/audioset/
+https://creativecommons.org/licenses/by-sa/4.0/
 https://creativecommons.org/licenses/by/4.0/
 
 ================================================================================
