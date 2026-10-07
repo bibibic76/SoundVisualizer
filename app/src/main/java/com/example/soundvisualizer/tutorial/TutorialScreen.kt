@@ -84,6 +84,7 @@ import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.BgColor
 import com.example.soundvisualizer.CardColor
+import com.example.soundvisualizer.PAGE_SNAP_THRESHOLD
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
@@ -134,13 +135,6 @@ private val COMPACT_HEIGHT = 480.dp
 
 /** 아래 한 줄에 버튼을 모두 모을 때 필요한 폭. 이보다 좁으면 낮은 화면이어도 위아래 두 줄로 둔다. */
 private val COMPACT_MIN_WIDTH = 600.dp
-
-/**
- * 손을 뗐을 때 다음 쪽으로 넘어가는 데 필요한 끈 거리(쪽 너비에 대한 비율). 빠르게 튕기면 이보다 짧아도 넘어간다.
- * 페이저의 기본값(절반)은 천천히 끌다 놓을 때 앞 쪽으로 튕겨 돌아가는 일이 잦았다(#333). 탭 화면은 설정 탭의 가로
- * 슬라이더 때문에 기본값을 그대로 둔다.
- */
-internal const val SNAP_THRESHOLD = 0.25f
 
 /**
  * 처음 여는 사람에게 앱이 무엇을 하는지 보여 주는 화면. 홈의 ‘튜토리얼 보기’로 다시 열 수 있다.
@@ -230,8 +224,8 @@ fun TutorialScreen(onClose: () -> Unit) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(1f),
-                // 쪽 너비의 4분의 1만 끌어도 넘어간다. 기본(절반)이면 천천히 끌다 놓을 때 앞 쪽으로 튕겨 돌아가는 일이 잦았다(#333).
-                flingBehavior = PagerDefaults.flingBehavior(state = pagerState, snapPositionalThreshold = SNAP_THRESHOLD)
+                // 탭 화면과 같은 기준으로, 쪽 너비의 30%만 끌어도 넘어간다(#333, #335).
+                flingBehavior = PagerDefaults.flingBehavior(state = pagerState, snapPositionalThreshold = PAGE_SNAP_THRESHOLD)
             ) { index ->
                 TutorialPageContent(
                     page = pages[index],
