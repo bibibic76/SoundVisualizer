@@ -155,9 +155,8 @@
 
     <!-- Sounds tab: which type each sound counts as -->
     <string name="classify_title">Pick a type for each sound</string>
-    <string name="classify_preview_note" tools:ignore="MissingTranslation">Developer preview: changes now affect AI classification, colors and vibration. Sounds moved out of Danger no longer trigger their safety cues. Other detected sounds may still trigger Danger.</string>
     <string name="classify_desc">Here is every sound the AI can recognize and the type it counts as. Change a sound\'s type, and its color and vibration follow the new type right away.</string>
-    <string name="classify_danger_note">A sound you move out of Danger no longer gets danger colors or vibration. Similar sounds are separate rows (sirens have five), so change them all to move them all.</string>
+    <string name="classify_danger_note">A sound you move out of Danger no longer brings danger colors or vibration under its own name. But one sound is often heard under several names at once. A siren, for example, is also heard as “Alarm”, and sirens alone have five rows. To move it out completely, change all of them.</string>
     <string name="classify_search_hint">Search sounds</string>
     <string name="cd_classify_clear_search">Clear search</string>
     <string name="classify_filter_all">All</string>
@@ -293,6 +292,7 @@
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
+    <string name="help_sound_classify">In the Sounds tab, you can pick which type each sound the AI recognizes counts as. For example, change “Doorbell” to Danger and a doorbell gets the danger color and vibration.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>

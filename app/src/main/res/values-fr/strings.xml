@@ -135,7 +135,7 @@
     <string name="ai_unavailable">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance. Essayez de désactiver puis de réactiver la visualisation.</string>
     <string name="classify_title">Choisir le type de chaque son</string>
     <string name="classify_desc">Voici tous les sons que l\'IA peut reconnaître, avec le type dans lequel chacun est classé. Si vous changez le type d\'un son, il prend aussitôt la couleur et la vibration de son nouveau type.</string>
-    <string name="classify_danger_note">Un son que vous retirez du type danger n\'a plus la couleur ni la vibration des sons de danger. Les sons similaires sont sur des lignes distinctes (cinq pour les sirènes) : modifiez chacune d\'elles pour tous les retirer.</string>
+    <string name="classify_danger_note">Un son que vous retirez du type danger n\'a plus, sous ce nom, la couleur ni la vibration des sons de danger. Mais un même son est souvent reconnu sous plusieurs noms à la fois : une sirène, par exemple, est aussi reconnue comme « Alarme », et les sirènes ont à elles seules cinq lignes. Pour le retirer complètement, modifiez toutes ces lignes.</string>
     <string name="classify_search_hint">Rechercher un son</string>
     <string name="cd_classify_clear_search">Effacer la recherche</string>
     <string name="classify_filter_all">Tous</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Types de sons et vibration</string>
     <string name="help_sound_kinds">L\'IA classe les sons entendus en trois types : ambiance, voix et danger. Par défaut, l\'ambiance s\'affiche en blanc, les voix en jaune et les dangers en rouge. Dans l\'onglet Paramètres, vous pouvez changer la couleur de chaque type et choisir de l\'afficher ou non.</string>
+    <string name="help_sound_classify">Dans l\'onglet Sons, vous pouvez choisir à quel type correspond chaque son reconnu par l\'IA. Par exemple, si vous passez « Sonnette » en Danger, une sonnette aura la couleur et la vibration des sons de danger.</string>
     <string name="help_sound_danger">Lorsqu\'un son de danger (comme un coup de feu) est détecté, la couleur change instantanément, sans transition progressive.</string>
     <string name="help_sound_haptic">La vibration vous alerte même si vous ne regardez pas l\'écran. Par défaut, seuls les sons de danger font vibrer. Pour chaque type, vous pouvez choisir un mode (Désactivée, Lente, Moyenne, Rapide, Continue) et une intensité.</string>
     <string name="help_sound_haptic_rule">Seuls les types affichés à l\'écran déclenchent une vibration. Le téléphone vibre tant qu\'un son de ce type dure et s\'arrête avec lui. Moyenne pulse toutes les demi-secondes, Lente deux fois moins vite et Rapide deux fois plus vite, tandis que Continue vibre sans interruption. Dans tous les modes, la vibration garde l\'intensité choisie.</string>

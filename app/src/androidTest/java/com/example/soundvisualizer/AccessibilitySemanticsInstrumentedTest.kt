@@ -90,7 +90,7 @@ class AccessibilitySemanticsInstrumentedTest {
     @Test
     fun tabsAreAtLeast48dp() {
         // 글자와 밑줄만으로는 약 35dp 라 누르는 자리가 작았다(#312). 가장 짧은 이름("홈")도 48dp 이상이다.
-        for (id in listOf(R.string.tab_home, R.string.tab_settings, R.string.tab_help)) {
+        for (id in listOf(R.string.tab_home, R.string.tab_settings, R.string.tab_classify, R.string.tab_help)) {
             rule.onNodeWithText(string(id)).assertHeightIsAtLeast(48.dp).assertWidthIsAtLeast(48.dp)
         }
     }

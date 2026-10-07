@@ -135,7 +135,7 @@
     <string name="ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
     <string name="classify_title">Chọn loại cho từng âm thanh</string>
     <string name="classify_desc">Đây là tất cả các âm thanh mà AI nhận diện được, cùng với loại mà mỗi âm thanh đang được xếp vào. Khi bạn đổi loại của một âm thanh, màu và rung của âm thanh đó sẽ đổi theo loại mới ngay lập tức.</string>
-    <string name="classify_danger_note">Khi bạn đưa một âm thanh ra khỏi loại âm thanh nguy hiểm, âm thanh đó sẽ không còn có màu và rung của âm thanh nguy hiểm nữa. Các âm thanh tương tự nằm ở các dòng riêng (còi hụ có năm dòng), nên muốn đưa tất cả ra thì hãy đổi từng dòng.</string>
+    <string name="classify_danger_note">Khi bạn đưa một âm thanh ra khỏi loại âm thanh nguy hiểm, âm thanh đó sẽ không còn có màu và rung của âm thanh nguy hiểm khi được nhận ra bằng tên đó. Nhưng một âm thanh thường được nhận ra cùng lúc bằng nhiều tên. Ví dụ, còi hụ cũng được nhận ra là “Báo động”, và riêng còi hụ đã có năm dòng. Để đưa ra hoàn toàn, hãy đổi tất cả các dòng đó.</string>
     <string name="classify_search_hint">Tìm âm thanh</string>
     <string name="cd_classify_clear_search">Xóa từ khóa tìm kiếm</string>
     <string name="classify_filter_all">Tất cả</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Loại âm thanh và rung</string>
     <string name="help_sound_kinds">AI phân loại âm thanh bạn nghe thấy thành âm thanh môi trường, giọng nói và âm thanh nguy hiểm. Theo mặc định, âm thanh môi trường có màu trắng, giọng nói màu vàng và âm thanh nguy hiểm màu đỏ. Bạn có thể đổi màu và chọn có hiện hay không cho từng loại trong thẻ Cài đặt.</string>
+    <string name="help_sound_classify">Trong thẻ Phân loại, bạn có thể chọn mỗi âm thanh mà AI nhận ra được tính là loại nào. Ví dụ, nếu đổi “Chuông cửa” thành âm thanh nguy hiểm, chuông cửa sẽ có màu và rung của âm thanh nguy hiểm.</string>
     <string name="help_sound_danger">Khi phát hiện âm thanh nguy hiểm (như tiếng súng), màu sẽ đổi ngay lập tức thay vì chuyển dần.</string>
     <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn chế độ (Tắt, Chậm, Vừa, Nhanh, Liên tục) và cường độ cho từng loại.</string>
     <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Điện thoại rung suốt khi âm thanh thuộc loại đó còn kéo dài và dừng khi âm thanh dừng. Vừa rung theo nhịp mỗi nửa giây, Chậm bằng một nửa nhịp đó và Nhanh gấp đôi, còn Liên tục rung không ngắt quãng. Ở mọi chế độ, rung luôn giữ đúng cường độ bạn đã chọn.</string>

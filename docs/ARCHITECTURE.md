@@ -502,7 +502,9 @@ lvl 0.14   shown Y   65ms (12/48)
 - "그래픽 덜 자주 그리기"(`reducedFrameRate`, 4장)의 기본값은 `REDUCED_FRAME_RATE_DEFAULT`(꺼짐) 한 곳에만 둡니다. 소리를 눈으로 보는 앱이라 부드러운 쪽이 기본이고, 오래 켜 두는 사람이 고릅니다. 저장·복원과 엔진의 프레임 수까지 이어지는 배선은 `ReducedFrameRateTest`가 봅니다.
 - **분류 탭에서 바꾼 소리 종류**(`soundTypes`, 키 `sound_types`, #283): YAMNet 소리 이름(`yamnet_class_map.csv`의 display_name)을 키로, 고른 라벨을 값으로 한 JSON 객체 하나로 저장합니다. 기본 종류와 같은 값과 세 라벨이 아닌 값은 읽을 때 버리고, 읽을 수 없는 저장값은 바꾼 것이 없는 것으로 봅니다(`SoundTypeSettingsTest`).
   - 기본 종류는 AI의 매핑(`YamnetThreeClassMapper.mapDisplayNameToCoarse`)을 **읽기만** 합니다(`defaultSoundType`). 매핑 규칙이 바뀌면 기본 종류도 함께 바뀌고, 그 결과 사용자가 고른 것과 같아진 소리는 다음에 읽을 때 "바꾼 소리"에서 빠집니다.
-  - **아직 AI 판정에는 쓰이지 않습니다.** AI가 읽어 갈 창구는 `soundTypeOverride(displayName)`(바꾸지 않았으면 null, 어느 스레드에서 불러도 됨)이고, 이것을 투표에 연결하는 일은 `ai/` 담당이 #291에서 맡습니다. 그 전까지 분류 탭은 **개발자 모드에서만** 맨 뒤 탭으로 보이고, 탭 맨 위에 아직 쓰이지 않는다는 안내가 있습니다. 맨 뒤에 붙으므로 홈·설정·도움말의 번호(`MainActivity.TAB_*`)는 개발자 모드와 상관없이 그대로입니다.
+  - AI 는 추론마다 이 값의 스냅샷 하나를 읽어 투표와 안전 단서에 반영합니다(#321, `docs/ai/user-mapping.md`). 위협음에서 뺀 소리는 그 이름의 안전 단서도 끄지만, 같은 소리가 다른 위협음 이름(사이렌이면 Alarm)으로 함께 들리면 그 이름 때문에 위협음이 될 수 있습니다. 탭의 안내 문구(`classify_danger_note`)가 이 점을 알립니다.
+  - 앱이 소리 이름을 고를 때(잠금 화면 알림)는 같은 규칙의 `soundType(displayName)`(바꾼 종류, 없으면 기본 종류)을 씁니다(#325).
+  - 분류 탭은 모든 사용자에게 보입니다(#328). 자리는 설정과 도움말 사이입니다(홈 0 · 설정 1 · 분류 2 · 도움말 3). 액티비티가 정해 주는 홈·설정의 번호(`MainActivity.TAB_*`)는 그대로입니다.
   - 소리 이름 521개는 `res/values…/sound_names.xml`에 따로 있습니다. 영어는 모델 이름 그대로이고, 나머지 17개 언어는 번역입니다(#296).
 - 테스트는 `SettingsManager.load(SharedPreferences)`에 메모리 가짜 프리퍼런스를 넣어 값을 세웁니다(`init(context)`는 "처음 한 번만" 규칙을 지키고 이 함수를 부릅니다). 이 객체는 싱글턴이라 값을 바꾼 테스트는 `@After`에서 기본값으로 되돌립니다.
 

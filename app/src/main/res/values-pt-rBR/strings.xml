@@ -135,7 +135,7 @@
     <string name="ai_unavailable">A detecção do tipo de som não está funcionando, então todos os sons aparecem na cor dos sons ambientes. Tente desligar e ligar a visualização de novo.</string>
     <string name="classify_title">Escolha o tipo de cada som</string>
     <string name="classify_desc">Aqui estão todos os sons que a IA consegue reconhecer e o tipo de cada um. Se você mudar o tipo de um som, a cor e a vibração dele passam a seguir o novo tipo na hora.</string>
-    <string name="classify_danger_note">Se você tirar um som dos sons de perigo, ele deixa de ter a cor e a vibração dos sons de perigo. Sons parecidos ficam em linhas separadas (as sirenes ocupam cinco); para tirar todos, mude cada linha.</string>
+    <string name="classify_danger_note">Se você tirar um som dos sons de perigo, ele deixa de ter, com esse nome, a cor e a vibração dos sons de perigo. Mas um mesmo som muitas vezes é reconhecido com vários nomes ao mesmo tempo: uma sirene, por exemplo, também é reconhecida como “Alarme”, e só as sirenes ocupam cinco linhas. Para tirá-lo por completo, mude todas essas linhas.</string>
     <string name="classify_search_hint">Pesquisar sons</string>
     <string name="cd_classify_clear_search">Limpar pesquisa</string>
     <string name="classify_filter_all">Todos</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Tipos de som e vibração</string>
     <string name="help_sound_kinds">A IA separa os sons em três tipos: sons ambientes, vozes e sons de perigo. Por padrão, os sons ambientes aparecem em branco, as vozes em amarelo e os sons de perigo em vermelho. Na aba Ajustes, você pode mudar a cor de cada tipo e escolher se ele é mostrado.</string>
+    <string name="help_sound_classify">Na aba Sons, você pode escolher de que tipo é cada som que a IA reconhece. Por exemplo, se mudar “Campainha” para som de perigo, a campainha passa a ter a cor e a vibração dos sons de perigo.</string>
     <string name="help_sound_danger">Quando um som de perigo (como um tiro) é detectado, a cor muda na hora, sem transição gradual.</string>
     <string name="help_sound_haptic">A vibração avisa mesmo quando você não está olhando para a tela. Por padrão, só os sons de perigo vibram, e você pode escolher o modo (Desligada, Lenta, Média, Rápida, Contínua) e a intensidade de cada tipo.</string>
     <string name="help_sound_haptic_rule">Só vibram os tipos mostrados na tela. O celular vibra enquanto durar um som desse tipo e para quando ele termina. Média pulsa a cada meio segundo, Lenta na metade desse ritmo e Rápida no dobro, enquanto Contínua vibra sem interrupção. Em todos os modos, a vibração mantém a intensidade que você escolheu.</string>

@@ -135,7 +135,7 @@
     <string name="ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示。请尝试将可视化关闭后重新开启。</string>
     <string name="classify_title">为每种声音选择类型</string>
     <string name="classify_desc">这里列出 AI 能识别的所有声音，以及每种声音目前归为哪种类型。更改声音的类型后，该声音会立即改用新类型的颜色和振动。</string>
-    <string name="classify_danger_note">从危险音中移出的声音，将不再使用危险音的颜色和振动。相似的声音分在不同的行（警笛有 5 行），要全部移出，就需要逐行更改。</string>
+    <string name="classify_danger_note">从危险音中移出的声音，以这个名称被识别时将不再使用危险音的颜色和振动。但同一个声音常常会同时被识别为多个名称。例如警笛也会被识别为“警报”，而警笛本身就有 5 行。要完全移出，需要更改所有这些行。</string>
     <string name="classify_search_hint">搜索声音</string>
     <string name="cd_classify_clear_search">清除搜索内容</string>
     <string name="classify_filter_all">全部</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
+    <string name="help_sound_classify">在“分类”标签页中，您可以为 AI 能识别的每种声音选择归入哪一类。例如，将“门铃”改为危险音后，门铃声也会使用危险音的颜色和振动。</string>
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
     <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
     <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>

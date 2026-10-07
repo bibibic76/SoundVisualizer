@@ -135,7 +135,7 @@
     <string name="ai_unavailable">La detección del tipo de sonido no funciona, así que todos los sonidos se muestran en el color del sonido ambiente. Prueba a apagar y volver a encender la visualización.</string>
     <string name="classify_title">Elige el tipo de cada sonido</string>
     <string name="classify_desc">Aquí aparecen todos los sonidos que la IA puede reconocer y el tipo en que se clasifica cada uno. Si cambias el tipo de un sonido, su color y su vibración pasan a ser los del nuevo tipo al instante.</string>
-    <string name="classify_danger_note">Si cambias un sonido de peligro a otro tipo, ya no tendrá el color ni la vibración de peligro. Los sonidos parecidos están en filas separadas (las sirenas ocupan cinco); para cambiarlos todos, cambia cada fila.</string>
+    <string name="classify_danger_note">Si cambias un sonido de peligro a otro tipo, ya no tendrá el color ni la vibración de peligro con ese nombre. Pero un mismo sonido suele reconocerse con varios nombres a la vez: una sirena, por ejemplo, también se reconoce como «Alarma», y solo las sirenas ocupan cinco filas. Para quitarlo del todo, cambia todas esas filas.</string>
     <string name="classify_search_hint">Buscar sonidos</string>
     <string name="cd_classify_clear_search">Borrar búsqueda</string>
     <string name="classify_filter_all">Todos</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Tipos de sonido y vibración</string>
     <string name="help_sound_kinds">La IA clasifica el audio en sonido ambiente, voz y peligro. De forma predeterminada, el sonido ambiente se muestra en blanco, la voz en amarillo y el peligro en rojo. En la pestaña Ajustes puedes cambiar el color de cada tipo y elegir si se muestra o no.</string>
+    <string name="help_sound_classify">En la pestaña Sonidos puedes elegir de qué tipo es cada sonido que reconoce la IA. Por ejemplo, si cambias «Timbre de la puerta» a Peligro, el timbre tendrá el color y la vibración de peligro.</string>
     <string name="help_sound_danger">Cuando se detecta un sonido de peligro (como un disparo), el color cambia al instante en lugar de hacerlo poco a poco.</string>
     <string name="help_sound_haptic">La vibración te avisa aunque no estés mirando la pantalla. Al principio solo está activada para el peligro, y puedes elegir el modo (Desactivada, Lenta, Media, Rápida, Continua) y la intensidad de cada tipo.</string>
     <string name="help_sound_haptic_rule">Solo vibran los tipos que se muestran en pantalla. El teléfono vibra mientras dura un sonido de ese tipo y se detiene cuando termina. Media late cada medio segundo, Lenta a la mitad de ese ritmo y Rápida al doble, mientras que Continua vibra sin interrupción. En todos los modos la vibración mantiene la intensidad que elegiste.</string>

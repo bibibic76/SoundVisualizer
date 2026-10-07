@@ -25,15 +25,15 @@ import org.junit.runner.RunWith
 /**
  * 분류 탭을 실제 화면에서 조작한다. 기기 언어와 상관없이 돌도록 기대하는 글자는 모두 리소스에서 만든다.
  *
- * AI 판정에 연결되기 전(#291)이라 탭은 개발자 모드에서만 보인다. 앱의 실제 설정을 쓰므로, 시작할 때의 튜토리얼 본 여부·
- * 개발자 모드·저장된 선택을 챙겨 두고 바꾼 뒤, 끝나면 그대로 되돌린다.
+ * 탭은 모든 사용자에게 보인다(#328). 그래서 개발자 모드를 꺼 둔 채로 연다. 앱의 실제 설정을 쓰므로, 시작할 때의
+ * 튜토리얼 본 여부·개발자 모드·저장된 선택을 챙겨 두고 바꾼 뒤, 끝나면 그대로 되돌린다.
  */
 @RunWith(AndroidJUnit4::class)
 class ClassifyTabInstrumentedTest {
 
     /**
      * 액티비티가 뜨기 전에 정해야 하므로 액티비티를 여는 규칙보다 바깥에 둔다. 새로 설치한 테스트 기기에서는 튜토리얼이
-     * 탭 화면 대신 뜨고, 개발자 모드가 꺼져 있으면 분류 탭이 없다.
+     * 탭 화면 대신 뜬다. 개발자 모드는 꺼 둔다(누구에게나 보이는지 본다).
      */
     private val settings = object : ExternalResource() {
         private var tutorialBefore = true
@@ -47,7 +47,7 @@ class ClassifyTabInstrumentedTest {
                 developerBefore = SettingsManager.developerMode.value
                 typesBefore = SettingsManager.soundTypes.value
                 SettingsManager.setTutorialSeen(true)
-                SettingsManager.setDeveloperMode(true)
+                SettingsManager.setDeveloperMode(false)
                 SettingsManager.resetSoundTypes()
             }
         }
@@ -92,9 +92,11 @@ class ClassifyTabInstrumentedTest {
     }
 
     @Test
-    fun previewNoteIsShownAboveTheList() {
+    fun tabIsShownWithoutDeveloperModeAndExplainsSimilarNames() {
         openTab()
-        rule.onNodeWithText(string(R.string.classify_preview_note)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_title)).assertExists()
+        // 한 소리가 여러 이름으로 함께 들린다는 안내(#328). 위협음에서 하나만 빼고 안심하지 않게 한다.
+        rule.onNodeWithText(string(R.string.classify_danger_note)).assertExists()
     }
 
     @Test

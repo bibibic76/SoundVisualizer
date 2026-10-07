@@ -35,15 +35,9 @@ fun LauncherApp(
     onAddTile: () -> Unit,
     onOpenTutorial: () -> Unit
 ) {
-    // 분류 탭은 AI 판정에 연결되기 전까지(#291) 개발자 모드에서만 맨 뒤에 붙는다. 맨 뒤라서 홈·설정·도움말의
-    // 번호([MainActivity] 의 TAB_*)는 개발자 모드와 상관없이 그대로다.
-    val developerMode = SettingsManager.developerMode.collectAsState()
-
     // 탭 이름은 화면 맨 위에 있다. 큰 화면에서 한 손으로 쓰면 거기까지 손이 가지 않으므로
     // 화면 아무 데서나 좌우로 밀어도 넘어가게 한다.
-    val pagerState = rememberPagerState(initialPage = selectedTab) {
-        if (developerMode.value) TAB_COUNT_WITH_CLASSIFY else TAB_COUNT
-    }
+    val pagerState = rememberPagerState(initialPage = selectedTab) { TAB_COUNT }
     val scope = rememberCoroutineScope()
 
     // 액티비티가 탭을 정해 주는 경로(타일 길게 누르기, 멈춤 안내의 홈 이동)를 그대로 살린다.
@@ -72,7 +66,7 @@ fun LauncherApp(
     // 비켜 놓은 자리에도 앱 배경색이 보이는 것은 바깥 Surface 가 창 전체를 칠하기 때문이다.
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
-        // selectableGroup 은 화면 읽어주기에 "셋(개발자 모드면 넷) 중 몇 번째"를 알려준다.
+        // selectableGroup 은 화면 읽어주기에 "넷 중 몇 번째"를 알려준다.
         //
         // 선택 표시는 액티비티가 든 값이 아니라 지금 보고 있는 쪽(currentPage)을 따른다. 밀다가 절반을
         // 넘기는 순간 밑줄이 따라오므로, 손을 떼기 전에도 어디로 가는지 보인다.
@@ -85,14 +79,12 @@ fun LauncherApp(
                 scope.launch { pagerState.animateScrollToPage(1) }
             }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_help), pagerState.currentPage == 2) {
-                scope.launch { pagerState.animateScrollToPage(2) }
+            TabButton(stringResource(R.string.tab_classify), pagerState.currentPage == TAB_CLASSIFY) {
+                scope.launch { pagerState.animateScrollToPage(TAB_CLASSIFY) }
             }
-            if (developerMode.value) {
-                Spacer(modifier = Modifier.width(24.dp))
-                TabButton(stringResource(R.string.tab_classify), pagerState.currentPage == TAB_CLASSIFY) {
-                    scope.launch { pagerState.animateScrollToPage(TAB_CLASSIFY) }
-                }
+            Spacer(modifier = Modifier.width(24.dp))
+            TabButton(stringResource(R.string.tab_help), pagerState.currentPage == TAB_HELP) {
+                scope.launch { pagerState.animateScrollToPage(TAB_HELP) }
             }
         }
 
@@ -108,12 +100,15 @@ fun LauncherApp(
     }
 }
 
-/** 홈·설정·도움말. [LauncherApp] 의 탭 수와 [MainActivity] 의 TAB_* 이 같은 수를 가리킨다. */
-private const val TAB_COUNT = 3
+/** 홈·설정·분류·도움말. 홈과 설정의 번호는 [MainActivity] 의 TAB_* 와 같다. */
+private const val TAB_COUNT = 4
 
-/** 개발자 모드에서만 맨 뒤에 붙는 분류 탭(#283). AI 판정에 연결되면(#291) 모두에게 보인다. */
-private const val TAB_CLASSIFY = 3
-private const val TAB_COUNT_WITH_CLASSIFY = 4
+/**
+ * 분류 탭(#283). AI 판정에 연결된 뒤(#321) 모두에게 연다(#328). 소리마다 종류를 고르는 설정이라 설정 옆에 두고,
+ * 도움말은 맨 뒤에 남긴다.
+ */
+private const val TAB_CLASSIFY = 2
+private const val TAB_HELP = 3
 
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {

@@ -144,14 +144,6 @@ fun ClassifyTab() {
                 color = PrimaryTextColor,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            // 개발자 전용 공개 범위는 유지하되, 이제 설정이 실제 AI 판정에 반영됨을 알린다.
-            Text(
-                stringResource(R.string.classify_preview_note),
-                fontSize = 14.sp,
-                lineHeight = 21.sp,
-                color = AccentColor,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
             Text(stringResource(R.string.classify_desc), fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor)
             Text(
                 stringResource(R.string.classify_danger_note),

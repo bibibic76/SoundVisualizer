@@ -115,6 +115,7 @@ fun HelpTab() {
             SettingsExpander(stringResource(R.string.help_sound_title)) {
                 Paragraphs(
                     R.string.help_sound_kinds,
+                    R.string.help_sound_classify,
                     R.string.help_sound_danger,
                     R.string.help_sound_haptic,
                     R.string.help_sound_haptic_rule

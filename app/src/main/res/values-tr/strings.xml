@@ -135,7 +135,7 @@
     <string name="ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
     <string name="classify_title">Her sesin türünü seçin</string>
     <string name="classify_desc">Yapay zekanın tanıyabildiği tüm sesler ve her birinin hangi tür olarak sayıldığı burada gösterilir. Bir sesin türünü değiştirdiğinizde o sesin rengi ve titreşimi hemen yeni türe göre değişir.</string>
-    <string name="classify_danger_note">Tehlike sesleri arasından çıkardığınız bir ses için artık tehlike sesi rengi ve titreşimi kullanılmaz. Benzer sesler ayrı satırlardadır (sirenler beş satırdadır); hepsini çıkarmak için her satırı değiştirin.</string>
+    <string name="classify_danger_note">Tehlike sesleri arasından çıkardığınız bir ses, bu adla tanındığında artık tehlike sesi rengi ve titreşimi almaz. Ancak tek bir ses çoğu zaman aynı anda birkaç adla tanınır: Örneğin siren “Alarm” olarak da tanınır ve yalnızca sirenler beş satırdadır. Tamamen çıkarmak için bu satırların hepsini değiştirin.</string>
     <string name="classify_search_hint">Seslerde ara</string>
     <string name="cd_classify_clear_search">Aramayı temizle</string>
     <string name="classify_filter_all">Tümü</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
+    <string name="help_sound_classify">“Sesler” sekmesinde, yapay zekanın tanıdığı her sesin hangi türden sayılacağını seçebilirsiniz. Örneğin “Kapı zili”ni tehlike sesi yaparsanız kapı zili de tehlike sesi rengini ve titreşimini alır.</string>
     <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
     <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için bir mod (Kapalı, Yavaş, Orta, Hızlı, Sürekli) ve yoğunluk seçebilirsiniz.</string>
     <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Telefon, o türden bir ses sürdüğü sürece titreşir ve ses durunca durur. Orta her yarım saniyede bir atar, Yavaş bunun yarı hızında, Hızlı ise iki katı hızında atar; Sürekli ise ara vermeden titreşir. Her modda titreşim seçtiğiniz yoğunlukta kalır.</string>
