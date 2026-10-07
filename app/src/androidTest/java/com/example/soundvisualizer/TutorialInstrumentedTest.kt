@@ -2,6 +2,7 @@ package com.example.soundvisualizer
 
 import android.content.Context
 import android.os.SystemClock
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
@@ -12,6 +13,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -94,6 +96,25 @@ class TutorialInstrumentedTest {
             rule.onNodeWithText(text(R.string.tutorial_skip)).performClick()
             rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
             rule.onNodeWithContentDescription(text(R.string.tutorial_sound_on)).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun slowDragOverAThirdGoesToTheNextPage() {
+        // 기본 페이저는 쪽 너비의 절반을 넘게 끌어야 넘어가서, 천천히 끌다 놓으면 앞 쪽으로 튕겨 돌아갔다(#333).
+        // 3분의 1을 1초에 걸쳐 끈다. 빠르게 튕긴 것으로 보지 않을 만큼 느리다.
+        setSeen(true)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
+            rule.onNodeWithContentDescription(context.getString(R.string.tutorial_page_status, 1, TutorialPage.entries.size))
+                .assertExists()
+            rule.onRoot().performTouchInput {
+                val y = height * 0.5f
+                swipe(Offset(width * 0.75f, y), Offset(width * 0.75f - width / 3f, y), durationMillis = 1_000)
+            }
+            rule.waitForIdle()
+            rule.onNodeWithContentDescription(context.getString(R.string.tutorial_page_status, 2, TutorialPage.entries.size))
+                .assertExists()
         }
     }
 

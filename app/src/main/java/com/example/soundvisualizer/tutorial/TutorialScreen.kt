@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -135,6 +136,13 @@ private val COMPACT_HEIGHT = 480.dp
 private val COMPACT_MIN_WIDTH = 600.dp
 
 /**
+ * 손을 뗐을 때 다음 쪽으로 넘어가는 데 필요한 끈 거리(쪽 너비에 대한 비율). 빠르게 튕기면 이보다 짧아도 넘어간다.
+ * 페이저의 기본값(절반)은 천천히 끌다 놓을 때 앞 쪽으로 튕겨 돌아가는 일이 잦았다(#333). 탭 화면은 설정 탭의 가로
+ * 슬라이더 때문에 기본값을 그대로 둔다.
+ */
+internal const val SNAP_THRESHOLD = 0.25f
+
+/**
  * 처음 여는 사람에게 앱이 무엇을 하는지 보여 주는 화면. 홈의 ‘튜토리얼 보기’로 다시 열 수 있다.
  *
  * 쪽마다 그림 · 제목 · 짧은 설명이 있고, 밀어서 넘기거나 아래 ‘다음’으로 넘긴다. 마지막 쪽의 ‘확인’과 ‘건너뛰기’,
@@ -219,7 +227,12 @@ fun TutorialScreen(onClose: () -> Unit) {
                 }
             }
 
-            HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { index ->
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f),
+                // 쪽 너비의 4분의 1만 끌어도 넘어간다. 기본(절반)이면 천천히 끌다 놓을 때 앞 쪽으로 튕겨 돌아가는 일이 잦았다(#333).
+                flingBehavior = PagerDefaults.flingBehavior(state = pagerState, snapPositionalThreshold = SNAP_THRESHOLD)
+            ) { index ->
                 TutorialPageContent(
                     page = pages[index],
                     // 옆 쪽은 미리 그려 두기만 하고, 그 쪽에 들어와 멈춘 뒤에야 움직인다.
