@@ -22,6 +22,9 @@ object YamnetThreeClassMapper {
     }
 
     private fun matchesDanger(s: String): Boolean {
+        // Approved attention signals / abrupt events (#343), exact labels only.
+        // This changes normal voting, not the independent safety-cue allowlist.
+        if (s in ATTENTION_LABELS) return true
         // Product policy: footsteps are Ambient; only explicit vehicle-horn
         // YAMNet classes are promoted to Danger (not every generic "horn").
         if (s == "vehicle horn, car horn, honking") return true
@@ -55,6 +58,8 @@ object YamnetThreeClassMapper {
     }
 
     private fun matchesSpeech(s: String): Boolean {
+        // Instrument, not a human vocalization.
+        if (s == "singing bowl") return false
         if ("speech" in s || "conversation" in s || "narration" in s) return true
         if ("speaking" in s || "babbling" in s) return true
         if ("shout" in s || "whisper" in s || "screaming" in s) return true
@@ -74,4 +79,9 @@ object YamnetThreeClassMapper {
         if ("white noise" in s || "pink noise" in s || "static" in s) return true
         return false
     }
+
+    private val ATTENTION_LABELS = setOf(
+        "reversing beeps", "train horn", "train whistle", "foghorn", "bicycle bell",
+        "emergency vehicle", "skidding", "tire squeal", "slam"
+    )
 }
