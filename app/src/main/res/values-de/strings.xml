@@ -135,7 +135,7 @@
     <string name="ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
     <string name="classify_title">Art für jedes Geräusch wählen</string>
     <string name="classify_desc">Hier sehen Sie alle Geräusche, welche die KI erkennen kann, und die Art, zu der sie jeweils zählen. Wenn Sie die Art eines Geräuschs ändern, richten sich seine Farbe und Vibration sofort nach der neuen Art.</string>
-    <string name="classify_danger_note">Ein Geräusch, das Sie aus den Gefahrengeräuschen herausnehmen, erhält nicht mehr die Farbe und Vibration für Gefahrengeräusche. Ähnliche Geräusche stehen in eigenen Zeilen (bei Sirenen sind es fünf). Um alle herauszunehmen, ändern Sie jede dieser Zeilen.</string>
+    <string name="classify_danger_note">Ein Geräusch, das Sie aus den Gefahrengeräuschen herausnehmen, löst unter diesem Namen keine Farbe und Vibration für Gefahrengeräusche mehr aus. Ein Geräusch wird aber oft unter mehreren Namen zugleich erkannt: Eine Sirene zum Beispiel auch als „Alarm“, und Sirenen allein haben fünf Zeilen. Um es ganz herauszunehmen, ändern Sie alle diese Zeilen.</string>
     <string name="classify_search_hint">Geräusche suchen</string>
     <string name="cd_classify_clear_search">Suchbegriff löschen</string>
     <string name="classify_filter_all">Alle</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
+    <string name="help_sound_classify">Im Tab „Geräusche“ können Sie für jedes Geräusch, das die KI erkennt, festlegen, zu welcher Art es zählt. Ändern Sie zum Beispiel „Türklingel“ in Gefahrengeräusche, dann erhält eine Türklingel die Farbe und Vibration für Gefahrengeräusche.</string>
     <string name="help_sound_danger">Wird ein Gefahrengeräusch (z. B. ein Schuss) erkannt, wechselt die Farbe sofort statt allmählich.</string>
     <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie einen Modus (Aus, Langsam, Mittel, Schnell, Dauerhaft) und eine Stärke wählen.</string>
     <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Das Smartphone vibriert, solange ein Geräusch dieser Art anhält, und hört mit dem Geräusch auf. „Mittel“ pulsiert jede halbe Sekunde, „Langsam“ halb so schnell und „Schnell“ doppelt so schnell, während „Dauerhaft“ ohne Unterbrechung vibriert. In jedem Modus bleibt die Vibration bei der gewählten Stärke.</string>

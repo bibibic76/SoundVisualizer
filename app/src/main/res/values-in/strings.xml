@@ -135,7 +135,7 @@
     <string name="ai_unavailable">Deteksi jenis suara tidak berfungsi, sehingga semua suara ditampilkan dengan warna suara latar. Coba matikan lalu nyalakan lagi visualisasinya.</string>
     <string name="classify_title">Pilih jenis untuk setiap suara</string>
     <string name="classify_desc">Berikut semua suara yang dapat dikenali AI beserta jenisnya. Jika Anda mengubah jenis suatu suara, warna dan getarannya langsung mengikuti jenis yang baru.</string>
-    <string name="classify_danger_note">Suara yang Anda pindahkan dari jenis suara bahaya tidak lagi mendapat warna maupun getaran suara bahaya. Suara yang mirip ada di baris terpisah (sirene ada di lima baris), jadi ubah setiap barisnya untuk memindahkan semuanya.</string>
+    <string name="classify_danger_note">Suara yang Anda pindahkan dari jenis suara bahaya tidak lagi mendapat warna maupun getaran suara bahaya dengan nama itu. Namun, satu suara sering dikenali dengan beberapa nama sekaligus. Misalnya, sirene juga dikenali sebagai “Alarm”, dan sirene sendiri ada di lima baris. Untuk memindahkannya sepenuhnya, ubah semua baris tersebut.</string>
     <string name="classify_search_hint">Cari suara</string>
     <string name="cd_classify_clear_search">Hapus pencarian</string>
     <string name="classify_filter_all">Semua</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">Jenis suara dan getaran</string>
     <string name="help_sound_kinds">AI mengelompokkan suara yang terdengar menjadi suara latar, percakapan, dan suara bahaya. Secara default, suara latar berwarna putih, percakapan kuning, dan suara bahaya merah. Di tab Setelan, Anda dapat mengubah warna setiap jenis dan memilih apakah jenis tersebut ditampilkan.</string>
+    <string name="help_sound_classify">Di tab Suara, Anda dapat memilih jenis untuk setiap suara yang dikenali AI. Misalnya, jika “Bel pintu” diubah menjadi suara bahaya, bel pintu akan mendapat warna dan getaran suara bahaya.</string>
     <string name="help_sound_danger">Saat suara bahaya (seperti suara tembakan) terdeteksi, warna langsung berubah tanpa memudar perlahan.</string>
     <string name="help_sound_haptic">Getaran memberi tahu Anda meskipun Anda tidak sedang melihat layar. Secara default, getaran hanya aktif untuk suara bahaya. Anda dapat memilih mode (Mati, Lambat, Sedang, Cepat, Terus-menerus) dan kekuatan untuk setiap jenis.</string>
     <string name="help_sound_haptic_rule">Getaran hanya berlaku untuk jenis suara yang ditampilkan di layar. Ponsel terus bergetar selama suara jenis itu masih terdengar dan berhenti saat suaranya berhenti. Sedang berdenyut setiap setengah detik, Lambat dengan setengah kecepatan itu, dan Cepat dengan dua kali kecepatan itu, sedangkan Terus-menerus bergetar tanpa jeda. Di semua mode, getaran tetap pada kekuatan yang Anda pilih.</string>

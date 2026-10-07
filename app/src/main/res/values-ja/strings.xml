@@ -135,7 +135,7 @@
     <string name="ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示されます。可視化を一度オフにして、もう一度オンにしてみてください。</string>
     <string name="classify_title">音ごとに種類を選ぶ</string>
     <string name="classify_desc">AI が認識できるすべての音と、それぞれの音が今どの種類として扱われているかを表示します。種類を変えると、その音の色と振動はすぐに新しい種類に合わせて変わります。</string>
-    <string name="classify_danger_note">危険音から外した音には、危険音の色も振動も使われなくなります。似た音は別々の行に分かれている（サイレンは5行）ため、すべて外すにはそれぞれ変更してください。</string>
+    <string name="classify_danger_note">危険音から外した音は、その名前で聞き取られたときに危険音の色も振動も使われなくなります。ただし、一つの音が複数の名前で同時に聞き取られることがよくあります。たとえばサイレンは「警報音」としても聞き取られ、サイレンだけでも5行あります。完全に外すには、すべて変更してください。</string>
     <string name="classify_search_hint">音の名前で検索</string>
     <string name="cd_classify_clear_search">検索語を消去</string>
     <string name="classify_filter_all">すべて</string>
@@ -264,6 +264,7 @@
 
     <string name="help_sound_title">音の種類と振動</string>
     <string name="help_sound_kinds">聞こえてくる音を、AI が環境音・話し声・危険音に分類します。初期設定の色は、環境音が白、話し声が黄色、危険音が赤です。種類ごとの色と表示の有無は「設定」タブで変更できます。</string>
+    <string name="help_sound_classify">「分類」タブでは、AI が聞き分ける音ごとに、どの種類として扱うかを選べます。たとえば「玄関チャイム」を危険音に変えると、玄関チャイムにも危険音の色と振動が使われます。</string>
     <string name="help_sound_danger">危険音（銃声など）を検出すると、色が徐々にではなく、すぐに切り替わります。</string>
     <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに振動の仕方（オフ・ゆっくり・普通・速い・連続）と強さを選べます。</string>
     <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。その種類の音が続いている間は振動し続け、音が止まると一緒に止まります。「普通」は0.5秒ごとに、「ゆっくり」はその半分の速さで、「速い」は2倍の速さで振動し、「連続」は途切れずに振動します。どの振動の仕方でも、選んだ強さのまま振動します。</string>
