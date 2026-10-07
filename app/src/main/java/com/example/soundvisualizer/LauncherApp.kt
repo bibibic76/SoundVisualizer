@@ -2,6 +2,7 @@ package com.example.soundvisualizer
 
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.help.HelpTab
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,9 +55,11 @@ fun LauncherApp(
     // 취소된다. 꺼짐 안내로 홈까지 가야 하는데 가운데 설정 탭에 멈출 수 있는 고리였다(#185).
     // 에뮬레이터에서 증상 자체를 재현하지는 못했다. 애니메이션이 1번을 "지금 보는 탭" 으로 잡기 전에
     // 끝나는 것으로 보인다. 그래도 값이 오가는 고리는 끊어 둔다.
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.settledPage }.collect { onSelectTab(it) }
-    }
+    //
+    // 페이저의 settledPage 는 이 고리를 다 끊지 못한다. 손을 떼는 순간에도 바뀌기 때문이다([rememberRestingPage]).
+    // 빠르게 연달아 넘기면 지나가던 탭이 돌아와, 위 효과가 넘어가던 화면을 그 탭으로 끌어올 수 있었다(#339).
+    val restingPage by rememberRestingPage(pagerState)
+    LaunchedEffect(restingPage) { onSelectTab(restingPage) }
     // 분류 탭의 찾기 칸에 글자를 넣던 채로 다른 탭으로 넘기면, 칸이 포커스를 쥔 채 그 쪽을 붙들어 두어
     // 자판이 다른 탭 위에 남을 수 있다. 탭이 바뀌면 포커스를 놓는다.
     val focusManager = LocalFocusManager.current
@@ -117,6 +121,25 @@ private const val TAB_COUNT = 4
  * 슬라이더를 끄는 손동작은 슬라이더가 받는다.
  */
 internal const val PAGE_SNAP_THRESHOLD = 0.1f
+
+/**
+ * 페이저(탭 화면, 튜토리얼)가 손을 떼고 정말 멈춘 쪽. 넘기는 동안에는 앞서 멈췄던 쪽에 머문다.
+ *
+ * 페이저의 settledPage 는 이름과 달리 움직이는 도중에도 바뀐다. 페이저는 스크롤을 새로 시작할 때마다 그 순간 가장
+ * 가까운 쪽을 settledPage 로 적어 두는데, 끌던 손을 떼고 미끄러지기 시작하는 것도 새 스크롤이다. 그래서 앞 넘김이
+ * 끝나기 전에 다시 넘기면, 손을 떼는 순간 지나가던 쪽이 settledPage 가 된다. 튜토리얼은 그 쪽 제목으로 초점을
+ * 옮겼고, 초점을 받은 제목이 자기를 화면에 보이려고 페이저를 끌어와, 넘어가던 화면이 앞 쪽으로 되돌아갔다(#339).
+ */
+@Composable
+internal fun rememberRestingPage(pagerState: PagerState): IntState {
+    val resting = remember(pagerState) { mutableIntStateOf(pagerState.currentPage) }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { if (pagerState.isScrollInProgress) null else pagerState.currentPage }
+            .filterNotNull()
+            .collect { resting.intValue = it }
+    }
+    return resting
+}
 
 /**
  * 분류 탭(#283). AI 판정에 연결된 뒤(#321) 모두에게 연다(#328). 소리마다 종류를 고르는 설정이라 설정 옆에 두고,
