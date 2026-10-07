@@ -1,6 +1,7 @@
 package com.example.soundvisualizer
 
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -89,7 +90,11 @@ fun LauncherApp(
         }
 
         // 남은 높이를 전부 준다. 탭은 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
-        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f),
+            flingBehavior = PagerDefaults.flingBehavior(state = pagerState, snapPositionalThreshold = PAGE_SNAP_THRESHOLD)
+        ) { page ->
             when (page) {
                 0 -> HomeTab(onStart, onStop, onOpenTutorial)
                 1 -> SettingsTab(onAddTile)
@@ -102,6 +107,13 @@ fun LauncherApp(
 
 /** 홈·설정·분류·도움말. 홈과 설정의 번호는 [MainActivity] 의 TAB_* 와 같다. */
 private const val TAB_COUNT = 4
+
+/**
+ * 손을 뗐을 때 다음 쪽(탭, 튜토리얼)으로 넘어가는 데 필요한 끈 거리(쪽 너비에 대한 비율). 빠르게 튕기면 이보다 짧아도
+ * 넘어간다. 페이저의 기본값(절반)은 반이 안 되게 끌고 놓을 때 앞 쪽으로 튕겨 돌아가는 일이 잦았다(#333, #335).
+ * 슬라이더를 끄는 손동작은 슬라이더가 받으므로, 설정 탭에서 슬라이더를 움직이다 탭이 넘어가지는 않는다.
+ */
+internal const val PAGE_SNAP_THRESHOLD = 0.3f
 
 /**
  * 분류 탭(#283). AI 판정에 연결된 뒤(#321) 모두에게 연다(#328). 소리마다 종류를 고르는 설정이라 설정 옆에 두고,
