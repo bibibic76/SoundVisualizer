@@ -174,6 +174,7 @@
     <string name="haptic_mode_continuous">连续</string>
     <string name="haptic_preview_hint">点按一种振动方式或调整强度，即可预览 2 秒振动效果。</string>
     <string name="haptic_preview_hint_running">可视化运行时不会播放预览振动，以免与真实振动混淆。</string>
+    <string name="haptic_continuous_external">在外部声音模式下无法选择“连续”，以免手机把自己的振动误当成声音。设为“连续”的类型会改为按“快”的方式振动，关闭外部声音模式后会恢复为“连续”振动。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">选择颜色</string>
@@ -270,6 +271,7 @@
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
     <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
     <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>
+    <string name="help_sound_haptic_external">在外部声音模式下，手机只在两次振动之间的间歇检查声音是否仍在持续，以免把自己的振动误当成声音。因此，声音停止后，振动可能还会短暂持续，通常不到 1 秒。此模式下无法选择“连续”：设为“连续”的类型会改为按“快”的方式振动，关闭外部声音模式后会恢复为“连续”振动。</string>
 
     <string name="help_notes_title">注意事项</string>
     <string name="help_note_direction">可以分辨左右，但无法分辨前后。屏幕顶部和底部的图形表示左右两侧听起来相近的声音以及空间感。</string>

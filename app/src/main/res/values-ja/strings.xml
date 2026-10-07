@@ -174,6 +174,7 @@
     <string name="haptic_mode_continuous">連続</string>
     <string name="haptic_preview_hint">振動の仕方をタップするか強さを変えると、2秒間試せます。</string>
     <string name="haptic_preview_hint_running">可視化の実行中は、実際の振動と区別できるようにお試しの振動は鳴りません。</string>
+    <string name="haptic_continuous_external">外部音モードでは、スマートフォンが自分の振動を音と間違えないように、「連続」を選べません。「連続」に設定されている種類は「速い」と同じように振動し、外部音モードをオフにすると「連続」に戻ります。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">色を選択</string>
@@ -270,6 +271,7 @@
     <string name="help_sound_danger">危険音（銃声など）を検出すると、色が徐々にではなく、すぐに切り替わります。</string>
     <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに振動の仕方（オフ・ゆっくり・普通・速い・連続）と強さを選べます。</string>
     <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。その種類の音が続いている間は振動し続け、音が止まると一緒に止まります。「普通」は0.5秒ごとに、「ゆっくり」はその半分の速さで、「速い」は2倍の速さで振動し、「連続」は途切れずに振動します。どの振動の仕方でも、選んだ強さのまま振動します。</string>
+    <string name="help_sound_haptic_external">外部音モードでは、スマートフォンが自分の振動を音と間違えないように、振動の合間にだけ音が続いているかを確認します。そのため、音が止まった後も、少しの間（多くの場合1秒未満）振動が続くことがあります。このモードでは「連続」を選べません。「連続」に設定されている種類は「速い」と同じように振動し、外部音モードをオフにすると「連続」に戻ります。</string>
 
     <string name="help_notes_title">知っておきたいこと</string>
     <string name="help_note_direction">左右は区別できますが、前後は区別できません。画面の上下に表示されるグラフィックは、左右から同じくらい聞こえる音と、空間の広がりを表します。</string>

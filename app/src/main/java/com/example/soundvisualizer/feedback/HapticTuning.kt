@@ -65,6 +65,49 @@ object HapticTuning {
     /** 연속 울림이 이만큼 남으면 다시 보낸다. 판단 주기([IDLE_TICK_MS])가 한 번 늦어도 끊기지 않을 만큼. */
     const val CONTINUOUS_REFILL_MS = 200L
 
+    // ---------------- 외부 사운드 모드: 자기 진동 (#290) ----------------
+
+    /**
+     * 울림이 끝난 뒤 이만큼은 마이크가 그 울림을 아직 들을 수 있다고 본다([SelfVibrationGate]). 박자 방식은 쉼이 짧으면
+     * 이보다 줄인다([selfHearingGuardMs]).
+     *
+     * **재 본 값이 아니다.** 모터가 명령보다 늦게 멈추는 시간, 모터가 잦아들며 책상을 울리는 시간, 마이크 입력이 늦게
+     * 들어오는 시간, 캡처 버퍼 하나(48kHz 에서 10.7ms)를 모두 덮어야 한다. S25+ 에서 앱의 울림은 명령보다 16~55ms 늦게
+     * 끝났다(`dumpsys vibrator_manager`). 짧으면 자기 진동 소리가 쉼에 새어 들어와 진동이 다시 이어진다.
+     */
+    const val SELF_HEARING_GUARD_MAX_MS = 180L
+
+    /** 박자 방식에서 쉼 끝에 남겨 두는 최소한의 듣는 시간. 캡처 버퍼 서너 개다. */
+    const val SELF_HEARING_MIN_LISTEN_MS = 40L
+
+    /**
+     * 막아 둔 구간이 끝나는 시각보다 이만큼 늦게 깨어난다. 다음 틱은 두 시계(uptime·elapsedRealtime)를 오가며 잡히므로
+     * 1~2ms 일찍 깨어날 수 있다. 일찍 깨어나도 잘못 읽지는 않지만(구간은 지난번에 읽은 시각으로 가른다), 섞인 값을 버리러
+     * 한 번 더 깨어나야 한다. 그 한 번을 아낀다.
+     */
+    const val SELF_HEARING_REOPEN_SLACK_MS = 2L
+
+    /**
+     * 이어 준 크기([SelfVibrationGate])를 묶음 첫 울림의 꼬리가 끝나기 이만큼 전보다 늦은 소리로 치지 않는다.
+     *
+     * 느림은 꼬리 끝(울림 0.4초 + 여유 0.18초)에 소리가 끝났다고 보는 여유(0.4초)를 더하면 다음 박자 0.02초 앞이다. 꼬리 끝
+     * 바로 앞에서 시작한 구간을 그 시각의 소리로 치면, 울림을 보내는 데 21ms 넘게 걸리는 폰에서는 소리가 끝난 뒤 거의 늘
+     * 0.4초짜리 울림이 한 번 더 나간다. 이만큼 막으면 여유가 0.1초가 된다. 박자에 맞춰 깨어나면 마지막으로 이어 주는 틱이
+     * 꼬리 끝 0.08초 전(느림·중간)이라 평소에는 그대로다. 0.1초로 늘리면 그 틱까지 당겨져 느림의 말소리 박자가 더
+     * 어긋났다(모델에서 12%→16%).
+     */
+    const val SELF_HEARING_CREDIT_LEAD_MS = 80L
+
+    /**
+     * 그 방식의 울림 뒤에 소리를 듣지 않는 시간. 쉼이 [SELF_HEARING_MIN_LISTEN_MS] 만큼은 남게 [SELF_HEARING_GUARD_MAX_MS]
+     * 에서 줄인다. 느림·중간은 180ms, 빠름은 쉼이 150ms 라 110ms 다. 꺼짐·연속은 박자가 없어 최대값이다.
+     */
+    fun selfHearingGuardMs(mode: HapticMode): Long = when (mode) {
+        HapticMode.Slow, HapticMode.Medium, HapticMode.Fast ->
+            minOf(SELF_HEARING_GUARD_MAX_MS, periodMs(mode) - onMs(mode) - SELF_HEARING_MIN_LISTEN_MS)
+        HapticMode.Off, HapticMode.Continuous -> SELF_HEARING_GUARD_MAX_MS
+    }
+
     // ---------------- 종류를 모를 때 (#225) ----------------
 
     /**

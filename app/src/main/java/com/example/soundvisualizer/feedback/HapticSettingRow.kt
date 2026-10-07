@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.AiClassification
+import com.example.soundvisualizer.CaptureSource
 import com.example.soundvisualizer.DependentSettings
 import com.example.soundvisualizer.EqualChoiceRows
 import com.example.soundvisualizer.PrimaryTextColor
@@ -60,6 +61,9 @@ import kotlin.math.roundToInt
  * 세기는 꺼짐이 아닐 때만 펼쳐서 카드가 길어지지 않게 한다. 방식을 누르거나 세기를 바꾸면 그대로 미리 울려 본다.
  * 시각화가 실행 중이면 미리보기가 실제 진동과 섞여 무엇이 울린 것인지 헷갈리므로 울리지 않는다(#244).
  *
+ * 외부 사운드 모드에서는 '연속'을 고를 수 없고, '연속'으로 저장된 종류는 '빠름'으로 보이고 울린다([HapticModeChoice], #290).
+ * 외부 사운드 모드는 다음 실행의 소스다. 실행 중에는 홈의 스위치가 잠겨 실행 중인 소스와 같다.
+ *
  * @param label [com.example.soundvisualizer.AiClassification] 의 라벨
  * @param shown 이 종류의 화면 표시가 켜져 있는지
  */
@@ -70,6 +74,9 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val settings by SettingsManager.hapticSettings(label).collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
     val running by SettingsManager.isServiceRunning.collectAsState()
+    val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+    val external = CaptureSource.of(externalSoundMode).hearsOwnVibration
+    val shownSettings = HapticModeChoice.shown(settings, external)
 
     val rowEnabled = shown && player.hasVibrator
 
@@ -133,16 +140,26 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
+        // 외부 사운드 모드에서는 '연속'을 고를 수 없고 '빠름'으로 울린다. 저장된 방식은 그대로라 모드를 끄면 돌아온다(#290).
+        if (rowEnabled && HapticModeChoice.showsNote(external)) {
+            Text(
+                stringResource(R.string.haptic_continuous_external),
+                fontSize = 13.sp,
+                color = SecondaryTextColor,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         HapticChoiceRow(
             options = HapticMode.values().toList(),
-            selected = settings.mode,
+            selected = shownSettings.mode,
             labelOf = { stringResource(it.labelRes) },
             enabled = rowEnabled,
+            optionEnabled = { HapticModeChoice.selectable(it, external) },
             onSelect = { mode ->
-                val next = settings.copy(mode = mode)
-                SettingsManager.updateHaptic(label, next)
-                preview(next)
+                val next = HapticModeChoice.toStore(settings, mode, external)
+                if (next != null) SettingsManager.updateHaptic(label, next)
+                preview(HapticModeChoice.shown(next ?: settings, external))
             }
         )
 
@@ -154,7 +171,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 onFinished = { level ->
                     val next = settings.copy(level = level)
                     SettingsManager.updateHaptic(label, next)
-                    preview(next)
+                    preview(HapticModeChoice.shown(next, external))
                 }
             )
             if (!player.hasAmplitudeControl) {
@@ -242,13 +259,17 @@ private fun soundTypeName(label: String): Int = when (label) {
     else -> R.string.sound_type_ambient
 }
 
-/** 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄. */
+/**
+ * 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄.
+ * @param optionEnabled 칸마다 고를 수 있는지. 고를 수 없는 칸은 줄 전체가 꺼졌을 때와 같은 색으로 흐리게 둔다.
+ */
 @Composable
 private fun <T> HapticChoiceRow(
     options: List<T>,
     selected: T,
     labelOf: @Composable (T) -> String,
     enabled: Boolean,
+    optionEnabled: (T) -> Boolean = { true },
     onSelect: (T) -> Unit
 ) {
     // 번역된 선택지가 칸보다 길면 가운데 정렬로 줄을 바꾸고, 칸 높이를 함께 맞춘다.
@@ -264,6 +285,7 @@ private fun <T> HapticChoiceRow(
         )
         EqualChoiceRows(options, perRow, gap = 4.dp) { option, cellModifier ->
             val isSelected = option == selected
+            val optionOn = enabled && optionEnabled(option)
             Box(
                 // 칸 높이는 48dp 이상으로 둔다(#312, 글자와 안쪽 여백만으로는 약 44dp).
                 modifier = cellModifier
@@ -271,14 +293,14 @@ private fun <T> HapticChoiceRow(
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         when {
-                            !enabled -> Color(0xFF2A3038)
+                            !optionOn -> Color(0xFF2A3038)
                             isSelected -> AccentFillColor
                             else -> Color(0xFF333A44)
                         }
                     )
                     .selectable(
                         selected = isSelected,
-                        enabled = enabled,
+                        enabled = optionOn,
                         role = Role.RadioButton
                     ) { onSelect(option) }
                     .padding(horizontal = 2.dp, vertical = 10.dp),
@@ -291,7 +313,7 @@ private fun <T> HapticChoiceRow(
                     textAlign = TextAlign.Center,
                     style = wrappingLabelStyle(),
                     color = when {
-                        !enabled -> PrimaryTextColor.copy(alpha = 0.35f)
+                        !optionOn -> PrimaryTextColor.copy(alpha = 0.35f)
                         isSelected -> Color.White
                         else -> PrimaryTextColor
                     }

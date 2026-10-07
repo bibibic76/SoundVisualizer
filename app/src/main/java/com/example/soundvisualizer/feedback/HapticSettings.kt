@@ -39,6 +39,16 @@ data class HapticSettings(
     /** 이 종류가 진동하는지. */
     val enabled: Boolean get() = mode != HapticMode.Off
 
+    /**
+     * 외부 사운드 모드(마이크)에서 실제로 울릴 설정(#290). '연속'은 '빠름'으로 울리고, 나머지는 그대로다.
+     *
+     * 마이크는 앱의 진동을 소리로 듣는다. 진동 판단은 앱이 울린 진동 사이의 빈틈에서만 소리를 보는데([SelfVibrationGate]),
+     * '연속'에는 빈틈이 없어 자기 진동 소리와 실제 소리를 가를 수 없다. 저장된 설정은 바꾸지 않으므로 외부 사운드 모드를
+     * 끄면 그대로 '연속'으로 울린다.
+     */
+    fun inExternalSound(): HapticSettings =
+        if (mode == HapticMode.Continuous) copy(mode = HapticMode.Fast) else this
+
     companion object {
         const val MIN_LEVEL = 10
         const val MAX_LEVEL = 100
