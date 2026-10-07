@@ -2,6 +2,8 @@ package com.example.soundvisualizer.tutorial
 
 import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.VisualizerEngine
+import com.example.soundvisualizer.feedback.HapticSettings
+import com.example.soundvisualizer.feedback.HapticTuning
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -77,6 +79,40 @@ class TutorialScriptTest {
         for (other in TutorialScene.entries - scene) {
             assertFalse("$other 쪽이 떤다", TutorialScript.vibrating(other, 1.55f))
         }
+    }
+
+    @Test
+    fun `진짜 진동의 번호는 그림이 떠는 동안에만 있고 울림마다 하나씩 커진다`() {
+        // 튜토리얼은 번호가 바뀔 때마다 진짜 진동을 한 번 보낸다(#323). 그림의 떨림과 한 순간도 어긋나면 안 된다.
+        val scene = TutorialScene.Vibration
+        val started = mutableListOf<Int>()
+        var last = -1
+        var i = 0
+        while (i * 0.005f < scene.cycleSec * 3) {
+            val t = i * 0.005f
+            val pulse = TutorialScript.vibrationPulse(scene, t)
+            assertEquals("t=$t 그림의 떨림과 어긋난다", TutorialScript.vibrating(scene, t), pulse >= 0)
+            if (pulse >= 0 && pulse != last) started += pulse
+            if (pulse >= 0) last = pulse
+            i++
+        }
+        assertEquals("세 바퀴에 아홉 번, 0부터 차례로", (0 until 9).toList(), started)
+        assertEquals("움직이기 전", -1, TutorialScript.vibrationPulse(scene, -0.5f))
+        for (other in TutorialScene.entries - scene) {
+            assertEquals("$other 쪽", -1, TutorialScript.vibrationPulse(other, 1.55f))
+        }
+    }
+
+    @Test
+    fun `진짜 진동 한 번은 처음 설정의 위협음 진동 한 박자와 같다`() {
+        val danger = HapticSettings.defaultFor(AiClassification.DANGER)
+        val plan = TutorialScript.vibrationPulsePlan(amplitudeControl = true)
+        assertEquals(HapticTuning.onMs(danger.mode), plan.durationMs)
+        assertEquals(HapticTuning.amplitude(danger.level), plan.amplitudeAt(0))
+        // 세기 조절이 없는 기기는 켜고 끄기만 한다.
+        val onOff = TutorialScript.vibrationPulsePlan(amplitudeControl = false)
+        assertTrue(onOff.binary)
+        assertEquals(HapticTuning.onMs(danger.mode), onOff.durationMs)
     }
 
     @Test
