@@ -138,6 +138,7 @@ class ClassifyTabInstrumentedTest {
     fun typeFilterFollowsTheChosenType() {
         val (doorbell, doorbellLabel) = sound("Doorbell")
         val (rain, rainLabel) = sound("Rain")
+        val (_, whiteNoiseLabel) = sound("White noise")
         rule.runOnUiThread { SettingsManager.setSoundType(doorbell.name, AiClassification.DANGER) }
         val danger = string(R.string.sound_type_danger)
         val ambient = string(R.string.sound_type_ambient)
@@ -150,8 +151,15 @@ class ClassifyTabInstrumentedTest {
         rule.onNodeWithContentDescription(string(R.string.cd_classify_sound_changed, doorbellLabel, danger, ambient)).assertExists()
 
         search(rainLabel)
+        // "Rain" also matches "Train horn/whistle", now valid Danger results (#343).
+        // The filter must exclude Rain itself, not every substring match.
+        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, rainLabel, ambient)).assertDoesNotExist()
+
+        // Preserve the empty-result assertion with an unambiguous Ambient query.
+        search(whiteNoiseLabel)
         rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
 
+        search(rainLabel)
         rule.onNodeWithText(string(R.string.classify_filter_all)).performClick()
         rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, rainLabel, ambient)).assertExists()
         assertEquals(AiClassification.AMBIENT, rain.defaultType)

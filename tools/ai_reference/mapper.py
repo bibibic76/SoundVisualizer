@@ -95,6 +95,12 @@ def map_display_name_to_coarse(display_name: str) -> str:
 
 
 def _matches_danger(s: str) -> bool:
+    # Approved exact attention labels (#343); safety-cue allowlist is unchanged.
+    if s in {
+        "reversing beeps", "train horn", "train whistle", "foghorn", "bicycle bell",
+        "emergency vehicle", "skidding", "tire squeal", "slam",
+    }:
+        return True
     # Product policy: these exact YAMNet labels require immediate attention.
     # Keep exact matching so nearby unapproved labels do not inherit Danger.
     if s in {"chainsaw", "thunder", "thunderstorm"}:
@@ -139,6 +145,9 @@ def _matches_danger(s: str) -> bool:
 
 
 def _matches_speech(s: str) -> bool:
+    # Instrument, not a human vocalization.
+    if s == "singing bowl":
+        return False
     if "speech" in s or "conversation" in s or "narration" in s:
         return True
     if "speaking" in s or "babbling" in s:

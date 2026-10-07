@@ -32,6 +32,23 @@ class StrongDangerCuePolicyTest(unittest.TestCase):
 
 
 class ThreeClassMapperPolicyTest(unittest.TestCase):
+    def test_approved_attention_labels_vote_but_are_not_safety_cues(self) -> None:
+        classifier = ReferenceClassifier.__new__(ReferenceClassifier)
+        for label in (
+            "Reversing beeps", "Train horn", "Train whistle", "Foghorn", "Bicycle bell",
+            "Emergency vehicle", "Skidding", "Tire squeal", "Slam",
+        ):
+            with self.subTest(label=label):
+                self.assertEqual("danger", mapper.map_display_name_to_coarse(label))
+                self.assertFalse(classifier._is_strong_danger_keyword(label))
+                self.assertEqual("ambient", mapper.map_display_name_to_coarse(label + "-like sound"))
+
+    def test_instrument_exception_does_not_change_vocals_or_general_vehicles(self) -> None:
+        for label in ("Singing bowl", "Truck", "Car", "Bus", "Train", "Doorbell", "Honk", "Whistle"):
+            self.assertEqual("ambient", mapper.map_display_name_to_coarse(label))
+        for label in ("Singing", "Choir", "Screaming", "Shout", "Laughter", "Crying, sobbing"):
+            self.assertEqual("speech", mapper.map_display_name_to_coarse(label))
+
     def test_former_gunshot_proxies_are_ambient(self) -> None:
         for label in ("Plop", "Gargling"):
             self.assertEqual("ambient", mapper.map_display_name_to_coarse(label))
