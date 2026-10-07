@@ -89,6 +89,7 @@ import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
+import com.example.soundvisualizer.rememberRestingPage
 import kotlinx.coroutines.launch
 
 /**
@@ -175,10 +176,15 @@ fun TutorialScreen(onClose: () -> Unit) {
         onDispose { lifecycle?.removeObserver(observer) }
     }
 
+    // 손을 떼고 정말 멈춘 쪽. 넘기는 동안에는 앞서 멈췄던 쪽에 머문다.
+    val restingPage by rememberRestingPage(pagerState)
+
     // 처음 열 때와 쪽이 넘어갈 때마다 그 쪽의 제목으로 초점을 옮긴다. 넘어가는 도중이 아니라 멈춘 뒤에 옮긴다.
-    LaunchedEffect(pagerState.settledPage) {
+    // 초점을 받은 제목은 자기를 화면에 보이려고 페이저를 끌어온다. 넘기는 도중에 옮기면 넘어가던 화면이 그 쪽으로
+    // 되돌아간다(#339). 그래서 페이저의 settledPage 가 아니라 정말 멈춘 쪽을 따른다.
+    LaunchedEffect(restingPage) {
         // 제목이 아직 붙지 않았으면(드물다) 옮기지 않는다. 옮기지 못해도 쪽은 제대로 보인다.
-        runCatching { titleFocus[pagerState.settledPage].requestFocus() }
+        runCatching { titleFocus[restingPage].requestFocus() }
     }
 
     // 연달아 누르면 넘어가는 중인 쪽(targetPage)을 기준으로 한 쪽 더 간다.
@@ -230,7 +236,7 @@ fun TutorialScreen(onClose: () -> Unit) {
                 TutorialPageContent(
                     page = pages[index],
                     // 옆 쪽은 미리 그려 두기만 하고, 그 쪽에 들어와 멈춘 뒤에야 움직인다.
-                    running = !paused && pagerState.settledPage == index,
+                    running = !paused && restingPage == index,
                     titleFocus = titleFocus[index],
                     soundPlayer = soundPlayer
                 )
@@ -244,7 +250,7 @@ fun TutorialScreen(onClose: () -> Unit) {
                     BackButton(visible = !isFirst, onClick = ::goBack)
                     SkipButton(visible = !isLast, onClick = onClose)
                     Spacer(Modifier.weight(1f))
-                    PageIndicator(pagerState, pages.size)
+                    PageIndicator(pagerState, restingPage, pages.size)
                     Spacer(Modifier.weight(1f))
                     SoundButton(on = soundOn, onToggle = { soundOn = !soundOn })
                     PauseButton(paused = paused, onToggle = { paused = !paused })
@@ -259,7 +265,7 @@ fun TutorialScreen(onClose: () -> Unit) {
                     // 소리 버튼과 멈춤 버튼 사이, 가운데에 쪽 표시를 둔다.
                     SoundButton(on = soundOn, onToggle = { soundOn = !soundOn })
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        PageIndicator(pagerState, pages.size)
+                        PageIndicator(pagerState, restingPage, pages.size)
                     }
                     PauseButton(paused = paused, onToggle = { paused = !paused })
                 }
@@ -556,9 +562,8 @@ private fun Step(number: Int, @StringRes text: Int) {
  * 제목으로 가서 제목을 읽는다(둘 다 말하면 겹친다). 넘기다 만 경우에 흔들리지 않게 멈춘 쪽을 따른다.
  */
 @Composable
-private fun PageIndicator(pagerState: PagerState, count: Int) {
-    val settled = pagerState.settledPage
-    val status = stringResource(R.string.tutorial_page_status, settled + 1, count)
+private fun PageIndicator(pagerState: PagerState, restingPage: Int, count: Int) {
+    val status = stringResource(R.string.tutorial_page_status, restingPage + 1, count)
     Row(
         modifier = Modifier
             .heightIn(min = 48.dp)
