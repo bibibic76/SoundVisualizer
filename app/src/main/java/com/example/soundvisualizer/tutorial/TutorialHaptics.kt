@@ -24,19 +24,18 @@ internal class TutorialHaptics(
     private val canPlay: () -> Boolean,
     private val play: () -> Unit,
     private val cancel: () -> Unit
-) {
+) : TutorialFrameFollower {
     private var lastPulse = -1
 
-    /** 그림이 새로 그릴 때. [t] 는 그림이 움직이기 시작한 뒤 흐른 초다. */
-    fun onFrame(t: Float) {
+    override fun onFrame(t: Float) {
         val pulse = TutorialScript.vibrationPulse(TutorialScene.Vibration, t)
         if (pulse < 0 || pulse == lastPulse) return
         lastPulse = pulse
         if (canPlay()) play()
     }
 
-    /** 그림이 멈출 때. 울리던 것을 끊고, 다시 움직이면 처음부터 센다. */
-    fun stop() {
+    /** 울리던 것을 끊고, 다시 움직이면 처음부터 센다. */
+    override fun stop() {
         lastPulse = -1
         cancel()
     }

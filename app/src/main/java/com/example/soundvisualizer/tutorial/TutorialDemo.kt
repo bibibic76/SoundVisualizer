@@ -114,6 +114,18 @@ private const val FRAME_NS = 16_666_667L
 private const val MIN_REDRAW_NS = 16_400_000L
 
 /**
+ * 그림의 프레임을 따라 무언가를 내는 쪽(진짜 진동 [TutorialHaptics]). 그림이 움직이는 동안 프레임마다 [onFrame] 을,
+ * 멈출 때(쪽을 넘김·멈춤 버튼·그림이 사라짐) [stop] 을 부른다. 메인 스레드에서만 부른다.
+ */
+internal interface TutorialFrameFollower {
+    /** 그림이 새로 그릴 때. [t] 는 그림이 움직이기 시작한 뒤 흐른 초다. */
+    fun onFrame(t: Float)
+
+    /** 그림이 멈출 때. 다시 움직이면 [onFrame] 이 0초부터 다시 온다. */
+    fun stop()
+}
+
+/**
  * 튜토리얼 한 쪽의 그림. 가로로 눕힌 폰 안의 게임 장면 위에 **실제 오버레이 엔진**이 [TutorialScript] 의 소리를 그린다.
  *
  * - 폰 그림이 실제 화면보다 작으므로 엔진의 density 를 그 비율만큼 줄인다. 여백·두께·보이기 시작하는 깊이가
@@ -132,7 +144,7 @@ internal fun TutorialIllustration(
     running: Boolean,
     time: MutableFloatState,
     modifier: Modifier = Modifier,
-    haptics: TutorialHaptics? = if (scene == TutorialScene.Vibration) rememberTutorialHaptics() else null
+    haptics: TutorialFrameFollower? = if (scene == TutorialScene.Vibration) rememberTutorialHaptics() else null
 ) {
     BoxWithConstraints(modifier = modifier.clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
         val markRoom = if (scene == TutorialScene.Vibration) VIBRATION_MARK_ROOM else 0.dp
@@ -162,7 +174,7 @@ private fun DemoPhone(
     running: Boolean,
     phoneWidth: Dp,
     phoneHeight: Dp,
-    haptics: TutorialHaptics?
+    haptics: TutorialFrameFollower?
 ) {
     val density = LocalDensity.current
     val screenWidthPx = with(density) { (phoneWidth - BEZEL * 2).toPx() }
