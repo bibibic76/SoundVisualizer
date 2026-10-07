@@ -224,7 +224,7 @@ fun TutorialScreen(onClose: () -> Unit) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(1f),
-                // 탭 화면과 같은 기준으로, 쪽 너비의 30%만 끌어도 넘어간다(#333, #335).
+                // 탭 화면과 같은 기준으로, 쪽 너비의 10%만 끌어도 넘어간다(#333, #337).
                 flingBehavior = PagerDefaults.flingBehavior(state = pagerState, snapPositionalThreshold = PAGE_SNAP_THRESHOLD)
             ) { index ->
                 TutorialPageContent(

@@ -100,9 +100,9 @@ class TutorialInstrumentedTest {
     }
 
     @Test
-    fun slowDragUnderHalfGoesToTheNextPage() {
-        // 기본 페이저는 쪽 너비의 절반을 넘게 끌어야 넘어가서, 반이 안 되게 끌고 놓으면 앞 쪽으로 튕겨 돌아갔다(#333, #335).
-        // 40%를 1초에 걸쳐 끈다. 빠르게 튕긴 것으로 보지 않을 만큼 느리다.
+    fun shortSlowDragGoesToTheNextPage() {
+        // 기본 페이저는 쪽 너비의 절반을, #335 는 30%를 넘게 끌어야 넘어가서, 짧게 끌고 놓으면 앞 쪽으로 튕겨 돌아갔다(#337).
+        // 20%를 1초에 걸쳐 끈다. 빠르게 튕긴 것으로 보지 않을 만큼 느리다.
         setSeen(true)
         ActivityScenario.launch(MainActivity::class.java).use {
             rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
@@ -110,7 +110,7 @@ class TutorialInstrumentedTest {
                 .assertExists()
             rule.onRoot().performTouchInput {
                 val y = height * 0.5f
-                swipe(Offset(width * 0.8f, y), Offset(width * 0.4f, y), durationMillis = 1_000)
+                swipe(Offset(width * 0.7f, y), Offset(width * 0.5f, y), durationMillis = 1_000)
             }
             rule.waitForIdle()
             rule.onNodeWithContentDescription(context.getString(R.string.tutorial_page_status, 2, TutorialPage.entries.size))
