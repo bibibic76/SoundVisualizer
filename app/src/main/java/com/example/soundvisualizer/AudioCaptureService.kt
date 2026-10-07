@@ -817,13 +817,12 @@ class AudioCaptureService : Service() {
             getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
 
     /**
-     * 알림에 적을 소리 이름(앱 언어). AI 의 상위 후보 가운데 기본 종류가 위협음인 첫 소리다.
-     * 1순위가 음악이고 사이렌이 안전 신호로 올라온 경우에도 "음악" 이 아니라 그 위협음 이름을 적는다. 없으면 null.
+     * 알림에 적을 소리 이름(앱 언어). AI 의 상위 후보 가운데 지금 위협음으로 보는 첫 소리다. 사용자가 분류 탭에서 바꾼
+     * 종류를 따른다(#325). 고르는 규칙은 [DangerAlertPolicy.namedHit] 에 있다. 없으면 null.
      */
     private fun dangerSoundName(): String? {
-        val hit = AiClassification.latest()?.top5
-            ?.firstOrNull { SettingsManager.defaultSoundType(it.name) == AiClassification.DANGER }
-            ?: return null
+        val top5 = AiClassification.latest()?.top5 ?: return null
+        val hit = DangerAlertPolicy.namedHit(top5, SettingsManager::soundType) ?: return null
         return uiContext.resources.getStringArray(R.array.sound_names).getOrNull(hit.index)
     }
 

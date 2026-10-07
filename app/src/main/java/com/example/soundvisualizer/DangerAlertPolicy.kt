@@ -1,5 +1,6 @@
 package com.example.soundvisualizer
 
+import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import com.example.soundvisualizer.feedback.HapticPolicy
 
 /**
@@ -63,5 +64,17 @@ class DangerAlertPolicy(
 
         /** 알린 뒤 이만큼은 다시 알리지 않는다. */
         const val COOLDOWN_MS = 30_000L
+
+        /**
+         * 알림에 적을 소리: AI 상위 후보([top5], 확률 순) 가운데 지금 위협음으로 보는 첫 소리. 없으면 null.
+         * 1순위가 음악이고 사이렌이 안전 신호로 올라온 경우에도 "음악" 이 아니라 그 위협음을 고른다.
+         *
+         * 종류는 [typeOf] 로 묻는다. 사용자가 분류 탭에서 바꾼 종류를 따라야 AI 판정과 맞는다(#325). 위협음에서 뺀 소리의
+         * 이름으로 알리지 않고, 위협음으로 새로 지정한 소리의 이름으로 알린다.
+         */
+        fun namedHit(
+            top5: List<YamnetCoarseClassifier.TopClassHit>,
+            typeOf: (String) -> String
+        ): YamnetCoarseClassifier.TopClassHit? = top5.firstOrNull { typeOf(it.name) == AiClassification.DANGER }
     }
 }

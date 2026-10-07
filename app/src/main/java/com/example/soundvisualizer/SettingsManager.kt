@@ -677,6 +677,13 @@ object SettingsManager {
      */
     internal fun defaultSoundType(displayName: String): String = YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName)
 
+    /**
+     * 지금 [displayName] 소리를 어느 종류로 보는지. 사용자가 분류 탭에서 바꿨으면 그 종류, 아니면 기본 종류다.
+     * AI 가 추론마다 쓰는 정책([com.example.soundvisualizer.ai.YamnetMappingPolicy.coarse])과 같은 규칙이라,
+     * 앱이 소리 이름을 고를 때(잠금 화면 알림, #325) AI 판정과 어긋나지 않는다. 어느 스레드에서 불러도 된다.
+     */
+    fun soundType(displayName: String): String = soundTypeOverride(displayName) ?: defaultSoundType(displayName)
+
     fun setServiceRunning(isRunning: Boolean) {
         _isServiceRunning.value = isRunning
     }
