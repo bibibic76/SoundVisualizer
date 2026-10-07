@@ -115,14 +115,14 @@ private const val FRAME_NS = 16_666_667L
 private const val MIN_REDRAW_NS = 16_400_000L
 
 /**
- * 그림의 프레임을 따라 무언가를 내는 쪽(진짜 진동 [TutorialHaptics]). 그림이 움직이는 동안 프레임마다 [onFrame] 을,
- * 멈출 때(쪽을 넘김·멈춤 버튼·그림이 사라짐) [stop] 을 부른다. 메인 스레드에서만 부른다.
+ * 그림의 프레임을 따라 무언가를 내는 쪽(진짜 진동 [TutorialHaptics], 소리 [TutorialSounds]). 그림이 움직이는 동안
+ * 프레임마다 [onFrame] 을, 멈출 때(쪽을 넘김·멈춤 버튼·그림이 사라짐) [stop] 을 부른다. 메인 스레드에서만 부른다.
  */
 internal interface TutorialFrameFollower {
-    /** 그림이 새로 그릴 때. [t] 는 그림이 움직이기 시작한 뒤 흐른 초다. */
+    /** 그림이 새로 그릴 때. [t] 는 대본의 시각(초)이다. 처음에는 멈춰 둔 장면의 시각에서 시작한다. */
     fun onFrame(t: Float)
 
-    /** 그림이 멈출 때. 다시 움직이면 [onFrame] 이 0초부터 다시 온다. */
+    /** 그림이 멈출 때. 다시 움직이면 [onFrame] 이 멈춘 시각부터 이어서 온다(#331). */
     fun stop()
 }
 
@@ -131,8 +131,9 @@ internal interface TutorialFrameFollower {
  *
  * - 폰 그림이 실제 화면보다 작으므로 엔진의 density 를 그 비율만큼 줄인다. 여백·두께·보이기 시작하는 깊이가
  *   실제 화면을 줄여 놓은 비율로 맞는다.
- * - [running] 일 때만 움직인다. 페이저가 옆 쪽을 미리 그려 두는 동안이나 멈춤을 눌렀을 때는 그 쪽이 말하려는
- *   장면([TutorialScene.stillAtSec]) 한 장을 보여 준다. 움직이기 시작할 때마다 대본을 처음부터 튼다.
+ * - [running] 일 때만 움직인다. 처음에는 그 쪽이 말하려는 장면([TutorialScene.stillAtSec]) 한 장을 보여 주고
+ *   (페이저가 옆 쪽을 미리 그려 둘 때, 애니메이션을 꺼 둔 사람), 움직이기 시작하면 **그 장면에서 이어서** 움직인다.
+ *   멈추면(쪽을 넘김·멈춤 버튼) 그 자리에서 멈추고, 다시 움직이면 거기서 이어 간다(#331).
  * - 그림은 옆의 글이 말하는 것을 보여 주기만 하므로 화면 읽어주기에서는 통째로 건너뛴다.
  * - 진동 쪽은 그림 속 폰이 떠는 순간마다 진짜 폰도 울린다([TutorialHaptics], #323). 움직이는 동안만 울린다.
  * - 소리를 켜 두었으면 그림이 그리는 소리를 실제 녹음으로 함께 낸다([TutorialSounds], #327). 움직이는 동안만 낸다.
@@ -192,35 +193,32 @@ private fun DemoPhone(
     fun newEngine(source: TutorialDemoInputs) =
         VisualizerEngine(engineDensity, source).also { it.setSurfaceSize(screenWidthPx, screenHeightPx) }
 
-    // 멈춰 둘 장면([TutorialScene.stillAtSec]) 한 장. 옆 쪽을 미리 그려 둘 때·멈춤·애니메이션 끔에 쓴다.
-    // 대본을 2초 남짓 미리 돌려야 해서(엔진 틱 백여 번), 화면을 그리는 스레드에서 만들면 옆 쪽이 들어오거나 쪽이
-    // 멈추는 순간 넘기기가 툭 끊긴다(#318). 그래서 쪽마다 한 번만, 백그라운드에서 만들어 두고 움직이다 멈춰도 다시
-    // 만들지 않는다. 다 만들어지면 상태가 바뀌어 다시 그린다(애니메이션을 꺼 둔 사람에게도 그림이 비지 않는다).
-    // 움직이는 엔진과 시각이 섞이지 않게 입력도 따로 쓴다.
-    val stillInputs = remember(scene) { TutorialDemoInputs(scene, LiveVisualizerInputs::colorFor) }
-    val stillEngine by produceState<VisualizerEngine?>(null, stillInputs, engineDensity, screenWidthPx, screenHeightPx) {
-        value = withContext(Dispatchers.Default) {
-            newEngine(stillInputs).also { it.runTo(stillInputs, scene.stillAtSec) }
+    // 그 쪽의 엔진 하나. 멈춰 둘 장면([TutorialScene.stillAtSec])까지 대본을 미리 돌린 채로 만든다.
+    // - 대본을 2초 남짓 미리 돌려야 해서(엔진 틱 백여 번) 쪽마다 한 번만, 백그라운드에서 만든다(#318). 다 만들어지면
+    //   상태가 바뀌어 다시 그린다. 애니메이션을 꺼 둔 사람에게도 그림이 비지 않는다.
+    // - 움직이기 시작하면 이 엔진이 그 장면에서 이어서 움직인다. 예전에는 새 엔진으로 대본을 0초부터 틀어, 넘기는 동안
+    //   보이던 장면(예: 빨간 위협음)이 손을 떼는 순간 빈 화면으로 툭 바뀌었다(#331). 멈추면 그 자리에서 멈춘다.
+    val engine by produceState<VisualizerEngine?>(null, inputs, engineDensity, screenWidthPx, screenHeightPx) {
+        val ready = withContext(Dispatchers.Default) {
+            newEngine(inputs).also { it.runTo(inputs, scene.stillAtSec) }
         }
+        // 엔진을 새로 만들었으면(크기가 바뀌었을 때 등) 시각도 그 장면으로 되돌린다. 범례와 진동 표시가 함께 읽는다.
+        time.floatValue = scene.stillAtSec
+        value = ready
     }
-    // 움직이기 시작할 때마다 새 엔진으로 처음부터 그린다. 멈춰 있던 동안의 상태가 남지 않는다. 미리 돌리지 않아 금방 만든다.
-    val liveEngine = remember(inputs, engineDensity, running, screenWidthPx, screenHeightPx) {
-        if (running) newEngine(inputs) else null
-    }
-    val engine = if (running) liveEngine else stillEngine
     // 엔진이 새로 계산할 때마다 올린다. 그리기가 이 값을 읽어, 시각(time)이 같은 값이어도 다시 그린다.
     val frame = remember { mutableIntStateOf(0) }
     // 소리는 움직이는 도중에도 켜고 끈다. 돌고 있는 루프가 지금 것을 읽게 한다.
     val currentSounds by rememberUpdatedState(sounds)
 
-    LaunchedEffect(liveEngine) {
-        val live = liveEngine
-        if (live == null) {
-            time.floatValue = scene.stillAtSec
+    LaunchedEffect(engine, running) {
+        val live = engine ?: return@LaunchedEffect
+        if (!running) {
             frame.intValue++
             return@LaunchedEffect
         }
-        time.floatValue = 0f
+        // 멈춘 시각(처음이면 멈춰 둔 장면의 시각)에서 이어 간다.
+        val base = time.floatValue
         var start = -1L
         var lastDraw = 0L
         try {
@@ -231,10 +229,11 @@ private fun DemoPhone(
                     if (start < 0L) start = nanos
                     if (nanos - lastDraw >= MIN_REDRAW_NS) {
                         lastDraw = nanos
-                        val t = (nanos - start) / 1_000_000_000f
+                        val t = base + (nanos - start) / 1_000_000_000f
                         inputs.timeSec = t
                         // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
                         // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
+                        // 멈췄다 다시 움직인 첫 틱은 프레임 간격이 길지만, 엔진이 한 틱의 걸음을 네 프레임까지로 자른다.
                         if (live.isIdle) live.pollWake() else live.tick(nanos)
                         time.floatValue = t
                         frame.intValue++
