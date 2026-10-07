@@ -56,4 +56,27 @@ class HapticTuningTest {
     fun `미리보기는 느림도 두 번은 울린다`() {
         assertTrue(HapticTuning.PREVIEW_MS >= 2 * HapticTuning.periodMs(HapticMode.Slow))
     }
+
+    @Test
+    fun `외부 사운드 모드의 박자 방식은 울림 꼬리 뒤에도 듣는 쉼이 남는다`() {
+        // 캡처 버퍼 하나는 48kHz 에서 10.7ms 다. 쉼에 버퍼가 세 개는 들어와야 소리가 이어지는지 볼 수 있다(#290).
+        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast)) {
+            val guard = HapticTuning.selfHearingGuardMs(mode)
+            val listen = HapticTuning.periodMs(mode) - HapticTuning.onMs(mode) - guard - HapticTuning.SELF_HEARING_REOPEN_SLACK_MS
+            assertTrue("$mode 의 듣는 쉼 ${listen}ms", listen >= 32)
+            assertTrue("$mode 의 여유가 최대보다 길다", guard <= HapticTuning.SELF_HEARING_GUARD_MAX_MS)
+        }
+        assertTrue("빠름도 꼬리를 0.1초 넘게 막는다", HapticTuning.selfHearingGuardMs(HapticMode.Fast) >= 100)
+    }
+
+    @Test
+    fun `외부 사운드 모드의 느림은 이어 준 소리의 여유가 다음 박자보다 넉넉히 먼저 끝난다`() {
+        // 이어 준 크기는 꼬리 끝보다 SELF_HEARING_CREDIT_LEAD_MS 이른 소리로 친다. 거기서 소리가 끝났다고 보는 여유가 다음
+        // 박자에 닿으면, 울림을 보내는 데 조금만 오래 걸려도 소리가 끝난 뒤 한 번 더 울린다(#290 리뷰). 중간·빠름은 다음 박자가
+        // 늘 여유 안이라 박자마다 쉼에서 다시 듣는다.
+        val slow = HapticMode.Slow
+        val credited = HapticTuning.onMs(slow) + HapticTuning.selfHearingGuardMs(slow) - HapticTuning.SELF_HEARING_CREDIT_LEAD_MS
+        val margin = HapticTuning.periodMs(slow) - (credited + HapticPolicy.RELEASE_MS)
+        assertTrue("느림의 여유 ${margin}ms", margin >= 100)
+    }
 }

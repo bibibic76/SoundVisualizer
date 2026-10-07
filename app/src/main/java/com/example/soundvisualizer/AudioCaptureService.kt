@@ -500,6 +500,9 @@ class AudioCaptureService : Service() {
      * 라벨이 없어 지금처럼 울리지 않는다. AI 를 쓸 수 없는 실행([SettingsManager.aiAvailable] 이 거짓)에서만 라벨 없이
      * 큰 소리에 울린다([com.example.soundvisualizer.feedback.HapticPolicy]).
      *
+     * 마이크로 듣는 실행은 앱의 진동을 소리로 다시 듣는다. 그래서 울림 사이의 쉼에서만 소리를 보고, '연속'은 '빠름'으로
+     * 울린다([CaptureSource.hearsOwnVibration], #290). 소스는 onCreate 에서 정해져 실행 내내 바뀌지 않는다.
+     *
      * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
      */
     private fun startHaptics() {
@@ -508,7 +511,8 @@ class AudioCaptureService : Service() {
             if (hapticNotifier != null) return
             hapticNotifier = HapticNotifier(
                 applicationContext,
-                unlabeledAlerts = { !SettingsManager.aiAvailable.value }
+                unlabeledAlerts = { !SettingsManager.aiAvailable.value },
+                hearsOwnVibration = captureSource.hearsOwnVibration
             ) { AiClassification.latest()?.coarse }.also { it.start() }
         }
     }

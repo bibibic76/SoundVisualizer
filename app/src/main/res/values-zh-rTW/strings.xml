@@ -174,6 +174,7 @@
     <string name="haptic_mode_continuous">連續</string>
     <string name="haptic_preview_hint">輕觸一種震動方式或調整強度，即可預覽 2 秒震動效果。</string>
     <string name="haptic_preview_hint_running">聲音視覺化執行時不會播放預覽震動，以免與真正的震動混淆。</string>
+    <string name="haptic_continuous_external">在外部聲音模式下無法選擇「連續」，以免手機把自己的震動誤認為聲音。設為「連續」的類型會改以「快」的方式震動，關閉外部聲音模式後就會恢復為「連續」震動。</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">選擇顏色</string>
@@ -270,6 +271,7 @@
     <string name="help_sound_danger">偵測到危險音 (例如槍聲) 時，顏色會立即改變，而不是逐漸轉變。</string>
     <string name="help_sound_haptic">即使沒有看著螢幕，也能透過震動得知聲音。預設只有危險音會震動；你可以為每種類型選擇震動方式 (關閉、慢、中、快、連續) 和強度。</string>
     <string name="help_sound_haptic_rule">只有在螢幕上顯示的類型才會震動。該類型的聲音持續期間會一直震動，聲音停止時震動也會停止。「中」每半秒震動一下，「慢」的速度是它的一半，「快」是它的兩倍，「連續」則不間斷地震動。無論哪種震動方式，震動都會維持你選擇的強度。</string>
+    <string name="help_sound_haptic_external">在外部聲音模式下，手機只會在兩次震動之間的空檔確認聲音是否仍在持續，以免把自己的震動誤認為聲音。因此，聲音停止後，震動可能還會短暫持續，通常不到 1 秒。在這個模式下無法選擇「連續」：設為「連續」的類型會改以「快」的方式震動，關閉外部聲音模式後就會恢復為「連續」震動。</string>
 
     <string name="help_notes_title">注意事項</string>
     <string name="help_note_direction">可以分辨左右，但無法分辨前後。螢幕上方和下方的圖形代表兩側聽起來差不多的聲音，以及空間感效果。</string>

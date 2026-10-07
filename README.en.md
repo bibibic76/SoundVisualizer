@@ -55,6 +55,7 @@ Vibration lets you know a sound happened even when you're not looking at the scr
 
 - **Pick a vibration mode for each sound type: Off, Slow, Medium, Fast or Continuous.** At first only danger sounds vibrate, on Medium.
   - Medium pulses every half second, Slow at half that pace and Fast at twice that pace. Continuous vibrates without a break.
+  - In External sound mode, Continuous can't be picked, and types set to Continuous vibrate as Fast. They vibrate as Continuous again when you turn External sound mode off.
 - **Set the strength for each type with a slider (10–100%).** Every mode vibrates at the strength you picked. Give each type a different mode and you can tell sounds apart by touch alone.
 - **It keeps vibrating while a sound of that type lasts and stops when the sound does.** Pauses shorter than 0.4 seconds, like the gaps between words, count as the same sound.
 - Tap a mode or change the strength in Settings to feel it for 2 seconds. While the visualizer is running, previews don't play, so they aren't mixed up with real alerts.
@@ -71,6 +72,7 @@ Turn on **External sound mode** on Home and start, and it listens to **the sound
 - It can't be changed while running. Stop the visualizer, change it, and it applies the next time you start.
 - **It keeps listening while the screen is off.** The mode is meant to tell you about a doorbell or a fire alarm while your phone is lying there with the screen off, so it listens regardless of **Pause while the screen is off** in the Battery settings. It uses more battery as a result.
 - **Microphone sensitivity** appears under the switch when the mode is on (16 notches without numbers, up to ×32 at the far right, the 4th notch from the left by default). Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It takes effect right away, even while running. It only changes the loudness the graphics and vibration see; the AI that tells sound types apart hears the same sound.
+- **Vibration checks whether a sound is still going only in the pauses between pulses.** This keeps the phone from mistaking its own vibration for sound and never stopping. So vibration can go on for a moment after the sound stops, usually under a second, and Continuous, which has no pauses, vibrates as Fast. The graphics may also show the phone's short pulses.
 - For now it always draws sound in the center. The phone's two microphones sit apart along its long side, so it can't tell left from right when you hold it upright, only when you hold it sideways. Showing left and right in landscape comes later.
 - If you're on a call, another app is using the microphone, or microphone access is turned off in Quick Settings, no sound comes in. Home and the running notification tell you when that happens.
 

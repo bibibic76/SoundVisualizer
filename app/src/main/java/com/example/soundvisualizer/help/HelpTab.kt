@@ -113,12 +113,18 @@ fun HelpTab() {
         }
         item {
             SettingsExpander(stringResource(R.string.help_sound_title)) {
+                // 외부 사운드 모드에서는 진동이 울림 사이의 쉼에서만 소리를 보고, '연속'을 '빠름'으로 울린다(#290).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                val haptic = listOfNotNull(
+                    R.string.help_sound_haptic,
+                    R.string.help_sound_haptic_rule,
+                    R.string.help_sound_haptic_external.takeIf { externalSoundMode }
+                )
                 Paragraphs(
                     R.string.help_sound_kinds,
                     R.string.help_sound_classify,
                     R.string.help_sound_danger,
-                    R.string.help_sound_haptic,
-                    R.string.help_sound_haptic_rule
+                    *haptic.toIntArray()
                 )
             }
         }

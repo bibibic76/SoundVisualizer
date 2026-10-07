@@ -1,5 +1,6 @@
 package com.example.soundvisualizer.feedback
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -149,5 +150,75 @@ class HapticSourceContractTest {
         val stop = alert.indexOf("HapticPreviewGate.stopPreview()")
         val play = alert.indexOf("playStoppedAlert()")
         assertTrue("미리보기를 멈추지 않거나 알림 뒤에 멈춘다", stop in 0 until play)
+    }
+
+    /** [source] 에서 [start] 로 시작하는 호출의 괄호 안 전체. */
+    private fun call(source: String, start: String): String {
+        val from = source.indexOf(start)
+        assertTrue("$start 가 없다", from >= 0)
+        var depth = 0
+        var i = source.indexOf('(', from)
+        while (i < source.length) {
+            when (source[i]) {
+                '(' -> depth++
+                ')' -> if (--depth == 0) return source.substring(from, i + 1)
+            }
+            i++
+        }
+        return source.substring(from)
+    }
+
+    @Test
+    fun `외부 사운드 모드에서는 섞인 값을 걸러 판단하고 꼬리 끝에 깨어난다`() {
+        // 크기는 틱마다 한 번만 읽는다(#174). 문이 그 값을 거른 뒤 판단에 넘긴다(#290).
+        // 한 단어만 바뀌어도(peak 를 넘기거나 configFor 를 쓰면) 고리가 되살아나는데, 루프 시뮬레이션은 이 배선을 따로
+        // 흉내 내므로 잡지 못한다. 그래서 여기서 고정한다.
+        val tick = body(notifier, "override fun run()")
+        assertEquals(1, tick.split("AudioEngine.takeHapticPeak()").size - 1)
+        val take = tick.indexOf("AudioEngine.takeHapticPeak()")
+        val other = tick.indexOf("gate?.onOtherVibration(HapticPreviewGate.busyUntilMs)")
+        val read = tick.indexOf("gate?.read(now, peak) ?: peak")
+        val decide = tick.indexOf("policy.onTick(")
+        assertTrue("미리보기 진동을 크기를 거르기 전에 문에 알리지 않는다", other in 0 until read)
+        assertTrue("문이 크기를 읽은 뒤, 판단 전에 거르지 않는다", take in 0 until read && read < decide)
+        val onTick = call(tick, "policy.onTick(")
+        assertTrue("판단에 거른 크기를 넘기지 않는다: $onTick", onTick.contains("label, level, tickConfig,"))
+        assertTrue("판단에 기다리기를 넘기지 않는다", onTick.contains("holding = gate?.holding == true"))
+        assertTrue("판단에 크기가 들린 시각을 넘기지 않는다", onTick.contains("levelAtMs = gate?.levelAtMs ?: now"))
+        assertTrue(
+            "꼬리가 끝날 때 깨어나지 않는다",
+            tick.contains("minOf(driver.nextWakeMs(now), gate?.reopenAtMs(now) ?: Long.MAX_VALUE)")
+        )
+    }
+
+    @Test
+    fun `외부 사운드 모드에서만 문을 두고 연속을 빠름으로 울린다`() {
+        assertTrue(notifier.contains("private val selfGate: SelfVibrationGate? = if (hearsOwnVibration) SelfVibrationGate() else null"))
+        val tickConfig = notifier.substring(notifier.indexOf("private val tickConfig"))
+        assertTrue(
+            "외부 사운드 모드에서만 연속을 빠름으로 바꾸지 않는다",
+            tickConfig.lineSequence().take(2).joinToString(" ")
+                .contains("if (hearsOwnVibration) { label -> configFor(label).inExternalSound() } else configFor")
+        )
+        val issue = body(notifier, "private fun issue(")
+        assertTrue("울림의 꼬리 여유를 그 방식대로 주지 않는다", call(issue, "selfGate?.onPlayed(").contains("HapticTuning.selfHearingGuardMs("))
+    }
+
+    @Test
+    fun `보낸 울림과 끊기를 문에 알린다`() {
+        val issue = body(notifier, "private fun issue(")
+        val play = issue.indexOf("player.playPlan(")
+        val played = issue.indexOf("onPlayed(")
+        val failed = issue.indexOf("driver.onPreempted()")
+        assertTrue("보낸 울림을 문에 알리지 않거나 보내기 전에 알린다", played > play)
+        assertTrue("보내지 못한 울림까지 문에 알린다", played < failed)
+        val cancel = issue.indexOf("player.cancel(")
+        assertTrue("끊은 것을 문에 알리지 않는다", issue.indexOf("onCancelled(", cancel) > cancel)
+    }
+
+    @Test
+    fun `외부 사운드 모드인지는 그 실행의 소스가 정한다`() {
+        val start = body(code("AudioCaptureService.kt"), "private fun startHaptics(")
+        assertTrue(start.contains("hearsOwnVibration = captureSource.hearsOwnVibration"))
     }
 }
