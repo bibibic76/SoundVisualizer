@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Sayfa %1$d, toplam %2$d</string>
     <string name="tutorial_pause">Animasyonu duraklat</string>
     <string name="tutorial_play">Animasyonu oynat</string>
+    <string name="tutorial_sound_on">Sesi aç</string>
+    <string name="tutorial_sound_off">Sesi kapat</string>
     <string name="tutorial_sound_title">Sesleri ekranınızda görün</string>
     <string name="tutorial_sound_body">Oyununuzun veya videonuzun sesi ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Yalnızca telefonunuzda çalan ses gösterilir. Uygulama çevrenizdeki sesleri dinlemez.</string>
     <string name="tutorial_sound_body_external">Dış ses modu açık; bu yüzden mikrofonun duyduğu çevrenizdeki sesler ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Bu modda telefonunuzda çalan ses gösterilmez.</string>

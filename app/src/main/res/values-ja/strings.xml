@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">%2$dページ中%1$dページ目</string>
     <string name="tutorial_pause">アニメーションを一時停止</string>
     <string name="tutorial_play">アニメーションを再生</string>
+    <string name="tutorial_sound_on">音を出す</string>
+    <string name="tutorial_sound_off">音を消す</string>
     <string name="tutorial_sound_title">音を画面で見られます</string>
     <string name="tutorial_sound_body">ゲームや動画の音が、画面の端に沿って描かれます。音が大きいほど、大きく描かれます。表示するのは、スマートフォンで再生中の音だけです。周囲の音は拾いません。</string>
     <string name="tutorial_sound_body_external">外部音モードがオンなので、マイクで聞き取った周囲の音が画面の端に沿って描かれます。音が大きいほど、大きく描かれます。このモードでは、スマートフォンで再生中の音は表示しません。</string>

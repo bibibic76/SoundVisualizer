@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Page %1$d sur %2$d</string>
     <string name="tutorial_pause">Mettre l\'animation en pause</string>
     <string name="tutorial_play">Lire l\'animation</string>
+    <string name="tutorial_sound_on">Activer le son</string>
+    <string name="tutorial_sound_off">Couper le son</string>
     <string name="tutorial_sound_title">Voir le son sur votre écran</string>
     <string name="tutorial_sound_body">Le son de votre jeu ou de votre vidéo est dessiné le long des bords de l\'écran. Plus le son est fort, plus le dessin est grand. Seul le son diffusé sur votre téléphone est affiché. Les sons autour de vous ne sont pas captés.</string>
     <string name="tutorial_sound_body_external">Le mode son externe est activé : les sons autour de vous, captés par le micro, sont dessinés le long des bords de l\'écran. Plus un son est fort, plus le dessin est grand. Dans ce mode, le son diffusé sur votre téléphone n\'est pas affiché.</string>

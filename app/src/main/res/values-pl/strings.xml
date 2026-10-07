@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Strona %1$d z %2$d</string>
     <string name="tutorial_pause">Wstrzymaj animację</string>
     <string name="tutorial_play">Odtwórz animację</string>
+    <string name="tutorial_sound_on">Włącz dźwięk</string>
+    <string name="tutorial_sound_off">Wyłącz dźwięk</string>
     <string name="tutorial_sound_title">Zobacz dźwięk na ekranie</string>
     <string name="tutorial_sound_body">Dźwięk z gry lub filmu jest rysowany wzdłuż krawędzi ekranu. Im głośniejszy dźwięk, tym większa grafika. Pokazywany jest tylko dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są wychwytywane.</string>
     <string name="tutorial_sound_body_external">Tryb dźwięków zewnętrznych jest włączony, więc dźwięki wokół Ciebie, które słyszy mikrofon, są rysowane wzdłuż krawędzi ekranu. Im głośniejszy dźwięk, tym większa grafika. W tym trybie dźwięk odtwarzany na telefonie nie jest pokazywany.</string>

@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">第 %1$d 頁，共 %2$d 頁</string>
     <string name="tutorial_pause">暫停動畫</string>
     <string name="tutorial_play">播放動畫</string>
+    <string name="tutorial_sound_on">開啟聲音</string>
+    <string name="tutorial_sound_off">關閉聲音</string>
     <string name="tutorial_sound_title">在螢幕上看見聲音</string>
     <string name="tutorial_sound_body">遊戲或影片的聲音會沿著螢幕邊緣描繪出來。聲音越大，圖形就越大。只會顯示手機內播放的聲音。這個應用程式不會擷取你周遭的聲音。</string>
     <string name="tutorial_sound_body_external">外部聲音模式已開啟，因此麥克風聽到的周遭聲音會沿著螢幕邊緣描繪出來。聲音越大，圖形就越大。在這個模式下，不會顯示手機內播放的聲音。</string>
