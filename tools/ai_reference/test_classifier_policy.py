@@ -32,6 +32,10 @@ class StrongDangerCuePolicyTest(unittest.TestCase):
 
 
 class ThreeClassMapperPolicyTest(unittest.TestCase):
+    def test_former_gunshot_proxies_are_ambient(self) -> None:
+        for label in ("Plop", "Gargling"):
+            self.assertEqual("ambient", mapper.map_display_name_to_coarse(label))
+
     def test_attention_nature_and_tool_labels_are_danger(self) -> None:
         for label in ("Chainsaw", "Thunder", "Thunderstorm"):
             with self.subTest(label=label):
