@@ -123,7 +123,7 @@ To use a different language from your phone, tap the globe button at the bottom 
 
 You can also find how to use it, why permissions are needed and the FAQ in the app's **Help** tab.
 
-The first time you open the app, a **tutorial** shows up first. In five pages it shows what the app does (drawing sound along the edges of the screen, telling left from right, a color for each type of sound, vibration for danger sounds) and how to turn it on and off. Its pictures move exactly the way the app draws. Once you skip it or reach the end, it won't open by itself again; tap **View tutorial** at the bottom of the Home tab to see it any time.
+The first time you open the app, a **tutorial** shows up first. In five pages it shows what the app does (drawing sound along the edges of the screen, telling left from right, a color for each type of sound, vibration for danger sounds) and how to turn it on and off. Its pictures move exactly the way the app draws, and on the vibration page your phone really vibrates whenever the phone in the picture shakes. Once you skip it or reach the end, it won't open by itself again; tap **View tutorial** at the bottom of the Home tab to see it any time.
 
 1. Open the app and tap **Start**.
 2. Allow the permissions below. Some are asked only once, and some are asked every time you turn it on because of Android's rules.

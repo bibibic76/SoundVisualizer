@@ -121,15 +121,18 @@ private const val MIN_REDRAW_NS = 16_400_000L
  * - [running] 일 때만 움직인다. 페이저가 옆 쪽을 미리 그려 두는 동안이나 멈춤을 눌렀을 때는 그 쪽이 말하려는
  *   장면([TutorialScene.stillAtSec]) 한 장을 보여 준다. 움직이기 시작할 때마다 대본을 처음부터 튼다.
  * - 그림은 옆의 글이 말하는 것을 보여 주기만 하므로 화면 읽어주기에서는 통째로 건너뛴다.
+ * - 진동 쪽은 그림 속 폰이 떠는 순간마다 진짜 폰도 울린다([TutorialHaptics], #323). 움직이는 동안만 울린다.
  *
  * @param time 대본의 지금 시각. 종류 쪽의 범례가 함께 읽는다.
+ * @param haptics 진짜 진동. 진동 쪽이 아니거나 진동 모터가 없으면 null 이다.
  */
 @Composable
 internal fun TutorialIllustration(
     scene: TutorialScene,
     running: Boolean,
     time: MutableFloatState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    haptics: TutorialHaptics? = if (scene == TutorialScene.Vibration) rememberTutorialHaptics() else null
 ) {
     BoxWithConstraints(modifier = modifier.clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
         val markRoom = if (scene == TutorialScene.Vibration) VIBRATION_MARK_ROOM else 0.dp
@@ -142,7 +145,7 @@ internal fun TutorialIllustration(
                     if (markRoom > 0.dp) {
                         VibrationMarks(scene, time, running, mirrored = false, Modifier.width(markRoom).height(phoneHeight))
                     }
-                    DemoPhone(scene, time, running, phoneWidth, phoneHeight)
+                    DemoPhone(scene, time, running, phoneWidth, phoneHeight, haptics)
                     if (markRoom > 0.dp) {
                         VibrationMarks(scene, time, running, mirrored = true, Modifier.width(markRoom).height(phoneHeight))
                     }
@@ -158,7 +161,8 @@ private fun DemoPhone(
     time: MutableFloatState,
     running: Boolean,
     phoneWidth: Dp,
-    phoneHeight: Dp
+    phoneHeight: Dp,
+    haptics: TutorialHaptics?
 ) {
     val density = LocalDensity.current
     val screenWidthPx = with(density) { (phoneWidth - BEZEL * 2).toPx() }
@@ -200,22 +204,29 @@ private fun DemoPhone(
         time.floatValue = 0f
         var start = -1L
         var lastDraw = 0L
-        while (true) {
-            // 끝없이 도는 애니메이션으로 알린다. UI 테스트처럼 이런 애니메이션을 멈춰 두는 곳에서 화면이 한가해질 수
-            // 있다(무한 전환 rememberInfiniteTransition 과 같은 길). 앱에서는 withFrameNanos 와 똑같다.
-            withInfiniteAnimationFrameNanos { nanos ->
-                if (start < 0L) start = nanos
-                if (nanos - lastDraw >= MIN_REDRAW_NS) {
-                    lastDraw = nanos
-                    val t = (nanos - start) / 1_000_000_000f
-                    inputs.timeSec = t
-                    // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
-                    // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
-                    if (live.isIdle) live.pollWake() else live.tick(nanos)
-                    time.floatValue = t
-                    frame.intValue++
+        try {
+            while (true) {
+                // 끝없이 도는 애니메이션으로 알린다. UI 테스트처럼 이런 애니메이션을 멈춰 두는 곳에서 화면이 한가해질 수
+                // 있다(무한 전환 rememberInfiniteTransition 과 같은 길). 앱에서는 withFrameNanos 와 똑같다.
+                withInfiniteAnimationFrameNanos { nanos ->
+                    if (start < 0L) start = nanos
+                    if (nanos - lastDraw >= MIN_REDRAW_NS) {
+                        lastDraw = nanos
+                        val t = (nanos - start) / 1_000_000_000f
+                        inputs.timeSec = t
+                        // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
+                        // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
+                        if (live.isIdle) live.pollWake() else live.tick(nanos)
+                        time.floatValue = t
+                        frame.intValue++
+                        // 그림의 떨림(아래 graphicsLayer)과 같은 프레임에 진짜 진동을 보낸다.
+                        haptics?.onFrame(t)
+                    }
                 }
             }
+        } finally {
+            // 멈추거나(쪽을 넘김·멈춤 버튼) 그림이 사라지면 울리던 진동도 끊는다.
+            haptics?.stop()
         }
     }
 
@@ -224,7 +235,7 @@ private fun DemoPhone(
         modifier = Modifier
             .size(phoneWidth, phoneHeight)
             .graphicsLayer {
-                // 기본 위협음 진동(강하게 두 번)에 맞춰 떤다. 실제 진동은 울리지 않는다.
+                // 처음 설정의 위협음 진동(0.5초마다 0.2초)에 맞춰 떤다. 진짜 진동은 같은 순간에 [TutorialHaptics] 가 울린다.
                 val t = time.floatValue
                 translationX = if (running && TutorialScript.vibrating(scene, t)) {
                     sin(t * 2f * PI.toFloat() * 32f) * shakePx

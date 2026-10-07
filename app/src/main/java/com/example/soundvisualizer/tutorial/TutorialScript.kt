@@ -4,9 +4,12 @@ import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.ModeSettings
 import com.example.soundvisualizer.VisualMode
 import com.example.soundvisualizer.VisualizerInputs
+import com.example.soundvisualizer.feedback.HapticPlan
 import com.example.soundvisualizer.feedback.HapticSettings
+import com.example.soundvisualizer.feedback.HapticShapes
 import com.example.soundvisualizer.feedback.HapticTuning
 import kotlin.math.PI
+import kotlin.math.ceil
 import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
@@ -146,19 +149,31 @@ object TutorialScript {
     }
 
     /**
-     * 그 시각에 폰이 떨고 있는지. 기본 위협음 진동(중간)처럼 위협음이 나는 동안 0.5초마다 0.2초씩 떤다.
-     * 튜토리얼은 진동을 실제로 울리지 않고 그림으로만 보여 준다. 실제 진동은 소리가 끝나고 0.4초 더 이어질 수 있지만
-     * (HapticPolicy), 그림은 위협음이 보이는 동안만 떨어 무엇에 떠는지 헷갈리지 않게 한다.
+     * 그 시각에 폰이 떨고 있는지. 처음 설정의 위협음 진동(중간)처럼 위협음이 나는 동안 0.5초마다 0.2초씩 떤다.
+     * 실제 진동은 소리가 끝나고 0.4초 더 이어질 수 있지만(HapticPolicy), 그림은 위협음이 보이는 동안만 떨어
+     * 무엇에 떠는지 헷갈리지 않게 한다.
      */
-    fun vibrating(scene: TutorialScene, t: Float): Boolean {
-        if (scene != TutorialScene.Vibration) return false
-        val s = loopTime(scene, t)
-        if (s < VIBRATION_DANGER_START || s >= VIBRATION_DANGER_END) return false
-        val mode = HapticSettings.defaultFor(AiClassification.DANGER).mode
-        val period = HapticTuning.periodMs(mode) / 1000f
-        val on = HapticTuning.onMs(mode) / 1000f
-        return (s - VIBRATION_DANGER_START) % period < on
+    fun vibrating(scene: TutorialScene, t: Float): Boolean =
+        scene == TutorialScene.Vibration && pulseInCycle(loopTime(scene, t)) >= 0
+
+    /**
+     * 그 시각에 떨고 있는 울림의 번호. 대본을 처음 틀 때(0초)부터 0, 1, 2… 로 세고, 떨지 않으면 -1 이다.
+     * [vibrating] 이 참인 동안에만 0 이상이다. 튜토리얼이 그림이 떠는 순간마다 진짜 진동을 한 번씩 울릴 때 쓴다(#323).
+     */
+    fun vibrationPulse(scene: TutorialScene, t: Float): Int {
+        if (scene != TutorialScene.Vibration || t < 0f) return -1
+        val inCycle = pulseInCycle(loopTime(scene, t))
+        if (inCycle < 0) return -1
+        // 울림은 한 바퀴의 가운데에만 있어, 바퀴의 경계에서 나눗셈과 나머지가 서로 다른 바퀴를 가리킬 일이 없다.
+        return floor(t / scene.cycleSec).toInt() * VIBRATION_PULSES_PER_CYCLE + inCycle
     }
+
+    /**
+     * 진짜 진동 한 번(#323). 처음 설정의 위협음 진동이 한 박자에 한 번 보내는 것([HapticTuning.onMs] 동안 한결같이)과 같다.
+     * 그림처럼 사용자의 지금 설정이 아니라 처음 설정을 보여 준다.
+     */
+    fun vibrationPulsePlan(amplitudeControl: Boolean): HapticPlan =
+        HapticShapes.steady(DEMO_HAPTIC.level, HapticTuning.onMs(DEMO_HAPTIC.mode), amplitudeControl)
 
     // ---------------- 대본의 조각 ----------------
 
@@ -173,6 +188,22 @@ object TutorialScript {
     private const val VIBRATION_DANGER_START = 1.5f
     private const val VIBRATION_DANGER_END = 2.9f
     private val VIBRATION_DANGER_HITS = floatArrayOf(0f, 0.7f)
+
+    /** 진동 쪽이 보여 주는 진동: 처음 설정의 위협음 진동. */
+    private val DEMO_HAPTIC = HapticSettings.defaultFor(AiClassification.DANGER)
+    private val DEMO_PERIOD_SEC = HapticTuning.periodMs(DEMO_HAPTIC.mode) / 1000f
+    private val DEMO_ON_SEC = HapticTuning.onMs(DEMO_HAPTIC.mode) / 1000f
+
+    /** 한 바퀴의 울림 수. 위협음이 나는 동안 박자마다 하나다. */
+    private val VIBRATION_PULSES_PER_CYCLE =
+        ceil((VIBRATION_DANGER_END - VIBRATION_DANGER_START) / DEMO_PERIOD_SEC).toInt()
+
+    /** 한 바퀴 안의 시각 [s] 에 떨고 있는 울림이 그 바퀴의 몇 번째인지. 떨지 않으면 -1. */
+    private fun pulseInCycle(s: Float): Int {
+        if (s < VIBRATION_DANGER_START || s >= VIBRATION_DANGER_END) return -1
+        val u = s - VIBRATION_DANGER_START
+        return if (u % DEMO_PERIOD_SEC < DEMO_ON_SEC) floor(u / DEMO_PERIOD_SEC).toInt() else -1
+    }
 
     private fun directionSide(s: Float): Int = when {
         s < DIRECTION_LEFT_END -> -1
