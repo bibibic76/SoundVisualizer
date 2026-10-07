@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">%2$d में से पेज %1$d</string>
     <string name="tutorial_pause">ऐनिमेशन रोकें</string>
     <string name="tutorial_play">ऐनिमेशन चलाएं</string>
+    <string name="tutorial_sound_on">आवाज़ चालू करें</string>
+    <string name="tutorial_sound_off">आवाज़ बंद करें</string>
     <string name="tutorial_sound_title">आवाज़ को स्क्रीन पर देखें</string>
     <string name="tutorial_sound_body">आपके गेम या वीडियो की आवाज़ स्क्रीन के किनारों पर बनाई जाती है। आवाज़ जितनी तेज़ होती है, उतनी ही बड़ी दिखती है। सिर्फ़ फ़ोन में चल रही आवाज़ ही दिखाई जाती है। यह ऐप आपके आस-पास की आवाज़ें नहीं सुनता।</string>
     <string name="tutorial_sound_body_external">बाहरी आवाज़ मोड चालू है, इसलिए माइक्रोफ़ोन से सुनी गई आपके आस-पास की आवाज़ें स्क्रीन के किनारों पर बनाई जाती हैं। आवाज़ जितनी तेज़ होती है, उतनी ही बड़ी दिखती है। इस मोड में फ़ोन में चल रही आवाज़ नहीं दिखाई जाती।</string>

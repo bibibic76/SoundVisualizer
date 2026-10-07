@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Страница %1$d из %2$d</string>
     <string name="tutorial_pause">Приостановить анимацию</string>
     <string name="tutorial_play">Воспроизвести анимацию</string>
+    <string name="tutorial_sound_on">Включить звук</string>
+    <string name="tutorial_sound_off">Выключить звук</string>
     <string name="tutorial_sound_title">Показываем звук на экране</string>
     <string name="tutorial_sound_body">Звук из игры или видео рисуется по краям экрана. Чем громче звук, тем крупнее рисунок. Показывается только звук, который воспроизводится на телефоне. Приложение не слышит звуки вокруг вас.</string>
     <string name="tutorial_sound_body_external">Режим внешних звуков включён, поэтому звуки вокруг вас, которые слышит микрофон, рисуются по краям экрана. Чем громче звук, тем крупнее рисунок. В этом режиме звук, который воспроизводится на телефоне, не показывается.</string>

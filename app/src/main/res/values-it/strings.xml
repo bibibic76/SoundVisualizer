@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Pagina %1$d di %2$d</string>
     <string name="tutorial_pause">Metti in pausa l\'animazione</string>
     <string name="tutorial_play">Riproduci l\'animazione</string>
+    <string name="tutorial_sound_on">Attiva l\'audio</string>
+    <string name="tutorial_sound_off">Disattiva l\'audio</string>
     <string name="tutorial_sound_title">Vedi i suoni sullo schermo</string>
     <string name="tutorial_sound_body">Il suono del gioco o del video viene disegnato lungo i bordi dello schermo. Più il suono è forte, più il disegno è grande. Viene mostrato solo l\'audio riprodotto sul telefono. I suoni intorno a te non vengono captati.</string>
     <string name="tutorial_sound_body_external">La modalità suoni esterni è attiva, quindi i suoni intorno a te captati dal microfono vengono disegnati lungo i bordi dello schermo. Più un suono è forte, più il disegno è grande. In questa modalità l\'audio riprodotto sul telefono non viene mostrato.</string>

@@ -2,6 +2,7 @@ package com.example.soundvisualizer.tutorial
 
 import android.animation.ValueAnimator
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -40,6 +41,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.collectAsState
@@ -59,7 +61,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -71,6 +76,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import com.example.soundvisualizer.AccentColor
 import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.BgColor
@@ -134,6 +142,9 @@ private val COMPACT_MIN_WIDTH = 600.dp
  *
  * 화면 읽어주기: 튜토리얼 전체에 창 이름(paneTitle)을 붙여 열리고 닫힐 때 알리고, 쪽이 바뀌면 새 쪽의 제목으로
  * 초점을 옮겨 제목부터 읽게 한다. 초점이 ‘다음’에 남으면 새 쪽을 들으려고 거꾸로 훑어야 한다.
+ *
+ * 소리(#327): 멈춤 버튼 옆의 소리 버튼을 누르면 그림이 그리는 소리를 실제 녹음으로 함께 낸다. 처음에는 꺼져 있고,
+ * 튜토리얼을 다시 열면 다시 꺼진 채로 시작한다. 듣는 사람이 옆에서 함께 볼 때를 위한 것이다.
  */
 @Composable
 fun TutorialScreen(onClose: () -> Unit) {
@@ -144,6 +155,23 @@ fun TutorialScreen(onClose: () -> Unit) {
     // 시스템에서 애니메이션을 꺼 두었으면 멈춘 채로 시작한다.
     var paused by rememberSaveable { mutableStateOf(!ValueAnimator.areAnimatorsEnabled()) }
     val titleFocus = remember { List(pages.size) { FocusRequester() } }
+
+    // 소리를 켜면 그때 조각을 읽어 두고, 끄거나 튜토리얼을 닫으면 놓는다.
+    var soundOn by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    val soundPlayer = remember(soundOn) { if (soundOn) TutorialSoundPlayer(context) else null }
+    DisposableEffect(soundPlayer) {
+        onDispose { soundPlayer?.close() }
+    }
+    // 앱을 내리면 나던 소리도 멈춘다. 그림은 화면이 다시 보일 때까지 다음 소리를 내지 않는다.
+    val lifecycle = (LocalActivity.current as? LifecycleOwner)?.lifecycle
+    DisposableEffect(lifecycle, soundPlayer) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) soundPlayer?.stopAll()
+        }
+        lifecycle?.addObserver(observer)
+        onDispose { lifecycle?.removeObserver(observer) }
+    }
 
     // 처음 열 때와 쪽이 넘어갈 때마다 그 쪽의 제목으로 초점을 옮긴다. 넘어가는 도중이 아니라 멈춘 뒤에 옮긴다.
     LaunchedEffect(pagerState.settledPage) {
@@ -196,7 +224,8 @@ fun TutorialScreen(onClose: () -> Unit) {
                     page = pages[index],
                     // 옆 쪽은 미리 그려 두기만 하고, 그 쪽에 들어와 멈춘 뒤에야 움직인다.
                     running = !paused && pagerState.settledPage == index,
-                    titleFocus = titleFocus[index]
+                    titleFocus = titleFocus[index],
+                    soundPlayer = soundPlayer
                 )
             }
 
@@ -210,6 +239,7 @@ fun TutorialScreen(onClose: () -> Unit) {
                     Spacer(Modifier.weight(1f))
                     PageIndicator(pagerState, pages.size)
                     Spacer(Modifier.weight(1f))
+                    SoundButton(on = soundOn, onToggle = { soundOn = !soundOn })
                     PauseButton(paused = paused, onToggle = { paused = !paused })
                     Spacer(Modifier.width(8.dp))
                     NextButton(isLast = isLast, onClick = ::goNext, modifier = Modifier.padding(end = 8.dp))
@@ -219,8 +249,8 @@ fun TutorialScreen(onClose: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 멈춤 버튼과 무게를 맞춰 쪽 표시를 가운데에 둔다.
-                    Spacer(Modifier.size(48.dp))
+                    // 소리 버튼과 멈춤 버튼 사이, 가운데에 쪽 표시를 둔다.
+                    SoundButton(on = soundOn, onToggle = { soundOn = !soundOn })
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         PageIndicator(pagerState, pages.size)
                     }
@@ -286,6 +316,45 @@ private fun PauseButton(paused: Boolean, onToggle: () -> Unit) {
     }
 }
 
+/**
+ * 튜토리얼 소리 켜기·끄기(#327). 아이콘은 지금 상태(꺼짐이면 소리 끈 스피커)를, 이름은 누르면 할 일을 말한다.
+ * 켜 두면 강조색으로 보인다.
+ */
+@Composable
+private fun SoundButton(on: Boolean, onToggle: () -> Unit) {
+    IconButton(onClick = onToggle) {
+        Icon(
+            if (on) SoundOnIcon else SoundOffIcon,
+            contentDescription = stringResource(if (on) R.string.tutorial_sound_off else R.string.tutorial_sound_on),
+            tint = if (on) AccentColor else SecondaryTextColor
+        )
+    }
+}
+
+/** 소리 켜진 스피커(Material "volume_up"). material-icons-core 에 없어 같은 모양을 그린다. */
+private val SoundOnIcon: ImageVector = materialIcon(name = "Filled.VolumeUp") {
+    addPath(
+        pathData = addPathNodes(
+            "M3,9v6h4l5,5V4L7,9H3zM16.5,12c0,-1.77 -1.02,-3.29 -2.5,-4.03v8.05c1.48,-0.73 2.5,-2.25 2.5,-4.02z" +
+                "M14,3.23v2.06c2.89,0.86 5,3.54 5,6.71s-2.11,5.85 -5,6.71v2.06c4.01,-0.91 7,-4.49 7,-8.77s-2.99,-7.86 -7,-8.77z"
+        ),
+        fill = SolidColor(Color.Black)
+    )
+}
+
+/** 소리 끈 스피커(Material "volume_off"). */
+private val SoundOffIcon: ImageVector = materialIcon(name = "Filled.VolumeOff") {
+    addPath(
+        pathData = addPathNodes(
+            "M16.5,12c0,-1.77 -1.02,-3.29 -2.5,-4.03v2.21l2.45,2.45c0.03,-0.2 0.05,-0.41 0.05,-0.63z" +
+                "M19,12c0,0.94 -0.2,1.82 -0.54,2.64l1.51,1.51C20.63,14.91 21,13.5 21,12c0,-4.28 -2.99,-7.86 -7,-8.77v2.06" +
+                "c2.89,0.86 5,3.54 5,6.71zM4.27,3L3,4.27 7.73,9H3v6h4l5,5v-6.73l4.25,4.25c-0.67,0.52 -1.42,0.93 -2.25,1.18" +
+                "v2.06c1.38,-0.31 2.63,-0.95 3.69,-1.81L19.73,21 21,19.73l-9,-9L4.27,3zM12,4L9.91,6.09 12,8.18V4z"
+        ),
+        fill = SolidColor(Color.Black)
+    )
+}
+
 /** 멈춤 기호(세로 막대 둘). material-icons-core 에는 재생만 있고 멈춤은 없어 같은 모양으로 그린다. */
 private val PauseIcon: ImageVector = materialIcon(name = "Filled.Pause") {
     materialPath {
@@ -310,7 +379,12 @@ private val PauseIcon: ImageVector = materialIcon(name = "Filled.Pause") {
  * 아래 버튼과 쪽 표시는 늘 보인다.
  */
 @Composable
-private fun TutorialPageContent(page: TutorialPage, running: Boolean, titleFocus: FocusRequester) {
+private fun TutorialPageContent(
+    page: TutorialPage,
+    running: Boolean,
+    titleFocus: FocusRequester,
+    soundPlayer: TutorialSoundPlayer?
+) {
     // 그림과 종류 범례가 함께 읽는 대본 시각
     val time = remember { mutableFloatStateOf(page.scene?.stillAtSec ?: 0f) }
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -319,7 +393,7 @@ private fun TutorialPageContent(page: TutorialPage, running: Boolean, titleFocus
                 modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PageIllustration(page, running, time, Modifier.weight(1f).fillMaxHeight().padding(vertical = 8.dp))
+                PageIllustration(page, running, time, soundPlayer, Modifier.weight(1f).fillMaxHeight().padding(vertical = 8.dp))
                 Spacer(Modifier.width(24.dp))
                 ScrollingText(Modifier.weight(1f).fillMaxHeight()) {
                     PageText(page, time, titleFocus)
@@ -334,7 +408,7 @@ private fun TutorialPageContent(page: TutorialPage, running: Boolean, titleFocus
                     modifier = Modifier.padding(horizontal = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    PageIllustration(page, running, time, Modifier.fillMaxWidth().height(illustrationHeight))
+                    PageIllustration(page, running, time, soundPlayer, Modifier.fillMaxWidth().height(illustrationHeight))
                     Spacer(Modifier.height(24.dp))
                     PageText(page, time, titleFocus)
                     Spacer(Modifier.height(24.dp))
@@ -372,9 +446,15 @@ private fun ScrollingText(modifier: Modifier, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun PageIllustration(page: TutorialPage, running: Boolean, time: MutableFloatState, modifier: Modifier) {
+private fun PageIllustration(
+    page: TutorialPage,
+    running: Boolean,
+    time: MutableFloatState,
+    soundPlayer: TutorialSoundPlayer?,
+    modifier: Modifier
+) {
     val scene = page.scene
-    if (scene != null) TutorialIllustration(scene, running, time, modifier)
+    if (scene != null) TutorialIllustration(scene, running, time, modifier, sounds = rememberTutorialSounds(scene, soundPlayer))
     else HomeScreenIllustration(running, modifier)
 }
 

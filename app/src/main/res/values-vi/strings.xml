@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Trang %1$d trên %2$d</string>
     <string name="tutorial_pause">Tạm dừng hoạt ảnh</string>
     <string name="tutorial_play">Phát hoạt ảnh</string>
+    <string name="tutorial_sound_on">Bật âm thanh</string>
+    <string name="tutorial_sound_off">Tắt âm thanh</string>
     <string name="tutorial_sound_title">Nhìn thấy âm thanh trên màn hình</string>
     <string name="tutorial_sound_body">Âm thanh từ trò chơi hoặc video được vẽ dọc theo các cạnh màn hình. Âm thanh càng lớn thì đồ họa càng lớn. Chỉ âm thanh đang phát trên điện thoại mới được hiển thị. Ứng dụng không thu âm thanh xung quanh bạn.</string>
     <string name="tutorial_sound_body_external">Chế độ âm thanh bên ngoài đang bật, nên âm thanh xung quanh bạn mà micrô thu được sẽ được vẽ dọc theo các cạnh màn hình. Âm thanh càng lớn thì đồ họa càng lớn. Ở chế độ này, âm thanh đang phát trên điện thoại không được hiển thị.</string>

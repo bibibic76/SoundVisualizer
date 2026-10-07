@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Halaman %1$d dari %2$d</string>
     <string name="tutorial_pause">Jeda animasi</string>
     <string name="tutorial_play">Putar animasi</string>
+    <string name="tutorial_sound_on">Nyalakan suara</string>
+    <string name="tutorial_sound_off">Matikan suara</string>
     <string name="tutorial_sound_title">Lihat suara di layar Anda</string>
     <string name="tutorial_sound_body">Suara dari game atau video Anda digambar di sepanjang tepi layar. Makin keras suaranya, makin besar gambarnya. Hanya suara yang diputar di ponsel Anda yang ditampilkan. Aplikasi ini tidak mendengarkan suara di sekitar Anda.</string>
     <string name="tutorial_sound_body_external">Mode suara luar sedang aktif, jadi suara di sekitar Anda yang ditangkap mikrofon digambar di sepanjang tepi layar. Makin keras suaranya, makin besar gambarnya. Di mode ini, suara yang diputar di ponsel Anda tidak ditampilkan.</string>

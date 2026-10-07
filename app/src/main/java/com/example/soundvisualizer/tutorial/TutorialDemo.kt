@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -134,9 +135,11 @@ internal interface TutorialFrameFollower {
  *   장면([TutorialScene.stillAtSec]) 한 장을 보여 준다. 움직이기 시작할 때마다 대본을 처음부터 튼다.
  * - 그림은 옆의 글이 말하는 것을 보여 주기만 하므로 화면 읽어주기에서는 통째로 건너뛴다.
  * - 진동 쪽은 그림 속 폰이 떠는 순간마다 진짜 폰도 울린다([TutorialHaptics], #323). 움직이는 동안만 울린다.
+ * - 소리를 켜 두었으면 그림이 그리는 소리를 실제 녹음으로 함께 낸다([TutorialSounds], #327). 움직이는 동안만 낸다.
  *
  * @param time 대본의 지금 시각. 종류 쪽의 범례가 함께 읽는다.
  * @param haptics 진짜 진동. 진동 쪽이 아니거나 진동 모터가 없으면 null 이다.
+ * @param sounds 그 쪽의 소리. 소리를 꺼 두었으면 null 이다. 움직이는 도중에 바뀌어도 다음 프레임부터 따른다.
  */
 @Composable
 internal fun TutorialIllustration(
@@ -144,7 +147,8 @@ internal fun TutorialIllustration(
     running: Boolean,
     time: MutableFloatState,
     modifier: Modifier = Modifier,
-    haptics: TutorialFrameFollower? = if (scene == TutorialScene.Vibration) rememberTutorialHaptics() else null
+    haptics: TutorialFrameFollower? = if (scene == TutorialScene.Vibration) rememberTutorialHaptics() else null,
+    sounds: TutorialFrameFollower? = null
 ) {
     BoxWithConstraints(modifier = modifier.clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
         val markRoom = if (scene == TutorialScene.Vibration) VIBRATION_MARK_ROOM else 0.dp
@@ -157,7 +161,7 @@ internal fun TutorialIllustration(
                     if (markRoom > 0.dp) {
                         VibrationMarks(scene, time, running, mirrored = false, Modifier.width(markRoom).height(phoneHeight))
                     }
-                    DemoPhone(scene, time, running, phoneWidth, phoneHeight, haptics)
+                    DemoPhone(scene, time, running, phoneWidth, phoneHeight, haptics, sounds)
                     if (markRoom > 0.dp) {
                         VibrationMarks(scene, time, running, mirrored = true, Modifier.width(markRoom).height(phoneHeight))
                     }
@@ -174,7 +178,8 @@ private fun DemoPhone(
     running: Boolean,
     phoneWidth: Dp,
     phoneHeight: Dp,
-    haptics: TutorialFrameFollower?
+    haptics: TutorialFrameFollower?,
+    sounds: TutorialFrameFollower?
 ) {
     val density = LocalDensity.current
     val screenWidthPx = with(density) { (phoneWidth - BEZEL * 2).toPx() }
@@ -205,6 +210,8 @@ private fun DemoPhone(
     val engine = if (running) liveEngine else stillEngine
     // 엔진이 새로 계산할 때마다 올린다. 그리기가 이 값을 읽어, 시각(time)이 같은 값이어도 다시 그린다.
     val frame = remember { mutableIntStateOf(0) }
+    // 소리는 움직이는 도중에도 켜고 끈다. 돌고 있는 루프가 지금 것을 읽게 한다.
+    val currentSounds by rememberUpdatedState(sounds)
 
     LaunchedEffect(liveEngine) {
         val live = liveEngine
@@ -231,14 +238,16 @@ private fun DemoPhone(
                         if (live.isIdle) live.pollWake() else live.tick(nanos)
                         time.floatValue = t
                         frame.intValue++
-                        // 그림의 떨림(아래 graphicsLayer)과 같은 프레임에 진짜 진동을 보낸다.
+                        // 그림의 떨림(아래 graphicsLayer)과 같은 프레임에 진짜 진동과 소리를 보낸다.
                         haptics?.onFrame(t)
+                        currentSounds?.onFrame(t)
                     }
                 }
             }
         } finally {
-            // 멈추거나(쪽을 넘김·멈춤 버튼) 그림이 사라지면 울리던 진동도 끊는다.
+            // 멈추거나(쪽을 넘김·멈춤 버튼) 그림이 사라지면 울리던 진동과 나던 소리도 끊는다.
             haptics?.stop()
+            currentSounds?.stop()
         }
     }
 

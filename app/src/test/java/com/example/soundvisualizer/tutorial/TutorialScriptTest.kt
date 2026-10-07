@@ -104,6 +104,41 @@ class TutorialScriptTest {
     }
 
     @Test
+    fun `소리는 그림이 그 소리를 그리는 순간에 같은 종류로 같은 쪽에서 난다`() {
+        // 소리를 켜면 대본의 박자에 맞춰 실제 녹음을 낸다(#327). 듣는 것과 보는 것이 어긋나면 처음 보는 사람을 헷갈리게 한다.
+        val peaks = FloatArray(3)
+        for (scene in TutorialScene.entries) {
+            val cues = TutorialScript.cues(scene)
+            assertTrue("$scene 쪽에 소리가 없다", cues.isNotEmpty())
+            for (cue in cues) {
+                val what = "$scene ${cue.atSec}초의 ${cue.clip}"
+                assertTrue("$what: 한 바퀴 안이어야 한다", cue.atSec >= 0f && cue.atSec < scene.cycleSec)
+                // 소리가 시작하고 조금 뒤(0.05초)의 그림
+                val t = cue.atSec + 0.05f
+                assertEquals("$what: 그림의 종류", cue.clip.label, TutorialScript.label(scene, t))
+                TutorialScript.peaks(scene, t, peaks)
+                assertTrue("$what: 그림이 조용하다", maxOf(peaks[0], peaks[1]) > 0.3f)
+                if (cue.left != cue.right) {
+                    assertEquals("$what: 그림이 기운 쪽", cue.left > cue.right, peaks[0] > peaks[1])
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `종류 쪽은 새소리 대화 경적 세 번 진동 쪽은 경적 두 번이다`() {
+        assertEquals(
+            listOf(TutorialClip.Birds, TutorialClip.Talk, TutorialClip.Honk, TutorialClip.Honk, TutorialClip.Honk),
+            TutorialScript.cues(TutorialScene.Types).map { it.clip }
+        )
+        assertEquals(listOf(TutorialClip.Honk, TutorialClip.Honk), TutorialScript.cues(TutorialScene.Vibration).map { it.clip })
+        // 방향 쪽은 왼쪽 네 번, 오른쪽 네 번
+        val direction = TutorialScript.cues(TutorialScene.Direction)
+        assertEquals(4, direction.count { it.left > it.right })
+        assertEquals(4, direction.count { it.right > it.left })
+    }
+
+    @Test
     fun `진짜 진동 한 번은 처음 설정의 위협음 진동 한 박자와 같다`() {
         val danger = HapticSettings.defaultFor(AiClassification.DANGER)
         val plan = TutorialScript.vibrationPulsePlan(amplitudeControl = true)

@@ -47,6 +47,8 @@
     <!-- Screen reader labels of the button that stops and restarts the moving pictures -->
     <string name="tutorial_pause">Pause animation</string>
     <string name="tutorial_play">Play animation</string>
+    <string name="tutorial_sound_on">Turn on sound</string>
+    <string name="tutorial_sound_off">Turn off sound</string>
     <string name="tutorial_sound_title">See sound on your screen</string>
     <string name="tutorial_sound_body">Sound from your game or video is drawn along the edges of the screen. The louder it is, the bigger it is drawn. Only sound playing on your phone is shown. Sounds around you are not picked up.</string>
     <string name="tutorial_sound_body_external">External sound mode is on, so the sounds around you that the microphone hears are drawn along the edges of the screen. The louder a sound is, the bigger it is drawn. Sound playing on your phone isn\'t shown in this mode.</string>

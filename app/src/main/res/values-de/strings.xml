@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Seite %1$d von %2$d</string>
     <string name="tutorial_pause">Animation anhalten</string>
     <string name="tutorial_play">Animation abspielen</string>
+    <string name="tutorial_sound_on">Ton einschalten</string>
+    <string name="tutorial_sound_off">Ton ausschalten</string>
     <string name="tutorial_sound_title">Geräusche auf dem Bildschirm sehen</string>
     <string name="tutorial_sound_body">Der Ton Ihres Spiels oder Videos wird an den Bildschirmrändern dargestellt. Je lauter er ist, desto größer wird er gezeichnet. Angezeigt wird nur der Ton, der auf Ihrem Smartphone wiedergegeben wird. Geräusche um Sie herum werden nicht erfasst.</string>
     <string name="tutorial_sound_body_external">Der Modus für Außengeräusche ist eingeschaltet. Daher werden die Geräusche um Sie herum, die das Mikrofon hört, an den Bildschirmrändern dargestellt. Je lauter ein Geräusch ist, desto größer wird es gezeichnet. Der auf Ihrem Smartphone wiedergegebene Ton wird in diesem Modus nicht angezeigt.</string>

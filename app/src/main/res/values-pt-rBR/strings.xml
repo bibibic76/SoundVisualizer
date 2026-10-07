@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Página %1$d de %2$d</string>
     <string name="tutorial_pause">Pausar animação</string>
     <string name="tutorial_play">Reproduzir animação</string>
+    <string name="tutorial_sound_on">Ativar som</string>
+    <string name="tutorial_sound_off">Desativar som</string>
     <string name="tutorial_sound_title">Veja o som na sua tela</string>
     <string name="tutorial_sound_body">O som do seu jogo ou vídeo é desenhado nas bordas da tela. Quanto mais alto o som, maior o desenho. Só aparece o som que toca no seu celular. Os sons ao seu redor não são captados.</string>
     <string name="tutorial_sound_body_external">O modo de som externo está ligado, então os sons ao seu redor captados pelo microfone são desenhados nas bordas da tela. Quanto mais alto o som, maior o desenho. Neste modo, o som que toca no seu celular não aparece.</string>

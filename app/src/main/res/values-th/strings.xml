@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">หน้า %1$d จาก %2$d</string>
     <string name="tutorial_pause">หยุดภาพเคลื่อนไหวชั่วคราว</string>
     <string name="tutorial_play">เล่นภาพเคลื่อนไหว</string>
+    <string name="tutorial_sound_on">เปิดเสียง</string>
+    <string name="tutorial_sound_off">ปิดเสียง</string>
     <string name="tutorial_sound_title">มองเห็นเสียงบนหน้าจอ</string>
     <string name="tutorial_sound_body">เสียงจากเกมหรือวิดีโอจะแสดงเป็นภาพตามขอบหน้าจอ ยิ่งเสียงดัง ภาพก็ยิ่งใหญ่ แสดงเฉพาะเสียงที่เล่นอยู่ในโทรศัพท์เท่านั้น แอปจะไม่จับเสียงรอบตัวคุณ</string>
     <string name="tutorial_sound_body_external">โหมดเสียงภายนอกเปิดอยู่ เสียงรอบตัวคุณที่ไมโครโฟนได้ยินจึงแสดงเป็นภาพตามขอบหน้าจอ ยิ่งเสียงดัง ภาพก็ยิ่งใหญ่ ในโหมดนี้จะไม่แสดงเสียงที่เล่นอยู่ในโทรศัพท์</string>

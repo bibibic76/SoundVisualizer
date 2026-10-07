@@ -82,6 +82,36 @@ Licensed under the Apache License, Version 2.0.
 https://www.apache.org/licenses/LICENSE-2.0
 
 ================================================================================
+6. 튜토리얼 소리
+================================================================================
+app/src/main/res/raw/tutorial_birds.ogg
+app/src/main/res/raw/tutorial_chirp.ogg
+app/src/main/res/raw/tutorial_talk.ogg
+app/src/main/res/raw/tutorial_honk.ogg
+튜토리얼에서 소리를 켜면 그림과 함께 들려주는 실제 녹음입니다. 모두 저작권을
+포기했거나(CC0) 퍼블릭 도메인인 녹음이라 출처 표시 의무는 없지만 원본을 밝혀
+둡니다. 원본에서 짧게 잘라 낮은 소리를 걷어 내고, 끝을 부드럽게 하고, 크기를
+맞춘 뒤 모노 Ogg Vorbis 로 바꿨습니다.
+
+- tutorial_birds.ogg (28.0~30.2초), tutorial_chirp.ogg (3.48~3.93초)
+  "Forêt" by Joseph SARDIN (BigSoundBank #0100)
+  https://commons.wikimedia.org/wiki/File:For%C3%AAt_(Joseph_SARDIN).wav
+  CC0 1.0 Universal (WTFPL 과 이중 라이선스)
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+- tutorial_talk.ogg (0.70~2.90초)
+  "Anna Pete, hi! Hi, we are here!", VOA Learning English
+  "Let's Learn English" Lesson 4 (Voice of America)
+  https://commons.wikimedia.org/wiki/File:Anna_Pete,_hi!_Hi,_we_are_here!.ogg
+  미국 정부(VOA) 저작물로 퍼블릭 도메인
+
+- tutorial_honk.ogg (0.42~0.92초, 첫 번째 경적)
+  "Car Horn" by 15HPanska_Ruttner_Jan (Freesound #461679)
+  https://commons.wikimedia.org/wiki/File:Car_Horn.wav
+  CC0 1.0 Universal
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+================================================================================
 
 테스트에만 쓰이는 의존성(JUnit, Espresso, org.json 등)은 APK 에 포함되지 않으므로
 위 목록에서 제외했습니다.

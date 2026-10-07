@@ -82,6 +82,22 @@ class TutorialInstrumentedTest {
     }
 
     @Test
+    fun soundStartsOffTogglesAndIsOffAgainWhenReopened() {
+        // 튜토리얼 소리(#327)는 처음에 꺼져 있다. 테스트에서는 그림이 움직이지 않으므로 켜도 소리는 나지 않는다.
+        setSeen(true)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
+            rule.onNodeWithContentDescription(text(R.string.tutorial_sound_on)).performClick()
+            rule.onNodeWithContentDescription(text(R.string.tutorial_sound_off)).assertIsDisplayed()
+
+            // 닫았다 다시 열면 다시 꺼진 채로 시작한다.
+            rule.onNodeWithText(text(R.string.tutorial_skip)).performClick()
+            rule.onNodeWithText(text(R.string.home_tutorial)).performScrollTo().performClick()
+            rule.onNodeWithContentDescription(text(R.string.tutorial_sound_on)).assertIsDisplayed()
+        }
+    }
+
+    @Test
     fun homeButtonReopensTutorialAndLastPageCloses() {
         setSeen(true)
         ActivityScenario.launch(MainActivity::class.java).use {

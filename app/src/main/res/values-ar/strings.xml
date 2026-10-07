@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">الصفحة %1$d من %2$d</string>
     <string name="tutorial_pause">إيقاف الرسوم المتحركة مؤقتًا</string>
     <string name="tutorial_play">تشغيل الرسوم المتحركة</string>
+    <string name="tutorial_sound_on">تشغيل الصوت</string>
+    <string name="tutorial_sound_off">إيقاف الصوت</string>
     <string name="tutorial_sound_title">شاهِد الصوت على شاشتك</string>
     <string name="tutorial_sound_body">يُرسم صوت اللعبة أو الفيديو على حواف الشاشة. كلما ارتفع الصوت، رُسم بحجم أكبر. لا يُعرض إلا الصوت الذي يتم تشغيله على هاتفك. لا يلتقط التطبيق الأصوات من حولك.</string>
     <string name="tutorial_sound_body_external">وضع الأصوات الخارجية قيد التشغيل، لذا تُرسم الأصوات من حولك التي يلتقطها الميكروفون على حواف الشاشة. كلما ارتفع الصوت، رُسم بحجم أكبر. لا يُعرض الصوت الذي يتم تشغيله على هاتفك في هذا الوضع.</string>
