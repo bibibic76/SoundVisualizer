@@ -86,6 +86,22 @@ class SoundTypeSettingsTest {
     }
 
     @Test
+    fun `지금 종류는 바꾼 종류가 있으면 그것이고 없으면 기본 종류다`() {
+        SettingsManager.load(MemoryPrefs())
+        assertEquals(AiClassification.DANGER, SettingsManager.soundType("Siren"))
+        SettingsManager.setSoundType("Siren", AiClassification.AMBIENT)
+        SettingsManager.setSoundType("Doorbell", AiClassification.DANGER)
+
+        assertEquals(AiClassification.AMBIENT, SettingsManager.soundType("Siren"))
+        assertEquals(AiClassification.DANGER, SettingsManager.soundType("Doorbell"))
+        assertEquals(SettingsManager.defaultSoundType("Speech"), SettingsManager.soundType("Speech"))
+        // AI 가 추론마다 쓰는 정책과 같은 규칙이다(#321). 둘이 어긋나면 알림이 AI 판정과 다른 소리 이름을 적는다(#325).
+        val names = listOf("Siren", "Doorbell", "Speech", "Rain")
+        val policy = YamnetMappingPolicy.from(SettingsManager.soundTypes.value, names)
+        for (name in names) assertEquals(name, policy.coarse(name), SettingsManager.soundType(name))
+    }
+
+    @Test
     fun `기본 종류를 고르면 바꾼 것을 지운다`() {
         val prefs = MemoryPrefs()
         SettingsManager.load(prefs)

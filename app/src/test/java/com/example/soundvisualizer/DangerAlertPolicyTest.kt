@@ -1,7 +1,10 @@
 package com.example.soundvisualizer
 
+import com.example.soundvisualizer.ai.YamnetCoarseClassifier
+import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -97,5 +100,28 @@ class DangerAlertPolicyTest {
         policy.reset()
         assertTrue(policy.onTick(1_000, danger, loud, true) { true })
         assertFalse(policy.onTick(1_500, danger, loud, true) { true })
+    }
+
+    @Test
+    fun `알림에 적을 소리는 사용자가 바꾼 종류를 따른다`() {
+        val defaults = { name: String -> YamnetThreeClassMapper.mapDisplayNameToCoarse(name) }
+        fun changed(name: String, type: String) = { n: String -> if (n == name) type else defaults(n) }
+        // 이름만 본다. 순서가 확률 순이다.
+        fun hits(vararg names: String) = names.mapIndexed { i, n -> YamnetCoarseClassifier.TopClassHit(i, n, 0.5f - i * 0.1f) }
+
+        // 민방위 사이렌 녹음의 실제 상위 후보(에뮬레이터, #325). 1위 Siren, 2위 Alarm.
+        val siren = hits("Siren", "Alarm", "Civil defense siren", "Music")
+        assertEquals("Siren", DangerAlertPolicy.namedHit(siren, defaults)?.name)
+        assertEquals(
+            "위협음에서 뺀 소리의 이름으로 알리지 않는다",
+            "Alarm", DangerAlertPolicy.namedHit(siren, changed("Siren", AiClassification.AMBIENT))?.name
+        )
+
+        val doorbell = hits("Music", "Doorbell")
+        assertNull("기본 종류로는 위협음이 없다", DangerAlertPolicy.namedHit(doorbell, defaults))
+        assertEquals(
+            "위협음으로 새로 지정한 소리의 이름으로 알린다",
+            "Doorbell", DangerAlertPolicy.namedHit(doorbell, changed("Doorbell", AiClassification.DANGER))?.name
+        )
     }
 }
