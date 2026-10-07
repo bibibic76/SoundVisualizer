@@ -155,7 +155,7 @@
 
     <!-- Sounds tab: which type each sound counts as -->
     <string name="classify_title">Pick a type for each sound</string>
-    <string name="classify_preview_note" tools:ignore="MissingTranslation">Developer preview: the AI does not use these types yet. What you change here is saved, but colors and vibration still follow the default types.</string>
+    <string name="classify_preview_note" tools:ignore="MissingTranslation">Developer preview: changes now affect AI classification, colors and vibration. Sounds moved out of Danger no longer trigger their safety cues. Other detected sounds may still trigger Danger.</string>
     <string name="classify_desc">Here is every sound the AI can recognize and the type it counts as. Change a sound\'s type, and its color and vibration follow the new type right away.</string>
     <string name="classify_danger_note">A sound you move out of Danger no longer gets danger colors or vibration. Similar sounds are separate rows (sirens have five), so change them all to move them all.</string>
     <string name="classify_search_hint">Search sounds</string>

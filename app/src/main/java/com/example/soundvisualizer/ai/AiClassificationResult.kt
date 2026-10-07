@@ -14,5 +14,9 @@ data class AiClassificationResult(
     val timestampMs: Long,
     val preprocessMs: Double = 0.0,
     val yamnetMs: Double = 0.0,
-    val totalMs: Double = 0.0
+    val totalMs: Double = 0.0,
+    val mappingOverrideCount: Int = 0,
+    val mappingSignature: String = "default",
+    /** Immutable settings snapshot used to suppress stale results immediately on edits. */
+    internal val mappingInputs: Map<String, String> = emptyMap()
 )

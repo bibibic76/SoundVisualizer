@@ -134,7 +134,7 @@ object SettingsManager {
      * 분류 탭에서 사용자가 바꾼 소리 종류. 키는 YAMNet 소리 이름(assets/ai/yamnet_class_map.csv 의 display_name),
      * 값은 [AiClassification] 라벨. 기본 종류와 같은 것은 두지 않으므로, 여기 있으면 바꾼 소리다.
      *
-     * **아직 AI 판정에는 쓰이지 않는다.** AI 쪽이 [soundTypeOverride] 로 읽어 투표에 반영하는 일은 #291 이 맡는다.
+     * AI는 추론마다 [soundTypes] 스냅샷 하나를 읽어 투표와 안전 단서에 함께 반영한다 (#291).
      * 그 전까지 분류 탭은 개발자 모드에서만 보인다(#283).
      */
     private val _soundTypes = MutableStateFlow<Map<String, String>>(emptyMap())

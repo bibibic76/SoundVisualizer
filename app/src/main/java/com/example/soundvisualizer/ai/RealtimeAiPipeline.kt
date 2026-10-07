@@ -31,6 +31,7 @@ class RealtimeAiPipeline private constructor(
     private val coarseClassifier: YamnetCoarseClassifier,
     private val classNames: List<String>,
     private val postProcessor: AiPostProcessor,
+    private val mappingOverrides: () -> Map<String, String>,
     private val predictIntervalMs: Long = AI_PREDICT_INTERVAL_MS
 ) : AutoCloseable {
 
@@ -80,6 +81,7 @@ class RealtimeAiPipeline private constructor(
             context: Context,
             captureSampleRate: Int = AiAudioBuffer.DEFAULT_CAPTURE_SAMPLE_RATE,
             channels: Int = 2,
+            mappingOverrides: () -> Map<String, String> = { emptyMap() },
         ): RealtimeAiPipeline {
             val names = context.assets.open("ai/yamnet_class_map.csv").use {
                 YamnetCoarseClassifier.loadClassNames(it)
@@ -95,7 +97,8 @@ class RealtimeAiPipeline private constructor(
                     yamnet = yamnet,
                     coarseClassifier = coarseClassifier,
                     classNames = names,
-                    postProcessor = postProcessor
+                    postProcessor = postProcessor,
+                    mappingOverrides = mappingOverrides
                 )
             }
         }
@@ -114,6 +117,8 @@ class RealtimeAiPipeline private constructor(
     private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
     private var lastLogMs = 0L
     private val frontend = QualcommSourceAudioPreprocessor()
+    private var previousOverrides: Map<String, String> = emptyMap()
+    private var mapping = YamnetMappingPolicy.DEFAULT
 
     private val captureNeed =
         CaptureAudioMath.captureSamplesForOneYamnetWindow(audioBuffer.sampleRate)
@@ -123,7 +128,9 @@ class RealtimeAiPipeline private constructor(
     private val debuggable: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
-    fun lastClassification(): AiClassificationResult? = lastResult.get()
+    fun lastClassification(): AiClassificationResult? = lastResult.get()?.takeIf {
+        it.mappingInputs == mappingOverrides()
+    }
 
     fun inferenceStatsForTest(): InferenceStats = InferenceStats(
         executed = inferenceExecutions.get(),
@@ -212,16 +219,27 @@ class RealtimeAiPipeline private constructor(
     private fun runTickInternal(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         if (closed.get()) return null
         if (!audioBuffer.hasEnoughForYamnetWindow()) return null
-        if (!captureInferenceGate.isInferenceOpen(SystemClock.elapsedRealtime())) {
-            silenceSkippedTicks.incrementAndGet()
-            return null
-        }
-
         // Skip if previous tick still running (scheduler overlap)
         if (!inferLock.tryLock()) return null
         try {
             // close() 가 락을 잡기 직전에 통과했을 수 있으므로 락 안에서 다시 확인한다.
             if (closed.get()) return null
+            // StateFlow publishes immutable maps. Capture once, including during silence, so
+            // a previous mapping's confirmed Danger is never carried into the new policy.
+            val overrides = mappingOverrides()
+            if (overrides != previousOverrides) {
+                val next = YamnetMappingPolicy.from(overrides, classNames)
+                if (next.signature != mapping.signature) {
+                    postProcessor.reset()
+                    lastResult.set(null)
+                }
+                previousOverrides = overrides.toMap()
+                mapping = next
+            }
+            if (!captureInferenceGate.isInferenceOpen(SystemClock.elapsedRealtime())) {
+                silenceSkippedTicks.incrementAndGet()
+                return null
+            }
             val snapshotTimeMs = SystemClock.elapsedRealtime()
             val result = try {
                 doInference(log, diagnostics)
@@ -260,15 +278,12 @@ class RealtimeAiPipeline private constructor(
             yamnetResult = yamnet.inferFromLogMelFlat(logMel)
         }
 
-        val pre = coarseClassifier.classify(yamnetResult.probabilities)
+        val pre = coarseClassifier.classify(yamnetResult.probabilities, mapping)
 
-        val decision = YamnetSafetyCueDecision.decide(classNames, pre)
+        val decision = YamnetSafetyCueDecision.decide(classNames, pre, mapping)
 
         val topKSummary = pre.top5.joinToString(separator = " | ") { it.name }
-        val hasCritical = AiPostProcessor.isCriticalDangerEvent(
-            decision.postDisplay,
-            topKSummary
-        )
+        val hasCritical = mapping.hasCriticalDangerCue(decision.postDisplay, pre.top5)
 
         val post = postProcessor.process(
             AiPostProcessor.FrameInput(
@@ -278,7 +293,8 @@ class RealtimeAiPipeline private constructor(
                 dangerCuePromoted = decision.dangerCuePromoted,
                 hasStrongDangerCue = decision.hasStrongDangerCue,
                 hasCriticalDangerCue = hasCritical,
-                topKSummary = topKSummary
+                topKSummary = topKSummary,
+                criticalDangerEvent = hasCritical
             )
         )
 
@@ -293,7 +309,10 @@ class RealtimeAiPipeline private constructor(
             timestampMs = System.currentTimeMillis(),
             preprocessMs = preprocessNs / 1e6,
             yamnetMs = yamnetNs / 1e6,
-            totalMs = totalMs
+            totalMs = totalMs,
+            mappingOverrideCount = mapping.overrideCount,
+            mappingSignature = mapping.signature,
+            mappingInputs = previousOverrides
         )
         lastResult.set(result)
 

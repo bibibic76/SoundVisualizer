@@ -95,7 +95,7 @@ class YamnetCoarseClassifier(
         }
     }
 
-    fun classify(probabilities: FloatArray): Result {
+    fun classify(probabilities: FloatArray, mapping: YamnetMappingPolicy = YamnetMappingPolicy.DEFAULT): Result {
         require(probabilities.size == NUM_CLASSES) {
             "Expected $NUM_CLASSES probabilities, got ${probabilities.size}"
         }
@@ -111,7 +111,7 @@ class YamnetCoarseClassifier(
         val beforeIndex = maxIndex
         val beforeConf = conf
         val beforeDisplay = display
-        preferDangerWhenTopIsMaskedByGameMix(probabilities, maxIndex, conf, display).also {
+        preferDangerWhenTopIsMaskedByGameMix(probabilities, maxIndex, conf, display, mapping).also {
             maxIndex = it.first
             conf = it.second
             display = it.third
@@ -119,7 +119,7 @@ class YamnetCoarseClassifier(
         val gameMixApplied =
             maxIndex != beforeIndex || conf != beforeConf || display != beforeDisplay
 
-        val scores = coarseVoteScores(topIdx, topProbs, VOTE_K)
+        val scores = coarseVoteScores(topIdx, topProbs, VOTE_K, mapping)
         val coarse = voteCoarseFromScores(scores)
 
         val top5 = ArrayList<TopClassHit>(TOP_K)
@@ -172,7 +172,10 @@ class YamnetCoarseClassifier(
 
     data class VoteScores(val ambient: Float, val speech: Float, val danger: Float)
 
-    fun coarseVoteScores(topIndices: IntArray, topProbs: FloatArray, k: Int): VoteScores {
+    fun coarseVoteScores(
+        topIndices: IntArray, topProbs: FloatArray, k: Int,
+        mapping: YamnetMappingPolicy = YamnetMappingPolicy.DEFAULT
+    ): VoteScores {
         var danger = 0f
         var speech = 0f
         var ambient = 0f
@@ -180,7 +183,7 @@ class YamnetCoarseClassifier(
         for (idx in 0 until limit) {
             val i = topIndices[idx]
             if (i < 0) continue
-            val c = YamnetThreeClassMapper.mapDisplayNameToCoarse(classNames[i])
+            val c = mapping.coarse(classNames[i])
             val p = topProbs[idx]
             when (c) {
                 "danger" -> danger += p
@@ -230,7 +233,8 @@ class YamnetCoarseClassifier(
         probs: FloatArray,
         maxIndex: Int,
         conf: Float,
-        display: String
+        display: String,
+        mapping: YamnetMappingPolicy = YamnetMappingPolicy.DEFAULT
     ): Triple<Int, Float, String> {
         if (maxIndex < 0 || maxIndex >= classNames.size || probs.size != classNames.size) {
             return Triple(maxIndex, conf, display)
@@ -244,6 +248,7 @@ class YamnetCoarseClassifier(
         val n = minOf(probs.size, classNames.size)
         for (i in 0 until n) {
             if (YamnetThreeClassMapper.mapDisplayNameToCoarse(classNames[i]) != "danger") continue
+            if (!mapping.allowsSafetyCue(classNames[i])) continue
             if (probs[i] > bestDangerProb) {
                 bestDangerProb = probs[i]
                 bestDangerIdx = i

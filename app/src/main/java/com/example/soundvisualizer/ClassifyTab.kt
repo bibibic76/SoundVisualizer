@@ -144,7 +144,7 @@ fun ClassifyTab() {
                 color = PrimaryTextColor,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            // AI 판정에 연결되기 전(#291)이라 바꿔도 색과 진동이 그대로다. 바꿨는데 왜 안 되느냐고 헷갈리지 않게 먼저 알린다.
+            // 개발자 전용 공개 범위는 유지하되, 이제 설정이 실제 AI 판정에 반영됨을 알린다.
             Text(
                 stringResource(R.string.classify_preview_note),
                 fontSize = 14.sp,

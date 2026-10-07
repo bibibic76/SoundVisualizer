@@ -139,7 +139,7 @@
     <string name="ai_show_danger">위협음 표시</string>
     <string name="ai_unavailable">소리 종류를 구분하지 못하고 있어 모든 소리가 환경음 색으로 표시됩니다. 껐다가 다시 켜 보세요.</string>
     <string name="classify_title">소리마다 종류 고르기</string>
-    <string name="classify_preview_note">개발자 미리보기: 아직 AI 판정에는 쓰이지 않습니다. 여기서 바꾼 종류는 저장만 되고, 색과 진동은 지금처럼 기본 종류를 따릅니다.</string>
+    <string name="classify_preview_note">개발자 미리보기: 바꾼 종류가 AI 판정과 색·진동에 반영됩니다. 위협음에서 뺀 소리는 해당 안전 단서도 끕니다. 함께 감지된 다른 소리 때문에 위협음이 될 수는 있습니다.</string>
     <string name="classify_desc">AI가 알아듣는 모든 소리와, 각 소리가 지금 어느 종류로 구분되는지를 보여 줍니다. 종류를 바꾸면 그 소리의 색과 진동이 바로 새 종류를 따릅니다.</string>
     <string name="classify_danger_note">위협음에서 뺀 소리에는 위협음 색과 진동이 나오지 않습니다. 비슷한 소리는 여러 줄로 나뉘어 있어(사이렌은 5줄) 모두 빼려면 함께 바꿔야 합니다.</string>
     <string name="classify_search_hint">소리 이름으로 찾기</string>
