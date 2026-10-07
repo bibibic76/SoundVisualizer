@@ -35,13 +35,26 @@ class DangerAlertInstrumentedTest {
     private fun posted(): Notification? =
         manager.activeNotifications.firstOrNull { it.id == 3 && it.packageName == context.packageName }?.notification
 
+    /**
+     * 알림이 올라가 있는지가 [present] 가 될 때까지 최대 2초 기다린다. 올리기와 치우기는 시스템(NotificationManagerService)이
+     * 나중에 처리하고 `waitForIdleSync` 는 앱의 메인 스레드만 기다리므로, 바로 보면 아직 바뀌기 전일 수 있다(#347).
+     */
+    private fun awaitPosted(present: Boolean): Notification? {
+        val deadline = SystemClock.uptimeMillis() + 2_000
+        var notification = posted()
+        while ((notification != null) != present && SystemClock.uptimeMillis() < deadline) {
+            SystemClock.sleep(20)
+            notification = posted()
+        }
+        return notification
+    }
+
     @Test
     fun alertIsASilentPublicAlarmOnItsOwnChannel() {
         assumeTrue("알림이 꺼져 있으면 올리지 않는다", manager.areNotificationsEnabled())
         assertTrue(DangerAlert.show(context, "Siren"))
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        val notification = posted()
+        val notification = awaitPosted(present = true)
         assertNotNull("알림이 올라가지 않았다", notification)
         assertEquals(Notification.CATEGORY_ALARM, notification!!.category)
         assertEquals(Notification.VISIBILITY_PUBLIC, notification.visibility)
@@ -54,8 +67,7 @@ class DangerAlertInstrumentedTest {
         assertFalse("진동은 앱의 위협음 진동이 맡는다", channel.shouldVibrate())
 
         DangerAlert.cancel(context)
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        assertNull("치우면 사라진다", posted())
+        assertNull("치우면 사라진다", awaitPosted(present = false))
     }
 
     /** 화면을 끈 뒤(adb shell input keyevent KEYCODE_SLEEP) 돌린다. 켜져 있으면 건너뛴다. */
