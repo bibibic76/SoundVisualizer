@@ -4,7 +4,9 @@
 
 - `SettingsManager.soundTypes`의 불변 map을 추론 시작마다 한 번 읽는다. 키는 YAMNet CSV의 정확한 영어 `display_name`, 값은 `ambient` / `speech` / `danger`다.
 - 사용자 지정은 기존 top-3 확률 합산 투표에 반영한다. 모델 출력, top-5 순위, frontend, confidence와 수치 threshold는 변경하지 않는다.
-- Danger에서 뺀 라벨은 game-mix 표시명 선택, safety cue, critical keyword, 그 단서에 의한 threshold 완화에서 제외한다. 함께 나온 다른 유효 Danger 단서는 계속 동작한다.
+- Danger에서 뺀 라벨은 game-mix 표시명 선택, safety cue, critical keyword, 그 단서에 의한 threshold 완화에서 제외한다. 다른 유효 Danger 단서는 기존 승격 조건을 충족하면 계속 동작한다.
+- #283 B 결정: safety cue의 Speech 투표 차단은 사용자 매핑이 아닌 **원래 top-3의 기본 매핑 투표**(`defaultCoarse`)를 사용한다. 사용자 지정 Speech 때문에 다른 독립 경보까지 차단하지 않으며, 기본 Speech 보호는 유지한다. 표시명 기반 Speech/무음 차단, confidence 조건, 총기 단서 veto는 이번 변경에서 유지한다(#351에서 별도 진단).
+- 총기 라벨을 Danger에서 빼면 총기 veto가 풀릴 수 있고, Siren을 빼면 game-mix가 고르는 표시명/confidence가 바뀔 수 있다. 따라서 라벨 간 영향이 전혀 없다는 의미는 아니다. 기본 mapper를 바꾸면 기본 Speech 투표 차단도 함께 달라지므로 별도 검증이 필요하다.
 - 새로 Danger로 지정한 일반 라벨은 정상 투표에만 참여한다. 낮은 확률의 safety cue나 새 Music masking 정책으로 확대하지 않는다.
 - 설정이 바뀌면 이전 결과를 즉시 숨기고, 다음 tick에서 이전 hysteresis 상태를 초기화한다. 무음 게이트 때문에 추론을 생략하는 tick에도 초기화한다. 새 판정은 기존 confidence/hysteresis 조건을 그대로 따른다.
 - 사용자 설정이 없으면 기존 기본 정책 그대로다. Plop/Gargling 기본값 수정은 별도 #319 / #320이며 이 PR에 섞지 않는다.
@@ -19,5 +21,5 @@ CSV 끝에 `mapping_override_count`, `mapping_signature`를 추가한다. signat
 
 - JVM: 521개 실제 CSV 라벨의 기본 mapping 동일성, demotion, 독립된 다른 cue, 새 Danger 라벨, 저장 설정 연결, CSV.
 - CI emulator: 모델을 실제로 실행한 뒤 실행 중 mapping 전환/초기화와 이전 결과 차단.
-- 사람의 release APK 확인(머지 전): 개발자 분류 탭에서 Siren → Ambient, 별도 Explosion 유지, 원래대로 복원. 색/진동 및 CSV 내용을 확인한다. 유사 사이렌은 별도 라벨이므로 top-5도 같이 확인한다.
-- 분류 탭 개발자 모드 제한은 유지한다. 전체 사용자 공개는 앱 담당자의 후속 작업이다.
+- 사람의 release APK 확인(머지 전): 분류 탭에서 Siren → Ambient/Speech, 별도 Explosion 유지, 원래대로 복원. 색/진동 및 CSV 내용을 확인한다. 유사 사이렌은 별도 라벨이므로 top-5도 같이 확인한다.
+- 분류 탭은 #329에서 모든 사용자에게 공개됐다.
