@@ -53,7 +53,9 @@ object YamnetSafetyCueDecision {
                 isSilenceLikeDisplay(pre.displayName) ||
                 pre.confidence < 0.12f
         val (cueIndex, _) = tryPickBestStrongDangerDisplay(topIndices, topProbabilities, classNames)
-        val promote = !blockPromotion && hasStrongDangerCue && !hasGunshotCue && cueIndex >= 0
+        // A firearm candidate no longer vetoes a separate, sufficiently strong
+        // non-firearm cue. Firearm labels themselves are still never promoted here.
+        val promote = !blockPromotion && hasStrongDangerCue && cueIndex >= 0
 
         return Result(
             preCoarse = pre.coarse,
@@ -135,7 +137,10 @@ object YamnetSafetyCueDecision {
         for (position in 0 until minOf(5, topIndices.size)) {
             val index = topIndices[position]
             if (index < 0 || isGunshotKeyword(classNames[index])) continue
-            if (isStrongDangerKeyword(classNames[index]) && topProbabilities[position] > bestProbability) {
+            if (topProbabilities[position] >= STRONG_DANGER_CUE_MIN_PROBABILITY &&
+                isStrongDangerKeyword(classNames[index]) &&
+                topProbabilities[position] > bestProbability
+            ) {
                 bestIndex = index
                 bestProbability = topProbabilities[position]
             }

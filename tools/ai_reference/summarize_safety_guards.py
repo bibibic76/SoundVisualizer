@@ -34,7 +34,7 @@ def main():
     manifest = data['rows'] if isinstance(data, dict) else data
     counts = defaultdict(Counter)
     changes = defaultdict(list)
-    python_diff = 0
+    production_reference_diff = 0
     previous = None
     baseline = None
     with args.frames.open() as src:
@@ -44,11 +44,12 @@ def main():
             key = (idx, row['time'])
             if variant == 'baseline':
                 baseline, previous = row, key
-                python_diff += row['ui'] != row['python_ui']
             else:
                 assert previous == key
                 if any(row[k] != baseline[k] for k in ('ui', 'post', 'promoted', 'display')):
                     changes[variant].append(dict(row, baseline_ui=baseline['ui'], baseline_post=baseline['post']))
+            if variant == 'no_firearm_veto_cue_floor':
+                production_reference_diff += row['ui'] != row['python_ui']
     variants = sorted({v for _, v in counts})
     reports = {}
     all_rows = {}
@@ -73,10 +74,12 @@ def main():
     for variant in variants:
         reports[variant]['changed_majority'] = [dict(path=a['path'], expected=a.get('expected'), policy=a['policy'], before=b['majority'], after=a['majority'])
             for a,b in zip(all_rows[variant], all_rows['baseline']) if a['majority'] != b['majority']]
-    result = dict(labels=LABELS, python_baseline_ui_difference_frames=python_diff, summary=reports, changes=changes, rows=all_rows)
+    result = dict(labels=LABELS, production_reference_ui_difference_frames=production_reference_diff,
+                  summary=reports, changes=changes, rows=all_rows)
     with args.output.open('x') as out:
         json.dump(result, out, ensure_ascii=False, indent=2)
-    print(json.dumps(dict(python_baseline_ui_difference_frames=python_diff, summary=reports), ensure_ascii=False, indent=2))
+    print(json.dumps(dict(production_reference_ui_difference_frames=production_reference_diff,
+                          summary=reports), ensure_ascii=False, indent=2))
 
 
 if __name__ == '__main__':

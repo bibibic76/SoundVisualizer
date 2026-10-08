@@ -9,6 +9,10 @@ from classifier import ReferenceClassifier
 
 
 class StrongDangerCuePolicyTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.classifier = ReferenceClassifier.__new__(ReferenceClassifier)
+        self.classifier._class_names = ["Music", "Gunshot, gunfire", "Siren", "Wind", "Footsteps"]
+
     def test_approved_attention_cues_are_strong(self) -> None:
         classifier = ReferenceClassifier.__new__(ReferenceClassifier)
         for label in (
@@ -29,6 +33,24 @@ class StrongDangerCuePolicyTest(unittest.TestCase):
         for label in ("Plop", "Gargling", "Breaking news", "Booming music"):
             with self.subTest(label=label):
                 self.assertFalse(classifier._is_strong_danger_keyword(label))
+
+    def test_firearm_does_not_veto_independent_cue_at_policy_floor(self) -> None:
+        cue = self.classifier._try_pick_best_non_gunshot_strong_danger_display(
+            [0, 1, 2, 3, 4], [.6, .2, .05, .04, .03], 5
+        )
+        self.assertEqual((2, .05), cue)
+
+    def test_firearm_cannot_lend_evidence_to_weaker_non_firearm_cue(self) -> None:
+        cue = self.classifier._try_pick_best_non_gunshot_strong_danger_display(
+            [0, 1, 2, 3, 4], [.6, .2, .049, .04, .03], 5
+        )
+        self.assertIsNone(cue)
+
+    def test_firearm_itself_is_never_selected_for_promotion(self) -> None:
+        cue = self.classifier._try_pick_best_non_gunshot_strong_danger_display(
+            [0, 1, 3, 4, -1], [.6, .2, .04, .03, -1], 5
+        )
+        self.assertIsNone(cue)
 
 
 class ThreeClassMapperPolicyTest(unittest.TestCase):
