@@ -1,7 +1,8 @@
 import com.example.soundvisualizer.ai.*
 import java.io.File
 
-// Diagnostic only. Production implementations are compiled unchanged alongside this.
+// Diagnostic only. `baseline` deliberately reconstructs the pre-#351 policy so
+// the committed comparison remains reproducible after the approved policy ships.
 // Default mappings only: #283 B does not change the baseline vote here.
 private val variants = listOf("baseline", "no_firearm_veto", "no_speech_vote", "no_speech_name",
     "no_silence_name", "no_confidence_gate", "no_speech_guards", "no_block_promotion",
@@ -52,6 +53,7 @@ private fun verifySyntheticCases(names: List<String>, classifier: YamnetCoarseCl
     check(candidate(voice, voiceBase, "no_speech_guards").dangerCuePromoted)
     val gun = frame("Television" to .6f, "Gunshot, gunfire" to .1f, "Music" to .08f, "Wind" to .04f, "Walk, footsteps" to .03f)
     val gunBase = YamnetSafetyCueDecision.decide(names, gun)
+    check(!gunBase.dangerCuePromoted)
     check(!candidate(gun, gunBase, "no_firearm_veto_cue_floor").dangerCuePromoted)
     check(candidate(gun, gunBase, "firearm_promotion_05").dangerCuePromoted)
     System.err.println("Synthetic guard-isolation checks passed")
@@ -71,11 +73,13 @@ fun main(args: Array<String>) {
         val index = parts[0].toInt()
         if (file != index) { processors.values.forEach { it.reset() }; file = index }
         val pre = classifier.classify(parts[3].split(',').map { it.toFloat() }.toFloatArray())
-        val original = YamnetSafetyCueDecision.decide(names, pre)
-        check(candidate(pre, original, "baseline") == original) { "Diagnostic baseline mismatch at $index frame $frame" }
+        val production = YamnetSafetyCueDecision.decide(names, pre)
+        check(candidate(pre, production, "no_firearm_veto_cue_floor") == production) {
+            "Diagnostic production mismatch at $index frame $frame"
+        }
         val top5 = pre.top5.joinToString(";") { "${it.name}=${it.probability}" }
-                for (variant in variants) {
-            val decision = if (variant == "baseline") original else candidate(pre, original, variant)
+        for (variant in variants) {
+            val decision = candidate(pre, production, variant)
             val critical = YamnetMappingPolicy.DEFAULT.hasCriticalDangerCue(decision.postDisplay, pre.top5)
             val result = processors.getValue(variant).process(AiPostProcessor.FrameInput(
                 coarse=decision.postCoarse, display=decision.postDisplay, confidence=decision.postConfidence,
@@ -86,5 +90,5 @@ fun main(args: Array<String>) {
         frame++
     }
     out.flush()
-    System.err.println("Validated $frame baseline frames against production Kotlin; ${variants.size} variants")
+    System.err.println("Validated $frame production-candidate frames against Kotlin; ${variants.size} variants")
 }

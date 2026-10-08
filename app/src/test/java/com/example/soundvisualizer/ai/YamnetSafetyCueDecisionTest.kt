@@ -39,6 +39,34 @@ class YamnetSafetyCueDecisionTest {
         assertFalse(decision.dangerCuePromoted)
     }
 
+    @Test fun `gunshot cue does not veto an independent non-gunshot cue at the policy floor`() {
+        val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
+        probabilities[0] = .6f
+        probabilities[2] = .2f
+        probabilities[1] = .05f
+        probabilities[4] = .04f
+        probabilities[5] = .03f
+        val decision = YamnetSafetyCueDecision.decide(names, classifier.classify(probabilities))
+        assertTrue(decision.hasGunshotCue)
+        assertEquals("danger", decision.postCoarse)
+        assertEquals("Siren", decision.postDisplay)
+        assertTrue(decision.dangerCuePromoted)
+    }
+
+    @Test fun `gunshot cue cannot lend its evidence to a weaker non-gunshot cue`() {
+        val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
+        probabilities[0] = .6f
+        probabilities[2] = .2f
+        probabilities[1] = .049f
+        probabilities[4] = .04f
+        probabilities[5] = .03f
+        val decision = YamnetSafetyCueDecision.decide(names, classifier.classify(probabilities))
+        assertTrue(decision.hasStrongDangerCue)
+        assertTrue(decision.hasGunshotCue)
+        assertEquals("ambient", decision.postCoarse)
+        assertFalse(decision.dangerCuePromoted)
+    }
+
     @Test fun `speech result is not safety-promoted`() {
         val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
         probabilities[3] = .6f
@@ -46,6 +74,28 @@ class YamnetSafetyCueDecisionTest {
         val decision = YamnetSafetyCueDecision.decide(names, classifier.classify(probabilities))
         assertEquals("speech", decision.postCoarse)
         assertFalse(decision.dangerCuePromoted)
+    }
+
+    @Test fun `approved firearm change keeps speech silence and low-confidence guards`() {
+        val cases = listOf(
+            Triple("Speech", .6f, .1f),
+            Triple("Silence", .6f, .1f),
+            Triple("Music", .119f, .1f)
+        )
+        cases.forEach { (display, topProbability, sirenProbability) ->
+            val guardedNames = names.toMutableList().also { it[0] = display }
+            val probabilities = FloatArray(YamnetCoarseClassifier.NUM_CLASSES)
+            probabilities[0] = topProbability
+            probabilities[2] = .08f
+            probabilities[1] = sirenProbability
+            probabilities[4] = .04f
+            probabilities[5] = .03f
+            val decision = YamnetSafetyCueDecision.decide(
+                guardedNames,
+                YamnetCoarseClassifier(guardedNames).classify(probabilities)
+            )
+            assertFalse(display, decision.dangerCuePromoted)
+        }
     }
 
     @Test fun `approved attention cues are safety-promoted`() {
