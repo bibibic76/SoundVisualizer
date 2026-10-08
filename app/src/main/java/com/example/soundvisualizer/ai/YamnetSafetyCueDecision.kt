@@ -46,7 +46,9 @@ object YamnetSafetyCueDecision {
             topProbabilities
         )
         val blockPromotion =
-            pre.coarse == "speech" ||
+            // A user-assigned Speech label must not block another independent cue.
+            // Keep actual default Speech protection; cue exclusions still use mapping.
+            pre.defaultCoarse == "speech" ||
                 isSpeechLikeDisplay(pre.displayName) ||
                 isSilenceLikeDisplay(pre.displayName) ||
                 pre.confidence < 0.12f
