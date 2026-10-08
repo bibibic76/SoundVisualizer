@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.ceil
 
 /** 60fps 한 프레임. 엔진의 시간 정규화 기준값과 같다. */
 private const val FRAME_60 = 16_666_667L
@@ -119,6 +120,62 @@ private fun onTimePeakSmoothTotal(loud: Float, loudFrames: Int, tail: Float, tai
         peak = maxOf(peak, engine.debugState().smoothTotal)
     }
     return peak
+}
+
+/** 가장자리 띠 시험의 화면: 세로, 가로. */
+private val BAND_SURFACES = listOf(W to H, H to W)
+
+/** 외곽선 두께. 엔진의 4dp 에 [DENSITY] 를 곱한 값이다. */
+private const val OUTLINE_STROKE_PX = 4f
+
+/** 가장자리 띠 시험에 넣는 소리: [frames] 프레임 동안 [level] 이 프레임마다 돌려주는 (좌, 우) 크기. */
+private class BandSound(val name: String, val frames: Int, val level: (frame: Int) -> Pair<Float, Float>)
+
+/**
+ * 정해 둔 소리 일곱 가지와 무작위 소리 [randomCount] 개.
+ * 뒤쪽만 들리는 모양은 소리를 끊은 직후에 나온다. 앞 채널은 바로 0 이 되고 뒤 채널은 몇 틱 늦게 따라오기 때문이다.
+ */
+private fun bandSounds(rnd: java.util.Random, randomCount: Int = 20): List<BandSound> {
+    val fixed = listOf(
+        // 모든 채널이 가장 깊이 들어와 둥근 모서리가 가장 깊다.
+        BandSound("양쪽 최대", 300) { 1f to 1f },
+        BandSound("가운데 작게", 300) { 0.05f to 0.05f },
+        BandSound("가운데 보통", 300) { 0.15f to 0.15f },
+        BandSound("왼쪽만", 300) { 1f to 0f },
+        BandSound("오른쪽만", 300) { 0f to 1f },
+        BandSound("뒤쪽만", 122) { f -> if (f < 120) 0.8f to 0.8f else 0f to 0f },
+        BandSound("뒤쪽 왼쪽만", 122) { f -> if (f < 120) 1f to 0.3f else 0f to 0f }
+    )
+    val random = List(randomCount) { n ->
+        val frames = 30 + rnd.nextInt(90)
+        val levels = FloatArray(frames * 2) { rnd.nextFloat() }
+        BandSound("무작위 $n", frames) { f -> levels[2 * f] to levels[2 * f + 1] }
+    }
+    return fixed + random
+}
+
+/** 가장자리 띠 시험의 설정. 소리를 바로 따라가게 해 정해 둔 소리의 모양이 그대로 나오게 한다. */
+private fun bandSettings(intensity: Float, glow: Boolean) = ModeSettings(
+    intensity = intensity,
+    sensitivity = 100f,
+    speed = 100f,
+    isGlowMode = glow,
+    glowIntensity = if (glow) 50f else 0f
+)
+
+/** [sound] 를 끝까지 넣은 엔진. */
+private fun engineAfter(sound: BandSound, mode: VisualMode, settings: ModeSettings, width: Float, height: Float): VisualizerEngine {
+    val fake = FakeInputs(mode = mode, settings = settings)
+    val engine = VisualizerEngine(DENSITY, fake).also { it.setSurfaceSize(width, height) }
+    var t = FRAME_60
+    repeat(sound.frames) { f ->
+        val (left, right) = sound.level(f)
+        fake.left = left
+        fake.right = right
+        engine.tick(t)
+        t += FRAME_60
+    }
+    return engine
 }
 
 class VisualizerEngineTest {
@@ -379,40 +436,106 @@ class VisualizerEngineTest {
     }
 
     // ---------------------------------------------------------------
-    // 가장자리 띠로 잘라 그리기 (#172): 잘라 낸 곳에 그릴 것이 없어야 한다
+    // 가장자리 띠로 잘라 그리기 (#172, #350): 잘라 낸 곳에 그릴 것이 없어야 한다
     // ---------------------------------------------------------------
 
     @Test
-    fun `파도 곡선은 잘라 그릴 가장자리 띠 밖으로 나가지 않는다`() {
-        // 크기와 좌우 소리를 바꿔 가며, 그릴 때와 같은 곡선을 점 사이까지 촘촘히 짚는다.
+    fun `파도와 외곽선 곡선은 잘라 그릴 가장자리 띠 밖으로 나가지 않는다`() {
+        // 화면 방향·크기·발광·소리를 바꿔 가며, 그릴 때와 같은 곡선을 점 사이까지 촘촘히 짚는다.
         // 띠를 좁게 잡으면 파도 안쪽이나 둥근 모서리가 잘려 보인다.
-        val rnd = java.util.Random(172)
+        val sounds = bandSounds(java.util.Random(172))
         var checked = 0
-        for (intensity in listOf(10f, 50f, 100f)) {
-            // 앞의 셋은 정해 둔 소리다: 양쪽 최대(모든 채널이 가장 깊이 들어와 둥근 모서리가 가장 깊다), 왼쪽만, 오른쪽만.
-            // 나머지는 무작위다.
-            repeat(23) { trial ->
-                val fake = FakeInputs(settings = ModeSettings(intensity = intensity, sensitivity = 100f))
-                val engine = newEngine(fake)
-                var t = FRAME_60
-                val frames = if (trial < 3) 300 else 30 + rnd.nextInt(90)
-                repeat(frames) {
-                    fake.left = when (trial) { 0, 1 -> 1f; 2 -> 0f; else -> rnd.nextFloat() }
-                    fake.right = when (trial) { 0, 2 -> 1f; 1 -> 0f; else -> rnd.nextFloat() }
-                    engine.tick(t)
-                    t += FRAME_60
-                }
-                val (band, margin, curve) = engine.debugWaveBand(samplesPerSegment = 16)
-                    .let { Triple(it[0], it[1], it[2]) }
-                if (curve > 0f) checked++
-                // 안티앨리어싱으로 번지는 1px 까지 띠 안에 있어야 한다.
+        for ((width, height) in BAND_SURFACES) for (mode in listOf(VisualMode.Wave, VisualMode.Outline))
+            for (intensity in listOf(10f, 50f, 100f)) for (glow in listOf(false, true)) for (sound in sounds) {
+                val settings = bandSettings(intensity, glow)
+                val band = engineAfter(sound, mode, settings, width, height).debugWaveBand(samplesPerSegment = 16)
+                val where = "$mode ${width.toInt()}x${height.toInt()} 크기 $intensity 발광 $glow ${sound.name}"
+                // 조절점으로 잰 깊이는 곡선이 실제로 들어온 깊이 이상이다(볼록 껍질). 차이는 부동소수 오차만 둔다.
                 assertTrue(
-                    "크기 $intensity: 곡선이 ${curve}px 들어왔는데 띠는 ${band}px + 여유 ${margin}px",
-                    curve + 1f <= band + margin
+                    "$where: 곡선이 ${band.deepestSample}px 들어왔는데 조절점으로 잰 깊이는 ${band.bound}px",
+                    band.deepestSample <= band.bound + 0.01f
+                )
+                if (band.thickness < 0f) continue // 띠가 화면 짧은 변의 절반에 닿아 자르지 않고 그린다.
+                if (band.deepestSample > 0f) checked++
+                // 안티앨리어싱으로 번지는 1px 까지 띠 안에 있어야 한다. 외곽선은 선이 곡선 양쪽으로 두께의 절반씩 나간다.
+                val halfStroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_PX / 2f else 0f
+                assertTrue(
+                    "$where: 곡선이 ${band.deepestSample}px 들어왔는데 띠는 ${band.thickness}px",
+                    band.deepestSample + halfStroke + 1f <= band.thickness
                 )
             }
+        assertTrue("잘라 그린 파도가 거의 없어 확인한 것이 적다 ($checked)", checked > 550)
+    }
+
+    @Test
+    fun `파도 점만으로 띠를 재면 점 사이의 곡선이 띠 밖으로 나간다`() {
+        // 조절점으로 띠를 재는 이유(#350). 점으로만 재고 안티앨리어싱 1px 만 더하면 곡선이 잘린다.
+        // 예전에는 점 사이의 몫을 8dp 로 어림해 더했다.
+        val cases = listOf(
+            // 곡선이 가장 깊은 점보다 3px 넘게 더 부푼다.
+            BandSound("왼쪽만", 300) { 1f to 0f } to 50f,
+            // 소리가 없는 모서리에서는 점이 모서리 양쪽 변에 놓이고, 그 사이 곡선이 모서리를 가로질러
+            // 가장 깊은 점(약 3px)보다 깊이(약 9px) 들어온다.
+            BandSound("가운데 작게", 300) { 0.05f to 0.05f } to 10f
+        )
+        for ((sound, intensity) in cases) {
+            val band = engineAfter(sound, VisualMode.Wave, bandSettings(intensity, glow = false), W, H)
+                .debugWaveBand(samplesPerSegment = 16)
+            val pointsOnly = ceil(band.deepestPoint + 1f)
+            assertTrue(
+                "${sound.name}: 곡선(${band.deepestSample}px)이 점으로만 잰 띠(${pointsOnly}px) 안에 든다",
+                band.deepestSample + 1f > pointsOnly
+            )
+            assertTrue(
+                "${sound.name}: 곡선(${band.deepestSample}px)이 조절점으로 잰 띠(${band.thickness}px) 밖으로 나간다",
+                band.deepestSample + 1f <= band.thickness
+            )
         }
-        assertTrue("파도가 한 번도 그려지지 않아 확인한 것이 없다", checked > 50)
+    }
+
+    @Test
+    fun `패드 막대는 잘라 그릴 가장자리 띠 밖으로 나가지 않는다`() {
+        // 막대는 직선이고 안쪽 점은 그 막대의 두께만큼만 들어오므로, 가장 두꺼운 막대에 안티앨리어싱 1px 만 더한 띠면 된다.
+        // 막대 둘레를 변마다 짚어, 모서리를 가로질러 더 깊이 들어오는 선이 없는지도 본다.
+        val sounds = bandSounds(java.util.Random(173))
+        var checked = 0
+        for ((width, height) in BAND_SURFACES) for (intensity in listOf(10f, 50f, 100f))
+            for (glow in listOf(false, true)) for (sound in sounds) {
+                val band = engineAfter(sound, VisualMode.Pad, bandSettings(intensity, glow), width, height)
+                    .debugPadBand(samplesPerEdge = 8)
+                if (band.deepestPoint <= 0f) continue // 보이는 막대가 없다.
+                val where = "${width.toInt()}x${height.toInt()} 크기 $intensity 발광 $glow ${sound.name}"
+                assertTrue(
+                    "$where: 막대가 ${band.deepestSample}px 들어왔는데 가장 두꺼운 막대는 ${band.bound}px",
+                    band.deepestSample <= band.bound + 0.01f
+                )
+                if (band.thickness < 0f) continue
+                checked++
+                assertTrue(
+                    "$where: 막대가 ${band.deepestSample}px 들어왔는데 띠는 ${band.thickness}px",
+                    band.deepestSample + 1f <= band.thickness
+                )
+            }
+        assertTrue("잘라 그린 패드가 거의 없어 확인한 것이 적다 ($checked)", checked > 300)
+    }
+
+    @Test
+    fun `세로가 가로의 4배를 넘는 화면에서는 패드를 자르지 않는다`() {
+        // 위·아래 가운데 막대(길이 h/4)가 변을 넘어 모서리를 돌면, 막대의 바깥 선이 모서리를 가로질러
+        // 가장 두꺼운 막대보다 깊이 들어온다. 그런 화면은 없지만, 있으면 막대 두께로 잘라서는 안 된다.
+        val fake = FakeInputs(mode = VisualMode.Pad, settings = ModeSettings(intensity = 10f, sensitivity = 100f))
+        val engine = VisualizerEngine(DENSITY, fake).also { it.setSurfaceSize(300f, 1500f) }
+        fake.left = 0.3f
+        fake.right = 0.3f
+        engine.advance(frames = 120)
+
+        val band = engine.debugPadBand(samplesPerEdge = 8)
+        assertTrue("보이는 막대가 없어 확인한 것이 없다", band.deepestPoint > 0f)
+        assertTrue(
+            "모서리를 가로지르는 선(${band.deepestSample}px)이 막대 두께(${band.deepestPoint}px)보다 깊지 않다",
+            band.deepestSample > band.deepestPoint + 1f
+        )
+        assertEquals("자르지 않고 그려야 한다", -1f, band.thickness)
     }
 
     // ---------------------------------------------------------------

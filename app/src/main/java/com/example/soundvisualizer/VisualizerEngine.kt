@@ -85,8 +85,11 @@ class VisualizerEngine(
         const val WAKE_THRESHOLD = 0.01f
         private const val MIN_VISIBLE_ALPHA = 0.002f
 
-        /** 가장자리 띠로 잘라 그릴 때 곡선 넘침·안티앨리어싱을 위해 더 두는 폭(dp). */
-        private const val EDGE_BAND_MARGIN_DP = 8f
+        /**
+         * 가장자리 띠에 안티앨리어싱 몫으로 더하는 폭(px). 안티앨리어싱은 도형의 경계가 지나는 픽셀까지만 칠하므로 1px 이면 된다.
+         * 도형이 들어오는 깊이는 [waveBand]·[padBand] 가 보장된 경계로 재므로 어림한 여유는 두지 않는다(#350).
+         */
+        private const val EDGE_BAND_AA_PX = 1f
 
         /** 발광 블러가 번지는 폭 = 블러 반경의 이 배수. 블러의 시그마는 반경의 약 0.58배라 3배면 5시그마를 넘는다. */
         private const val GLOW_SPREAD = 3f
@@ -400,14 +403,28 @@ class VisualizerEngine(
         val idle: Boolean
     )
 
+    /** 테스트에서 잰 가장자리 띠. 모두 가장자리에서 안쪽으로 잰 거리(px)다. */
+    internal class DebugBand(
+        /** 그릴 때 쓰는 띠 두께([edgeBandThickness]). 자르지 않고 그리면 -1. */
+        val thickness: Float,
+        /** 도형이 들어올 수 있다고 본 깊이([waveBand]·[padBand]). */
+        val bound: Float,
+        /** 도형의 점(파도 점, 막대의 꼭짓점)만 잰 가장 깊은 거리. */
+        val deepestPoint: Float,
+        /** 그릴 도형을 점 사이까지 촘촘히 짚어 잰 가장 깊은 거리. */
+        val deepestSample: Float
+    )
+
     /**
-     * 테스트용: 지금 상태로 파도 점을 만들고 `[잘라 그릴 띠, 띠의 여유, 실제 곡선이 가장 깊이 들어온 거리]` 를 돌려준다.
+     * 테스트용: 지금 상태로 파도 점을 만들어 그릴 때와 같은 띠를 잰다. 외곽선 모드면 선 두께까지 넣은 띠다.
      * 곡선은 그릴 때와 같은 [waveSegment] 로 점 사이마다 [samplesPerSegment] 번 짚는다.
      */
-    internal fun debugWaveBand(samplesPerSegment: Int): FloatArray {
+    internal fun debugWaveBand(samplesPerSegment: Int): DebugBand {
         buildWavePoints()
+        var points = 0f
         var curve = 0f
         for (i in 0 until WAVE_N) {
+            points = max(points, edgeDistance(waveX[i], waveY[i]))
             waveSegment(i)
             for (k in 0..samplesPerSegment) {
                 val t = k.toFloat() / samplesPerSegment
@@ -419,8 +436,40 @@ class VisualizerEngine(
                 if (e > curve) curve = e
             }
         }
-        return floatArrayOf(waveBand(), EDGE_BAND_MARGIN_DP * density, curve)
+        val bound = waveBand()
+        val thickness = edgeBandThickness(bound, waveStrokeWidth(isWave = mode != VisualMode.Outline))
+        return DebugBand(thickness, bound, points, curve)
     }
+
+    /**
+     * 테스트용: 지금 상태로 패드 막대를 만들어 그릴 때와 같은 띠를 잰다.
+     * 막대마다 그릴 때와 같은 순서로 둘레(바깥 점, 안쪽 점, 다시 첫 바깥 점)를 돌며 변마다 [samplesPerEdge] 번 짚는다.
+     */
+    internal fun debugPadBand(samplesPerEdge: Int): DebugBand {
+        setPadCenters()
+        var points = 0f
+        var sampled = 0f
+        for (c in 0 until CH) {
+            if (!buildPadBar(c)) continue
+            val vertices = 2 * PAD_N + 2
+            for (j in 0 until vertices) {
+                val ax = padVertexX(j); val ay = padVertexY(j)
+                val bx = padVertexX((j + 1) % vertices); val by = padVertexY((j + 1) % vertices)
+                points = max(points, edgeDistance(ax, ay))
+                for (k in 0..samplesPerEdge) {
+                    val t = k.toFloat() / samplesPerEdge
+                    sampled = max(sampled, edgeDistance(ax + (bx - ax) * t, ay + (by - ay) * t))
+                }
+            }
+        }
+        val bound = padBand()
+        val thickness = if (bound < 0f) -1f else edgeBandThickness(bound, 0f)
+        return DebugBand(thickness, bound, points, sampled)
+    }
+
+    /** 패드 막대 둘레의 [j] 번째 꼭짓점: 바깥 점 0..PAD_N 다음에 안쪽 점 PAD_N..0. */
+    private fun padVertexX(j: Int): Float = if (j <= PAD_N) padOuterX[j] else padInnerX[2 * PAD_N + 1 - j]
+    private fun padVertexY(j: Int): Float = if (j <= PAD_N) padOuterY[j] else padInnerY[2 * PAD_N + 1 - j]
 
     internal fun debugState(): DebugState = DebugState(
         visible = visible,
@@ -715,14 +764,20 @@ class VisualizerEngine(
         val shader = ensureWaveShader()
         val paint = fillPaint
         paint.shader = shader
+        val strokeWidth = waveStrokeWidth(isWave)
         if (isWave) {
             paint.style = Paint.Style.FILL
         } else {
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = OUTLINE_STROKE_DP * density
+            paint.strokeWidth = strokeWidth
         }
-        paintEdgeBand(canvas, waveBand(), shader, paint.style, paint.strokeWidth)
+        // 띠에 더할 선 두께는 페인트에서 읽지 않는다. 예전에는 읽어서, 외곽선을 그리다 파도로 바꾸면 페인트에 남은
+        // 외곽선의 4dp 가 채우기에는 쓰이지도 않으면서 파도의 띠만 두껍게 했다(#350).
+        paintEdgeBand(canvas, waveBand(), shader, paint.style, strokeWidth)
     }
+
+    /** 파도는 채우기라 선 두께가 0 이고, 외곽선은 [OUTLINE_STROKE_DP] 다. */
+    private fun waveStrokeWidth(isWave: Boolean): Float = if (isWave) 0f else OUTLINE_STROKE_DP * density
 
     /**
      * 파도 점 [i] 에서 다음 점까지의 3차 곡선을 [seg] 에 채운다: 시작점, 제어점 둘, 끝점.
@@ -743,14 +798,30 @@ class VisualizerEngine(
         seg[6] = p2x; seg[7] = p2y
     }
 
-    /** 파도 점이 가장자리에서 가장 깊이 들어온 거리(px). 점 사이 곡선의 넘침은 [EDGE_BAND_MARGIN_DP] 가 덮는다. */
+    /**
+     * 파도·외곽선 곡선이 가장자리에서 들어올 수 있는 가장 깊은 거리(px). 어림이 아니라 보장된 경계다(#350).
+     *
+     * 곡선 조각([waveSegment])마다 시작점·제어점 둘·끝점을 놓고, 네 변 각각에서 네 점 가운데 가장 먼 거리를 잰다.
+     * 그 넷 중 가장 작은 값, 곧 그 조각이 붙어 있는 변에서의 거리를 조각의 깊이로 삼아 모든 조각의 최댓값을 낸다.
+     * 3차 베지에 곡선은 네 점의 볼록 껍질 안에 있고 한 변까지의 거리는 좌표의 일차식이라, 조각 위의 어느 점도
+     * 그 변에서 이 깊이보다 깊지 않다. 외곽선은 같은 조각을 거꾸로 그리므로 같은 값이다.
+     *
+     * 파도 점만 재면 안 된다. 점 사이에서 곡선이 몇 px 더 부풀고, 소리가 없는 모서리에서는 모서리 양쪽 변의 점을 잇는
+     * 곡선이 모서리를 가로질러 점보다 깊이 들어온다. 띠 밖으로 나간 만큼 잘려 보인다.
+     * 예전에는 점으로 재고 그 몫을 8dp 로 어림해 더했는데, 평소 소리 크기에서는 그 여유가 띠의 30~57% 였다.
+     */
     private fun waveBand(): Float {
-        var t = 0f
+        var band = 0f
         for (i in 0 until WAVE_N) {
-            val d = edgeDistance(waveX[i], waveY[i])
-            if (d > t) t = d
+            waveSegment(i)
+            val top = max(max(seg[1], seg[3]), max(seg[5], seg[7]))
+            val bottom = h - min(min(seg[1], seg[3]), min(seg[5], seg[7]))
+            val left = max(max(seg[0], seg[2]), max(seg[4], seg[6]))
+            val right = w - min(min(seg[0], seg[2]), min(seg[4], seg[6]))
+            val depth = min(min(top, bottom), min(left, right))
+            if (depth > band) band = depth
         }
-        return t
+        return band
     }
 
     /** 가장 가까운 화면 가장자리까지의 거리. */
@@ -885,7 +956,27 @@ class VisualizerEngine(
     // ---------------- Pad ----------------
 
     private fun drawPad(canvas: NativeCanvas) {
-        val p = 2f * (w + h)
+        setPadCenters()
+
+        val path = path
+        path.rewind()
+        path.fillType = Path.FillType.EVEN_ODD
+
+        var any = false
+        for (c in 0 until CH) {
+            if (!buildPadBar(c)) continue
+            any = true
+            path.moveTo(padOuterX[0], padOuterY[0])
+            for (i in 1..PAD_N) path.lineTo(padOuterX[i], padOuterY[i])
+            for (i in PAD_N downTo 0) path.lineTo(padInnerX[i], padInnerY[i])
+            path.close()
+        }
+        if (!any) return
+        drawSolid(canvas, padBand())
+    }
+
+    /** 패드 막대 가운데의 둘레 거리(상단 중앙 기준, 시계 방향)를 [centerDists] 에 채운다. */
+    private fun setPadCenters() {
         val halfW = w / 2f
         centerDists[0] = 0f                          // FC 상단 중앙
         centerDists[1] = halfW                       // FR 우상단
@@ -895,55 +986,60 @@ class VisualizerEngine(
         centerDists[5] = halfW + h + w               // BL 좌하단
         centerDists[6] = halfW + h + w + h / 2f      // SL 좌측 중앙
         centerDists[7] = halfW + h + w + h           // FL 좌상단
+    }
 
-        val path = path
-        path.rewind()
-        path.fillType = Path.FillType.EVEN_ODD
+    /**
+     * 막대 [c] 의 바깥 점(화면 테두리)과 안쪽 점을 [padOuterX]·[padInnerX] 등에 채운다. 너무 얇아 보이지 않으면 false.
+     * [setPadCenters] 를 먼저 불러 둔다.
+     */
+    private fun buildPadBar(c: Int): Boolean {
+        val maxThickness = padThickness[c]
+        if (maxThickness < PAD_MIN_DP * density) return false
 
-        val minVisible = PAD_MIN_DP * density
+        val p = 2f * (w + h)
+        val halfW = w / 2f
         val barLen = h / 4f
-        var any = false
+        val startDist = centerDists[c] - barLen / 2f
+        for (i in 0..PAD_N) {
+            val distPos = startDist + (barLen * i) / PAD_N
+            edgePosition(distPos, p)
+            val ex = px
+            val ey = py
+            padOuterX[i] = ex
+            padOuterY[i] = ey
 
-        for (c in 0 until CH) {
-            val maxThickness = padThickness[c]
-            if (maxThickness < minVisible) continue
-            any = true
-
-            val startDist = centerDists[c] - barLen / 2f
-            for (i in 0..PAD_N) {
-                val distPos = startDist + (barLen * i) / PAD_N
-                edgePosition(distPos, p)
-                val ex = px
-                val ey = py
-                padOuterX[i] = ex
-                padOuterY[i] = ey
-
-                val cur = maxThickness * padEase[i]
-                val dMod = ((distPos % p) + p) % p
-                var ix = ex
-                var iy = ey
-                if (dMod <= halfW || dMod > halfW + h + w + h) {          // Top
-                    iy += cur; ix = max(cur, min(w - cur, ix))
-                } else if (dMod <= halfW + h) {                            // Right
-                    ix -= cur; iy = max(cur, min(h - cur, iy))
-                } else if (dMod <= halfW + h + w) {                        // Bottom
-                    iy -= cur; ix = max(cur, min(w - cur, ix))
-                } else {                                                   // Left
-                    ix += cur; iy = max(cur, min(h - cur, iy))
-                }
-                padInnerX[i] = ix
-                padInnerY[i] = iy
+            val cur = maxThickness * padEase[i]
+            val dMod = ((distPos % p) + p) % p
+            var ix = ex
+            var iy = ey
+            if (dMod <= halfW || dMod > halfW + h + w + h) {          // Top
+                iy += cur; ix = max(cur, min(w - cur, ix))
+            } else if (dMod <= halfW + h) {                            // Right
+                ix -= cur; iy = max(cur, min(h - cur, iy))
+            } else if (dMod <= halfW + h + w) {                        // Bottom
+                iy -= cur; ix = max(cur, min(w - cur, ix))
+            } else {                                                   // Left
+                ix += cur; iy = max(cur, min(h - cur, iy))
             }
-
-            path.moveTo(padOuterX[0], padOuterY[0])
-            for (i in 1..PAD_N) path.lineTo(padOuterX[i], padOuterY[i])
-            for (i in PAD_N downTo 0) path.lineTo(padInnerX[i], padInnerY[i])
-            path.close()
+            padInnerX[i] = ix
+            padInnerY[i] = iy
         }
-        if (!any) return
+        return true
+    }
+
+    /**
+     * 패드 막대가 가장자리에서 들어올 수 있는 가장 깊은 거리(px). 자르지 않고 그려야 하면 -1.
+     *
+     * 막대는 직선으로 잇고, 안쪽 점은 그 막대의 두께만큼만 자기 변에서 들어온다. 모서리 막대는 가운데 점이 꼭 모서리에
+     * 놓여 모서리를 가로지르는 선이 없다. 그래서 가장 두꺼운 막대의 두께가 곧 경계이고, 곡선과 달리 부풀 몫이 없다.
+     * 다만 세로가 가로의 4배를 넘는 화면에서는 위·아래 가운데 막대(길이 h/4)가 변을 넘어 모서리를 돌고, 그 선이
+     * 모서리를 가로질러 더 깊이 들어올 수 있다. 그런 화면은 없지만, 있으면 자르지 않고 그린다.
+     */
+    private fun padBand(): Float {
+        if (h / 4f > w) return -1f
         var band = 0f
         for (c in 0 until CH) if (padThickness[c] > band) band = padThickness[c]
-        drawSolid(canvas, band)
+        return band
     }
 
     // ---------------- Circle ----------------
@@ -996,6 +1092,7 @@ class VisualizerEngine(
 
     /**
      * [path] 를 그린다. 도형이 가장자리에서 [band] 안쪽에만 있으면 가장자리 띠 네 개로 잘라 그린다(#172).
+     * 띠 두께는 [edgeBandThickness] 다.
      *
      * 파도·외곽선·패드는 가장자리 띠만 칠하지만 경로의 범위는 화면 전체다. 그대로 그리면 안티앨리어싱
      * 마스크를 매 프레임 화면 전체 크기로 만든다. 잘라 그리면 마스크가 띠 크기로 줄고, 그려지는 화면은 같다.
@@ -1009,19 +1106,31 @@ class VisualizerEngine(
      * 그린 프레임 수가 달라진 것을 걸러 내지 않은 탓이었다. 회차를 프레임 수로 판정하고 다시 재니 뒤집혔다.
      */
     private fun paintEdgeBand(canvas: NativeCanvas, band: Float, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
-        // 띠가 만나는 경계를 픽셀에 맞춰, 경계 줄이 두 띠에 모두 들거나 어느 쪽에도 들지 않는 일이 없게 한다.
-        val glow = glowAlpha > 0f
-        val t = ceil(band + EDGE_BAND_MARGIN_DP * density + strokeWidth + if (glow) glowRadiusPx * GLOW_SPREAD else 0f)
-        if (t * 2f >= min(w, h)) {
+        val t = edgeBandThickness(band, strokeWidth)
+        if (t < 0f) {
             paintPath(canvas, shader, style, strokeWidth)
             return
         }
+        val glow = glowAlpha > 0f
         fillPaint.alpha = alphaByte(alpha)
         // withClip 은 인라인이라 프레임마다 할당하지 않는다.
         canvas.withClip(0f, 0f, w, t) { paintInBand(this, glow, shader, style, strokeWidth) }          // 위 (모서리 포함)
         canvas.withClip(0f, h - t, w, h) { paintInBand(this, glow, shader, style, strokeWidth) }       // 아래 (모서리 포함)
         canvas.withClip(0f, t, t, h - t) { paintInBand(this, glow, shader, style, strokeWidth) }       // 왼쪽
         canvas.withClip(w - t, t, w, h - t) { paintInBand(this, glow, shader, style, strokeWidth) }    // 오른쪽
+    }
+
+    /**
+     * 잘라 그릴 띠의 두께(px). 도형이 들어올 수 있는 깊이 [band] 에 안티앨리어싱 1px([EDGE_BAND_AA_PX]),
+     * 선 두께, 발광이 번지는 폭을 더한다. 띠가 화면 짧은 변의 절반에 닿으면 잘라 봐야 줄지 않으므로 -1 이다.
+     *
+     * 띠가 만나는 경계를 픽셀에 맞추려고 올림한다. 그래야 경계 줄이 두 띠에 모두 들거나 어느 쪽에도 들지 않는 일이 없다.
+     * 외곽선은 선 두께를 다 더한다. 선은 곡선 양쪽으로 두께의 절반씩 나가고, 꺾인 이음(MITER)은 그보다 멀리 나갈 수 있다.
+     * Catmull-Rom 곡선은 조각 사이 이음이 매끄러워 실제로는 절반만 나가지만, 두 배를 두면 이음이 꽤 꺾여도(120°까지) 띠 안에 든다.
+     */
+    private fun edgeBandThickness(band: Float, strokeWidth: Float): Float {
+        val t = ceil(band + EDGE_BAND_AA_PX + strokeWidth + if (glowAlpha > 0f) glowRadiusPx * GLOW_SPREAD else 0f)
+        return if (t * 2f >= min(w, h)) -1f else t
     }
 
     /** 띠 하나에 발광(켜져 있으면)과 본 도형을 그린다. 자른 범위 밖은 어차피 그려지지 않는다. */
