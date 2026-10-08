@@ -13,8 +13,17 @@ import java.util.Locale
  * @param name 모델이 쓰는 영어 이름. 사용자가 고른 종류를 저장하는 키이고, 분류기가 받는 이름과 같아야 해서
  *   번역된 이름이 아니라 이것을 쓴다.
  * @param defaultType 키워드 규칙만으로 정한 종류([AiClassification] 라벨).
+ * @param group 분류 탭에서 이 소리가 든 묶음(assets/sound_groups.tsv, #349). 표에 없으면 null 이고, 그 소리 하나가
+ *   카드가 된다([SoundGroups.sections]).
+ * @param order 묶음 화면에서 보이는 자리. 표의 줄 순서이고, 표에 없는 소리는 표 뒤에 번호 순서로 온다.
  */
-data class SoundEntry(val index: Int, val name: String, val defaultType: String)
+data class SoundEntry(
+    val index: Int,
+    val name: String,
+    val defaultType: String,
+    val group: SoundGroup? = null,
+    val order: Int = index
+)
 
 /** 분류 탭의 거르기. 종류는 사용자가 바꾼 것까지 반영한 지금 종류로 본다. */
 enum class SoundFilter { ALL, AMBIENT, SPEECH, DANGER, CHANGED }
@@ -24,20 +33,46 @@ object SoundCatalog {
     /** 분류기(RealtimeAiPipeline)가 읽는 클래스 목록과 같은 파일이다. */
     private const val CLASS_MAP_ASSET = "ai/yamnet_class_map.csv"
 
+    /**
+     * 분류 탭의 소리 묶음 표(#349). AudioSet 온톨로지를 바탕으로 만든 표라 CC BY-SA 4.0 머리글을 달아 assets/ai 밖에
+     * 따로 둔다. AI 는 이 표를 읽지 않는다.
+     */
+    private const val GROUPS_ASSET = "sound_groups.tsv"
+
     @Volatile
     private var cached: List<SoundEntry>? = null
 
     /** 이미 읽어 둔 목록. 아직이면 null. 탭에 다시 들어올 때 빈 화면이 깜빡이지 않게 쓴다. */
     fun cachedOrNull(): List<SoundEntry>? = cached
 
-    /** 파일을 읽으므로 메인 스레드에서 부르지 않는다. 한 번 읽으면 프로세스가 끝날 때까지 들고 있는다. */
+    /**
+     * 파일을 읽으므로 메인 스레드에서 부르지 않는다. 한 번 읽으면 프로세스가 끝날 때까지 들고 있는다.
+     * 묶음 표도 여기서 함께 읽는다. 탭은 이 목록 하나만 IO 스레드에서 기다리면 되고, 표를 따로 읽느라 다시 그리지 않는다.
+     */
     fun load(context: Context): List<SoundEntry> =
-        cached ?: context.assets.open(CLASS_MAP_ASSET)
-            .use { fromNames(YamnetCoarseClassifier.loadClassNames(it)) }
-            .also { cached = it }
+        cached ?: run {
+            val names = context.assets.open(CLASS_MAP_ASSET).use { YamnetCoarseClassifier.loadClassNames(it) }
+            val groups = context.assets.open(GROUPS_ASSET).use { SoundGroups.parseTable(it) }
+            fromNames(names, groups)
+        }.also { cached = it }
 
-    internal fun fromNames(names: List<String>): List<SoundEntry> =
-        names.mapIndexed { index, name -> SoundEntry(index, name, SettingsManager.defaultSoundType(name)) }
+    /**
+     * 모델의 소리 이름(번호 순서)으로 목록을 만든다.
+     *
+     * @param groups 소리 이름별 묶음([SoundGroups.parseTable]). 표에 없는 소리는 묶음이 없다.
+     * @param defaultOf 기본 종류. AI 의 매핑이 바뀐 경우를 테스트가 흉내 낼 때만 바꾼다.
+     */
+    internal fun fromNames(
+        names: List<String>,
+        groups: Map<String, SoundGroupRow> = emptyMap(),
+        defaultOf: (String) -> String = SettingsManager::defaultSoundType
+    ): List<SoundEntry> {
+        val afterTable = (groups.values.maxOfOrNull { it.order } ?: -1) + 1
+        return names.mapIndexed { index, name ->
+            val row = groups[name]
+            SoundEntry(index, name, defaultOf(name), row?.group, row?.order ?: (afterTable + index))
+        }
+    }
 
     /** 사용자가 바꾼 것까지 반영한 지금 종류. */
     fun typeOf(entry: SoundEntry, overrides: Map<String, String>): String = overrides[entry.name] ?: entry.defaultType
@@ -56,15 +91,19 @@ object SoundCatalog {
     ): List<SoundEntry> {
         val needle = normalize(query)
         return entries.filterIndexed { i, entry ->
-            val type = typeOf(entry, overrides)
-            val kept = when (filter) {
-                SoundFilter.ALL -> true
-                SoundFilter.AMBIENT -> type == AiClassification.AMBIENT
-                SoundFilter.SPEECH -> type == AiClassification.SPEECH
-                SoundFilter.DANGER -> type == AiClassification.DANGER
-                SoundFilter.CHANGED -> type != entry.defaultType
-            }
-            kept && (needle.isEmpty() || needle in searchKeys[i])
+            passes(entry, overrides, filter) && (needle.isEmpty() || needle in searchKeys[i])
+        }
+    }
+
+    /** [entry] 가 거르기에 맞는지. 묶음 화면([SoundGroups.filter])도 소리마다 같은 기준으로 본다. */
+    internal fun passes(entry: SoundEntry, overrides: Map<String, String>, filter: SoundFilter): Boolean {
+        val type = typeOf(entry, overrides)
+        return when (filter) {
+            SoundFilter.ALL -> true
+            SoundFilter.AMBIENT -> type == AiClassification.AMBIENT
+            SoundFilter.SPEECH -> type == AiClassification.SPEECH
+            SoundFilter.DANGER -> type == AiClassification.DANGER
+            SoundFilter.CHANGED -> type != entry.defaultType
         }
     }
 

@@ -135,9 +135,11 @@
     <string name="ai_show_speech">แสดงเสียงพูด</string>
     <string name="ai_show_danger">แสดงเสียงอันตราย</string>
     <string name="ai_unavailable">ระบบแยกประเภทเสียงไม่ทำงาน จึงแสดงทุกเสียงด้วยสีของเสียงแวดล้อม ลองปิดแล้วเปิดการแสดงภาพเสียงอีกครั้ง</string>
-    <string name="classify_title">เลือกประเภทของแต่ละเสียง</string>
-    <string name="classify_desc">แสดงเสียงทั้งหมดที่ AI รู้จัก และแต่ละเสียงจัดอยู่ในประเภทใดในขณะนี้ หากเปลี่ยนประเภทของเสียงใด สีและการสั่นของเสียงนั้นจะเปลี่ยนตามประเภทใหม่ทันที</string>
-    <string name="classify_danger_note">เสียงที่ย้ายออกจากเสียงอันตรายจะไม่ใช้สีและการสั่นของเสียงอันตรายอีกเมื่อได้ยินเป็นชื่อนั้น แต่เสียงเดียวมักได้ยินเป็นหลายชื่อพร้อมกัน เช่น ไซเรนยังได้ยินเป็น “สัญญาณเตือนภัย” ด้วย และไซเรนเองก็มี 5 แถว หากต้องการย้ายออกทั้งหมด ต้องเปลี่ยนทุกแถว</string>
+    <string name="classify_title">เลือกประเภทเสียง</string>
+    <string name="classify_desc_groups">เสียงที่ AI รู้จักจะจัดกลุ่มรวมกับเสียงที่คล้ายกัน และแสดงตามประเภทเริ่มต้นของแต่ละเสียง หากเปลี่ยนประเภทของกลุ่ม สีและการสั่นของเสียงในกลุ่มจะเปลี่ยนตามประเภทใหม่ทันที</string>
+    <string name="classify_sibling_note">AI มักได้ยินเสียงเดียวเป็นหลายชื่อพร้อมกัน เช่น ไซเรนยังได้ยินเป็น “สัญญาณเตือนภัย” ด้วย ซึ่งอยู่ในอีกกลุ่มหนึ่ง หากเปลี่ยนแล้วเสียงยังแสดงเป็นประเภทเดิม ให้เปลี่ยนกลุ่มหรือเสียงที่เกี่ยวข้องด้วย</string>
+    <string name="classify_advanced">โหมดขั้นสูง</string>
+    <string name="classify_advanced_desc">แสดงทุกเสียงตามกลุ่ม เพื่อให้คุณเปลี่ยนเสียงได้ทีละเสียง</string>
     <string name="classify_search_hint">ค้นหาเสียง</string>
     <string name="cd_classify_clear_search">ล้างคำค้นหา</string>
     <string name="classify_filter_all">ทั้งหมด</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">ไม่พบเสียงที่ตรงกัน</string>
     <string name="cd_classify_sound">%1$s, ประเภท: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, ประเภท: %2$s, ค่าเริ่มต้น: %3$s</string>
+    <string name="classify_type_mixed">ผสม</string>
+    <string name="classify_group_mixed_note">มีบางเสียงที่เปลี่ยนทีละเสียง</string>
+    <string name="classify_group_changed_line">ตอนนี้: %1$s · ค่าเริ่มต้น: %2$s</string>
+    <string name="classify_group_overwrite_title">เปลี่ยนทั้งกลุ่มหรือไม่</string>
+    <string name="classify_group_overwrite_message">เสียง %2$d เสียงในกลุ่ม “%1$s” จะเปลี่ยนเป็น “%3$s” เสียงที่คุณเปลี่ยนทีละเสียงไว้จะถูกเขียนทับด้วย</string>
+    <string name="classify_group_overwrite_confirm">เปลี่ยน</string>
+    <string name="classify_group_overwrite_cancel">ยกเลิก</string>
+    <string name="classify_basic_warning_title">เปลี่ยนเป็นโหมดพื้นฐานหรือไม่</string>
+    <string name="classify_basic_warning_message">บางกลุ่มมีเสียงที่คุณเปลี่ยนทีละเสียงไว้ ในโหมดพื้นฐาน หากเลือกประเภทให้กลุ่มเหล่านี้ เสียงทั้งหมดในกลุ่มจะเป็นประเภทนั้น และสิ่งที่เปลี่ยนทีละเสียงไว้ในกลุ่มนั้นจะถูกเขียนทับ จะไม่มีอะไรเปลี่ยนจนกว่าคุณจะเลือก</string>
+    <string name="classify_basic_warning_confirm">ใช้โหมดพื้นฐาน</string>
+    <string name="classify_basic_warning_cancel">อยู่ในโหมดขั้นสูงต่อ</string>
+    <string name="cd_classify_group">กลุ่ม %1$s, ประเภท: %2$s, จำนวนเสียง: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">กลุ่ม %1$s, ประเภท: %2$s, ค่าเริ่มต้น: %3$s, จำนวนเสียง: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">กลุ่ม %1$s, จำนวนเสียง: %2$d</string>
+    <string name="sound_group_horns">แตรรถและสัญญาณกันขโมยรถ</string>
+    <string name="sound_group_vehicle_warnings">เสียงเตือนจากยานพาหนะ</string>
+    <string name="sound_group_breaking">กระจกแตกและเสียงพังโครม</string>
+    <string name="sound_group_distress">เสียงตะโกน กรีดร้อง และร้องไห้</string>
+    <string name="sound_group_signals">นาฬิกาปลุก เสียงบี๊บ และนกหวีด</string>
+    <string name="sound_group_voices">เสียงโห่ร้อง หัวเราะลั่น และเชียร์</string>
+    <string name="sound_group_water">ก๊อกน้ำและน้ำไหล</string>
+    <string name="sound_group_kitchen">ห้องครัวและการทำอาหาร</string>
+    <string name="sound_group_appliances">เครื่องใช้ไฟฟ้าในบ้านและนาฬิกา</string>
+    <string name="sound_group_tools">เครื่องมือช่างและเครื่องจักร</string>
+    <string name="sound_group_nature">ธรรมชาติและสภาพอากาศ</string>
+    <string name="sound_group_body">เสียงไอ หายใจ และเสียงจากร่างกาย</string>
+    <string name="sound_group_objects">สิ่งของและเสียงสั้นๆ</string>
+    <string name="sound_group_background">ทีวี วิทยุ และเสียงพื้นหลัง</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">สั่น</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">ประเภทเสียงและการสั่น</string>
     <string name="help_sound_kinds">AI จะแยกเสียงที่ได้ยินออกเป็นเสียงแวดล้อม เสียงพูด และเสียงอันตราย สีเริ่มต้นคือ เสียงแวดล้อมสีขาว เสียงพูดสีเหลือง และเสียงอันตรายสีแดง ในแท็บการตั้งค่า คุณสามารถเปลี่ยนสีของแต่ละประเภทและเลือกได้ว่าจะแสดงหรือไม่</string>
-    <string name="help_sound_classify">ในแท็บเสียง คุณเลือกได้ว่าเสียงแต่ละเสียงที่ AI จำได้จะนับเป็นประเภทใด เช่น หากเปลี่ยน “กริ่งประตู” เป็นเสียงอันตราย เสียงกริ่งประตูก็จะใช้สีและการสั่นของเสียงอันตราย</string>
+    <string name="help_sound_classify_groups">ในแท็บเสียง เสียงที่คล้ายกันจะอยู่รวมเป็นกลุ่ม และคุณเลือกได้ว่าแต่ละกลุ่มจะนับเป็นประเภทใด เช่น หากเปลี่ยนกลุ่ม “กริ่งประตู” เป็นเสียงอันตราย เมื่อ AI ได้ยินเป็นกริ่งประตูหรือเคาะประตู เสียงนั้นจะใช้สีและการสั่นของเสียงอันตราย หากต้องการเปลี่ยนเสียงทีละเสียง ให้เปิดโหมดขั้นสูง</string>
     <string name="help_sound_danger">เมื่อตรวจพบเสียงอันตราย (เช่น เสียงปืน) สีจะเปลี่ยนทันทีแทนที่จะค่อยๆ เปลี่ยน</string>
     <string name="help_sound_haptic">การสั่นช่วยแจ้งให้คุณทราบแม้ไม่ได้มองหน้าจอ โดยค่าเริ่มต้นจะเปิดการสั่นไว้เฉพาะเสียงอันตราย และคุณเลือกโหมด (ปิด, ช้า, กลาง, เร็ว, ต่อเนื่อง) กับความแรงของแต่ละประเภทได้</string>
     <string name="help_sound_haptic_rule">จะสั่นเฉพาะเสียงประเภทที่แสดงบนหน้าจอเท่านั้น โทรศัพท์จะสั่นไปตลอดเวลาที่เสียงประเภทนั้นยังดังอยู่ และหยุดเมื่อเสียงหยุด “กลาง” สั่นเป็นจังหวะทุกครึ่งวินาที “ช้า” สั่นช้ากว่านั้นครึ่งหนึ่ง และ “เร็ว” สั่นเร็วกว่านั้นสองเท่า ส่วน “ต่อเนื่อง” จะสั่นโดยไม่หยุดพัก ทุกโหมดจะสั่นด้วยความแรงที่คุณเลือกไว้</string>

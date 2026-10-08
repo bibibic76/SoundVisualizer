@@ -135,9 +135,11 @@
     <string name="ai_show_speech">बातचीत दिखाएं</string>
     <string name="ai_show_danger">खतरे की आवाज़ें दिखाएं</string>
     <string name="ai_unavailable">आवाज़ का प्रकार पहचाना नहीं जा पा रहा है, इसलिए सभी आवाज़ें माहौल की आवाज़ों के रंग में दिख रही हैं। विज़ुअलाइज़र को बंद करके दोबारा चालू करके देखें।</string>
-    <string name="classify_title">हर आवाज़ का प्रकार चुनें</string>
-    <string name="classify_desc">AI जिन आवाज़ों को पहचान सकता है, वे सभी यहां दिखती हैं, साथ ही यह भी कि हर आवाज़ किस प्रकार में गिनी जाती है। किसी आवाज़ का प्रकार बदलने पर, उसका रंग और वाइब्रेशन तुरंत नए प्रकार के हिसाब से बदल जाते हैं।</string>
-    <string name="classify_danger_note">किसी आवाज़ को खतरे की आवाज़ों से हटाने पर, उस नाम से पहचाने जाने पर उसके लिए खतरे की आवाज़ों वाला रंग और वाइब्रेशन नहीं मिलेगा। लेकिन एक ही आवाज़ अक्सर कई नामों से एक साथ पहचानी जाती है। जैसे, सायरन “अलार्म” के रूप में भी पहचाना जाता है, और सिर्फ़ सायरन की ही पांच पंक्तियां हैं। उसे पूरी तरह हटाने के लिए ये सभी पंक्तियां बदलें।</string>
+    <string name="classify_title">आवाज़ों के प्रकार चुनें</string>
+    <string name="classify_desc_groups">AI जिन आवाज़ों को पहचानता है, वे मिलती-जुलती आवाज़ों के साथ समूहों में रखी गई हैं और अपने डिफ़ॉल्ट प्रकार के हिसाब से दिखती हैं। किसी समूह का प्रकार बदलने पर, उसकी आवाज़ों का रंग और वाइब्रेशन तुरंत नए प्रकार के हिसाब से बदल जाते हैं।</string>
+    <string name="classify_sibling_note">AI अक्सर एक ही आवाज़ को एक साथ कई नामों से पहचानता है। जैसे, सायरन “अलार्म” के रूप में भी पहचाना जाता है, जो किसी दूसरे समूह में है। बदलाव के बाद भी अगर कोई आवाज़ पुराने प्रकार में दिखे, तो उससे जुड़े समूह या आवाज़ें भी बदलें।</string>
+    <string name="classify_advanced">एडवांस मोड</string>
+    <string name="classify_advanced_desc">हर आवाज़ को उसके समूह में दिखाता है, ताकि आप आवाज़ें एक-एक करके बदल सकें।</string>
     <string name="classify_search_hint">आवाज़ें खोजें</string>
     <string name="cd_classify_clear_search">खोज मिटाएं</string>
     <string name="classify_filter_all">सभी</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">मेल खाने वाली कोई आवाज़ नहीं मिली।</string>
     <string name="cd_classify_sound">%1$s, प्रकार: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, प्रकार: %2$s, डिफ़ॉल्ट: %3$s</string>
+    <string name="classify_type_mixed">मिला-जुला</string>
+    <string name="classify_group_mixed_note">कुछ आवाज़ें एक-एक करके बदली गईं</string>
+    <string name="classify_group_changed_line">अभी: %1$s · डिफ़ॉल्ट: %2$s</string>
+    <string name="classify_group_overwrite_title">पूरा समूह बदलें?</string>
+    <string name="classify_group_overwrite_message">“%1$s” समूह में “%3$s” प्रकार में बदलने वाली आवाज़ें: %2$d। एक-एक करके बदली गई आवाज़ों का प्रकार भी बदल जाएगा।</string>
+    <string name="classify_group_overwrite_confirm">बदलें</string>
+    <string name="classify_group_overwrite_cancel">रद्द करें</string>
+    <string name="classify_basic_warning_title">बेसिक मोड पर जाएं?</string>
+    <string name="classify_basic_warning_message">कुछ समूहों में ऐसी आवाज़ें हैं जिन्हें आपने एक-एक करके बदला है। बेसिक मोड में ऐसे किसी समूह का प्रकार चुनने पर, उसकी सभी आवाज़ों को वही प्रकार मिल जाता है और उस समूह में एक-एक करके किए गए आपके बदलाव मिट जाते हैं। जब तक आप कुछ नहीं चुनते, कुछ नहीं बदलता।</string>
+    <string name="classify_basic_warning_confirm">बेसिक मोड पर जाएं</string>
+    <string name="classify_basic_warning_cancel">एडवांस मोड में रहें</string>
+    <string name="cd_classify_group">%1$s समूह, प्रकार: %2$s, आवाज़ें: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">%1$s समूह, प्रकार: %2$s, डिफ़ॉल्ट: %3$s, आवाज़ें: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">%1$s समूह, आवाज़ें: %2$d</string>
+    <string name="sound_group_horns">हॉर्न और कार के अलार्म</string>
+    <string name="sound_group_vehicle_warnings">वाहनों के चेतावनी संकेत</string>
+    <string name="sound_group_breaking">कांच का टूटना और धड़ाम की आवाज़ें</string>
+    <string name="sound_group_distress">चिल्लाना, चीखना और रोना</string>
+    <string name="sound_group_signals">अलार्म घड़ी, बीप और सीटी</string>
+    <string name="sound_group_voices">पुकार, ठहाके और जयकार</string>
+    <string name="sound_group_water">नल और बहता पानी</string>
+    <string name="sound_group_kitchen">रसोई और खाना पकाना</string>
+    <string name="sound_group_appliances">घरेलू उपकरण और घड़ियां</string>
+    <string name="sound_group_tools">औज़ार और मशीनें</string>
+    <string name="sound_group_nature">प्रकृति और मौसम</string>
+    <string name="sound_group_body">खांसी, सांस और शरीर की आवाज़ें</string>
+    <string name="sound_group_objects">चीज़ें और छोटी आवाज़ें</string>
+    <string name="sound_group_background">टीवी, रेडियो और पृष्ठभूमि की आवाज़</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">वाइब्रेट करें</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">आवाज़ के प्रकार और वाइब्रेशन</string>
     <string name="help_sound_kinds">AI फ़ोन में चल रही आवाज़ों को तीन प्रकारों में बांटता है: माहौल की आवाज़ें, बातचीत और खतरे की आवाज़ें। डिफ़ॉल्ट रूप से माहौल की आवाज़ें सफ़ेद, बातचीत पीले और खतरे की आवाज़ें लाल रंग में दिखती हैं। “सेटिंग” टैब में हर प्रकार का रंग बदला जा सकता है और यह भी चुना जा सकता है कि उसे दिखाना है या नहीं।</string>
-    <string name="help_sound_classify">“आवाज़ें” टैब में आप चुन सकते हैं कि AI की पहचानी हर आवाज़ किस प्रकार में गिनी जाए। जैसे, “दरवाज़े की घंटी” को खतरे की आवाज़ों में बदलने पर दरवाज़े की घंटी के लिए भी खतरे की आवाज़ों वाला रंग और वाइब्रेशन मिलेगा।</string>
+    <string name="help_sound_classify_groups">“आवाज़ें” टैब में मिलती-जुलती आवाज़ें समूहों में रखी जाती हैं, और आप चुनते हैं कि हर समूह किस प्रकार में गिना जाए। जैसे, “दरवाज़े की घंटी” समूह को खतरे की आवाज़ों में बदलने पर, जब AI को दरवाज़े की घंटी या दरवाज़ा खटखटाना सुनाई देता है, तो उस आवाज़ को खतरे की आवाज़ों वाला रंग और वाइब्रेशन मिलता है। आवाज़ें एक-एक करके बदलने के लिए एडवांस मोड चालू करें।</string>
     <string name="help_sound_danger">खतरे की आवाज़ (जैसे गोली चलने की आवाज़) पहचानी जाने पर रंग धीरे-धीरे बदलने के बजाय तुरंत बदल जाता है।</string>
     <string name="help_sound_haptic">स्क्रीन न देखते समय भी वाइब्रेशन से आवाज़ का पता चल जाता है। डिफ़ॉल्ट रूप से सिर्फ़ खतरे की आवाज़ों के लिए वाइब्रेशन चालू रहता है। हर प्रकार के लिए मोड (बंद, धीमा, मध्यम, तेज़, लगातार) और तीव्रता चुनी जा सकती है।</string>
     <string name="help_sound_haptic_rule">सिर्फ़ उन्हीं प्रकारों के लिए वाइब्रेशन होता है, जो स्क्रीन पर दिखाए जा रहे हैं। उस प्रकार की आवाज़ जारी रहने तक वाइब्रेशन होता रहता है और आवाज़ रुकने पर रुक जाता है। “मध्यम” हर आधे सेकंड में धड़कता है, “धीमा” उसकी आधी रफ़्तार से और “तेज़” दोगुनी रफ़्तार से, जबकि “लगातार” बिना रुके वाइब्रेट करता है। हर मोड में वाइब्रेशन आपकी चुनी हुई तीव्रता पर ही रहता है।</string>

@@ -156,9 +156,12 @@
     <string name="ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color. Try turning the visualizer off and on again.</string>
 
     <!-- Sounds tab: which type each sound counts as -->
-    <string name="classify_title">Pick a type for each sound</string>
-    <string name="classify_desc">Here is every sound the AI can recognize and the type it counts as. Change a sound\'s type, and its color and vibration follow the new type right away.</string>
-    <string name="classify_danger_note">A sound you move out of Danger no longer brings danger colors or vibration under its own name. But one sound is often heard under several names at once. A siren, for example, is also heard as “Alarm”, and sirens alone have five rows. To move it out completely, change all of them.</string>
+    <string name="classify_title">Choose sound types</string>
+    <string name="classify_desc_groups">Sounds the AI recognizes are grouped with similar sounds, under the type each counts as by default. Change a group’s type, and the color and vibration of its sounds follow right away.</string>
+    <!-- Quote this language's own names of the sounds “Siren” and “Alarm”, so people can search for them. -->
+    <string name="classify_sibling_note">The AI often hears one sound under several names at once. A siren, for example, is also heard as “Alarm”, which is in another group. If a sound still shows its old type after a change, change the related groups or sounds too.</string>
+    <string name="classify_advanced">Advanced mode</string>
+    <string name="classify_advanced_desc">Shows every sound in its group, so you can change sounds one by one.</string>
     <string name="classify_search_hint">Search sounds</string>
     <string name="cd_classify_clear_search">Clear search</string>
     <string name="classify_filter_all">All</string>
@@ -177,6 +180,43 @@
     <string name="classify_empty">No matching sounds.</string>
     <string name="cd_classify_sound">%1$s, type: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, type: %2$s, default: %3$s</string>
+    <!-- Type chip of a group whose sounds were changed one by one, so they are not all the same type -->
+    <string name="classify_type_mixed">Mixed</string>
+    <string name="classify_group_mixed_note">Some sounds changed one by one</string>
+    <!-- Under the name of a group changed as a whole. %1$s is its type now, %2$s its default type. -->
+    <string name="classify_group_changed_line">Now: %1$s · Default: %2$s</string>
+    <!-- How many more sounds a group has than its preview shows. A number only, so it is not translated. -->
+    <string name="classify_group_more" translatable="false">+%1$d</string>
+    <string name="classify_group_overwrite_title">Change the whole group?</string>
+    <!-- %1$s is the group name, %2$d how many of its sounds change, %3$s the type picked. -->
+    <!-- 정해 둔 문구 그대로라 plurals 로 바꾸지 않고 PluralsCandidate 를 끈다. 하나만 바뀔 때 영어가 "1 sounds" 로 읽히는 점은 검토에서 정한다. -->
+    <string name="classify_group_overwrite_message" tools:ignore="PluralsCandidate">%2$d sounds in the “%1$s” group will change to %3$s. Sounds you changed one by one are overwritten too.</string>
+    <string name="classify_group_overwrite_confirm">Change</string>
+    <string name="classify_group_overwrite_cancel">Cancel</string>
+    <string name="classify_basic_warning_title">Switch to basic mode?</string>
+    <string name="classify_basic_warning_message">Some groups have sounds you changed one by one. In basic mode, choosing a type for one of these groups gives every sound in it that type, and your one-by-one changes in that group are overwritten. Nothing changes until you choose.</string>
+    <string name="classify_basic_warning_confirm">Switch to basic</string>
+    <string name="classify_basic_warning_cancel">Stay in advanced</string>
+    <!-- Screen reader text of a group card. %4$s / %5$s lists a few of its sounds, separated by commas. -->
+    <string name="cd_classify_group">%1$s group, type: %2$s, sounds: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">%1$s group, type: %2$s, default: %3$s, sounds: %4$d (%5$s)</string>
+    <!-- Screen reader text of a group heading in Advanced mode -->
+    <string name="cd_classify_group_header">%1$s group, sounds: %2$d</string>
+    <!-- 새로 지은 묶음 이름(#349). 소리 이름이 곧 묶음 이름인 묶음(사이렌 등)은 sound_names 를 그대로 쓴다. -->
+    <string name="sound_group_horns">Car horns and car alarms</string>
+    <string name="sound_group_vehicle_warnings">Vehicle warnings</string>
+    <string name="sound_group_breaking">Breaking glass and crashes</string>
+    <string name="sound_group_distress">Shouting, screaming and crying</string>
+    <string name="sound_group_signals">Alarm clocks, beeps and whistles</string>
+    <string name="sound_group_voices">Yells, laughs and cheers</string>
+    <string name="sound_group_water">Taps and running water</string>
+    <string name="sound_group_kitchen">Kitchen and cooking</string>
+    <string name="sound_group_appliances">Home appliances and clocks</string>
+    <string name="sound_group_tools">Tools and machines</string>
+    <string name="sound_group_nature">Nature and weather</string>
+    <string name="sound_group_body">Coughs, breathing and body sounds</string>
+    <string name="sound_group_objects">Objects and short sounds</string>
+    <string name="sound_group_background">TV, radio and background sound</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>
@@ -295,7 +335,7 @@
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
-    <string name="help_sound_classify">In the Sounds tab, you can pick which type each sound the AI recognizes counts as. For example, change “Doorbell” to Danger and a doorbell gets the danger color and vibration.</string>
+    <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. Turn on Advanced mode to change sounds one by one.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>

@@ -135,9 +135,11 @@
     <string name="ai_show_speech">Konuşmayı göster</string>
     <string name="ai_show_danger">Tehlike seslerini göster</string>
     <string name="ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
-    <string name="classify_title">Her sesin türünü seçin</string>
-    <string name="classify_desc">Yapay zekanın tanıyabildiği tüm sesler ve her birinin hangi tür olarak sayıldığı burada gösterilir. Bir sesin türünü değiştirdiğinizde o sesin rengi ve titreşimi hemen yeni türe göre değişir.</string>
-    <string name="classify_danger_note">Tehlike sesleri arasından çıkardığınız bir ses, bu adla tanındığında artık tehlike sesi rengi ve titreşimi almaz. Ancak tek bir ses çoğu zaman aynı anda birkaç adla tanınır: Örneğin siren “Alarm” olarak da tanınır ve yalnızca sirenler beş satırdadır. Tamamen çıkarmak için bu satırların hepsini değiştirin.</string>
+    <string name="classify_title">Ses türlerini seçin</string>
+    <string name="classify_desc_groups">Yapay zekanın tanıdığı sesler benzer seslerle gruplanır ve varsayılan olarak sayıldıkları türe göre gösterilir. Bir grubun türünü değiştirdiğinizde o gruptaki seslerin rengi ve titreşimi hemen yeni türe göre değişir.</string>
+    <string name="classify_sibling_note">Yapay zeka tek bir sesi çoğu zaman aynı anda birkaç adla tanır. Örneğin siren “Alarm” olarak da tanınır ve “Alarm” başka bir gruptadır. Bir ses değişiklikten sonra hâlâ eski türüyle görünüyorsa ilgili grupları veya sesleri de değiştirin.</string>
+    <string name="classify_advanced">Gelişmiş mod</string>
+    <string name="classify_advanced_desc">Tüm sesleri gruplarıyla birlikte gösterir; böylece her sesi ayrı olarak değiştirebilirsiniz.</string>
     <string name="classify_search_hint">Seslerde ara</string>
     <string name="cd_classify_clear_search">Aramayı temizle</string>
     <string name="classify_filter_all">Tümü</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">Eşleşen ses yok.</string>
     <string name="cd_classify_sound">%1$s, tür: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, tür: %2$s, varsayılan: %3$s</string>
+    <string name="classify_type_mixed">Karışık</string>
+    <string name="classify_group_mixed_note">Bazı sesler ayrı olarak değiştirildi</string>
+    <string name="classify_group_changed_line">Şu an: %1$s · Varsayılan: %2$s</string>
+    <string name="classify_group_overwrite_title">Grubun tamamı değiştirilsin mi?</string>
+    <string name="classify_group_overwrite_message">“%1$s” grubundaki %2$d ses “%3$s” türüne geçecek. Ayrı olarak değiştirdiğiniz seslerin de üzerine yazılacak.</string>
+    <string name="classify_group_overwrite_confirm">Değiştir</string>
+    <string name="classify_group_overwrite_cancel">İptal</string>
+    <string name="classify_basic_warning_title">Temel moda geçilsin mi?</string>
+    <string name="classify_basic_warning_message">Bazı gruplarda ayrı olarak değiştirdiğiniz sesler var. Temel modda bu gruplardan biri için tür seçerseniz gruptaki tüm sesler o türü alır ve o grupta ayrı olarak yaptığınız değişikliklerin üzerine yazılır. Siz seçene kadar hiçbir şey değişmez.</string>
+    <string name="classify_basic_warning_confirm">Temel moda geç</string>
+    <string name="classify_basic_warning_cancel">Gelişmiş modda kal</string>
+    <string name="cd_classify_group">%1$s grubu, tür: %2$s, ses sayısı: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">%1$s grubu, tür: %2$s, varsayılan: %3$s, ses sayısı: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">%1$s grubu, ses sayısı: %2$d</string>
+    <string name="sound_group_horns">Kornalar ve araba alarmları</string>
+    <string name="sound_group_vehicle_warnings">Araç uyarı sesleri</string>
+    <string name="sound_group_breaking">Cam kırılması ve parçalanma</string>
+    <string name="sound_group_distress">Bağırma, çığlık ve ağlama</string>
+    <string name="sound_group_signals">Çalar saatler, bip sesleri ve düdükler</string>
+    <string name="sound_group_voices">Haykırma, kahkaha ve tezahürat</string>
+    <string name="sound_group_water">Musluklar ve akan su</string>
+    <string name="sound_group_kitchen">Mutfak ve yemek pişirme</string>
+    <string name="sound_group_appliances">Ev aletleri ve saatler</string>
+    <string name="sound_group_tools">Aletler ve makineler</string>
+    <string name="sound_group_nature">Doğa ve hava durumu</string>
+    <string name="sound_group_body">Öksürük, nefes ve vücut sesleri</string>
+    <string name="sound_group_objects">Eşyalar ve kısa sesler</string>
+    <string name="sound_group_background">TV, radyo ve arka plan sesi</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Titreşim</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
-    <string name="help_sound_classify">“Sesler” sekmesinde, yapay zekanın tanıdığı her sesin hangi türden sayılacağını seçebilirsiniz. Örneğin “Kapı zili”ni tehlike sesi yaparsanız kapı zili de tehlike sesi rengini ve titreşimini alır.</string>
+    <string name="help_sound_classify_groups">“Sesler” sekmesinde benzer sesler gruplanır ve her grubun hangi türden sayılacağını siz seçersiniz. Örneğin “Kapı zili” grubunu tehlike sesi yaparsanız yapay zeka bir kapı zili veya kapıya vurma sesi tanıdığında bu ses tehlike sesi rengini ve titreşimini alır. Her sesi ayrı olarak değiştirmek için gelişmiş modu açın.</string>
     <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
     <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için bir mod (Kapalı, Yavaş, Orta, Hızlı, Sürekli) ve yoğunluk seçebilirsiniz.</string>
     <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Telefon, o türden bir ses sürdüğü sürece titreşir ve ses durunca durur. Orta her yarım saniyede bir atar, Yavaş bunun yarı hızında, Hızlı ise iki katı hızında atar; Sürekli ise ara vermeden titreşir. Her modda titreşim seçtiğiniz yoğunlukta kalır.</string>

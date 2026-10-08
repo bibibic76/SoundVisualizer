@@ -135,9 +135,11 @@
     <string name="ai_show_speech">Показывать речь</string>
     <string name="ai_show_danger">Показывать опасные звуки</string>
     <string name="ai_unavailable">Определение типа звука не работает, поэтому все звуки показываются цветом фоновых звуков. Попробуйте выключить и снова включить визуализатор.</string>
-    <string name="classify_title">Выберите тип для каждого звука</string>
-    <string name="classify_desc">Здесь собраны все звуки, которые может распознать ИИ, и для каждого указан тип, к которому он относится. Если изменить тип звука, его цвет и вибрация сразу станут такими же, как у нового типа.</string>
-    <string name="classify_danger_note">Звук, убранный из опасных, больше не получает под этим названием цвет и вибрацию опасных звуков. Но один и тот же звук часто распознаётся сразу под несколькими названиями: сирена, например, ещё и как «Сигнал тревоги», а у одних только сирен пять строк. Чтобы убрать его полностью, измените все эти строки.</string>
+    <string name="classify_title">Выберите типы звуков</string>
+    <string name="classify_desc_groups">Звуки, которые распознаёт ИИ, собраны в группы похожих звуков по типам, к которым они относятся по умолчанию. Если изменить тип группы, цвет и вибрация её звуков сразу станут такими же, как у нового типа.</string>
+    <string name="classify_sibling_note">ИИ часто распознаёт один и тот же звук сразу под несколькими названиями. Сирена, например, распознаётся ещё и как «Сигнал тревоги», а этот звук в другой группе. Если после изменения звук всё ещё отображается со старым типом, измените и связанные группы или звуки.</string>
+    <string name="classify_advanced">Расширенный режим</string>
+    <string name="classify_advanced_desc">Показывает каждый звук в его группе, чтобы можно было менять звуки по одному.</string>
     <string name="classify_search_hint">Поиск звуков</string>
     <string name="cd_classify_clear_search">Очистить поиск</string>
     <string name="classify_filter_all">Все</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">Подходящих звуков нет.</string>
     <string name="cd_classify_sound">%1$s, тип: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, тип: %2$s, по умолчанию: %3$s</string>
+    <string name="classify_type_mixed">Смешанный</string>
+    <string name="classify_group_mixed_note">Некоторые звуки изменены по отдельности</string>
+    <string name="classify_group_changed_line">Сейчас: %1$s · По умолчанию: %2$s</string>
+    <string name="classify_group_overwrite_title">Изменить всю группу?</string>
+    <string name="classify_group_overwrite_message">Звуков в группе «%1$s», которые получат тип «%3$s»: %2$d. Звуки, изменённые по отдельности, тоже будут перезаписаны.</string>
+    <string name="classify_group_overwrite_confirm">Изменить</string>
+    <string name="classify_group_overwrite_cancel">Отмена</string>
+    <string name="classify_basic_warning_title">Перейти в базовый режим?</string>
+    <string name="classify_basic_warning_message">В некоторых группах есть звуки, которые вы изменили по отдельности. Если в базовом режиме выбрать тип для такой группы, все её звуки получат этот тип, а изменения, сделанные по отдельности в этой группе, будут перезаписаны. Пока вы ничего не выберете, ничего не изменится.</string>
+    <string name="classify_basic_warning_confirm">В базовый режим</string>
+    <string name="classify_basic_warning_cancel">Остаться в расширенном</string>
+    <string name="cd_classify_group">Группа %1$s, тип: %2$s, звуков: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Группа %1$s, тип: %2$s, по умолчанию: %3$s, звуков: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Группа %1$s, звуков: %2$d</string>
+    <string name="sound_group_horns">Гудки и автосигнализации</string>
+    <string name="sound_group_vehicle_warnings">Предупреждающие сигналы транспорта</string>
+    <string name="sound_group_breaking">Бьющееся стекло и громкие удары</string>
+    <string name="sound_group_distress">Крики и плач</string>
+    <string name="sound_group_signals">Будильники, пиканье и свистки</string>
+    <string name="sound_group_voices">Вопли, хохот и ликование</string>
+    <string name="sound_group_water">Краны и текущая вода</string>
+    <string name="sound_group_kitchen">Кухня и готовка</string>
+    <string name="sound_group_appliances">Бытовая техника и часы</string>
+    <string name="sound_group_tools">Инструменты и механизмы</string>
+    <string name="sound_group_nature">Природа и погода</string>
+    <string name="sound_group_body">Кашель, дыхание и звуки тела</string>
+    <string name="sound_group_objects">Предметы и короткие звуки</string>
+    <string name="sound_group_background">Телевизор, радио и шумы</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Вибрация</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">Типы звуков и вибрация</string>
     <string name="help_sound_kinds">ИИ делит всё, что слышно, на фоновые звуки, речь и опасные звуки. По умолчанию фоновые звуки отображаются белым, речь — жёлтым, а опасные звуки — красным. На вкладке «Настройки» можно изменить цвет каждого типа и выбрать, показывать ли его.</string>
-    <string name="help_sound_classify">На вкладке «Звуки» можно выбрать, к какому типу относится каждый звук, который распознаёт ИИ. Например, если перевести «Дверной звонок» в опасные звуки, дверной звонок получит цвет и вибрацию опасных звуков.</string>
+    <string name="help_sound_classify_groups">На вкладке «Звуки» похожие звуки собраны в группы, и вы выбираете, к какому типу относится каждая группа. Например, если перевести группу «Дверной звонок» в опасные звуки, то когда ИИ распознаёт дверной звонок или стук в дверь, звук получит цвет и вибрацию опасных звуков. Чтобы менять звуки по одному, включите расширенный режим.</string>
     <string name="help_sound_danger">Когда обнаружен опасный звук (например, выстрел), цвет меняется сразу, а не плавно.</string>
     <string name="help_sound_haptic">Вибрация предупреждает, даже когда вы не смотрите на экран. По умолчанию она включена только для опасных звуков. Для каждого типа можно выбрать режим («Выкл.», «Медленно», «Средне», «Быстро», «Непрерывно») и силу.</string>
     <string name="help_sound_haptic_rule">Вибрация срабатывает только для типов, которые показываются на экране. Телефон вибрирует, пока звучит звук этого типа, и останавливается вместе с ним. В режиме «Средне» вибрация пульсирует каждые полсекунды, в режиме «Медленно» — вдвое реже, в режиме «Быстро» — вдвое чаще, а в режиме «Непрерывно» она идёт без перерыва. В любом режиме сила вибрации остаётся такой, какую вы выбрали.</string>

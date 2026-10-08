@@ -135,9 +135,11 @@
     <string name="ai_show_speech">話し声を表示</string>
     <string name="ai_show_danger">危険音を表示</string>
     <string name="ai_unavailable">音の種類を判別できないため、すべての音が環境音の色で表示されます。可視化を一度オフにして、もう一度オンにしてみてください。</string>
-    <string name="classify_title">音ごとに種類を選ぶ</string>
-    <string name="classify_desc">AI が認識できるすべての音と、それぞれの音が今どの種類として扱われているかを表示します。種類を変えると、その音の色と振動はすぐに新しい種類に合わせて変わります。</string>
-    <string name="classify_danger_note">危険音から外した音は、その名前で聞き取られたときに危険音の色も振動も使われなくなります。ただし、一つの音が複数の名前で同時に聞き取られることがよくあります。たとえばサイレンは「警報音」としても聞き取られ、サイレンだけでも5行あります。完全に外すには、すべて変更してください。</string>
+    <string name="classify_title">音の種類を選ぶ</string>
+    <string name="classify_desc_groups">AI が認識する音を、似た音どうしでグループにまとめ、初期設定の種類ごとに表示します。グループの種類を変えると、そのグループの音の色と振動はすぐに新しい種類に合わせて変わります。</string>
+    <string name="classify_sibling_note">AI は一つの音を複数の名前で同時に聞き取ることがよくあります。たとえばサイレンは「警報音」としても聞き取られますが、警報音は別のグループにあります。変更後も前の種類で表示される場合は、関連するグループや音も変更してください。</string>
+    <string name="classify_advanced">詳細モード</string>
+    <string name="classify_advanced_desc">すべての音をグループごとに表示し、個別に変更できます。</string>
     <string name="classify_search_hint">音の名前で検索</string>
     <string name="cd_classify_clear_search">検索語を消去</string>
     <string name="classify_filter_all">すべて</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">該当する音がありません。</string>
     <string name="cd_classify_sound">%1$s、種類：%2$s</string>
     <string name="cd_classify_sound_changed">%1$s、種類：%2$s、初期設定：%3$s</string>
+    <string name="classify_type_mixed">混在</string>
+    <string name="classify_group_mixed_note">一部の音を個別に変更済み</string>
+    <string name="classify_group_changed_line">現在：%1$s · 初期設定：%2$s</string>
+    <string name="classify_group_overwrite_title">グループ全体を変更しますか？</string>
+    <string name="classify_group_overwrite_message">「%1$s」グループの音%2$d件が「%3$s」に変わります。個別に変更した音も上書きされます。</string>
+    <string name="classify_group_overwrite_confirm">変更</string>
+    <string name="classify_group_overwrite_cancel">キャンセル</string>
+    <string name="classify_basic_warning_title">基本モードに切り替えますか？</string>
+    <string name="classify_basic_warning_message">個別に変更した音を含むグループがあります。基本モードでこうしたグループの種類を選ぶと、グループ内のすべての音がその種類になり、個別に変更した内容は上書きされます。種類を選ぶまでは何も変わりません。</string>
+    <string name="classify_basic_warning_confirm">基本モードにする</string>
+    <string name="classify_basic_warning_cancel">詳細モードのまま</string>
+    <string name="cd_classify_group">グループ：%1$s、種類：%2$s、音：%3$d件（%4$s）</string>
+    <string name="cd_classify_group_changed">グループ：%1$s、種類：%2$s、初期設定：%3$s、音：%4$d件（%5$s）</string>
+    <string name="cd_classify_group_header">グループ：%1$s、音：%2$d件</string>
+    <string name="sound_group_horns">クラクション・車の警報音</string>
+    <string name="sound_group_vehicle_warnings">乗り物の警告音</string>
+    <string name="sound_group_breaking">ガラスが割れる音・物が壊れる音</string>
+    <string name="sound_group_distress">大声・悲鳴・泣き声</string>
+    <string name="sound_group_signals">目覚まし時計・電子音・ホイッスル</string>
+    <string name="sound_group_voices">叫び声・大笑い・歓声</string>
+    <string name="sound_group_water">蛇口・流れる水</string>
+    <string name="sound_group_kitchen">台所・料理</string>
+    <string name="sound_group_appliances">家電・時計</string>
+    <string name="sound_group_tools">工具・機械</string>
+    <string name="sound_group_nature">自然・天気</string>
+    <string name="sound_group_body">せき・呼吸・体の音</string>
+    <string name="sound_group_objects">物の音・短い音</string>
+    <string name="sound_group_background">テレビ・ラジオ・背景音</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">振動</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">音の種類と振動</string>
     <string name="help_sound_kinds">聞こえてくる音を、AI が環境音・話し声・危険音に分類します。初期設定の色は、環境音が白、話し声が黄色、危険音が赤です。種類ごとの色と表示の有無は「設定」タブで変更できます。</string>
-    <string name="help_sound_classify">「分類」タブでは、AI が聞き分ける音ごとに、どの種類として扱うかを選べます。たとえば「玄関チャイム」を危険音に変えると、玄関チャイムにも危険音の色と振動が使われます。</string>
+    <string name="help_sound_classify_groups">「分類」タブでは、似た音をグループにまとめ、グループごとにどの種類として扱うかを選びます。たとえば「玄関チャイム」グループを危険音に変えると、AI が玄関チャイムやノックとして聞き取ったときに危険音の色と振動が使われます。音を個別に変更するには、詳細モードをオンにします。</string>
     <string name="help_sound_danger">危険音（銃声など）を検出すると、色が徐々にではなく、すぐに切り替わります。</string>
     <string name="help_sound_haptic">画面を見ていなくても、振動でお知らせします。初期設定では危険音だけが振動します。種類ごとに振動の仕方（オフ・ゆっくり・普通・速い・連続）と強さを選べます。</string>
     <string name="help_sound_haptic_rule">表示がオンになっている種類だけが振動します。その種類の音が続いている間は振動し続け、音が止まると一緒に止まります。「普通」は0.5秒ごとに、「ゆっくり」はその半分の速さで、「速い」は2倍の速さで振動し、「連続」は途切れずに振動します。どの振動の仕方でも、選んだ強さのまま振動します。</string>

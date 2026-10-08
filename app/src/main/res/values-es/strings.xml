@@ -135,9 +135,11 @@
     <string name="ai_show_speech">Mostrar voz</string>
     <string name="ai_show_danger">Mostrar peligro</string>
     <string name="ai_unavailable">La detección del tipo de sonido no funciona, así que todos los sonidos se muestran en el color del sonido ambiente. Prueba a apagar y volver a encender la visualización.</string>
-    <string name="classify_title">Elige el tipo de cada sonido</string>
-    <string name="classify_desc">Aquí aparecen todos los sonidos que la IA puede reconocer y el tipo en que se clasifica cada uno. Si cambias el tipo de un sonido, su color y su vibración pasan a ser los del nuevo tipo al instante.</string>
-    <string name="classify_danger_note">Si cambias un sonido de peligro a otro tipo, ya no tendrá el color ni la vibración de peligro con ese nombre. Pero un mismo sonido suele reconocerse con varios nombres a la vez: una sirena, por ejemplo, también se reconoce como «Alarma», y solo las sirenas ocupan cinco filas. Para quitarlo del todo, cambia todas esas filas.</string>
+    <string name="classify_title">Elige los tipos de sonido</string>
+    <string name="classify_desc_groups">Los sonidos que reconoce la IA están agrupados con otros parecidos, según el tipo que tienen por defecto. Si cambias el tipo de un grupo, el color y la vibración de sus sonidos cambian al instante.</string>
+    <string name="classify_sibling_note">La IA suele reconocer un mismo sonido con varios nombres a la vez. Por ejemplo, una sirena también se reconoce como “Alarma”, que está en otro grupo. Si después de un cambio un sonido se sigue mostrando con su tipo anterior, cambia también los grupos o sonidos relacionados.</string>
+    <string name="classify_advanced">Modo avanzado</string>
+    <string name="classify_advanced_desc">Muestra cada sonido dentro de su grupo para que puedas cambiarlos uno a uno.</string>
     <string name="classify_search_hint">Buscar sonidos</string>
     <string name="cd_classify_clear_search">Borrar búsqueda</string>
     <string name="classify_filter_all">Todos</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">No hay sonidos que coincidan.</string>
     <string name="cd_classify_sound">%1$s, tipo: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, tipo: %2$s, por defecto: %3$s</string>
+    <string name="classify_type_mixed">Mixto</string>
+    <string name="classify_group_mixed_note">Algunos sonidos cambiados uno a uno</string>
+    <string name="classify_group_changed_line">Ahora: %1$s · Por defecto: %2$s</string>
+    <string name="classify_group_overwrite_title">¿Cambiar todo el grupo?</string>
+    <string name="classify_group_overwrite_message">Sonidos del grupo “%1$s” que pasarán a “%3$s”: %2$d. También se sobrescribirán los que cambiaste uno a uno.</string>
+    <string name="classify_group_overwrite_confirm">Cambiar</string>
+    <string name="classify_group_overwrite_cancel">Cancelar</string>
+    <string name="classify_basic_warning_title">¿Cambiar al modo básico?</string>
+    <string name="classify_basic_warning_message">Algunos grupos tienen sonidos que cambiaste uno a uno. En el modo básico, si eliges un tipo para uno de esos grupos, todos sus sonidos pasan a ese tipo y se sobrescriben los cambios que hiciste uno a uno en ese grupo. No cambia nada hasta que elijas.</string>
+    <string name="classify_basic_warning_confirm">Cambiar a básico</string>
+    <string name="classify_basic_warning_cancel">Seguir en avanzado</string>
+    <string name="cd_classify_group">Grupo %1$s, tipo: %2$s, sonidos: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Grupo %1$s, tipo: %2$s, por defecto: %3$s, sonidos: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Grupo %1$s, sonidos: %2$d</string>
+    <string name="sound_group_horns">Bocinas y alarmas de automóvil</string>
+    <string name="sound_group_vehicle_warnings">Avisos de vehículos</string>
+    <string name="sound_group_breaking">Vidrios rotos y estampidos</string>
+    <string name="sound_group_distress">Gritos y llanto</string>
+    <string name="sound_group_signals">Despertadores, pitidos y silbatos</string>
+    <string name="sound_group_voices">Alaridos, carcajadas y vítores</string>
+    <string name="sound_group_water">Grifos y agua corriente</string>
+    <string name="sound_group_kitchen">Cocina y comida</string>
+    <string name="sound_group_appliances">Electrodomésticos y relojes</string>
+    <string name="sound_group_tools">Herramientas y máquinas</string>
+    <string name="sound_group_nature">Naturaleza y clima</string>
+    <string name="sound_group_body">Tos, respiración y sonidos del cuerpo</string>
+    <string name="sound_group_objects">Objetos y sonidos breves</string>
+    <string name="sound_group_background">TV, radio y sonido de fondo</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrar</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">Tipos de sonido y vibración</string>
     <string name="help_sound_kinds">La IA clasifica el audio en sonido ambiente, voz y peligro. De forma predeterminada, el sonido ambiente se muestra en blanco, la voz en amarillo y el peligro en rojo. En la pestaña Ajustes puedes cambiar el color de cada tipo y elegir si se muestra o no.</string>
-    <string name="help_sound_classify">En la pestaña Sonidos puedes elegir de qué tipo es cada sonido que reconoce la IA. Por ejemplo, si cambias «Timbre de la puerta» a Peligro, el timbre tendrá el color y la vibración de peligro.</string>
+    <string name="help_sound_classify_groups">En la pestaña Sonidos, los sonidos parecidos están agrupados y eliges de qué tipo es cada grupo. Por ejemplo, si cambias el grupo “Timbre de la puerta” a Peligro, cuando la IA reconozca un timbre de la puerta o golpes en la puerta, el sonido tendrá el color y la vibración de peligro. Activa el modo avanzado para cambiar los sonidos uno a uno.</string>
     <string name="help_sound_danger">Cuando se detecta un sonido de peligro (como un disparo), el color cambia al instante en lugar de hacerlo poco a poco.</string>
     <string name="help_sound_haptic">La vibración te avisa aunque no estés mirando la pantalla. Al principio solo está activada para el peligro, y puedes elegir el modo (Desactivada, Lenta, Media, Rápida, Continua) y la intensidad de cada tipo.</string>
     <string name="help_sound_haptic_rule">Solo vibran los tipos que se muestran en pantalla. El teléfono vibra mientras dura un sonido de ese tipo y se detiene cuando termina. Media late cada medio segundo, Lenta a la mitad de ese ritmo y Rápida al doble, mientras que Continua vibra sin interrupción. En todos los modos la vibración mantiene la intensidad que elegiste.</string>

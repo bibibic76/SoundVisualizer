@@ -36,6 +36,8 @@ class ColorContrastTest {
         assertReadable("카드 위 파란 글자", AccentColor, CardColor)
         assertReadable("배경 위 파란 글자", AccentColor, BgColor)
         assertReadable("카드 위 회색 글자", SecondaryTextColor, CardColor)
+        // 분류 탭의 설명과 작은 안내(13sp)는 카드가 아니라 배경 위에 있다(#349). 이 대비(4.6:1) 때문에 더 작게 하지 않는다.
+        assertReadable("배경 위 회색 글자", SecondaryTextColor, BgColor)
         assertReadable("카드 위 경고 글자", WarningColor, CardColor)
     }
 

@@ -135,9 +135,11 @@
     <string name="ai_show_speech">إظهار الكلام</string>
     <string name="ai_show_danger">إظهار أصوات الخطر</string>
     <string name="ai_unavailable">لا يمكن تحديد نوع الصوت حاليًا، لذا تظهر جميع الأصوات بلون الأصوات المحيطة. جرّب إيقاف الصوت المرئي ثم تشغيله مرة أخرى.</string>
-    <string name="classify_title">اختيار نوع لكل صوت</string>
-    <string name="classify_desc">تعرض هذه القائمة جميع الأصوات التي يتعرّف عليها الذكاء الاصطناعي، والنوع الذي يُصنَّف ضمنه كل صوت. إذا غيّرت نوع أي صوت، فسيأخذ فورًا لون النوع الجديد واهتزازه.</string>
-    <string name="classify_danger_note">إذا أخرجت صوتًا من أصوات الخطر، فلن يأخذ لون أصوات الخطر ولا اهتزازها حين يُسمع بهذا الاسم. لكن الصوت الواحد كثيرًا ما يُسمع بعدة أسماء معًا؛ فصفارة الإنذار مثلًا تُسمع أيضًا على أنها «إنذار»، ولصفارات الإنذار وحدها خمسة صفوف. لإخراجه تمامًا، غيّرها كلها.</string>
+    <string name="classify_title">اختيار أنواع الأصوات</string>
+    <string name="classify_desc_groups">تُجمع الأصوات التي يتعرّف عليها الذكاء الاصطناعي مع الأصوات المشابهة لها في مجموعات، وتُعرض حسب النوع الذي تُصنَّف ضمنه تلقائيًا. إذا غيّرت نوع مجموعة، فستأخذ أصواتها فورًا لون النوع الجديد واهتزازه.</string>
+    <string name="classify_sibling_note">كثيرًا ما يسمع الذكاء الاصطناعي الصوت الواحد بعدة أسماء معًا. على سبيل المثال، تُسمع «صفارة إنذار» أيضًا على أنها «إنذار»، وهو في مجموعة أخرى. إذا ظل صوت يظهر بنوعه القديم بعد التغيير، فغيّر أيضًا المجموعات أو الأصوات المرتبطة به.</string>
+    <string name="classify_advanced">الوضع المتقدّم</string>
+    <string name="classify_advanced_desc">يعرض كل صوت ضمن مجموعته، لتتمكن من تغيير الأصوات بشكل فردي.</string>
     <string name="classify_search_hint">البحث عن صوت</string>
     <string name="cd_classify_clear_search">محو نص البحث</string>
     <string name="classify_filter_all">الكل</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">لا توجد أصوات مطابقة.</string>
     <string name="cd_classify_sound">%1$s، النوع: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s، النوع: %2$s، النوع التلقائي: %3$s</string>
+    <string name="classify_type_mixed">مختلط</string>
+    <string name="classify_group_mixed_note">بعض الأصوات غُيّرت بشكل فردي</string>
+    <string name="classify_group_changed_line">الآن: %1$s · النوع التلقائي: %2$s</string>
+    <string name="classify_group_overwrite_title">هل تريد تغيير المجموعة كلها؟</string>
+    <string name="classify_group_overwrite_message">عدد أصوات مجموعة «%1$s» التي ستتحوّل إلى «%3$s»: %2$d. وستُستبدل أيضًا الأصوات التي غيّرتها بشكل فردي.</string>
+    <string name="classify_group_overwrite_confirm">تغيير</string>
+    <string name="classify_group_overwrite_cancel">إلغاء</string>
+    <string name="classify_basic_warning_title">هل تريد التبديل إلى الوضع الأساسي؟</string>
+    <string name="classify_basic_warning_message">في بعض المجموعات أصوات غيّرتها بشكل فردي. في الوضع الأساسي، إذا اخترت نوعًا لإحدى هذه المجموعات، فستأخذ كل أصواتها هذا النوع، وتُستبدل التغييرات الفردية التي أجريتها في تلك المجموعة. لن يتغيّر شيء قبل أن تختار.</string>
+    <string name="classify_basic_warning_confirm">التبديل إلى الأساسي</string>
+    <string name="classify_basic_warning_cancel">البقاء في المتقدّم</string>
+    <string name="cd_classify_group">مجموعة %1$s، النوع: %2$s، عدد الأصوات: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">مجموعة %1$s، النوع: %2$s، النوع التلقائي: %3$s، عدد الأصوات: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">مجموعة %1$s، عدد الأصوات: %2$d</string>
+    <string name="sound_group_horns">أبواق السيارات وإنذاراتها</string>
+    <string name="sound_group_vehicle_warnings">تنبيهات المركبات</string>
+    <string name="sound_group_breaking">تحطّم الزجاج والانكسار</string>
+    <string name="sound_group_distress">الصياح والصراخ والبكاء</string>
+    <string name="sound_group_signals">المنبّهات والصفير والصفارات</string>
+    <string name="sound_group_voices">الزعيق والقهقهة والهتاف</string>
+    <string name="sound_group_water">الصنابير والماء الجاري</string>
+    <string name="sound_group_kitchen">المطبخ والطهي</string>
+    <string name="sound_group_appliances">الأجهزة المنزلية والساعات</string>
+    <string name="sound_group_tools">الأدوات والآلات</string>
+    <string name="sound_group_nature">الطبيعة والطقس</string>
+    <string name="sound_group_body">السعال والتنفّس وأصوات الجسم</string>
+    <string name="sound_group_objects">الأشياء والأصوات القصيرة</string>
+    <string name="sound_group_background">التلفزيون والراديو وأصوات الخلفية</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">الاهتزاز</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">أنواع الأصوات والاهتزاز</string>
     <string name="help_sound_kinds">يصنّف الذكاء الاصطناعي ما تسمعه إلى أصوات محيطة وكلام وأصوات خطر. الألوان التلقائية هي: الأبيض للأصوات المحيطة، والأصفر للكلام، والأحمر لأصوات الخطر. يمكنك تغيير لون كل نوع واختيار إظهاره أو إخفائه من علامة تبويب «الإعدادات».</string>
-    <string name="help_sound_classify">في علامة تبويب «الأصوات» يمكنك أن تختار النوع الذي يُحسب عليه كل صوت يتعرّف عليه الذكاء الاصطناعي. فإذا غيّرت «جرس الباب» مثلًا إلى أصوات الخطر، يأخذ صوت جرس الباب لون أصوات الخطر واهتزازها.</string>
+    <string name="help_sound_classify_groups">في علامة تبويب «الأصوات» تُجمع الأصوات المتشابهة في مجموعات، وتختار أنت النوع الذي تُحسب عليه كل مجموعة. فإذا غيّرت مجموعة «جرس الباب» مثلًا إلى أصوات الخطر، فحين يتعرّف الذكاء الاصطناعي على جرس الباب أو طرق الباب، يأخذ الصوت لون أصوات الخطر واهتزازها. لتغيير الأصوات بشكل فردي، فعّل الوضع المتقدّم.</string>
     <string name="help_sound_danger">عند رصد صوت خطر (مثل طلق ناري)، يتغير اللون فورًا وليس تدريجيًا.</string>
     <string name="help_sound_haptic">ينبّهك الاهتزاز حتى عندما لا تنظر إلى الشاشة. في البداية يكون الاهتزاز مفعّلًا لأصوات الخطر فقط، ويمكنك اختيار الوضع (متوقف، بطيء، متوسط، سريع، مستمر) والقوة لكل نوع.</string>
     <string name="help_sound_haptic_rule">لا يهتز الجهاز إلا لأنواع الأصوات التي تم تفعيل إظهارها على الشاشة. يستمر الاهتزاز ما دام صوت من ذلك النوع مستمرًا، ويتوقف عندما يتوقف الصوت. في وضع «متوسط» ينبض الاهتزاز كل نصف ثانية، وفي «بطيء» بنصف هذه السرعة، وفي «سريع» بضعفها، أما «مستمر» فيهتز دون انقطاع. وفي كل الأوضاع يبقى الاهتزاز بالقوة التي اخترتها.</string>

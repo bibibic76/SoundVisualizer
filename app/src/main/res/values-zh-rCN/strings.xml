@@ -135,9 +135,11 @@
     <string name="ai_show_speech">显示人声</string>
     <string name="ai_show_danger">显示危险音</string>
     <string name="ai_unavailable">当前无法识别声音类型，所有声音都以环境音的颜色显示。请尝试将可视化关闭后重新开启。</string>
-    <string name="classify_title">为每种声音选择类型</string>
-    <string name="classify_desc">这里列出 AI 能识别的所有声音，以及每种声音目前归为哪种类型。更改声音的类型后，该声音会立即改用新类型的颜色和振动。</string>
-    <string name="classify_danger_note">从危险音中移出的声音，以这个名称被识别时将不再使用危险音的颜色和振动。但同一个声音常常会同时被识别为多个名称。例如警笛也会被识别为“警报”，而警笛本身就有 5 行。要完全移出，需要更改所有这些行。</string>
+    <string name="classify_title">选择声音类型</string>
+    <string name="classify_desc_groups">AI 能识别的声音与相似的声音归为一组，并按各自的默认类型显示。更改一组的类型后，组内声音的颜色和振动会立即随新类型改变。</string>
+    <string name="classify_sibling_note">AI 常常会把同一个声音同时识别为多个名称。例如警笛也会被识别为“警报”，而“警报”在另一组中。如果更改后某个声音仍按原来的类型显示，请一并更改相关的组或声音。</string>
+    <string name="classify_advanced">高级模式</string>
+    <string name="classify_advanced_desc">按组显示所有声音，可以逐个更改。</string>
     <string name="classify_search_hint">搜索声音</string>
     <string name="cd_classify_clear_search">清除搜索内容</string>
     <string name="classify_filter_all">全部</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">没有符合条件的声音。</string>
     <string name="cd_classify_sound">%1$s，类型：%2$s</string>
     <string name="cd_classify_sound_changed">%1$s，类型：%2$s，默认：%3$s</string>
+    <string name="classify_type_mixed">混合</string>
+    <string name="classify_group_mixed_note">部分声音已单独更改</string>
+    <string name="classify_group_changed_line">当前：%1$s · 默认：%2$s</string>
+    <string name="classify_group_overwrite_title">要更改整组吗？</string>
+    <string name="classify_group_overwrite_message">“%1$s”组中的 %2$d 个声音将改为“%3$s”。您单独更改过的声音也会被覆盖。</string>
+    <string name="classify_group_overwrite_confirm">更改</string>
+    <string name="classify_group_overwrite_cancel">取消</string>
+    <string name="classify_basic_warning_title">要切换到基本模式吗？</string>
+    <string name="classify_basic_warning_message">有些组中含有您单独更改过的声音。在基本模式下为这类组选择类型时，组内所有声音都会变为该类型，您在该组中单独做的更改会被覆盖。在您选择之前，不会有任何更改。</string>
+    <string name="classify_basic_warning_confirm">切换到基本模式</string>
+    <string name="classify_basic_warning_cancel">保留高级模式</string>
+    <string name="cd_classify_group">%1$s组，类型：%2$s，声音：%3$d 个（%4$s）</string>
+    <string name="cd_classify_group_changed">%1$s组，类型：%2$s，默认：%3$s，声音：%4$d 个（%5$s）</string>
+    <string name="cd_classify_group_header">%1$s组，声音：%2$d 个</string>
+    <string name="sound_group_horns">汽车喇叭与汽车警报</string>
+    <string name="sound_group_vehicle_warnings">车辆警示音</string>
+    <string name="sound_group_breaking">玻璃破碎与撞击声</string>
+    <string name="sound_group_distress">喊叫、尖叫与哭声</string>
+    <string name="sound_group_signals">闹钟、哔哔声与哨声</string>
+    <string name="sound_group_voices">大叫、大笑与欢呼</string>
+    <string name="sound_group_water">水龙头与流水</string>
+    <string name="sound_group_kitchen">厨房与烹饪</string>
+    <string name="sound_group_appliances">家电与钟表</string>
+    <string name="sound_group_tools">工具与机器</string>
+    <string name="sound_group_nature">自然与天气</string>
+    <string name="sound_group_body">咳嗽、呼吸与身体声音</string>
+    <string name="sound_group_objects">物品与短促声音</string>
+    <string name="sound_group_background">电视、收音机与背景声</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">振动</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">声音类型与振动</string>
     <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
-    <string name="help_sound_classify">在“分类”标签页中，您可以为 AI 能识别的每种声音选择归入哪一类。例如，将“门铃”改为危险音后，门铃声也会使用危险音的颜色和振动。</string>
+    <string name="help_sound_classify_groups">在“分类”标签页中，相似的声音会归为一组，您可以为每组选择归入哪一类。例如，将“门铃”组改为危险音后，AI 识别到门铃或敲门声时，会使用危险音的颜色和振动。要逐个更改声音，请开启高级模式。</string>
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
     <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
     <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>

@@ -135,9 +135,11 @@
     <string name="ai_show_speech">Pokaż mowę</string>
     <string name="ai_show_danger">Pokaż dźwięki zagrożenia</string>
     <string name="ai_unavailable">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
-    <string name="classify_title">Wybierz rodzaj każdego dźwięku</string>
-    <string name="classify_desc">Oto wszystkie dźwięki, które AI potrafi rozpoznać, i rodzaj, do którego należy każdy z nich. Gdy zmienisz rodzaj dźwięku, jego kolor i wibracje od razu dostosują się do nowego rodzaju.</string>
-    <string name="classify_danger_note">Dźwięk przeniesiony z dźwięków zagrożenia do innego rodzaju nie będzie już miał pod tą nazwą ich koloru ani wibracji. Ten sam dźwięk jest jednak często rozpoznawany jednocześnie pod kilkoma nazwami: syrena na przykład także jako „Alarm”, a same syreny zajmują pięć wierszy. Aby przenieść go całkowicie, zmień wszystkie te wiersze.</string>
+    <string name="classify_title">Wybierz rodzaje dźwięków</string>
+    <string name="classify_desc_groups">Dźwięki rozpoznawane przez AI są zebrane w grupy podobnych dźwięków według rodzaju, do którego domyślnie należą. Gdy zmienisz rodzaj grupy, kolor i wibracje jej dźwięków od razu dostosują się do nowego rodzaju.</string>
+    <string name="classify_sibling_note">AI często rozpoznaje ten sam dźwięk jednocześnie pod kilkoma nazwami. Syrena na przykład jest rozpoznawana także jako „Alarm”, który jest w innej grupie. Jeśli po zmianie dźwięk nadal jest pokazywany jako poprzedni rodzaj, zmień też powiązane grupy lub dźwięki.</string>
+    <string name="classify_advanced">Tryb zaawansowany</string>
+    <string name="classify_advanced_desc">Pokazuje każdy dźwięk w jego grupie, aby można było zmieniać dźwięki pojedynczo.</string>
     <string name="classify_search_hint">Szukaj dźwięków</string>
     <string name="cd_classify_clear_search">Wyczyść wyszukiwanie</string>
     <string name="classify_filter_all">Wszystkie</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">Brak pasujących dźwięków.</string>
     <string name="cd_classify_sound">%1$s, rodzaj: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, rodzaj: %2$s, domyślnie: %3$s</string>
+    <string name="classify_type_mixed">Mieszany</string>
+    <string name="classify_group_mixed_note">Niektóre dźwięki zmienione pojedynczo</string>
+    <string name="classify_group_changed_line">Teraz: %1$s · Domyślnie: %2$s</string>
+    <string name="classify_group_overwrite_title">Zmienić całą grupę?</string>
+    <string name="classify_group_overwrite_message">Dźwięki z grupy „%1$s”, które zmienią się na „%3$s”: %2$d. Dźwięki zmienione pojedynczo też zostaną nadpisane.</string>
+    <string name="classify_group_overwrite_confirm">Zmień</string>
+    <string name="classify_group_overwrite_cancel">Anuluj</string>
+    <string name="classify_basic_warning_title">Przełączyć na tryb podstawowy?</string>
+    <string name="classify_basic_warning_message">W niektórych grupach są dźwięki zmienione przez Ciebie pojedynczo. Jeśli w trybie podstawowym wybierzesz rodzaj dla takiej grupy, wszystkie jej dźwięki otrzymają ten rodzaj, a Twoje pojedyncze zmiany w tej grupie zostaną nadpisane. Nic się nie zmieni, dopóki nie wybierzesz.</string>
+    <string name="classify_basic_warning_confirm">Przełącz na podstawowy</string>
+    <string name="classify_basic_warning_cancel">Zostań w zaawansowanym</string>
+    <string name="cd_classify_group">Grupa %1$s, rodzaj: %2$s, liczba dźwięków: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Grupa %1$s, rodzaj: %2$s, domyślnie: %3$s, liczba dźwięków: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Grupa %1$s, liczba dźwięków: %2$d</string>
+    <string name="sound_group_horns">Klaksony i alarmy samochodowe</string>
+    <string name="sound_group_vehicle_warnings">Sygnały ostrzegawcze pojazdów</string>
+    <string name="sound_group_breaking">Tłuczenie szkła i łoskot</string>
+    <string name="sound_group_distress">Krzyki i płacz</string>
+    <string name="sound_group_signals">Budziki, piknięcia i gwizdki</string>
+    <string name="sound_group_voices">Wrzaski, chichot i wiwaty</string>
+    <string name="sound_group_water">Krany i płynąca woda</string>
+    <string name="sound_group_kitchen">Kuchnia i gotowanie</string>
+    <string name="sound_group_appliances">Sprzęty domowe i zegary</string>
+    <string name="sound_group_tools">Narzędzia i maszyny</string>
+    <string name="sound_group_nature">Przyroda i pogoda</string>
+    <string name="sound_group_body">Kaszel, oddech i odgłosy ciała</string>
+    <string name="sound_group_objects">Przedmioty i krótkie dźwięki</string>
+    <string name="sound_group_background">Telewizor, radio i dźwięki w tle</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Wibracje</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">Rodzaje dźwięków i wibracje</string>
     <string name="help_sound_kinds">AI dzieli to, co słychać, na dźwięki otoczenia, mowę i dźwięki zagrożenia. Domyślnie dźwięki otoczenia są oznaczane na biało, mowa na żółto, a dźwięki zagrożenia na czerwono. Na karcie „Ustawienia” możesz zmienić kolor każdego rodzaju i to, czy jest pokazywany.</string>
-    <string name="help_sound_classify">Na karcie „Dźwięki” możesz wybrać, do jakiego rodzaju należy każdy dźwięk rozpoznawany przez AI. Jeśli na przykład zmienisz „Dzwonek do drzwi” na dźwięki zagrożenia, dzwonek dostanie kolor i wibrację dźwięków zagrożenia.</string>
+    <string name="help_sound_classify_groups">Na karcie „Dźwięki” podobne dźwięki są zebrane w grupy, a Ty wybierasz, do jakiego rodzaju należy każda grupa. Jeśli na przykład zmienisz grupę „Dzwonek do drzwi” na dźwięki zagrożenia, to gdy AI rozpozna dzwonek do drzwi albo pukanie, dźwięk dostanie kolor i wibrację dźwięków zagrożenia. Aby zmieniać dźwięki pojedynczo, włącz tryb zaawansowany.</string>
     <string name="help_sound_danger">Gdy zostanie wykryty dźwięk zagrożenia (np. strzał), kolor zmienia się natychmiast, a nie stopniowo.</string>
     <string name="help_sound_haptic">Wibracje dadzą Ci znać o dźwięku, nawet gdy nie patrzysz na ekran. Domyślnie wibracje są włączone tylko dla dźwięków zagrożenia. Dla każdego rodzaju możesz wybrać tryb (Wyłączone, Wolne, Średnie, Szybkie, Ciągłe) i siłę.</string>
     <string name="help_sound_haptic_rule">Wibracje działają tylko dla rodzajów dźwięków pokazywanych na ekranie. Telefon wibruje, dopóki trwa dźwięk tego rodzaju, i przestaje, gdy dźwięk ucichnie. Tryb „Średnie” pulsuje co pół sekundy, „Wolne” dwa razy wolniej, a „Szybkie” dwa razy szybciej, natomiast „Ciągłe” wibruje bez przerwy. W każdym trybie wibracje mają wybraną przez Ciebie siłę.</string>

@@ -135,9 +135,11 @@
     <string name="ai_show_speech">Stimmen zeigen</string>
     <string name="ai_show_danger">Gefahrengeräusche zeigen</string>
     <string name="ai_unavailable">Die Erkennung der Geräuscharten funktioniert nicht. Daher werden alle Geräusche in der Farbe für Umgebungsgeräusche angezeigt. Schalten Sie die Tonvisualisierung aus und wieder ein.</string>
-    <string name="classify_title">Art für jedes Geräusch wählen</string>
-    <string name="classify_desc">Hier sehen Sie alle Geräusche, welche die KI erkennen kann, und die Art, zu der sie jeweils zählen. Wenn Sie die Art eines Geräuschs ändern, richten sich seine Farbe und Vibration sofort nach der neuen Art.</string>
-    <string name="classify_danger_note">Ein Geräusch, das Sie aus den Gefahrengeräuschen herausnehmen, löst unter diesem Namen keine Farbe und Vibration für Gefahrengeräusche mehr aus. Ein Geräusch wird aber oft unter mehreren Namen zugleich erkannt: Eine Sirene zum Beispiel auch als „Alarm“, und Sirenen allein haben fünf Zeilen. Um es ganz herauszunehmen, ändern Sie alle diese Zeilen.</string>
+    <string name="classify_title">Geräuscharten wählen</string>
+    <string name="classify_desc_groups">Die Geräusche, welche die KI erkennt, sind in Gruppen ähnlicher Geräusche zusammengefasst und nach der Art geordnet, zu der sie standardmäßig zählen. Ändern Sie die Art einer Gruppe, richten sich Farbe und Vibration ihrer Geräusche sofort danach.</string>
+    <string name="classify_sibling_note">Die KI erkennt ein Geräusch oft unter mehreren Namen zugleich. Eine Sirene wird zum Beispiel auch als „Alarm“ erkannt, und „Alarm“ gehört zu einer anderen Gruppe. Wird ein Geräusch nach einer Änderung noch in seiner alten Art angezeigt, ändern Sie auch die zugehörigen Gruppen oder Geräusche.</string>
+    <string name="classify_advanced">Erweiterter Modus</string>
+    <string name="classify_advanced_desc">Zeigt jedes Geräusch in seiner Gruppe, damit Sie Geräusche einzeln ändern können.</string>
     <string name="classify_search_hint">Geräusche suchen</string>
     <string name="cd_classify_clear_search">Suchbegriff löschen</string>
     <string name="classify_filter_all">Alle</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">Keine passenden Geräusche.</string>
     <string name="cd_classify_sound">%1$s, Art: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, Art: %2$s, Standard: %3$s</string>
+    <string name="classify_type_mixed">Gemischt</string>
+    <string name="classify_group_mixed_note">Einige Geräusche einzeln geändert</string>
+    <string name="classify_group_changed_line">Jetzt: %1$s · Standard: %2$s</string>
+    <string name="classify_group_overwrite_title">Ganze Gruppe ändern?</string>
+    <string name="classify_group_overwrite_message">Geräusche in der Gruppe „%1$s“, die zur Art „%3$s“ wechseln: %2$d. Auch einzeln geänderte Geräusche werden überschrieben.</string>
+    <string name="classify_group_overwrite_confirm">Ändern</string>
+    <string name="classify_group_overwrite_cancel">Abbrechen</string>
+    <string name="classify_basic_warning_title">Zum einfachen Modus wechseln?</string>
+    <string name="classify_basic_warning_message">Einige Gruppen enthalten Geräusche, die Sie einzeln geändert haben. Wenn Sie im einfachen Modus die Art einer solchen Gruppe wählen, erhalten alle ihre Geräusche diese Art, und Ihre einzelnen Änderungen in dieser Gruppe werden überschrieben. Bis Sie eine Art wählen, ändert sich nichts.</string>
+    <string name="classify_basic_warning_confirm">Zum einfachen Modus</string>
+    <string name="classify_basic_warning_cancel">Erweitert bleiben</string>
+    <string name="cd_classify_group">Gruppe %1$s, Art: %2$s, Geräusche: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Gruppe %1$s, Art: %2$s, Standard: %3$s, Geräusche: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Gruppe %1$s, Geräusche: %2$d</string>
+    <string name="sound_group_horns">Hupen und Autoalarme</string>
+    <string name="sound_group_vehicle_warnings">Warnsignale von Fahrzeugen</string>
+    <string name="sound_group_breaking">Glasbruch und Krachen</string>
+    <string name="sound_group_distress">Rufen, Schreien und Weinen</string>
+    <string name="sound_group_signals">Wecker, Pieptöne und Trillerpfeifen</string>
+    <string name="sound_group_voices">Brüllen, Kichern und Jubel</string>
+    <string name="sound_group_water">Wasserhähne und fließendes Wasser</string>
+    <string name="sound_group_kitchen">Küche und Kochen</string>
+    <string name="sound_group_appliances">Haushaltsgeräte und Uhren</string>
+    <string name="sound_group_tools">Werkzeuge und Maschinen</string>
+    <string name="sound_group_nature">Natur und Wetter</string>
+    <string name="sound_group_body">Husten, Atmen und Körpergeräusche</string>
+    <string name="sound_group_objects">Gegenstände und kurze Geräusche</string>
+    <string name="sound_group_background">Fernseher, Radio und Hintergrundgeräusche</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrieren</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">Geräuscharten und Vibration</string>
     <string name="help_sound_kinds">Die KI teilt Geräusche in drei Arten ein: Umgebungsgeräusche, Stimmen und Gefahrengeräusche. Standardmäßig sind Umgebungsgeräusche weiß, Stimmen gelb und Gefahrengeräusche rot. Im Tab „Einstellungen“ können Sie für jede Art die Farbe ändern und festlegen, ob sie angezeigt wird.</string>
-    <string name="help_sound_classify">Im Tab „Geräusche“ können Sie für jedes Geräusch, das die KI erkennt, festlegen, zu welcher Art es zählt. Ändern Sie zum Beispiel „Türklingel“ in Gefahrengeräusche, dann erhält eine Türklingel die Farbe und Vibration für Gefahrengeräusche.</string>
+    <string name="help_sound_classify_groups">Im Tab „Geräusche“ sind ähnliche Geräusche in Gruppen zusammengefasst, und Sie legen für jede Gruppe fest, zu welcher Art sie zählt. Ändern Sie zum Beispiel die Gruppe „Türklingel“ in Gefahrengeräusche, dann erhält ein Geräusch, das die KI als Türklingel oder Klopfen erkennt, die Farbe und Vibration für Gefahrengeräusche. Um Geräusche einzeln zu ändern, schalten Sie „Erweiterter Modus“ ein.</string>
     <string name="help_sound_danger">Wird ein Gefahrengeräusch (z. B. ein Schuss) erkannt, wechselt die Farbe sofort statt allmählich.</string>
     <string name="help_sound_haptic">Vibrationen machen Sie auch dann auf Geräusche aufmerksam, wenn Sie nicht auf den Bildschirm schauen. Standardmäßig ist die Vibration nur für Gefahrengeräusche eingeschaltet. Für jede Art können Sie einen Modus (Aus, Langsam, Mittel, Schnell, Dauerhaft) und eine Stärke wählen.</string>
     <string name="help_sound_haptic_rule">Nur Geräuscharten, die auf dem Bildschirm angezeigt werden, lösen eine Vibration aus. Das Smartphone vibriert, solange ein Geräusch dieser Art anhält, und hört mit dem Geräusch auf. „Mittel“ pulsiert jede halbe Sekunde, „Langsam“ halb so schnell und „Schnell“ doppelt so schnell, während „Dauerhaft“ ohne Unterbrechung vibriert. In jedem Modus bleibt die Vibration bei der gewählten Stärke.</string>

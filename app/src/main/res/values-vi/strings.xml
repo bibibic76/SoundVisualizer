@@ -135,9 +135,11 @@
     <string name="ai_show_speech">Hiện giọng nói</string>
     <string name="ai_show_danger">Hiện âm thanh nguy hiểm</string>
     <string name="ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
-    <string name="classify_title">Chọn loại cho từng âm thanh</string>
-    <string name="classify_desc">Đây là tất cả các âm thanh mà AI nhận diện được, cùng với loại mà mỗi âm thanh đang được xếp vào. Khi bạn đổi loại của một âm thanh, màu và rung của âm thanh đó sẽ đổi theo loại mới ngay lập tức.</string>
-    <string name="classify_danger_note">Khi bạn đưa một âm thanh ra khỏi loại âm thanh nguy hiểm, âm thanh đó sẽ không còn có màu và rung của âm thanh nguy hiểm khi được nhận ra bằng tên đó. Nhưng một âm thanh thường được nhận ra cùng lúc bằng nhiều tên. Ví dụ, còi hụ cũng được nhận ra là “Báo động”, và riêng còi hụ đã có năm dòng. Để đưa ra hoàn toàn, hãy đổi tất cả các dòng đó.</string>
+    <string name="classify_title">Chọn loại âm thanh</string>
+    <string name="classify_desc_groups">Các âm thanh AI nhận diện được nằm chung nhóm với những âm thanh tương tự, xếp theo loại mặc định của từng âm thanh. Khi bạn đổi loại của một nhóm, màu và rung của các âm thanh trong nhóm sẽ đổi theo loại mới ngay lập tức.</string>
+    <string name="classify_sibling_note">AI thường nhận ra một âm thanh bằng nhiều tên cùng lúc. Ví dụ, còi hụ cũng được nhận ra là “Báo động”, vốn nằm ở nhóm khác. Nếu sau khi đổi mà một âm thanh vẫn hiện theo loại cũ, hãy đổi cả các nhóm hoặc âm thanh liên quan.</string>
+    <string name="classify_advanced">Chế độ nâng cao</string>
+    <string name="classify_advanced_desc">Hiện mọi âm thanh theo nhóm để bạn đổi riêng từng âm thanh.</string>
     <string name="classify_search_hint">Tìm âm thanh</string>
     <string name="cd_classify_clear_search">Xóa từ khóa tìm kiếm</string>
     <string name="classify_filter_all">Tất cả</string>
@@ -156,6 +158,34 @@
     <string name="classify_empty">Không có âm thanh nào phù hợp.</string>
     <string name="cd_classify_sound">%1$s, loại: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, loại: %2$s, mặc định: %3$s</string>
+    <string name="classify_type_mixed">Hỗn hợp</string>
+    <string name="classify_group_mixed_note">Một số âm thanh đã được đổi riêng</string>
+    <string name="classify_group_changed_line">Hiện tại: %1$s · Mặc định: %2$s</string>
+    <string name="classify_group_overwrite_title">Đổi cả nhóm?</string>
+    <string name="classify_group_overwrite_message">%2$d âm thanh trong nhóm “%1$s” sẽ chuyển thành “%3$s”. Những âm thanh bạn đã đổi riêng cũng sẽ bị ghi đè.</string>
+    <string name="classify_group_overwrite_confirm">Đổi</string>
+    <string name="classify_group_overwrite_cancel">Hủy</string>
+    <string name="classify_basic_warning_title">Chuyển sang chế độ cơ bản?</string>
+    <string name="classify_basic_warning_message">Một số nhóm có âm thanh bạn đã đổi riêng. Ở chế độ cơ bản, nếu bạn chọn loại cho một nhóm như vậy, mọi âm thanh trong nhóm sẽ nhận loại đó và những thay đổi riêng trong nhóm sẽ bị ghi đè. Không có gì thay đổi cho đến khi bạn chọn.</string>
+    <string name="classify_basic_warning_confirm">Chuyển sang cơ bản</string>
+    <string name="classify_basic_warning_cancel">Giữ chế độ nâng cao</string>
+    <string name="cd_classify_group">Nhóm %1$s, loại: %2$s, số âm thanh: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Nhóm %1$s, loại: %2$s, mặc định: %3$s, số âm thanh: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Nhóm %1$s, số âm thanh: %2$d</string>
+    <string name="sound_group_horns">Còi xe và báo động ô tô</string>
+    <string name="sound_group_vehicle_warnings">Tín hiệu cảnh báo của xe cộ</string>
+    <string name="sound_group_breaking">Kính vỡ và tiếng đổ vỡ</string>
+    <string name="sound_group_distress">Tiếng kêu, tiếng thét và tiếng khóc</string>
+    <string name="sound_group_signals">Đồng hồ báo thức, tiếng bíp và tiếng còi</string>
+    <string name="sound_group_voices">La hét, cười ha hả và reo hò</string>
+    <string name="sound_group_water">Vòi nước và nước chảy</string>
+    <string name="sound_group_kitchen">Nhà bếp và nấu ăn</string>
+    <string name="sound_group_appliances">Đồ gia dụng và đồng hồ</string>
+    <string name="sound_group_tools">Dụng cụ và máy móc</string>
+    <string name="sound_group_nature">Thiên nhiên và thời tiết</string>
+    <string name="sound_group_body">Ho, hơi thở và âm thanh cơ thể</string>
+    <string name="sound_group_objects">Đồ vật và âm thanh ngắn</string>
+    <string name="sound_group_background">Tivi, radio và âm thanh nền</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Rung</string>
@@ -267,7 +297,7 @@
 
     <string name="help_sound_title">Loại âm thanh và rung</string>
     <string name="help_sound_kinds">AI phân loại âm thanh bạn nghe thấy thành âm thanh môi trường, giọng nói và âm thanh nguy hiểm. Theo mặc định, âm thanh môi trường có màu trắng, giọng nói màu vàng và âm thanh nguy hiểm màu đỏ. Bạn có thể đổi màu và chọn có hiện hay không cho từng loại trong thẻ Cài đặt.</string>
-    <string name="help_sound_classify">Trong thẻ Phân loại, bạn có thể chọn mỗi âm thanh mà AI nhận ra được tính là loại nào. Ví dụ, nếu đổi “Chuông cửa” thành âm thanh nguy hiểm, chuông cửa sẽ có màu và rung của âm thanh nguy hiểm.</string>
+    <string name="help_sound_classify_groups">Trong thẻ Phân loại, các âm thanh tương tự được gom thành nhóm và bạn chọn mỗi nhóm được tính là loại nào. Ví dụ, nếu đổi nhóm “Chuông cửa” thành âm thanh nguy hiểm, khi AI nhận ra chuông cửa hoặc gõ cửa, âm thanh đó sẽ có màu và rung của âm thanh nguy hiểm. Để đổi riêng từng âm thanh, hãy bật chế độ nâng cao.</string>
     <string name="help_sound_danger">Khi phát hiện âm thanh nguy hiểm (như tiếng súng), màu sẽ đổi ngay lập tức thay vì chuyển dần.</string>
     <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn chế độ (Tắt, Chậm, Vừa, Nhanh, Liên tục) và cường độ cho từng loại.</string>
     <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Điện thoại rung suốt khi âm thanh thuộc loại đó còn kéo dài và dừng khi âm thanh dừng. Vừa rung theo nhịp mỗi nửa giây, Chậm bằng một nửa nhịp đó và Nhanh gấp đôi, còn Liên tục rung không ngắt quãng. Ở mọi chế độ, rung luôn giữ đúng cường độ bạn đã chọn.</string>
