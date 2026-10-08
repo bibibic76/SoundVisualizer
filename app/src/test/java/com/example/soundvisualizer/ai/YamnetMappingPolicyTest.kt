@@ -52,6 +52,46 @@ class YamnetMappingPolicyTest {
         assertEquals("Explosion", decision.postDisplay)
     }
 
+    @Test fun speechOverrideDoesNotBlockIndependentDangerCue() {
+        val p = probabilities(1 to .6f, 2 to .2f, 6 to .1f, 0 to .06f, 5 to .04f)
+        val mapping = policy("Siren" to "speech")
+        val pre = classifier.classify(p, mapping)
+        assertEquals("speech", pre.coarse)
+        assertEquals("danger", pre.defaultCoarse)
+        val decision = YamnetSafetyCueDecision.decide(names, pre, mapping)
+        assertEquals("danger", decision.postCoarse)
+        assertEquals("Explosion", decision.postDisplay)
+        assertTrue(decision.dangerCuePromoted)
+    }
+
+    @Test fun ambientToSpeechOverrideDoesNotBlockIndependentDangerCue() {
+        val mapping = policy("Wind" to "speech")
+        val pre = classifier.classify(probabilities(6 to .5f, 1 to .2f, 0 to .08f, 5 to .05f, 2 to .01f), mapping)
+        assertEquals("speech", pre.coarse)
+        assertEquals("ambient", pre.defaultCoarse)
+        assertEquals("danger", YamnetSafetyCueDecision.decide(names, pre, mapping).postCoarse)
+    }
+
+    @Test fun demotedSoleCueStaysSpeechWithoutShortcutReentry() {
+        val mapping = policy("Siren" to "speech")
+        val pre = classifier.classify(probabilities(1 to .6f, 6 to .2f, 0 to .1f, 5 to .06f, 4 to .04f), mapping)
+        val decision = YamnetSafetyCueDecision.decide(names, pre, mapping)
+        assertEquals("speech", decision.postCoarse)
+        assertFalse(decision.dangerCuePromoted)
+    }
+
+    @Test fun defaultSpeechVoteStillBlocksAfterUserDemotion() {
+        // Wind is the display: protection here comes from the combined default vote,
+        // not from a speech-like display name.
+        val localNames = names.toMutableList().also { it[7] = "Conversation" }
+        val mapping = YamnetMappingPolicy.from(mapOf("Speech" to "ambient", "Conversation" to "ambient"), localNames)
+        val pre = YamnetCoarseClassifier(localNames).classify(
+            probabilities(6 to .3f, 4 to .25f, 7 to .24f, 1 to .15f, 5 to .06f), mapping)
+        assertEquals("ambient", pre.coarse)
+        assertEquals("speech", pre.defaultCoarse)
+        assertFalse(YamnetSafetyCueDecision.decide(localNames, pre, mapping).dangerCuePromoted)
+    }
+
     @Test fun demotedGunshotDoesNotSuppressIndependentSirenCue() {
         val mapping = policy("Gunshot, gunfire" to "ambient")
         val pre = classifier.classify(probabilities(3 to .7f, 1 to .2f, 6 to .1f), mapping)
