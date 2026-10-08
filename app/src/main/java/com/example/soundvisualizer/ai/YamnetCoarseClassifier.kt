@@ -26,6 +26,8 @@ class YamnetCoarseClassifier(
 
     data class Result(
         val coarse: String,
+        /** Original top-3 vote under default mapping; independent of user overrides. */
+        val defaultCoarse: String,
         val displayName: String,
         val confidence: Float,
         val yamnetClassIndex: Int,
@@ -131,6 +133,8 @@ class YamnetCoarseClassifier(
 
         return Result(
             coarse = coarse,
+            defaultCoarse = if (mapping.overrideCount == 0) coarse else
+                voteCoarseFromTop5(topIdx, topProbs, VOTE_K),
             displayName = display,
             confidence = conf,
             yamnetClassIndex = maxIndex,
