@@ -195,7 +195,9 @@
     <string name="haptic_mode_continuous">Continuous</string>
     <string name="haptic_preview_hint">Tap a mode or change the strength to feel it for 2 seconds.</string>
     <string name="haptic_preview_hint_running">While the visualizer is running, previews don\'t play, so they aren\'t mixed up with real alerts.</string>
-    <string name="haptic_continuous_external">In External sound mode, you can\'t pick Continuous, so that the phone doesn\'t mistake its own vibration for sound. Types set to Continuous vibrate as Fast, and vibrate as Continuous again when you turn External sound mode off.</string>
+    <!-- %1$s is the sound type name (Speech or Danger), %2$s the fastest vibration mode that type can use in External sound mode (Slow or Medium). Ambient uses haptic_off_external instead. -->
+    <string name="haptic_cap_external">In External sound mode, the fastest mode you can pick for %1$s is %2$s, so that the phone doesn\'t mistake its own vibration for sound. If you set a faster one, it vibrates as %2$s, and when you turn External sound mode off, it vibrates as you set it.</string>
+    <string name="haptic_off_external">In External sound mode, ambient sounds don\'t vibrate, because there is always some sound around you and the vibration would never stop. When you turn External sound mode off, they vibrate as you set them.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
@@ -299,7 +301,7 @@
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>
-    <string name="help_sound_haptic_external">In External sound mode, the phone checks whether a sound is still going only in the pauses between pulses, so it doesn\'t mistake its own vibration for sound. Vibration can therefore go on for a moment after the sound stops, usually under a second. Continuous can\'t be picked in this mode: types set to Continuous vibrate as Fast, and vibrate as Continuous again when you turn External sound mode off.</string>
+    <string name="help_sound_haptic_external">In External sound mode, the phone checks whether a sound is still going only in the pauses between pulses, so it doesn\'t mistake its own vibration for sound. Vibration can therefore go on for a moment after the sound stops, usually under a second. To keep those pauses long enough, the fastest you can pick in this mode is Slow for speech and Medium for danger sounds, and ambient sounds don\'t vibrate, because there is always some sound around you. Types set faster vibrate at that limit, and when you turn External sound mode off, they vibrate as you set them.</string>
 
     <string name="help_notes_title">Good to know</string>
     <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>

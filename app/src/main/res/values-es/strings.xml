@@ -174,7 +174,8 @@
     <string name="haptic_mode_continuous">Continua</string>
     <string name="haptic_preview_hint">Toca un modo o cambia la intensidad para sentir la vibración durante 2 segundos.</string>
     <string name="haptic_preview_hint_running">Mientras la visualización está en marcha, la vista previa no vibra, para que no se confunda con los avisos reales.</string>
-    <string name="haptic_continuous_external">En el modo de sonido externo no puedes elegir Continua, para que el teléfono no confunda su propia vibración con un sonido. Los tipos configurados en Continua vibran como Rápida, y su vibración vuelve a ser Continua cuando desactivas el modo de sonido externo.</string>
+    <string name="haptic_cap_external">En el modo de sonido externo, lo más rápido que puedes elegir para %1$s es %2$s, para que el teléfono no confunda su propia vibración con un sonido. Si configuraste un modo más rápido, vibra como %2$s, y cuando desactivas el modo de sonido externo, vuelve a vibrar como lo configuraste.</string>
+    <string name="haptic_off_external">En el modo de sonido externo, el sonido ambiente no vibra, porque siempre hay algún sonido a tu alrededor y la vibración nunca se detendría. Cuando desactivas el modo de sonido externo, vuelve a vibrar como lo configuraste.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Elige un color</string>
@@ -271,7 +272,7 @@
     <string name="help_sound_danger">Cuando se detecta un sonido de peligro (como un disparo), el color cambia al instante en lugar de hacerlo poco a poco.</string>
     <string name="help_sound_haptic">La vibración te avisa aunque no estés mirando la pantalla. Al principio solo está activada para el peligro, y puedes elegir el modo (Desactivada, Lenta, Media, Rápida, Continua) y la intensidad de cada tipo.</string>
     <string name="help_sound_haptic_rule">Solo vibran los tipos que se muestran en pantalla. El teléfono vibra mientras dura un sonido de ese tipo y se detiene cuando termina. Media late cada medio segundo, Lenta a la mitad de ese ritmo y Rápida al doble, mientras que Continua vibra sin interrupción. En todos los modos la vibración mantiene la intensidad que elegiste.</string>
-    <string name="help_sound_haptic_external">En el modo de sonido externo, el teléfono solo comprueba si un sonido sigue en las pausas entre pulsos, para no confundir su propia vibración con un sonido. Por eso, puede seguir vibrando un momento después de que el sonido termine, normalmente menos de un segundo. En este modo no se puede elegir Continua: los tipos configurados en Continua vibran como Rápida, y su vibración vuelve a ser Continua cuando desactivas el modo de sonido externo.</string>
+    <string name="help_sound_haptic_external">En el modo de sonido externo, el teléfono solo comprueba si un sonido sigue en las pausas entre pulsos, para no confundir su propia vibración con un sonido. Por eso, puede seguir vibrando un momento después de que el sonido termine, normalmente menos de un segundo. Para que esas pausas sean lo bastante largas, en este modo lo más rápido que puedes elegir es Lenta para la voz y Media para el peligro, y el sonido ambiente no vibra, porque siempre hay algún sonido a tu alrededor. Los tipos configurados con un modo más rápido vibran con el más rápido permitido, y cuando desactivas el modo de sonido externo, vuelven a vibrar como los configuraste.</string>
 
     <string name="help_notes_title">Ten en cuenta</string>
     <string name="help_note_direction">La app distingue la izquierda de la derecha, pero no lo que está delante de lo que está detrás. Los gráficos de las partes superior e inferior de la pantalla representan los sonidos que se oyen por igual en ambos lados y la sensación de espacio.</string>

@@ -22,7 +22,8 @@ import com.example.soundvisualizer.SettingsManager
  * @param configFor 라벨별 표시·진동 설정.
  * @param unlabeledAlerts 라벨이 끝내 오지 않는 실행(AI 를 쓸 수 없음)인지. 참인 동안은 라벨 없이도 큰 소리에 울린다(#225).
  * @param hearsOwnVibration 이번 실행의 소스가 앱의 진동을 소리로 듣는지([com.example.soundvisualizer.CaptureSource.hearsOwnVibration]).
- *   참이면 울림 사이의 쉼에서만 소리를 보고([SelfVibrationGate]), '연속'은 '빠름'으로 울린다(#290). 실행 내내 바뀌지 않는다.
+ *   참이면 울림 사이의 쉼에서만 소리를 보고([SelfVibrationGate], #290), 종류마다 상한보다 빠른 방식은 상한으로 울린다
+ *   ([HapticSettings.externalCap], #354). 실행 내내 바뀌지 않는다.
  * @param labelSource 가장 최근 분류 라벨. 결과가 아직 없으면 null. 마지막 인자라 `HapticNotifier(context) { … }` 로 쓴다.
  */
 class HapticNotifier(
@@ -55,9 +56,12 @@ class HapticNotifier(
     /** 외부 사운드 모드에서만 있다. 폰 안의 소리는 앱의 진동을 듣지 못하므로 지금까지와 같다(#290). */
     private val selfGate: SelfVibrationGate? = if (hearsOwnVibration) SelfVibrationGate() else null
 
-    /** 틱이 쓰는 설정. 외부 사운드 모드에서는 '연속'을 '빠름'으로 울린다. 저장된 설정은 그대로다([HapticSettings.inExternalSound]). */
+    /**
+     * 틱이 쓰는 설정. 외부 사운드 모드에서는 종류마다 상한보다 빠른 방식을 상한으로 울린다([HapticSettings.inExternalSound]).
+     * 종류를 모르는 큰 소리도 위협음 라벨로 읽으므로 위협음의 상한을 따른다. 저장된 설정은 그대로다.
+     */
     private val tickConfig: (String) -> HapticPolicy.ClassConfig =
-        if (hearsOwnVibration) { label -> configFor(label).inExternalSound() } else configFor
+        if (hearsOwnVibration) { label -> configFor(label).inExternalSound(label) } else configFor
 
     // 울림은 제 시각에 보내야 박자가 고르다. 배경 우선순위는 렌더·AI 가 바쁠 때 늦게 깨어 박자가 흔들린다.
     private val thread = HandlerThread("SV-Haptic", Process.THREAD_PRIORITY_DISPLAY)
@@ -183,8 +187,8 @@ class HapticNotifier(
      * 화면이 꺼졌는데 이 알림은 계속 돈다(외부 사운드 모드, 또는 '화면이 꺼지면 일시정지'를 끈 경우). 사용자가 화면을 끄면
      * 안드로이드가 시스템 앱이 아닌 앱의 울리던 진동을 끊는데(`VibrationSettings.shouldCancelVibrationOnScreenOff`), 앱에는
      * 알리지 않는다. 그대로 두면 연속 울림을 다시 보낼 때까지([HapticTuning.CONTINUOUS_CHUNK_MS]) 조용하므로, 보낸 울림을
-     * 끊긴 것으로 잊어 다음 틱에 다시 보낸다(#288). 느림·중간·빠름은 다음 박자부터 이어 가고, 외부 사운드 모드는 연속을
-     * 빠름으로 울리므로(#290) 다시 보낼 것이 없다. 꺼진 뒤에 시작한 진동은 끊지 않는다. 어느 스레드에서 불러도 된다.
+     * 끊긴 것으로 잊어 다음 틱에 다시 보낸다(#288). 느림·중간·빠름은 다음 박자부터 이어 가고, 외부 사운드 모드에는 상한
+     * 때문에 연속이 없으므로(#354) 다시 보낼 것이 없다. 꺼진 뒤에 시작한 진동은 끊지 않는다. 어느 스레드에서 불러도 된다.
      */
     fun onScreenOff() {
         handler?.post { if (running) driver.onPreempted() }

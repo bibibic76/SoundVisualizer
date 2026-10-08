@@ -8,6 +8,9 @@ import com.example.soundvisualizer.R
  * 진동 방식. 그 종류의 소리가 이어지는 동안 이 박자로 울린다. 느림·중간·빠름은 같은 세기로 켰다 껐다 하고,
  * 연속은 끊기지 않고 이어진다. 박자는 [HapticTuning.periodMs] 와 [HapticTuning.onMs] 에 있다.
  *
+ * 항목은 느린 것부터 빠른 것 순서로 둔다. 외부 사운드 모드의 상한([HapticSettings.externalCap])이 이 순서로 비교하고,
+ * 설정 화면의 칸도 이 순서로 놓인다.
+ *
  * 설정에는 이름(name)으로 저장하므로 항목 이름을 바꾸면 기존 설정이 기본값으로 돌아간다.
  */
 enum class HapticMode(@StringRes val labelRes: Int) {
@@ -40,14 +43,15 @@ data class HapticSettings(
     val enabled: Boolean get() = mode != HapticMode.Off
 
     /**
-     * 외부 사운드 모드(마이크)에서 실제로 울릴 설정(#290). '연속'은 '빠름'으로 울리고, 나머지는 그대로다.
+     * 외부 사운드 모드(마이크)에서 [label] 이 실제로 울릴 설정(#354). 그 종류의 상한([externalCap])보다 빠른 방식은 상한으로
+     * 울리고, 상한까지의 방식과 세기는 그대로다.
      *
-     * 마이크는 앱의 진동을 소리로 듣는다. 진동 판단은 앱이 울린 진동 사이의 빈틈에서만 소리를 보는데([SelfVibrationGate]),
-     * '연속'에는 빈틈이 없어 자기 진동 소리와 실제 소리를 가를 수 없다. 저장된 설정은 바꾸지 않으므로 외부 사운드 모드를
-     * 끄면 그대로 '연속'으로 울린다.
+     * 저장된 설정은 바꾸지 않으므로 외부 사운드 모드를 끄면 정해 둔 대로 울린다.
      */
-    fun inExternalSound(): HapticSettings =
-        if (mode == HapticMode.Continuous) copy(mode = HapticMode.Fast) else this
+    fun inExternalSound(label: String): HapticSettings {
+        val cap = externalCap(label)
+        return if (mode > cap) copy(mode = cap) else this
+    }
 
     companion object {
         const val MIN_LEVEL = 10
@@ -63,6 +67,29 @@ data class HapticSettings(
             AiClassification.DANGER -> HapticSettings(HapticMode.Medium, MAX_LEVEL)
             AiClassification.SPEECH -> HapticSettings(HapticMode.Off, 60)
             else -> HapticSettings(HapticMode.Off, 30)
+        }
+
+        /**
+         * 외부 사운드 모드에서 그 종류가 울릴 수 있는 가장 빠른 방식(사용자 결정 2026-10-08, #354). 환경음은 꺼짐(진동하지
+         * 않는다), 대화음은 느림, 위협음은 중간까지다. 그래서 '빠름'과 '연속'은 어느 종류로도 울리지 않는다.
+         *
+         * - 마이크는 앱의 진동을 소리로 듣는다. 진동 판단은 울림 사이의 쉼에서만 소리를 보는데([SelfVibrationGate]), 울림
+         *   꼬리를 뺀 듣는 틈이 느림 0.42초, 중간 0.12초, 빠름 0.04초다([HapticTuning.selfHearingGuardMs]). 빠름은 진동
+         *   꼬리가 긴 폰에서 그 틈이 사라져 자기 진동 소리로 다시 이어질 수 있고, '연속'에는 틈이 없다(#290).
+         * - 환경음은 주변에서 늘 들린다. 외부 사운드 모드에서 환경음을 진동하게 두면 진동이 그치지 않는다.
+         * - 느릴수록 울림 사이에 깨끗하게 듣는 조각이 길다. AI 가 진동 소리를 말소리로 듣는 문제(#352)를 풀 때 쓸 수 있는
+         *   소리도 그만큼 길어진다.
+         *
+         * 위협음의 상한은 기본값(중간)과 같아 기본 설정은 그대로 울린다. AI 를 쓸 수 없을 때 큰 소리에 울리는 진동도 위협음
+         * 설정을 따르므로([HapticPolicy]) 중간까지다. 모르는 라벨은 환경음으로 본다([defaultFor] 와 같은 규칙).
+         *
+         * 상한을 바꾸면 도움말(help_sound_haptic_external)과 README, 설계 문서에 적은 값도 함께 고친다. 설정 줄의 안내는
+         * 이 값에서 이름을 가져온다.
+         */
+        fun externalCap(label: String): HapticMode = when (label) {
+            AiClassification.DANGER -> HapticMode.Medium
+            AiClassification.SPEECH -> HapticMode.Slow
+            else -> HapticMode.Off
         }
 
         /** 저장된 세기를 범위와 단계에 맞춘다. 손으로 고친 값이 와도 슬라이더에 있는 값이 된다. */

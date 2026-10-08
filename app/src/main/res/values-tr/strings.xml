@@ -174,7 +174,8 @@
     <string name="haptic_mode_continuous">Sürekli</string>
     <string name="haptic_preview_hint">Titreşimi 2 saniye boyunca denemek için bir moda dokunun veya yoğunluğu değiştirin.</string>
     <string name="haptic_preview_hint_running">Görselleştirme çalışırken önizleme titreşimi çalınmaz; böylece gerçek titreşimle karışmaz.</string>
-    <string name="haptic_continuous_external">Dış ses modunda, telefonun kendi titreşimini ses sanmaması için Sürekli seçilemez. Sürekli seçili türler Hızlı gibi titreşir. Dış ses modunu kapattığınızda bu türler yeniden Sürekli olarak titreşir.</string>
+    <string name="haptic_cap_external">Dış ses modunda %1$s için en fazla %2$s seçebilirsiniz. Böylece telefon kendi titreşimini ses sanmaz. Daha hızlı bir mod seçiliyse %2$s gibi titreşir. Dış ses modunu kapattığınızda yeniden ayarladığınız gibi titreşir.</string>
+    <string name="haptic_off_external">Dış ses modunda ortam sesleri için titreşim olmaz, çünkü çevrenizde her zaman bir ses vardır ve titreşim hiç durmazdı. Dış ses modunu kapattığınızda ortam sesleri yeniden ayarladığınız gibi titreşir.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>
@@ -271,7 +272,7 @@
     <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
     <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için bir mod (Kapalı, Yavaş, Orta, Hızlı, Sürekli) ve yoğunluk seçebilirsiniz.</string>
     <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Telefon, o türden bir ses sürdüğü sürece titreşir ve ses durunca durur. Orta her yarım saniyede bir atar, Yavaş bunun yarı hızında, Hızlı ise iki katı hızında atar; Sürekli ise ara vermeden titreşir. Her modda titreşim seçtiğiniz yoğunlukta kalır.</string>
-    <string name="help_sound_haptic_external">Dış ses modunda telefon, kendi titreşimini ses sanmamak için bir sesin sürüp sürmediğini yalnızca atımlar arasındaki aralarda kontrol eder. Bu yüzden titreşim, ses durduktan sonra kısa bir süre daha devam edebilir; bu süre genellikle bir saniyeden kısadır. Bu modda Sürekli seçilemez; Sürekli seçili türler Hızlı gibi titreşir. Dış ses modunu kapattığınızda bu türler yeniden Sürekli olarak titreşir.</string>
+    <string name="help_sound_haptic_external">Dış ses modunda telefon, kendi titreşimini ses sanmamak için bir sesin sürüp sürmediğini yalnızca atımlar arasındaki aralarda kontrol eder. Bu yüzden titreşim, ses durduktan sonra kısa bir süre daha devam edebilir; bu süre genellikle bir saniyeden kısadır. Bu aralar yeterince uzun olsun diye bu modda konuşma için en fazla Yavaş, tehlike sesleri için en fazla Orta seçebilirsiniz; ortam sesleri için ise titreşim olmaz, çünkü çevrenizde her zaman bir ses vardır. Daha hızlı bir mod seçili türler, seçilebilen en hızlı modla titreşir. Dış ses modunu kapattığınızda bu türler yeniden ayarladığınız gibi titreşir.</string>
 
     <string name="help_notes_title">Bilmeniz gerekenler</string>
     <string name="help_note_direction">Uygulama sağı ve solu ayırt edebilir, ancak önü ve arkayı ayırt edemez. Ekranın üst ve alt kısmındaki grafikler, her iki tarafta eşit duyulan sesleri ve uzamsal etkiyi gösterir.</string>

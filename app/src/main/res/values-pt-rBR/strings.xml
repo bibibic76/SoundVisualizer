@@ -174,7 +174,8 @@
     <string name="haptic_mode_continuous">Contínua</string>
     <string name="haptic_preview_hint">Toque em um modo ou mude a intensidade para sentir a vibração por 2 segundos.</string>
     <string name="haptic_preview_hint_running">Enquanto a visualização está em execução, a prévia não vibra, para não se confundir com os avisos reais.</string>
-    <string name="haptic_continuous_external">No modo de som externo, você não pode escolher Contínua, para que o celular não confunda a própria vibração com som. Os tipos definidos como Contínua vibram como Rápida, e a vibração volta a ser Contínua quando você desliga o modo de som externo.</string>
+    <string name="haptic_cap_external">No modo de som externo, o máximo que você pode escolher para o tipo %1$s é %2$s, para que o celular não confunda a própria vibração com som. Se estiver definido um modo mais rápido, ele vibra como %2$s, e quando você desliga o modo de som externo, volta a vibrar como você definiu.</string>
+    <string name="haptic_off_external">No modo de som externo, os sons ambientes não vibram, porque sempre há algum som ao seu redor e a vibração nunca pararia. Quando você desliga o modo de som externo, eles voltam a vibrar como você definiu.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Escolha uma cor</string>
@@ -271,7 +272,7 @@
     <string name="help_sound_danger">Quando um som de perigo (como um tiro) é detectado, a cor muda na hora, sem transição gradual.</string>
     <string name="help_sound_haptic">A vibração avisa mesmo quando você não está olhando para a tela. Por padrão, só os sons de perigo vibram, e você pode escolher o modo (Desligada, Lenta, Média, Rápida, Contínua) e a intensidade de cada tipo.</string>
     <string name="help_sound_haptic_rule">Só vibram os tipos mostrados na tela. O celular vibra enquanto durar um som desse tipo e para quando ele termina. Média pulsa a cada meio segundo, Lenta na metade desse ritmo e Rápida no dobro, enquanto Contínua vibra sem interrupção. Em todos os modos, a vibração mantém a intensidade que você escolheu.</string>
-    <string name="help_sound_haptic_external">No modo de som externo, o celular só verifica se ainda há som nas pausas entre os pulsos, para não confundir a própria vibração com som. Por isso, a vibração pode durar mais um instante depois que o som termina, geralmente menos de um segundo. Neste modo, não dá para escolher Contínua: os tipos definidos como Contínua vibram como Rápida, e a vibração volta a ser Contínua quando você desliga o modo de som externo.</string>
+    <string name="help_sound_haptic_external">No modo de som externo, o celular só verifica se ainda há som nas pausas entre os pulsos, para não confundir a própria vibração com som. Por isso, a vibração pode durar mais um instante depois que o som termina, geralmente menos de um segundo. Para que essas pausas sejam longas o bastante, neste modo o máximo que você pode escolher é Lenta para vozes e Média para sons de perigo, e os sons ambientes não vibram, porque sempre há algum som ao seu redor. Os tipos definidos com um modo mais rápido vibram no mais rápido permitido, e quando você desliga o modo de som externo, voltam a vibrar como você definiu.</string>
 
     <string name="help_notes_title">Bom saber</string>
     <string name="help_note_direction">O app diferencia esquerda e direita, mas não frente e trás. Os gráficos nas partes de cima e de baixo da tela representam sons que chegam igualmente dos dois lados e a sensação de espaço.</string>

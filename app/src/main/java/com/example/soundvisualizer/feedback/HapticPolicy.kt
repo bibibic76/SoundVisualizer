@@ -40,8 +40,8 @@ class HapticPolicy(
     data class ClassConfig(val shown: Boolean, val haptic: HapticSettings) {
         val vibrates: Boolean get() = shown && haptic.enabled
 
-        /** 외부 사운드 모드에서 실제로 울릴 설정([HapticSettings.inExternalSound]). */
-        fun inExternalSound(): ClassConfig = copy(haptic = haptic.inExternalSound())
+        /** 외부 사운드 모드에서 [label] 이 실제로 울릴 설정([HapticSettings.inExternalSound]). 표시 여부는 그대로다. */
+        fun inExternalSound(label: String): ClassConfig = copy(haptic = haptic.inExternalSound(label))
     }
 
     /** 지금 울려야 할 진동. [mode] 는 꺼짐이 아니다. */
@@ -107,6 +107,9 @@ class HapticPolicy(
      * 앱의 진동 소리가 섞였을 수 있는 동안([holding])은 큰 소리가 시작되지도 끝나지도 않은 것으로 둔다(#290). 다만 이어 준
      * 크기([SelfVibrationGate] 의 credit)로 큰 소리가 이어진 시각은 늘린다. 늘리지 않으면 듣지 않는 구간(중간 0.48초,
      * 느림 0.58초)에 여유가 지나, 쉼에서 처음 읽은 값이 잠깐 작으면 큰 소리가 끝나고 박자가 어긋난다.
+     *
+     * 외부 사운드 모드에서는 [config] 가 위협음의 상한을 건 설정을 주므로([HapticSettings.inExternalSound]) 큰 소리도
+     * '중간'까지만 울린다(#354).
      */
     private fun onUnlabeled(
         nowMs: Long,

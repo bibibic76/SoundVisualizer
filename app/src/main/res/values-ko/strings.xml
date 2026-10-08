@@ -179,7 +179,8 @@
     <string name="haptic_mode_continuous">연속</string>
     <string name="haptic_preview_hint">방식을 누르거나 세기를 바꾸면 2초 동안 미리 느껴볼 수 있습니다.</string>
     <string name="haptic_preview_hint_running">시각화가 실행 중일 때는 실제 진동과 헷갈리지 않도록 미리보기가 울리지 않습니다.</string>
-    <string name="haptic_continuous_external">외부 사운드 모드에서는 폰이 자기 진동을 소리로 착각하지 않도록 ‘연속’을 고를 수 없습니다. ‘연속’으로 정해 둔 종류는 ‘빠름’으로 울리고, 외부 사운드 모드를 끄면 다시 ‘연속’으로 울립니다.</string>
+    <string name="haptic_cap_external">외부 사운드 모드에서는 폰이 자기 진동을 소리로 착각하지 않도록 %1$s은 ‘%2$s’까지만 고를 수 있습니다. 더 빠르게 정해 두었으면 ‘%2$s’으로 울리고, 외부 사운드 모드를 끄면 정해 둔 대로 울립니다.</string>
+    <string name="haptic_off_external">외부 사운드 모드에서는 주변 소리가 늘 들려 진동이 그치지 않으므로 환경음은 진동하지 않습니다. 외부 사운드 모드를 끄면 정해 둔 대로 울립니다.</string>
 
     <!-- 색상 선택 -->
     <string name="color_picker_title">색상 선택</string>
@@ -278,7 +279,7 @@
     <string name="help_sound_danger">위협음(총소리 등)이 감지되면 색이 서서히 바뀌지 않고 즉시 바뀝니다.</string>
     <string name="help_sound_haptic">화면을 보고 있지 않아도 진동으로 알려줍니다. 처음에는 위협음만 진동하고, 종류마다 방식(꺼짐·느림·중간·빠름·연속)과 세기를 고를 수 있습니다.</string>
     <string name="help_sound_haptic_rule">화면 표시가 켜진 종류만 진동합니다. 그 종류의 소리가 이어지는 동안 계속 울리고, 소리가 멈추면 함께 멈춥니다. ‘중간’은 0.5초마다 한 번씩, ‘느림’은 그 절반 빠르기로, ‘빠름’은 두 배 빠르기로 울리고, ‘연속’은 끊기지 않고 이어집니다. 어느 방식이든 고른 세기 그대로 울립니다.</string>
-    <string name="help_sound_haptic_external">외부 사운드 모드에서는 폰이 자기 진동을 소리로 착각하지 않도록, 울림 사이의 쉬는 틈에서만 소리가 이어지는지 확인합니다. 그래서 소리가 멈춘 뒤에도 잠시(보통 1초 안) 더 울릴 수 있습니다. 이 모드에서는 ‘연속’을 고를 수 없고, 전에 ‘연속’으로 정해 둔 종류는 ‘빠름’으로 울리며, 외부 사운드 모드를 끄면 다시 ‘연속’으로 울립니다.</string>
+    <string name="help_sound_haptic_external">외부 사운드 모드에서는 폰이 자기 진동을 소리로 착각하지 않도록, 울림 사이의 쉬는 틈에서만 소리가 이어지는지 확인합니다. 그래서 소리가 멈춘 뒤에도 잠시(보통 1초 안) 더 울릴 수 있습니다. 쉬는 틈이 넉넉하도록 이 모드에서는 대화음은 ‘느림’까지, 위협음은 ‘중간’까지만 고를 수 있고, 환경음은 주변 소리가 늘 들려 진동이 그치지 않으므로 진동하지 않습니다. 더 빠르게 정해 둔 종류는 고를 수 있는 가장 빠른 방식으로 울리고, 외부 사운드 모드를 끄면 정해 둔 대로 울립니다.</string>
 
     <string name="help_notes_title">알아두세요</string>
     <string name="help_note_direction">좌우는 구분하지만 앞뒤는 구분하지 못합니다. 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감 효과를 나타냅니다.</string>
