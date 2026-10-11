@@ -10,16 +10,31 @@ import kotlin.random.Random
 
 private const val DANGER = AiClassification.DANGER
 private const val SPEECH = AiClassification.SPEECH
+private const val AMBIENT = AiClassification.AMBIENT
 
 /** 모든 종류가 같은 방식. */
 private fun cfg(mode: HapticMode, level: Int = 100): (String) -> HapticPolicy.ClassConfig =
     { HapticPolicy.ClassConfig(true, HapticSettings(mode, level)) }
 
+/** 외부 사운드 모드에서 [label] 로 [mode] 를 정해 두었을 때 실제로 울리는 방식(종류마다의 상한, #354). */
+private fun playedIn(label: String, mode: HapticMode): HapticMode = HapticSettings(mode, 100).inExternalSound(label).mode
+
+/**
+ * 외부 사운드 모드에서 위협음이 그대로 울리는 박자 방식. 위협음의 상한까지라 지금은 느림·중간이다. 빠름·연속은 어느
+ * 종류로도 울리지 않으므로(#354) 문의 시뮬레이션도 이 방식들로 본다.
+ */
+private val EXTERNAL_BEATS: List<HapticMode> =
+    HapticMode.entries.filter { it != HapticMode.Off && it <= HapticSettings.externalCap(DANGER) }
+
+/** 사용자가 고를 수 있는 진동 방식(꺼짐 빼고). 외부 사운드 모드에서는 상한까지로 낮춰 울린다. */
+private val STORED_MODES: List<HapticMode> = HapticMode.entries.filter { it != HapticMode.Off }
+
 /**
  * 외부 사운드 모드에서 폰이 자기 진동 소리를 듣는 고리(#290)를 소리 없이 JVM 에서 돌린다.
  *
  * 순서는 [HapticNotifier] 의 틱과 같다. 라벨 → 크기 읽기 → [SelfVibrationGate.read] → [HapticPolicy.onTick] →
- * [HapticDriver.onTick] → 울림·끊기를 문에 알림 → 다음 깨어날 시각은 driver 와 문 가운데 이른 것.
+ * [HapticDriver.onTick] → 울림·끊기를 문에 알림 → 다음 깨어날 시각은 driver 와 문 가운데 이른 것. 외부 사운드 모드
+ * (`gated`)에서는 알림처럼 라벨마다 그 종류의 상한을 건 설정을 읽는다(#354).
  *
  * 마이크([Mic])는 48kHz 512프레임(10.67ms)마다 버퍼를 하나 내놓고, 입력 지연만큼 늦게 들어온다. 버퍼의 크기는 그 버퍼가
  * 덮는 시간의 실제 소리, 바닥 잡음, 앱의 진동 소리 가운데 가장 큰 것이다. 진동 소리는 울림을 보낸 뒤 `lagMs` 에 시작해
@@ -90,7 +105,7 @@ class SelfHearingLoopTest {
         val driver = HapticDriver(amplitudeControl = true)
         val gate = if (gated) SelfVibrationGate() else null
         val tickConfig: (String) -> HapticPolicy.ClassConfig =
-            if (gated) { l -> config(l).inExternalSound() } else config
+            if (gated) { l -> config(l).inExternalSound(l) } else config
         val plays = ArrayList<Pair<Long, HapticMode>>()
         var t = 0L
         var prev = 0L
@@ -127,16 +142,16 @@ class SelfHearingLoopTest {
         return Run(plays, mic)
     }
 
-    /** 꼬리 + 입력 지연 + 버퍼 하나 + 5ms 가 그 방식의 여유 안에 드는 꼬리들. */
-    private fun tailsWithinGuard(mode: HapticMode, latencyMs: Long): List<Long> {
-        val guard = HapticTuning.selfHearingGuardMs(if (mode == HapticMode.Continuous) HapticMode.Fast else mode)
+    /** 꼬리 + 입력 지연 + 버퍼 하나 + 5ms 가 [played] 의 여유 안에 드는 꼬리들. */
+    private fun tailsWithinGuard(played: HapticMode, latencyMs: Long): List<Long> {
+        val guard = HapticTuning.selfHearingGuardMs(played)
         val max = guard - latencyMs - 11 - 5
         return listOf(20L, max / 2, max)
     }
 
     @Test
     fun `문이 없으면 자기 진동 소리만으로 진동이 끝나지 않는다`() {
-        // #290 의 재현. 소리는 2초에 끝났는데 라벨은 남고, 진동 소리가 0.4초 여유 안에 계속 들린다.
+        // #290 의 재현(문도 상한도 없을 때). 소리는 2초에 끝났는데 라벨은 남고, 진동 소리가 0.4초 여유 안에 계속 들린다.
         for (mode in listOf(HapticMode.Medium, HapticMode.Fast, HapticMode.Continuous)) {
             val mic = Mic(listOf(Triple(0L, 2000L, 0.3f)), buzzLevel = 0.02f, lagMs = 15, tailMs = 40, latencyMs = 20)
             val r = run(mic, 30_000, { DANGER }, cfg(mode), gated = false)
@@ -147,19 +162,23 @@ class SelfHearingLoopTest {
     @Test
     fun `문이 있으면 소리가 언제 끝나든 1초 안에 멈춘다`() {
         // 소리가 박자의 어느 곳에서 끝나는지에 따라 멈추는 시각이 달라진다. 1초 동안 7ms 씩 옮겨 가며 본다.
-        // 모델에서 가장 늦은 경우는 느림 0.84초, 중간 0.85초, 빠름(외부 사운드 모드의 '연속' 포함) 0.66초였다.
-        // 폰 안의 소리(문도 진동 소리도 없음)는 0.63초다. 도움말의 "보통 1초 안" 이 이 한도다.
+        // 정해 둔 방식은 종류의 상한까지로 낮춰 울리므로(대화음은 느림, 위협음은 중간까지) 실제로 울리는 것은 느림·중간이다.
+        // 모델에서 가장 늦은 경우는 느림 0.84초, 중간 0.85초였다. 폰 안의 소리(문도 진동 소리도 없음)는 0.63초다.
+        // 도움말의 "보통 1초 안" 이 이 한도다.
         // 소리가 울림 사이의 쉼에서 끝나면 마지막 울림이 소리보다 먼저 끝나 음수가 나온다(폰 안의 소리도 같다).
-        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast, HapticMode.Continuous)) {
-            for (buzz in listOf(0.02f, 0.5f)) {
-                for (tail in tailsWithinGuard(mode, latencyMs = 20)) {
-                    var end = 2000L
-                    while (end < 3000L) {
-                        val mic = Mic(listOf(Triple(0L, end, 0.3f)), buzz, lagMs = 15, tailMs = tail, latencyMs = 20)
-                        val r = run(mic, 10_000, { DANGER }, cfg(mode), gated = true)
-                        val stop = r.mic.lastMotorEnd() - end
-                        assertTrue("$mode buzz=$buzz tail=$tail end=$end: 소리가 끝나고 ${stop}ms 뒤에 멈췄다", stop <= 900)
-                        end += 7
+        for (label in listOf(SPEECH, DANGER)) {
+            for (mode in STORED_MODES) {
+                val played = playedIn(label, mode)
+                for (buzz in listOf(0.02f, 0.5f)) {
+                    for (tail in tailsWithinGuard(played, latencyMs = 20)) {
+                        var end = 2000L
+                        while (end < 3000L) {
+                            val mic = Mic(listOf(Triple(0L, end, 0.3f)), buzz, lagMs = 15, tailMs = tail, latencyMs = 20)
+                            val r = run(mic, 10_000, { label }, cfg(mode), gated = true)
+                            val stop = r.mic.lastMotorEnd() - end
+                            assertTrue("$label $mode buzz=$buzz tail=$tail end=$end: 소리가 끝나고 ${stop}ms 뒤에 멈췄다", stop <= 900)
+                            end += 7
+                        }
                     }
                 }
             }
@@ -170,8 +189,8 @@ class SelfHearingLoopTest {
     fun `울림을 보내거나 깨어나는 것이 늦어도 1초 안에 멈춘다`() {
         // 실제 알림은 울림을 보낸 직후의 시각을 문에 알리고(보내는 데 몇 ms 걸린다), 틱은 조금씩 늦게 깨어난다.
         // 느림은 이어 준 크기를 지금 들은 것으로 치면 다음 박자까지 여유가 18ms 뿐이라, 이런 지연에 한 번 더 울려
-        // 1.5초 넘게 이어졌다. 지금은 400개 경우 모두에서 가장 늦은 것이 0.86초다.
-        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast)) {
+        // 1.5초 넘게 이어졌다. 지금은 400개 경우 모두에서 가장 늦은 것이 0.85초다.
+        for (mode in EXTERNAL_BEATS) {
             for (seed in 1..400) {
                 val random = Random(seed)
                 val end = 2000L + random.nextLong(0, 1000)
@@ -191,8 +210,8 @@ class SelfHearingLoopTest {
     fun `울림을 보내는 데 늘 오래 걸리는 폰에서도 느림이 한 번 더 울리지 않는다`() {
         // 이어 준 크기를 꼬리 끝에 가깝게 치면 느림은 다음 박자까지 여유가 20ms 남짓뿐이라, 보내는 데 21ms 넘게 걸리는
         // 폰에서는 소리가 끝난 뒤 거의 늘 0.4초짜리 울림이 한 번 더 나가 1.8초까지 이어졌다(리뷰에서 찾음).
-        // 꼬리 끝 0.08초 전으로 막으면 0.08초씩 걸려도 가장 늦은 것이 느림 0.85초, 중간 0.84초, 빠름 0.81초다.
-        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast)) {
+        // 꼬리 끝 0.08초 전으로 막으면 0.08초씩 걸려도 가장 늦은 것이 느림 0.85초, 중간 0.84초다.
+        for (mode in EXTERNAL_BEATS) {
             for (delay in listOf(21L, 30L, 50L, 80L)) {
                 var end = 2000L
                 while (end < 3000L) {
@@ -207,41 +226,61 @@ class SelfHearingLoopTest {
     }
 
     @Test
-    fun `소리가 이어지는 동안 박자는 그대로다`() {
-        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast, HapticMode.Continuous)) {
+    fun `소리가 이어지는 동안 상한까지의 박자로 그대로 울린다`() {
+        // 상한보다 빠르게 정해 둔 방식은 상한의 박자로 울린다. '빠름'과 '연속'은 어느 종류로도 울리지 않는다(#354).
+        for (label in listOf(SPEECH, DANGER)) {
+            for (mode in STORED_MODES) {
+                val mic = Mic(listOf(Triple(0L, 10_000L, 0.3f)), 0.5f, lagMs = 15, tailMs = 40, latencyMs = 20)
+                val r = run(mic, 12_000, { label }, cfg(mode), gated = true)
+                val played = playedIn(label, mode)
+                assertTrue("$label $mode 가 $played 아닌 방식으로 울렸다", r.plays.all { it.second == played })
+                val beats = r.plays.map { it.first }.filter { it in 0..9_000 }
+                val period = HapticTuning.periodMs(played)
+                assertTrue(beats.size > 5)
+                beats.zipWithNext { a, b -> assertEquals("$label $mode 의 박자", period, b - a) }
+            }
+        }
+    }
+
+    @Test
+    fun `외부 사운드 모드에서 환경음은 소리가 이어져도 울리지 않는다`() {
+        // 환경음은 주변에서 늘 들려 진동하게 두면 그치지 않는다. 그래서 외부 사운드 모드에서는 상한이 꺼짐이다(#354).
+        for (mode in STORED_MODES) {
             val mic = Mic(listOf(Triple(0L, 10_000L, 0.3f)), 0.5f, lagMs = 15, tailMs = 40, latencyMs = 20)
-            val r = run(mic, 12_000, { DANGER }, cfg(mode), gated = true)
-            val played = if (mode == HapticMode.Continuous) HapticMode.Fast else mode
-            assertTrue("$mode 가 '연속' 그대로 울렸다", r.plays.all { it.second == played })
-            val beats = r.plays.map { it.first }.filter { it in 0..9_000 }
-            val period = HapticTuning.periodMs(played)
-            assertTrue(beats.size > 5)
-            beats.zipWithNext { a, b -> assertEquals("$mode 의 박자", period, b - a) }
+            val r = run(mic, 12_000, { AMBIENT }, cfg(mode), gated = true)
+            assertTrue("$mode 로 정해 둔 환경음이 울렸다: ${r.plays.take(3)}", r.plays.isEmpty())
+            val inside = run(Mic(listOf(Triple(0L, 10_000L, 0.3f)), 0f, 15, 40, 20), 12_000, { AMBIENT }, cfg(mode), gated = false)
+            assertTrue("폰 안의 소리에서는 $mode 그대로 울린다", inside.plays.isNotEmpty() && inside.plays.all { it.second == mode })
         }
     }
 
     @Test
     fun `자기 진동에 라벨이 계속 오가도 소리가 끝나면 멈춘다`() {
-        // AI 가 자기 진동 소리를 진동하는 두 종류로 번갈아 들으면, 방식이 바뀔 때마다 새 울림이 바로 나가고 그 울림 동안은
-        // 기다리므로 라벨이 그대로일 때보다 늦게 멈춘다. 모델에서 가장 늦은 경우는 느림이 낄 때 1.22초였다(폰 안의 소리는
-        // 0.63초). 도움말의 "보통 1초 안" 은 이 드문 경우를 뺀 것이다. 꼬리가 두 배로 늘어나는 회귀는 여기서 걸린다.
+        // AI 가 자기 진동 소리를 다른 종류로 번갈아 들으면, 방식이 바뀌거나 울림이 끊겼다 다시 날 때마다 새 울림이 바로 나가고
+        // 그 울림 동안은 기다리므로 라벨이 그대로일 때보다 늦게 멈춘다. 상한 아래에서 서로 다르게 울리는 것은 위협음 중간과
+        // 대화음 느림, 그리고 진동하지 않는 종류(외부 사운드 모드의 환경음, 꺼 둔 대화음)다. 모델에서 가장 늦은 경우는 위협음
+        // 중간이 대화음 느림이나 진동하지 않는 종류와 오갈 때 1.22초였다(위협음이 느림이면 0.92초 안, 폰 안의 소리는 0.63초).
+        // 도움말의 "보통 1초 안" 은 이 드문 경우를 뺀 것이다. 꼬리가 두 배로 늘어나는 회귀는 여기서 걸린다.
         val pairs = listOf(
             HapticMode.Fast to HapticMode.Medium, HapticMode.Medium to HapticMode.Fast,
             HapticMode.Slow to HapticMode.Medium, HapticMode.Medium to HapticMode.Slow,
-            HapticMode.Slow to HapticMode.Fast, HapticMode.Fast to HapticMode.Slow
+            HapticMode.Slow to HapticMode.Fast, HapticMode.Fast to HapticMode.Slow,
+            HapticMode.Medium to HapticMode.Off, HapticMode.Slow to HapticMode.Off
         )
-        for ((danger, speech) in pairs) {
-            val config: (String) -> HapticPolicy.ClassConfig = { label ->
-                HapticPolicy.ClassConfig(true, HapticSettings(if (label == DANGER) danger else speech, 80))
-            }
-            for (flipMs in listOf(250L, 500L, 750L, 1000L)) {
-                var end = 2000L
-                while (end < 3000L) {
-                    val mic = Mic(listOf(Triple(0L, end, 0.3f)), 0.5f, lagMs = 15, tailMs = 40, latencyMs = 20)
-                    val r = run(mic, 10_000, { t -> if ((t / flipMs) % 2 == 0L) DANGER else SPEECH }, config, gated = true)
-                    val stop = r.mic.lastMotorEnd() - end
-                    assertTrue("$danger/$speech flip=${flipMs}ms end=$end: 소리가 끝나고 ${stop}ms 뒤에 멈췄다", stop <= 1300)
-                    end += 7
+        for (other in listOf(SPEECH, AMBIENT)) {
+            for ((danger, otherMode) in pairs) {
+                val config: (String) -> HapticPolicy.ClassConfig = { label ->
+                    HapticPolicy.ClassConfig(true, HapticSettings(if (label == DANGER) danger else otherMode, 80))
+                }
+                for (flipMs in listOf(250L, 500L, 750L, 1000L)) {
+                    var end = 2000L
+                    while (end < 3000L) {
+                        val mic = Mic(listOf(Triple(0L, end, 0.3f)), 0.5f, lagMs = 15, tailMs = 40, latencyMs = 20)
+                        val r = run(mic, 10_000, { t -> if ((t / flipMs) % 2 == 0L) DANGER else other }, config, gated = true)
+                        val stop = r.mic.lastMotorEnd() - end
+                        assertTrue("$danger/$other $otherMode flip=${flipMs}ms end=$end: 소리가 끝나고 ${stop}ms 뒤에 멈췄다", stop <= 1300)
+                        end += 7
+                    }
                 }
             }
         }
@@ -257,25 +296,45 @@ class SelfHearingLoopTest {
     }
 
     @Test
+    fun `AI 를 쓸 수 없을 때 큰 소리는 외부 사운드 모드에서 위협음 상한인 중간까지만 울린다`() {
+        // 종류를 모르는 큰 소리는 위협음 설정으로 울리므로(#225) 위협음의 상한을 따른다. 모델에서 가장 늦게 멈춘 경우는
+        // 중간으로 정해 둔 것과 같은 0.85초였다.
+        for (mode in listOf(HapticMode.Fast, HapticMode.Continuous)) {
+            var end = 2000L
+            while (end < 3000L) {
+                val mic = Mic(listOf(Triple(0L, end, 0.5f)), 0.3f, lagMs = 15, tailMs = 40, latencyMs = 20)
+                val r = run(mic, 10_000, { null }, cfg(mode), gated = true, unlabeledAlerts = true)
+                assertTrue("$mode end=$end: 큰 소리에 울리지 않았다", r.plays.isNotEmpty())
+                assertTrue("$mode end=$end: 중간 아닌 방식으로 울렸다", r.plays.all { it.second == HapticMode.Medium })
+                val stop = r.mic.lastMotorEnd() - end
+                assertTrue("$mode end=$end: 소리가 끝나고 ${stop}ms 뒤에 멈췄다", stop <= 900)
+                end += 7
+            }
+        }
+    }
+
+    @Test
     fun `말소리처럼 끊어지는 소리에서 박자가 폰 안의 소리보다 더 흔들리지 않고 거의 빠지지 않는다`() {
-        // 모델(20개 경우 평균)에서 박자가 어긋난 비율은 느림 25%→12%, 중간 11%→6%, 빠름 5%→4% 로 오히려 줄었다.
-        // 폰 안의 소리가 울린 박자 가운데 외부 사운드 모드가 울리지 않은 것은 느림 2.4%, 중간 1.4%, 빠름 0.8% 다.
-        // 짧은 소리가 울림 도중에만 났다 끝나면 듣지 못해 박자 하나가 빠질 수 있다. 이어 주기를 빼면 중간 13%, 빠름 9% 가 빠진다.
-        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast)) {
+        // 모델(20개 경우 평균)에서 박자가 어긋난 비율은 느림 25%→12%, 중간 11%→6% 로 오히려 줄었다.
+        // 폰 안의 소리가 울린 박자 가운데 외부 사운드 모드가 울리지 않은 것은 느림 2.4%, 중간 1.4% 다.
+        // 짧은 소리가 울림 도중에만 났다 끝나면 듣지 못해 박자 하나가 빠질 수 있다. 이어 주기를 빼면 중간 13% 가 빠진다.
+        // 대화음은 외부 사운드 모드에서 느림까지라, 중간은 같은 소리를 위협음으로 들은 경우(끊어지는 경보음 등)로 본다.
+        for (mode in EXTERNAL_BEATS) {
+            val label = if (mode <= HapticSettings.externalCap(SPEECH)) SPEECH else DANGER
             val runs = (1..10).map { seed ->
                 val sounds = speechLike(seed, 60_000)
-                run(Mic(sounds, 0f, 15, 40, 20), 60_000, { SPEECH }, cfg(mode), gated = false) to
-                    run(Mic(sounds, 0.5f, 15, 40, 20), 60_000, { SPEECH }, cfg(mode), gated = true)
+                run(Mic(sounds, 0f, 15, 40, 20), 60_000, { label }, cfg(mode), gated = false) to
+                    run(Mic(sounds, 0.5f, 15, 40, 20), 60_000, { label }, cfg(mode), gated = true)
             }
-            assertNoWorseRhythm("$mode", runs, mode, tolerance = 0.03, maxMissing = 0.04)
+            assertNoWorseRhythm("$mode $label", runs, mode, tolerance = 0.03, maxMissing = 0.04)
         }
     }
 
     @Test
     fun `AI 를 쓸 수 없을 때 끊어지는 큰 소리에서도 박자가 크게 흔들리지 않는다`() {
         // 이어 준 크기로 큰 소리가 이어진 시각을 늘리지 않으면 중간은 박자의 18% 남짓이 어긋났다. 지금은 2% 남짓이다.
-        // 빠진 박자는 중간 0.6% 다(이어 주기를 빼면 4.5%).
-        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast)) {
+        // 빠진 박자는 중간 0.6% 다(이어 주기를 빼면 4.5%). 큰 소리는 위협음 설정을 따르므로 위협음의 상한까지 본다.
+        for (mode in EXTERNAL_BEATS) {
             val runs = (1..10).map { seed ->
                 val sounds = loudBursts(seed, 60_000)
                 run(Mic(sounds, 0f, 15, 40, 20), 60_000, { null }, cfg(mode), gated = false, unlabeledAlerts = true) to
@@ -314,11 +373,13 @@ class SelfHearingLoopTest {
     }
 
     @Test
-    fun `꼬리가 여유보다 길면 빠름은 걸러 내지 못한다`() {
-        // 알려진 한계를 고정한다. 폰의 꼬리가 이보다 길면 빠름(외부 사운드 모드의 '연속' 포함)의 여유를 늘려야 한다.
-        val guard = HapticTuning.selfHearingGuardMs(HapticMode.Fast)
+    fun `꼬리가 여유보다 길면 걸러 내지 못한다`() {
+        // 알려진 한계를 고정한다. 외부 사운드 모드에서 가장 빠른 중간도 여유(0.18초)보다 꼬리가 길면 다시 이어진다. 그런 폰이
+        // 있으면 여유를 늘려야 한다. 여유가 0.11초인 빠름은 상한 때문에 외부 사운드 모드에서 울리지 않는다(#354).
+        val fastest = EXTERNAL_BEATS.last()
+        val guard = HapticTuning.selfHearingGuardMs(fastest)
         val mic = Mic(listOf(Triple(0L, 2000L, 0.3f)), 0.02f, lagMs = 15, tailMs = guard, latencyMs = 20)
-        val r = run(mic, 30_000, { DANGER }, cfg(HapticMode.Fast), gated = true)
+        val r = run(mic, 30_000, { DANGER }, cfg(fastest), gated = true)
         assertTrue("꼬리가 여유보다 긴데 멈췄다", r.mic.lastMotorEnd() > 28_000)
     }
 

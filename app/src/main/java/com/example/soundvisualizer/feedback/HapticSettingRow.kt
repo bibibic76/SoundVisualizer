@@ -61,7 +61,8 @@ import kotlin.math.roundToInt
  * 세기는 꺼짐이 아닐 때만 펼쳐서 카드가 길어지지 않게 한다. 방식을 누르거나 세기를 바꾸면 그대로 미리 울려 본다.
  * 시각화가 실행 중이면 미리보기가 실제 진동과 섞여 무엇이 울린 것인지 헷갈리므로 울리지 않는다(#244).
  *
- * 외부 사운드 모드에서는 '연속'을 고를 수 없고, '연속'으로 저장된 종류는 '빠름'으로 보이고 울린다([HapticModeChoice], #290).
+ * 외부 사운드 모드에서는 그 종류의 상한([HapticSettings.externalCap])까지만 고를 수 있고, 상한보다 빠르게 저장된 종류는
+ * 상한으로 보이고 울린다([HapticModeChoice], #354). 상한이 꺼짐인 환경음은 표시와 상관없이 진동하지 않는다고 적는다.
  * 외부 사운드 모드는 다음 실행의 소스다. 실행 중에는 홈의 스위치가 잠겨 실행 중인 소스와 같다.
  *
  * @param label [com.example.soundvisualizer.AiClassification] 의 라벨
@@ -76,7 +77,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val running by SettingsManager.isServiceRunning.collectAsState()
     val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
     val external = CaptureSource.of(externalSoundMode).hearsOwnVibration
-    val shownSettings = HapticModeChoice.shown(settings, external)
+    val shownSettings = HapticModeChoice.shown(settings, label, external)
 
     val rowEnabled = shown && player.hasVibrator
 
@@ -102,13 +103,17 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     // 고른 방식은 그대로라 종류별 진동을 믿게 되므로, 켜 둔 진동 바로 아래에 알린다. 위협음 줄은 이 설정으로
     // 큰 소리가 울린다고, 다른 줄은 이 종류로는 울리지 않는다고 적는다. 위협음의 표시나 진동을 꺼 두었으면 큰 소리도
     // 울리지 않으므로 다른 줄은 진동하지 않는다고만 적는다(#232). 설정값은 다음 실행을 위해 바꾸지 않는다.
+    // 켜 둔 진동인지는 실제로 울릴 방식으로 본다. 외부 사운드 모드의 환경음은 꺼짐으로만 울리므로(#354) 아래의 상한
+    // 안내만 붙인다. 위협음의 상한은 꺼짐이 아니라서, 큰 소리가 울리는지는 저장된 위협음 설정으로 봐도 같다.
     val dangerShown by SettingsManager.showDanger.collectAsState()
     val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
     val loudAlerts = AiUnavailableNotice.loudAlerts(dangerShown, dangerHaptic.enabled, player.hasVibrator)
-    val aiNote = !aiAvailable && rowEnabled && settings.enabled
+    val aiNote = !aiAvailable && rowEnabled && shownSettings.enabled
+    // 외부 사운드 모드의 환경음은 표시를 켜도 진동하지 않으므로(#354) 표시를 끈 줄이어도 표시를 켜라고 하지 않는다.
+    // 진동하지 않는 까닭은 아래의 상한 안내가 적는다([HapticModeChoice.requiresDisplayNote]).
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
-        !shown -> R.string.haptic_requires_display
+        HapticModeChoice.requiresDisplayNote(label, shown, external) -> R.string.haptic_requires_display
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
         aiNote -> AiUnavailableNotice.otherRow(loudAlerts)
         else -> null
@@ -140,10 +145,16 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
-        // 외부 사운드 모드에서는 '연속'을 고를 수 없고 '빠름'으로 울린다. 저장된 방식은 그대로라 모드를 끄면 돌아온다(#290).
-        if (rowEnabled && HapticModeChoice.showsNote(external)) {
+        // 외부 사운드 모드에서는 그 종류의 상한까지만 고를 수 있고, 더 빠르게 정해 둔 방식은 상한으로 울린다. 저장된 방식은
+        // 그대로라 모드를 끄면 돌아온다(#354). 상한이 꺼짐인 환경음은 고를 것이 꺼짐뿐이라 진동하지 않는다고 적고, 표시를
+        // 켜도 진동하지 않으므로 표시를 끈 줄에도 적는다([HapticModeChoice.showsNote]).
+        // 그 안내는 환경음을 이름으로 들어 진동하지 않는다고 말하므로 환경음 줄이고 상한이 꺼짐일 때만 쓴다. 상한만 보고
+        // 고르면 다른 종류의 상한을 꺼짐으로 바꿨을 때 그 줄에 환경음 안내가 붙는다.
+        if (player.hasVibrator && HapticModeChoice.showsNote(label, shown, external)) {
+            val cap = HapticSettings.externalCap(label)
             Text(
-                stringResource(R.string.haptic_continuous_external),
+                if (label == AiClassification.AMBIENT && cap == HapticMode.Off) stringResource(R.string.haptic_off_external)
+                else stringResource(R.string.haptic_cap_external, typeName, stringResource(cap.labelRes)),
                 fontSize = 13.sp,
                 color = SecondaryTextColor,
                 modifier = Modifier.padding(top = 4.dp)
@@ -155,15 +166,18 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             selected = shownSettings.mode,
             labelOf = { stringResource(it.labelRes) },
             enabled = rowEnabled,
-            optionEnabled = { HapticModeChoice.selectable(it, external) },
+            optionEnabled = { HapticModeChoice.selectable(it, label, external) },
             onSelect = { mode ->
-                val next = HapticModeChoice.toStore(settings, mode, external)
+                val next = HapticModeChoice.toStore(settings, mode, label, external)
                 if (next != null) SettingsManager.updateHaptic(label, next)
-                preview(HapticModeChoice.shown(next ?: settings, external))
+                preview(HapticModeChoice.shown(next ?: settings, label, external))
             }
         )
 
-        DependentSettings(rowEnabled && settings.enabled) {
+        // 세기는 실제로 울릴 방식이 꺼짐이 아닐 때만 펼친다. 외부 사운드 모드의 환경음은 꺼짐으로만 울리므로(#354) 꺼짐
+        // 줄처럼 접는다. 펼쳐 두면 바꿔도 느낄 수 없는 세기를 고르게 된다(미리보기도 꺼짐이라 울리지 않는다). 저장된 방식과
+        // 세기는 그대로라 외부 사운드 모드를 끄면 정해 둔 대로 보인다.
+        DependentSettings(rowEnabled && shownSettings.enabled) {
             LevelSlider(
                 typeName = typeName,
                 level = settings.level,
@@ -171,7 +185,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 onFinished = { level ->
                     val next = settings.copy(level = level)
                     SettingsManager.updateHaptic(label, next)
-                    preview(HapticModeChoice.shown(next, external))
+                    preview(HapticModeChoice.shown(next, label, external))
                 }
             )
             if (!player.hasAmplitudeControl) {
