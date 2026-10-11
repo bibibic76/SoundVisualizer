@@ -91,8 +91,35 @@ class VisualizerEngine(
          */
         private const val EDGE_BAND_AA_PX = 1f
 
-        /** 발광 블러가 번지는 폭 = 블러 반경의 이 배수. 블러의 시그마는 반경의 약 0.58배라 3배면 5시그마를 넘는다. */
+        /**
+         * 발광 블러가 번지는 폭으로 잡는 블러 반경의 배수. 반경이 크면 블러 커널보다 넉넉하지만 반경이 작으면 모자라서,
+         * 띠에는 이 값과 커널이 닿는 거리를 견준 [glowSpread] 를 더한다.
+         */
         private const val GLOW_SPREAD = 3f
+
+        /**
+         * Android 가 `BlurMaskFilter` 의 반경(px)을 Skia 의 시그마로 바꾸는 식: 시그마 = 0.57735 × 반경 + 0.5.
+         * hwui `MaskFilter.cpp` 의 `convertRadiusToSigma` 와 같다.
+         */
+        private const val BLUR_SIGMA_PER_RADIUS = 0.57735f
+        private const val BLUR_SIGMA_OFFSET = 0.5f
+
+        /**
+         * 반경 [radiusPx] 인 발광 블러가 도형 밖으로 번지는 폭(px). 가장자리 띠에 이만큼 더한다(#350).
+         *
+         * 블러 커널은 도형에서 3시그마를 올림한 거리까지 닿는다. 반경이 크면 반경의 3배([GLOW_SPREAD])가 그보다 넓다
+         * (반경 65px 이면 5.1시그마). 반경이 작으면 시그마의 + 0.5 몫이 커서 3배로는 모자란다. 반경 1px 이면 3px 은
+         * 2.8시그마뿐이고 커널은 4px 까지 닿는다. 그래서 커널이 닿는 거리 + 1px 과 반경의 3배 가운데 큰 쪽을 쓴다.
+         * 반경 0.5·1·2px 이면 4·5·6px 이고, 반경이 8/3px(약 2.67px) 이상이면 늘 반경의 3배다. 예전 값보다 좁아지는 일은 없다.
+         *
+         * 1px 을 더 두는 것은 [drawGlow] 가 반경이 0.5px 넘게 바뀔 때만 블러를 새로 만들기 때문이다. 그 사이 실제 블러의
+         * 반경은 0.5px 까지 커서 3시그마가 0.87px 늘 수 있지만, 올림한 거리는 1px 넘게 늘지 않는다.
+         * 곱셈과 올림뿐이라 프레임마다 불러도 할당이 없다.
+         */
+        internal fun glowSpread(radiusPx: Float): Float {
+            val kernelReach = ceil(3f * (BLUR_SIGMA_PER_RADIUS * radiusPx + BLUR_SIGMA_OFFSET))
+            return max(radiusPx * GLOW_SPREAD, kernelReach + 1f)
+        }
 
         /**
          * 표시가 꺼진 라벨이라 그리지 못한 피크를 보관하는 칸 수와 칸 하나의 길이(60fps 프레임 단위).
@@ -1099,7 +1126,7 @@ class VisualizerEngine(
      * Galaxy S25+ 에서 한 코어 기준 파도 68% → 41~45%, 외곽선 89% → 46~47%, 패드 68% → 24~26% 였다.
      * 띠는 겹치지 않게 나눈다. 겹치면 그 자리만 두 번 칠해져 진해진다.
      *
-     * 발광이 켜져 있으면 블러가 번지는 폭([GLOW_SPREAD])까지 띠에 더하고, 발광도 띠 안에서 그린다.
+     * 발광이 켜져 있으면 블러가 번지는 폭([glowSpread])까지 띠에 더하고, 발광도 띠 안에서 그린다.
      * 도형이 띠 안에 있으니 발광이 번지는 곳까지 띠에 들고, 띠는 겹치지 않게 화면을 나누므로 그림은 같다.
      * 같은 기기에서 발광을 켠 채 두 방식을 번갈아 재어 파도 90% → 52%, 패드 88% → 31%, 외곽선 88% → 60% 였다(#189).
      * #172 에서는 발광이면 자르지 않는 쪽이 낫다고 보았는데, 그때 측정이 회차마다 벤치가 앞에서 밀려나
@@ -1122,14 +1149,14 @@ class VisualizerEngine(
 
     /**
      * 잘라 그릴 띠의 두께(px). 도형이 들어올 수 있는 깊이 [band] 에 안티앨리어싱 1px([EDGE_BAND_AA_PX]),
-     * 선 두께, 발광이 번지는 폭을 더한다. 띠가 화면 짧은 변의 절반에 닿으면 잘라 봐야 줄지 않으므로 -1 이다.
+     * 선 두께, 발광이 번지는 폭([glowSpread])을 더한다. 띠가 화면 짧은 변의 절반에 닿으면 잘라 봐야 줄지 않으므로 -1 이다.
      *
      * 띠가 만나는 경계를 픽셀에 맞추려고 올림한다. 그래야 경계 줄이 두 띠에 모두 들거나 어느 쪽에도 들지 않는 일이 없다.
      * 외곽선은 선 두께를 다 더한다. 선은 곡선 양쪽으로 두께의 절반씩 나가고, 꺾인 이음(MITER)은 그보다 멀리 나갈 수 있다.
      * Catmull-Rom 곡선은 조각 사이 이음이 매끄러워 실제로는 절반만 나가지만, 두 배를 두면 이음이 꽤 꺾여도(120°까지) 띠 안에 든다.
      */
     private fun edgeBandThickness(band: Float, strokeWidth: Float): Float {
-        val t = ceil(band + EDGE_BAND_AA_PX + strokeWidth + if (glowAlpha > 0f) glowRadiusPx * GLOW_SPREAD else 0f)
+        val t = ceil(band + EDGE_BAND_AA_PX + strokeWidth + if (glowAlpha > 0f) glowSpread(glowRadiusPx) else 0f)
         return if (t * 2f >= min(w, h)) -1f else t
     }
 
@@ -1146,7 +1173,10 @@ class VisualizerEngine(
         canvas.drawPath(path, fillPaint)
     }
 
-    /** 광원: 같은 도형을 블러 마스크로 한 번 더 깔아 아우라를 만든다. */
+    /**
+     * 광원: 같은 도형을 블러 마스크로 한 번 더 깔아 아우라를 만든다.
+     * 블러는 반경이 0.5px 넘게 바뀔 때만 새로 만든다. 이 0.5px 을 늘리면 띠에 더하는 발광 폭([glowSpread])의 1px 도 다시 따진다.
+     */
     private fun drawGlow(canvas: NativeCanvas, shader: Shader?, style: Paint.Style, strokeWidth: Float) {
         if (blurFilter == null || abs(blurRadius - glowRadiusPx) > 0.5f) {
             blurRadius = glowRadiusPx

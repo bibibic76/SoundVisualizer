@@ -154,14 +154,23 @@ private fun bandSounds(rnd: java.util.Random, randomCount: Int = 20): List<BandS
     return fixed + random
 }
 
-/** 가장자리 띠 시험의 설정. 소리를 바로 따라가게 해 정해 둔 소리의 모양이 그대로 나오게 한다. */
-private fun bandSettings(intensity: Float, glow: Boolean) = ModeSettings(
+/**
+ * 가장자리 띠 시험의 설정. 소리를 바로 따라가게 해 정해 둔 소리의 모양이 그대로 나오게 한다.
+ * 발광 세기 [glowIntensity] 의 반경은 세기 × 0.5dp 이고 1dp 보다 작아지지 않는다.
+ */
+private fun bandSettings(intensity: Float, glow: Boolean, glowIntensity: Float = 50f) = ModeSettings(
     intensity = intensity,
     sensitivity = 100f,
     speed = 100f,
     isGlowMode = glow,
-    glowIntensity = if (glow) 50f else 0f
+    glowIntensity = if (glow) glowIntensity else 0f
 )
+
+/**
+ * 반경 [radiusPx] 인 블러의 커널이 도형 밖으로 닿는 거리(px). Android 는 반경을 시그마 = 0.57735 × 반경 + 0.5 로
+ * 바꾸고, Skia 의 커널은 3시그마를 올림한 거리까지 닿는다. 엔진의 식을 빌리지 않고 여기에 따로 적는다.
+ */
+private fun blurKernelReach(radiusPx: Float): Float = ceil(3f * (0.57735f * radiusPx + 0.5f))
 
 /** [sound] 를 끝까지 넣은 엔진. */
 private fun engineAfter(sound: BandSound, mode: VisualMode, settings: ModeSettings, width: Float, height: Float): VisualizerEngine {
@@ -536,6 +545,61 @@ class VisualizerEngineTest {
             band.deepestSample > band.deepestPoint + 1f
         )
         assertEquals("자르지 않고 그려야 한다", -1f, band.thickness)
+    }
+
+    @Test
+    fun `발광이 번지는 폭은 반경이 작으면 블러 커널이 닿는 거리에 1px 을 더하고 크면 반경의 3배다`() {
+        // 반경 0.5·1·2px 의 블러 커널은 3·4·5px 까지 닿는다. 예전처럼 반경의 3배(1.5·3·6px)만 더하면 앞의 둘은 모자란다.
+        assertEquals(4f, VisualizerEngine.glowSpread(0.5f), 0f)
+        assertEquals(5f, VisualizerEngine.glowSpread(1f), 0f)
+        assertEquals(6f, VisualizerEngine.glowSpread(2f), 0f)
+        // 420dpi(배율 2.625) 화면의 가장 작은 반경(발광 세기 2 이하, 1dp)이다. 커널(7px) + 1px 이 3배(7.875px)보다 조금 넓다.
+        assertEquals(8f, VisualizerEngine.glowSpread(2.625f), 0f)
+        // 반경이 크면 반경의 3배 그대로다. 65.625·131.25px 은 배율 2.625 에서 발광 세기 50·100 의 반경이다.
+        assertEquals(24f, VisualizerEngine.glowSpread(8f), 0f)
+        assertEquals(196.875f, VisualizerEngine.glowSpread(65.625f), 0f)
+        assertEquals(393.75f, VisualizerEngine.glowSpread(131.25f), 0f)
+    }
+
+    @Test
+    fun `발광이 번지는 폭은 블러가 늦게 바뀌어도 커널을 덮고 예전의 반경 3배보다 좁지 않다`() {
+        // 엔진은 반경이 0.5px 넘게 바뀔 때만 블러를 새로 만든다. 그 사이 그리는 블러의 반경은 0.5px 까지 크다.
+        // 반경은 발광 세기 × 0.5dp 라 배율 4 화면의 세기 100 이면 200px 이다.
+        for (centiPx in 25..20_000) {
+            val r = centiPx / 100f
+            val spread = VisualizerEngine.glowSpread(r)
+            val reach = blurKernelReach(r + 0.5f)
+            assertTrue("반경 ${r}px: 번지는 폭 ${spread}px 이 늦게 바뀐 커널이 닿는 거리 ${reach}px 보다 좁다", spread >= reach)
+            assertTrue("반경 ${r}px: 번지는 폭 ${spread}px 이 반경의 3배보다 좁다", spread >= 3f * r)
+        }
+    }
+
+    @Test
+    fun `반경이 작은 발광도 블러가 번지는 곳까지 잘라 그릴 띠 안에 든다`() {
+        // 이 시험의 화면은 배율 1 이라 발광 세기 1 의 반경은 1dp = 1px 이다. 블러 커널은 4px, 블러가 늦게 바뀌어
+        // 반경이 1.5px 이면 5px 까지 닿는다. 예전처럼 반경의 3배(3px)만 더하면 발광 끝이 띠 밖에서 잘린다.
+        // 패드와 큰 소리의 파도는 조절점으로 잰 깊이가 도형에 꼭 맞아, 띠가 모자라면 바로 드러난다.
+        val settings = bandSettings(intensity = 50f, glow = true, glowIntensity = 1f)
+        val reach = blurKernelReach(1f + 0.5f)
+        val sounds = bandSounds(java.util.Random(350), randomCount = 5)
+        var checked = 0
+        for ((width, height) in BAND_SURFACES) for (mode in listOf(VisualMode.Wave, VisualMode.Outline, VisualMode.Pad))
+            for (sound in sounds) {
+                val engine = engineAfter(sound, mode, settings, width, height)
+                val band = if (mode == VisualMode.Pad) engine.debugPadBand(samplesPerEdge = 8)
+                else engine.debugWaveBand(samplesPerSegment = 16)
+                if (band.thickness < 0f || band.deepestSample <= 0f) continue // 자르지 않거나 보이는 도형이 없다.
+                checked++
+                // 도형 끝이 걸친 픽셀(안티앨리어싱 1px)에서 커널이 닿는 곳까지 띠 안이어야 한다. 외곽선은 선 두께의 절반이 더 나간다.
+                // 0.01px 은 점 사이를 짚을 때의 부동소수 오차 몫이다.
+                val halfStroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_PX / 2f else 0f
+                val where = "$mode ${width.toInt()}x${height.toInt()} ${sound.name}"
+                assertTrue(
+                    "$where: 도형이 ${band.deepestSample}px 들어오고 발광이 ${reach}px 더 번지는데 띠는 ${band.thickness}px",
+                    band.deepestSample + halfStroke + 1f + reach <= band.thickness + 0.01f
+                )
+            }
+        assertTrue("잘라 그린 경우가 적어 확인한 것이 적다 ($checked)", checked > 60)
     }
 
     // ---------------------------------------------------------------
