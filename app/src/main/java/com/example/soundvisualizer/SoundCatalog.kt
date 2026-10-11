@@ -43,6 +43,12 @@ object SoundCatalog {
     fun typeOf(entry: SoundEntry, overrides: Map<String, String>): String = overrides[entry.name] ?: entry.defaultType
 
     /**
+     * 모델 이름의 클래스 번호. 앱 언어의 이름(sound_names)을 이 번호로 꺼낸다. 잠금 화면 알림은 AI 가 확정한 이름을
+     * 문자열로만 받으므로 이것으로 번호를 찾는다(#356). 모델 이름은 서로 겹치지 않는다. 목록에 없는 이름이면 null.
+     */
+    fun indexOf(entries: List<SoundEntry>, name: String): Int? = entries.firstOrNull { it.name == name }?.index
+
+    /**
      * 찾는 말과 거르기에 맞는 줄만 남긴다. 순서는 그대로다.
      *
      * @param searchKeys 줄마다 [searchKey] 로 만든 값. 입력할 때마다 521개 이름을 다시 다듬지 않게 미리 만든다.
