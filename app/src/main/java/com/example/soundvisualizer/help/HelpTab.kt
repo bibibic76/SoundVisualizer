@@ -113,7 +113,7 @@ fun HelpTab() {
         }
         item {
             SettingsExpander(stringResource(R.string.help_sound_title)) {
-                // 외부 사운드 모드에서는 진동이 울림 사이의 쉼에서만 소리를 보고, '연속'을 '빠름'으로 울린다(#290).
+                // 외부 사운드 모드에서는 진동이 울림 사이의 쉼에서만 소리를 보고(#290), 종류마다 방식에 상한이 있다(#354).
                 val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
                 val haptic = listOfNotNull(
                     R.string.help_sound_haptic,
@@ -149,6 +149,7 @@ fun HelpTab() {
             SettingsExpander(stringResource(R.string.help_faq_title)) {
                 // 직접 끄지 않았는데 꺼진 경우를 맨 위에 둔다. 알림을 못 봤으면 여기서 찾게 된다.
                 // 외부 사운드 모드는 화면 녹화 동의를 쓰지 않고, 소리가 안 들어오는 까닭도 다르다(#268).
+                // 진동도 다르다. 화면이 꺼져도 쉬지 않고(#260), 환경음은 진동하지 않으며 다른 종류에는 상한이 있다(#354).
                 val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
                 TitledItem(
                     R.string.help_faq_stopped_q,
@@ -158,7 +159,10 @@ fun HelpTab() {
                     R.string.help_faq_no_graphic_q,
                     if (externalSoundMode) R.string.help_faq_no_graphic_a_external else R.string.help_faq_no_graphic_a
                 )
-                TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_answer)
+                TitledItem(
+                    R.string.help_faq_no_vibration_q,
+                    if (externalSoundMode) R.string.help_faq_no_vibration_answer_external else R.string.help_faq_no_vibration_answer
+                )
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)
                 TitledItem(
                     R.string.help_faq_battery_q,
