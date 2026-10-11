@@ -312,17 +312,10 @@ class ReferenceClassifier:
             not adopted_danger_from_booster
             and not block_promotion
             and has_strong_danger_cue
-            and not has_gunshot_cue
         ):
-            candidates = [
-                (int(top_idx[i]), float(top_probs[i]))
-                for i in range(5)
-                if int(top_idx[i]) >= 0
-                and self._is_strong_danger_keyword(self._class_names[int(top_idx[i])])
-                and not self._is_gunshot_keyword(self._class_names[int(top_idx[i])])
-            ]
-            if candidates:
-                max_index, _ = max(candidates, key=lambda item: item[1])
+            cue = self._try_pick_best_non_gunshot_strong_danger_display(top_idx, top_probs, 5)
+            if cue is not None:
+                max_index, _ = cue
                 coarse = "danger"
                 display = self._class_names[max_index]
                 danger_cue_promoted = True
@@ -642,6 +635,17 @@ class ReferenceClassifier:
             if i >= 0 and probability >= 0.05 and self._is_strong_danger_keyword(self._class_names[i]):
                 return True
         return False
+
+    def _try_pick_best_non_gunshot_strong_danger_display(self, top_indices, top_probs, k: int):
+        candidates = [
+            (int(top_indices[i]), float(top_probs[i]))
+            for i in range(min(5, k))
+            if int(top_indices[i]) >= 0
+            and float(top_probs[i]) >= 0.05
+            and self._is_strong_danger_keyword(self._class_names[int(top_indices[i])])
+            and not self._is_gunshot_keyword(self._class_names[int(top_indices[i])])
+        ]
+        return max(candidates, key=lambda item: item[1]) if candidates else None
 
     def _has_critical_danger_cue_in_top5(self, top_indices, k: int) -> bool:
         for idx in range(min(5, k)):
