@@ -40,11 +40,30 @@ class HapticSettingRowSourceTest {
 
     @Test
     fun `외부 사운드 모드에서는 상한의 까닭을 적고 환경음은 진동하지 않는다고 적는다`() {
-        assertTrue(row.contains("if (rowEnabled && HapticModeChoice.showsNote(external))"))
         assertTrue(row.contains("val cap = HapticSettings.externalCap(label)"))
-        assertTrue(row.contains("if (cap == HapticMode.Off) stringResource(R.string.haptic_off_external)"))
-        assertTrue(row.contains("stringResource(R.string.haptic_cap_external, typeName, stringResource(cap.labelRes))"))
+        assertTrue(row.contains("stringResource(R.string.haptic_off_external)"))
+        assertTrue(row.contains("else stringResource(R.string.haptic_cap_external, typeName, stringResource(cap.labelRes))"))
         assertFalse("'연속 → 빠름' 안내(#341)가 남았다", row.contains("haptic_continuous_external"))
+    }
+
+    @Test
+    fun `표시를 끈 환경음 줄도 외부 사운드 모드에서는 표시를 켜라고 하지 않고 진동하지 않는다고 적는다`() {
+        // 외부 사운드 모드의 환경음은 표시를 켜도 진동하지 않는다(#354). 어느 줄에 어느 안내를 적는지는
+        // HapticExternalModeTest 가 본다.
+        assertTrue(row.contains("HapticModeChoice.requiresDisplayNote(label, shown, external) -> R.string.haptic_requires_display"))
+        assertFalse("표시를 끈 줄이면 늘 표시를 켜라고 한다", row.contains("!shown -> R.string.haptic_requires_display"))
+        assertTrue(row.contains("if (player.hasVibrator && HapticModeChoice.showsNote(label, shown, external))"))
+        assertFalse("상한 안내가 표시를 켠 줄에만 붙는다", row.contains("rowEnabled && HapticModeChoice.showsNote"))
+    }
+
+    @Test
+    fun `환경음 안내는 상한만이 아니라 환경음 줄인지로 고른다`() {
+        // haptic_off_external 은 환경음을 이름으로 들어 진동하지 않는다고 말한다. 상한만 보고 고르면 다른 종류의 상한을
+        // 꺼짐으로 바꿨을 때 그 줄에 환경음 안내가 붙는다. 다른 줄은 그 종류의 이름과 상한을 적는다(#354).
+        assertTrue(
+            row.contains("if (label == AiClassification.AMBIENT && cap == HapticMode.Off) stringResource(R.string.haptic_off_external)")
+        )
+        assertFalse("상한만 보고 환경음 안내를 고른다", row.contains("if (cap == HapticMode.Off) stringResource(R.string.haptic_off_external)"))
     }
 
     @Test

@@ -215,8 +215,40 @@ class HapticExternalModeTest {
     fun `외부 사운드 모드에서는 어느 줄이든 상한 안내를 적는다`() {
         // 기본값(위협음 '중간')에서 더 빠른 방식을 고르려는 사람도 칸이 왜 흐린지 알아야 한다. 환경음은 상한이 꺼짐이라
         // 진동하지 않는다는 안내가 붙는다(HapticSettingRow).
-        assertTrue(HapticModeChoice.showsNote(external = true))
+        for (label in labels) {
+            assertTrue(label, HapticModeChoice.showsNote(label, shown = true, external = true))
+            assertFalse("표시를 켠 $label 줄에 표시를 켜라고 한다", HapticModeChoice.requiresDisplayNote(label, shown = true, external = true))
+        }
         assertFalse(HapticModeChoice.selectable(HapticMode.Fast, DANGER, external = true))
+    }
+
+    @Test
+    fun `외부 사운드 모드에서 어떤 설정으로도 진동하지 않는 것은 환경음뿐이다`() {
+        assertTrue(HapticModeChoice.neverVibrates(AMBIENT, external = true))
+        assertFalse(HapticModeChoice.neverVibrates(SPEECH, external = true))
+        assertFalse(HapticModeChoice.neverVibrates(DANGER, external = true))
+        for (label in labels) assertFalse("폰 안의 소리의 $label", HapticModeChoice.neverVibrates(label, external = false))
+    }
+
+    @Test
+    fun `표시를 끈 환경음 줄은 외부 사운드 모드에서 표시를 켜라고 하지 않고 진동하지 않는다고 적는다`() {
+        // 외부 사운드 모드의 환경음은 표시를 켜도 진동하지 않는다(#354). 표시를 켜야 진동한다고 적으면 켜도 울리지 않는
+        // 길을 알려 주므로, 표시와 상관없이 진동하지 않는다는 안내를 적는다(HapticSettingRow).
+        assertFalse(HapticModeChoice.requiresDisplayNote(AMBIENT, shown = false, external = true))
+        assertTrue(HapticModeChoice.showsNote(AMBIENT, shown = false, external = true))
+        // 대화음·위협음은 표시를 켜면 상한까지 울리므로 표시를 켜라고 적고, 상한 안내는 표시를 켠 뒤에 적는다.
+        for (label in listOf(SPEECH, DANGER)) {
+            assertTrue(label, HapticModeChoice.requiresDisplayNote(label, shown = false, external = true))
+            assertFalse(label, HapticModeChoice.showsNote(label, shown = false, external = true))
+        }
+        // 어느 모드에서든 표시를 끈 줄에는 둘 가운데 하나만 적는다. 둘 다 없으면 왜 진동하지 않는지 알 수 없다.
+        for (label in labels) {
+            for (external in listOf(true, false)) {
+                val requires = HapticModeChoice.requiresDisplayNote(label, shown = false, external = external)
+                val note = HapticModeChoice.showsNote(label, shown = false, external = external)
+                assertTrue("$label external=$external", requires != note)
+            }
+        }
     }
 
     @Test
@@ -227,8 +259,11 @@ class HapticExternalModeTest {
                 assertEquals("$label $mode", stored, HapticModeChoice.shown(stored, label, external = false))
                 assertTrue("$label $mode", HapticModeChoice.selectable(mode, label, external = false))
             }
+            for (shown in listOf(true, false)) {
+                assertFalse("$label shown=$shown", HapticModeChoice.showsNote(label, shown, external = false))
+                assertEquals("$label shown=$shown: 표시를 끈 줄은 표시를 켜라고 한다", !shown, HapticModeChoice.requiresDisplayNote(label, shown, external = false))
+            }
         }
-        assertFalse(HapticModeChoice.showsNote(external = false))
         val medium = HapticSettings(HapticMode.Medium, 60)
         assertEquals(HapticSettings(HapticMode.Continuous, 60), HapticModeChoice.toStore(medium, HapticMode.Continuous, SPEECH, external = false))
         assertEquals(HapticSettings(HapticMode.Fast, 60), HapticModeChoice.toStore(medium, HapticMode.Fast, AMBIENT, external = false))

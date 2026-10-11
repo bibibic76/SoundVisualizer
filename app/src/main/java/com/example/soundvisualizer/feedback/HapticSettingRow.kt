@@ -62,8 +62,8 @@ import kotlin.math.roundToInt
  * 시각화가 실행 중이면 미리보기가 실제 진동과 섞여 무엇이 울린 것인지 헷갈리므로 울리지 않는다(#244).
  *
  * 외부 사운드 모드에서는 그 종류의 상한([HapticSettings.externalCap])까지만 고를 수 있고, 상한보다 빠르게 저장된 종류는
- * 상한으로 보이고 울린다([HapticModeChoice], #354). 외부 사운드 모드는 다음 실행의 소스다. 실행 중에는 홈의 스위치가 잠겨
- * 실행 중인 소스와 같다.
+ * 상한으로 보이고 울린다([HapticModeChoice], #354). 상한이 꺼짐인 환경음은 표시와 상관없이 진동하지 않는다고 적는다.
+ * 외부 사운드 모드는 다음 실행의 소스다. 실행 중에는 홈의 스위치가 잠겨 실행 중인 소스와 같다.
  *
  * @param label [com.example.soundvisualizer.AiClassification] 의 라벨
  * @param shown 이 종류의 화면 표시가 켜져 있는지
@@ -109,9 +109,11 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
     val loudAlerts = AiUnavailableNotice.loudAlerts(dangerShown, dangerHaptic.enabled, player.hasVibrator)
     val aiNote = !aiAvailable && rowEnabled && shownSettings.enabled
+    // 외부 사운드 모드의 환경음은 표시를 켜도 진동하지 않으므로(#354) 표시를 끈 줄이어도 표시를 켜라고 하지 않는다.
+    // 진동하지 않는 까닭은 아래의 상한 안내가 적는다([HapticModeChoice.requiresDisplayNote]).
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
-        !shown -> R.string.haptic_requires_display
+        HapticModeChoice.requiresDisplayNote(label, shown, external) -> R.string.haptic_requires_display
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
         aiNote -> AiUnavailableNotice.otherRow(loudAlerts)
         else -> null
@@ -144,11 +146,14 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             )
         }
         // 외부 사운드 모드에서는 그 종류의 상한까지만 고를 수 있고, 더 빠르게 정해 둔 방식은 상한으로 울린다. 저장된 방식은
-        // 그대로라 모드를 끄면 돌아온다(#354). 상한이 꺼짐인 환경음은 고를 것이 꺼짐뿐이라 진동하지 않는다고 적는다.
-        if (rowEnabled && HapticModeChoice.showsNote(external)) {
+        // 그대로라 모드를 끄면 돌아온다(#354). 상한이 꺼짐인 환경음은 고를 것이 꺼짐뿐이라 진동하지 않는다고 적고, 표시를
+        // 켜도 진동하지 않으므로 표시를 끈 줄에도 적는다([HapticModeChoice.showsNote]).
+        // 그 안내는 환경음을 이름으로 들어 진동하지 않는다고 말하므로 환경음 줄이고 상한이 꺼짐일 때만 쓴다. 상한만 보고
+        // 고르면 다른 종류의 상한을 꺼짐으로 바꿨을 때 그 줄에 환경음 안내가 붙는다.
+        if (player.hasVibrator && HapticModeChoice.showsNote(label, shown, external)) {
             val cap = HapticSettings.externalCap(label)
             Text(
-                if (cap == HapticMode.Off) stringResource(R.string.haptic_off_external)
+                if (label == AiClassification.AMBIENT && cap == HapticMode.Off) stringResource(R.string.haptic_off_external)
                 else stringResource(R.string.haptic_cap_external, typeName, stringResource(cap.labelRes)),
                 fontSize = 13.sp,
                 color = SecondaryTextColor,
