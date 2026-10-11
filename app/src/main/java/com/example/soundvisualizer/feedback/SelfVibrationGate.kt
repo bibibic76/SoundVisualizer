@@ -25,8 +25,8 @@ package com.example.soundvisualizer.feedback
  *
  * 그래서 자기 진동 소리만으로는 진동이 이어지지 않는다. 깨끗한 값만 소리를 새로 알리고, 깨끗한 값 하나는 묶음 하나만
  * 이어 주며, 기다리기는 첫 울림에 맞춘 끝에서 멈춘다. 박자 방식은 박자마다 듣는 쉼이 남으므로
- * ([HapticTuning.selfHearingGuardMs]) 박자마다 새 묶음이 된다. 쉼이 없는 '연속'은 외부 사운드 모드에서 '빠름'으로
- * 울린다([HapticSettings.inExternalSound]).
+ * ([HapticTuning.selfHearingGuardMs]) 박자마다 새 묶음이 된다. 외부 사운드 모드에서는 종류마다 상한이 있어 느림·중간만
+ * 울린다([HapticSettings.externalCap], #354). 쉼이 없는 '연속'과 듣는 쉼이 0.04초뿐인 '빠름'은 울리지 않는다.
  *
  * 설정 화면의 미리보기 진동도 마이크가 듣는다. 미리보기가 진동기를 잡은 동안과 그 꼬리도 듣지 않는다([onOtherVibration]).
  *

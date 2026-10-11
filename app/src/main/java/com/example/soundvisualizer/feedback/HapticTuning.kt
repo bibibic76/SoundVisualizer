@@ -101,6 +101,9 @@ object HapticTuning {
     /**
      * 그 방식의 울림 뒤에 소리를 듣지 않는 시간. 쉼이 [SELF_HEARING_MIN_LISTEN_MS] 만큼은 남게 [SELF_HEARING_GUARD_MAX_MS]
      * 에서 줄인다. 느림·중간은 180ms, 빠름은 쉼이 150ms 라 110ms 다. 꺼짐·연속은 박자가 없어 최대값이다.
+     *
+     * 외부 사운드 모드에서는 종류마다의 상한([HapticSettings.externalCap], #354) 때문에 느림·중간만 울린다. 빠름·연속의
+     * 값은 쓰이지 않지만 모든 방식에 값을 준다.
      */
     fun selfHearingGuardMs(mode: HapticMode): Long = when (mode) {
         HapticMode.Slow, HapticMode.Medium, HapticMode.Fast ->
