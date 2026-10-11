@@ -192,13 +192,15 @@ class HapticSourceContractTest {
     }
 
     @Test
-    fun `외부 사운드 모드에서만 문을 두고 연속을 빠름으로 울린다`() {
+    fun `외부 사운드 모드에서만 문을 두고 종류마다 상한을 건다`() {
         assertTrue(notifier.contains("private val selfGate: SelfVibrationGate? = if (hearsOwnVibration) SelfVibrationGate() else null"))
+        // 틱은 라벨마다 그 라벨의 상한을 건 설정을 읽는다(#354). 종류를 모르는 큰 소리도 위협음 라벨로 설정을 읽으므로
+        // 위협음의 상한을 따른다. 폰 안의 소리는 저장된 설정 그대로다. 판단이 이 설정을 읽는지는 위 테스트가 고정한다.
         val tickConfig = notifier.substring(notifier.indexOf("private val tickConfig"))
         assertTrue(
-            "외부 사운드 모드에서만 연속을 빠름으로 바꾸지 않는다",
+            "외부 사운드 모드에서만 라벨마다 상한을 걸지 않는다",
             tickConfig.lineSequence().take(2).joinToString(" ")
-                .contains("if (hearsOwnVibration) { label -> configFor(label).inExternalSound() } else configFor")
+                .contains("if (hearsOwnVibration) { label -> configFor(label).inExternalSound(label) } else configFor")
         )
         val issue = body(notifier, "private fun issue(")
         assertTrue("울림의 꼬리 여유를 그 방식대로 주지 않는다", call(issue, "selfGate?.onPlayed(").contains("HapticTuning.selfHearingGuardMs("))

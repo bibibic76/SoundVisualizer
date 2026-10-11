@@ -1,5 +1,6 @@
 package com.example.soundvisualizer.feedback
 
+import com.example.soundvisualizer.AiClassification
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -66,7 +67,21 @@ class HapticTuningTest {
             assertTrue("$mode 의 듣는 쉼 ${listen}ms", listen >= 32)
             assertTrue("$mode 의 여유가 최대보다 길다", guard <= HapticTuning.SELF_HEARING_GUARD_MAX_MS)
         }
+        // 빠름은 종류마다의 상한 때문에 외부 사운드 모드에서 울리지 않지만(#354), 상한을 바꿀 때를 위해 관계는 지킨다.
         assertTrue("빠름도 꼬리를 0.1초 넘게 막는다", HapticTuning.selfHearingGuardMs(HapticMode.Fast) >= 100)
+    }
+
+    @Test
+    fun `외부 사운드 모드에서 울릴 수 있는 방식은 꼬리 뒤에 듣는 쉼이 0_1초 넘게 남는다`() {
+        // 꼬리 여유 뒤에 듣는 쉼이 느림 0.42초, 중간 0.12초, 빠름 0.04초다. 빠름은 꼬리가 조금만 긴 폰에서도 쉼이 사라져
+        // 자기 진동 소리로 이어질 수 있고 연속에는 쉼이 없어, 종류마다의 상한이 둘을 막는다(#354).
+        for (label in listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)) {
+            val cap = HapticSettings.externalCap(label)
+            for (mode in HapticMode.entries.filter { it != HapticMode.Off && it <= cap }) {
+                val listen = HapticTuning.periodMs(mode) - HapticTuning.onMs(mode) - HapticTuning.selfHearingGuardMs(mode)
+                assertTrue("$label 의 $mode 는 듣는 쉼이 ${listen}ms", listen >= 100)
+            }
+        }
     }
 
     @Test
