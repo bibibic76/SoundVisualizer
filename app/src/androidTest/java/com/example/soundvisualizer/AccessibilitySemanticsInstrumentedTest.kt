@@ -38,7 +38,7 @@ import java.util.Locale
  * - 설정의 구역 제목과 펼치기 카드의 머리는 제목(heading)이고, 카드 머리는 버튼이다.
  * - 슬라이더는 화면에 보이는 숫자 그대로 읽힌다. 범위가 0부터가 아니면 기본 읽기(범위 안의 퍼센트)가 화면과 다르다.
  * - 홈의 상태 줄은 바뀌면 읽어 주는 영역(live region)이다.
- * - 분류 탭(#349)의 구역 머리와 고급 모드의 묶음 머리는 제목이고, 묶음 카드는 한 덩어리로 읽는 48dp 이상의 드롭다운
+ * - 분류 탭(#349)의 탭 제목, 구역 머리, 고급 모드의 묶음 머리는 제목이고, 묶음 카드는 한 덩어리로 읽는 48dp 이상의 드롭다운
  *   목록이며, 고급 모드 스위치는 줄 전체가 스위치다. 확인 창의 단추는 하는 일을 이름으로 읽는다.
  */
 @RunWith(AndroidJUnit4::class)
@@ -168,8 +168,12 @@ class AccessibilitySemanticsInstrumentedTest {
     @Test
     fun classifySectionsAreHeadingsAndGroupCardsAreDropdowns() {
         openTab(R.string.tab_classify)
-        // 구역 머리는 제목이라 구역 단위로 건너뛸 수 있다.
-        rule.onNode(hasText(string(R.string.sound_type_danger)) and isHeading).assertExists()
+        // 탭 제목도 제목이다. 제목 단위로 건너뛸 때 구역 머리부터 닿으면 그 위의 고급 모드 스위치를 지나친다.
+        rule.onNode(hasText(string(R.string.classify_title)) and isHeading).assertExists()
+        // 구역 머리는 제목이라 구역 단위로 건너뛸 수 있다. 위의 안내가 길면(큰 글꼴) 화면 밖이라 먼저 민다.
+        val danger = hasText(string(R.string.sound_type_danger)) and isHeading
+        rule.onNode(classifyList).performScrollToNode(danger)
+        rule.onNode(danger).assertExists()
 
         // 보이는 묶음 카드는 모두 이름·종류·소리 수를 한 덩어리로 읽는 드롭다운 목록이고 48dp 이상이다.
         val cards = rule.onAllNodes(isDropdown)
@@ -194,7 +198,9 @@ class AccessibilitySemanticsInstrumentedTest {
     fun classifyAdvancedGroupHeadingsAreHeadings() {
         rule.runOnUiThread { SettingsManager.setClassifyAdvanced(true) }
         openTab(R.string.tab_classify)
-        rule.onNode(hasText(string(R.string.sound_type_danger)) and isHeading).assertExists()
+        val danger = hasText(string(R.string.sound_type_danger)) and isHeading
+        rule.onNode(classifyList).performScrollToNode(danger)
+        rule.onNode(danger).assertExists()
         // 묶음 머리는 "경보음 묶음, 소리 3개" 처럼 읽는 제목이라 묶음 단위로 건너뛸 수 있다. 위협음 구역의 첫 묶음이다.
         val alarms = SoundGroups.sections(SoundCatalog.load(rule.activity))
             .flatMap { it.cards }

@@ -1,10 +1,14 @@
 package com.example.soundvisualizer
 
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
@@ -172,7 +176,34 @@ class ClassifyTabInstrumentedTest {
         // 묶음 카드는 이름·종류·소리 수·미리보기를 한 번에 읽는다.
         val (title, preview) = sirenCard()
         val danger = string(R.string.sound_type_danger)
-        scrollTo(hasContentDescription(string(R.string.cd_classify_group, title, danger, sirens.size, preview)))
+        val card = string(R.string.cd_classify_group, title, danger, sirens.size, preview)
+        scrollTo(hasContentDescription(card))
+        // 미리보기 뒤의 "+N" 은 화면에만 그리는 글자라 묶기 전 트리에서 본다. 사이렌 묶음은 이름인 소리와 미리보기 셋 밖에
+        // 하나가 더 있다.
+        rule.onNode(
+            hasText(string(R.string.classify_group_more, sirens.size - 1 - SoundGroups.PREVIEW_SIZE)) and
+                hasAnyAncestor(hasContentDescription(card)),
+            useUnmergedTree = true
+        ).assertExists()
+    }
+
+    @Test
+    fun advancedSwitchSitsOnACard() {
+        // 켜진 스위치의 막대(AccentFillColor)는 이 탭의 배경 위에서 2.7:1 이라, 다른 스위치처럼 카드 위에 둔다
+        // (ColorContrastTest 는 카드 위의 막대를 본다). 스위치 줄을 찍어 가장 많은 색, 곧 줄 뒤의 바탕이 카드 색인지 본다.
+        openTab()
+        scrollTo(advancedSwitch)
+        val pixels = rule.onNode(advancedSwitch).captureToImage().toPixelMap()
+        val counts = HashMap<Int, Int>()
+        for (x in 0 until pixels.width) {
+            for (y in 0 until pixels.height) counts.merge(pixels[x, y].toArgb(), 1, Int::plus)
+        }
+        val background = counts.maxByOrNull { it.value }!!.key
+        assertEquals(
+            "스위치 줄 뒤의 바탕이 카드 색(#%08X)이 아니라 #%08X 이다".format(CardColor.toArgb(), background),
+            CardColor.toArgb(),
+            background
+        )
     }
 
     @Test
@@ -182,8 +213,16 @@ class ClassifyTabInstrumentedTest {
         val ambient = string(R.string.sound_type_ambient)
         openTab()
 
-        // 모두 같은 종류인 묶음은 묻지 않고 바로 바꾼다. 다섯 개가 모두 바뀌고, 다른 묶음의 '경보음' 은 그대로다.
-        pickOnCard(string(R.string.cd_classify_group, title, danger, sirens.size, preview), ambient)
+        // 모두 같은 종류인 묶음은 목록에서 지금 종류 하나만 고른 것으로 읽힌다.
+        val uniform = string(R.string.cd_classify_group, title, danger, sirens.size, preview)
+        scrollTo(hasContentDescription(uniform))
+        rule.onNodeWithContentDescription(uniform).performClick()
+        rule.onAllNodes(isSelected() and hasAnyAncestor(isPopup())).assertCountEquals(1)
+        rule.onNode(isSelected() and hasAnyAncestor(isPopup())).assert(hasText(string(R.string.classify_type_default, danger)))
+
+        // 묻지 않고 바로 바꾼다. 다섯 개가 모두 바뀌고, 다른 묶음의 '경보음' 은 그대로다.
+        rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
         rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
         assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
         assertEquals(AiClassification.DANGER, SettingsManager.soundType("Alarm"))
@@ -399,5 +438,40 @@ class ClassifyTabInstrumentedTest {
         rule.onNodeWithText(string(R.string.classify_basic_warning_cancel)).performClick()
         rule.waitForIdle()
         assertTrue(SettingsManager.classifyAdvanced.value)
+    }
+
+    @Test
+    fun overwriteAndResetDialogsSurviveRecreate() {
+        rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.AMBIENT) }
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val speech = string(R.string.sound_type_speech)
+        val mixed = string(
+            R.string.cd_classify_group_changed, title, string(R.string.classify_type_mixed), danger, sirens.size, preview
+        )
+        openTab()
+
+        // 묶음 전체를 바꿀지 묻는 창은 확인하면 하나씩 바꿔 둔 소리까지 덮어쓴다. 고른 것(카드, 종류)을 저장해 두어
+        // 액티비티를 다시 만든 뒤(화면 회전 등)에도 같은 수로 묻고, 확인하면 그 카드의 소리를 모두 바꾼다.
+        pickOnCard(mixed, speech)
+        val message = string(R.string.classify_group_overwrite_message, title, sirens.size, speech)
+        rule.onNodeWithText(message).assertExists()
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        rule.onNodeWithText(message).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_confirm)).performClick()
+        rule.waitForIdle()
+        assertEquals(sirens.associateWith { AiClassification.SPEECH }, SettingsManager.soundTypes.value)
+
+        // 모두 되돌리기 창도 다시 만든 뒤에 그대로 떠 있고, 확인하면 바꾼 것을 모두 지운다.
+        scrollTo(hasText(string(R.string.classify_reset_all)))
+        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        rule.onNodeWithText(string(R.string.classify_reset_title)).assertExists()
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_reset_title)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_reset_confirm)).performClick()
+        rule.waitForIdle()
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
     }
 }

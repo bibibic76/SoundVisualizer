@@ -302,4 +302,6 @@ Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설
 
 이 프로젝트는 **Apache License 2.0** 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 확인하세요.
 
+단, 분류 탭의 소리 묶음 표(`app/src/main/assets/sound_groups.tsv`)와 소리 이름(`app/src/main/res/values*/sound_names.xml`)은 AudioSet 온톨로지(CC BY-SA 4.0)를 바탕으로 만든 각색물이라 **CC BY-SA 4.0** 으로 배포합니다([NOTICE](NOTICE) 7절).
+
 포함된 서드파티 구성요소(ONNX Runtime, YAMNet 모델, AndroidX 등)의 저작권 및 라이선스 고지는 [NOTICE](NOTICE) 파일에 정리되어 있습니다.

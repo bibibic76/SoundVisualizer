@@ -258,8 +258,8 @@ object SoundGroups {
      * - 둘 다 맞는 소리가 하나라도 있으면 카드가 남는다. 남은 카드가 없는 구역은 뺀다.
      *
      * @param searchKeys 소리마다 [SoundCatalog.searchKey] 로 만든 값. entry.index 자리에 둔다.
-     * @param titleKeys 새로 지은 묶음 이름의 [SoundCatalog.searchKey]. 소리 이름이 곧 묶음 이름이면 그 소리의 값을 쓰므로
-     *   넣지 않아도 된다.
+     * @param titleKeys 새로 지은 묶음 이름의 [SoundCatalog.searchKey]([SoundGroups.titleKeys] 로 만든다).
+     *   소리 이름이 곧 묶음 이름이면 그 소리의 값을 쓰므로 넣지 않아도 된다.
      */
     fun filter(
         sections: List<SoundSection>,
@@ -285,6 +285,18 @@ object SoundGroups {
 
     private fun titleKey(card: SoundCard, searchKeys: List<String>, titleKeys: Map<SoundGroup, String>): String =
         card.titleEntry?.let { searchKeys.getOrNull(it.index) } ?: card.group?.let { titleKeys[it] } ?: ""
+
+    /**
+     * [filter] 의 titleKeys. 새로 지은 묶음 이름을 소리 이름처럼 앱 언어의 이름과 영어 이름 어느 쪽으로도 찾게 한다.
+     * 이름이 소리 이름인 묶음은 그 소리의 찾기 값을 쓰므로 넣지 않는다.
+     *
+     * @param local 앱 언어의 문구([SoundGroup.titleRes] 로 꺼낸다).
+     * @param english 영어(기본 문구 values)의 문구. 분류 탭은 영어로 맞춘 리소스를 따로 만들어 넘긴다.
+     */
+    fun titleKeys(local: (Int) -> String, english: (Int) -> String): Map<SoundGroup, String> =
+        SoundGroup.entries
+            .filter { it.titleRes != 0 }
+            .associateWith { SoundCatalog.searchKey(local(it.titleRes), english(it.titleRes)) }
 
     /**
      * 고급 모드 목록. [filter] 의 결과를 구역 머리, 묶음 머리, 소리 줄 차례로 편다. 그래서 맞는 줄이 있는 묶음과 구역만

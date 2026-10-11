@@ -48,6 +48,9 @@ class SoundGroupsTest {
         }
         val shown = sections.flatMap { s -> s.cards.flatMap { it.members } }.map { it.index }
         assertEquals("모든 소리가 한 번씩 카드에 든다", entries.map { it.index }.sorted(), shown.sorted())
+        // 카드 id 는 목록의 키다. 겹치면 탭이 열리다 멈춘다. 표에 없는 소리 둘이 같은 구역에 와도 겹치지 않아야 한다.
+        val ids = sections.flatMap { s -> s.cards.map { it.id } }
+        assertEquals("카드 id 가 겹친다(목록의 키)", ids.size, ids.toSet().size)
     }
 
     @Test
@@ -146,6 +149,16 @@ class SoundGroupsTest {
         assertFalse("묶음째 바꾼 것은 섞인 것이 아니다", SoundGroups.anyMixed(plainSections, wholeSirens))
         assertTrue(SoundGroups.anyMixed(plainSections, wholeSirens + ("Doorbell" to AiClassification.DANGER)))
         assertTrue(SoundGroups.anyMixed(plainSections, mapOf("Singing bowl" to AiClassification.SPEECH)))
+
+        // 구역이 여럿이어도 모두 본다. 사이렌 묶음만 위협음인 목록에서 초인종 묶음은 두 번째(환경음) 구역에 있다.
+        val two = SoundGroups.sections(
+            SoundGroupFixtures.entries { name ->
+                if (SoundGroupFixtures.table[name]?.group == SoundGroup.SIRENS) AiClassification.DANGER else AiClassification.AMBIENT
+            }
+        )
+        assertEquals(listOf(AiClassification.DANGER, AiClassification.AMBIENT), two.map { it.type })
+        assertFalse(SoundGroups.anyMixed(two, emptyMap()))
+        assertTrue("첫 구역 밖의 섞인 묶음", SoundGroups.anyMixed(two, mapOf("Knock" to AiClassification.DANGER)))
     }
 
     @Test

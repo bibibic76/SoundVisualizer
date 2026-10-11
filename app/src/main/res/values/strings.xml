@@ -188,9 +188,8 @@
     <!-- How many more sounds a group has than its preview shows. A number only, so it is not translated. -->
     <string name="classify_group_more" translatable="false">+%1$d</string>
     <string name="classify_group_overwrite_title">Change the whole group?</string>
-    <!-- %1$s is the group name, %2$d how many of its sounds change, %3$s the type picked. -->
-    <!-- 정해 둔 문구 그대로라 plurals 로 바꾸지 않고 PluralsCandidate 를 끈다. 하나만 바뀔 때 영어가 "1 sounds" 로 읽히는 점은 검토에서 정한다. -->
-    <string name="classify_group_overwrite_message" tools:ignore="PluralsCandidate">%2$d sounds in the “%1$s” group will change to %3$s. Sounds you changed one by one are overwritten too.</string>
+    <!-- %1$s is the group name, %2$d how many of its sounds change (1 or more), %3$s the type picked. The number comes after a label, so the sentence reads the same for 1 and for more, without plurals. -->
+    <string name="classify_group_overwrite_message">Sounds in the “%1$s” group that will change to %3$s: %2$d. Sounds you changed one by one are overwritten too.</string>
     <string name="classify_group_overwrite_confirm">Change</string>
     <string name="classify_group_overwrite_cancel">Cancel</string>
     <string name="classify_basic_warning_title">Switch to basic mode?</string>
@@ -335,7 +334,7 @@
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
-    <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. Turn on Advanced mode to change sounds one by one.</string>
+    <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI\'s vote on the type, though, so this doesn\'t mean every doorbell will be shown as danger. Turn on Advanced mode to change sounds one by one.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>

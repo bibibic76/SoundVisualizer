@@ -93,6 +93,37 @@ class SoundGroupSearchTest {
     }
 
     @Test
+    fun `앱이 한국어여도 새로 지은 묶음 이름을 영어로 찾는다`() {
+        // 분류 탭과 같은 방법(SoundGroups.titleKeys)으로 한국어 이름과 영어 이름을 잇는다.
+        val en = SoundGroupFixtures.strings("values")
+        val resName = SoundGroup.entries.filter { it.titleRes != 0 }.associate { it.titleRes to "sound_group_${it.id}" }
+        val titles = SoundGroups.titleKeys(
+            local = { ko.getValue(resName.getValue(it)) },
+            english = { en.getValue(resName.getValue(it)) }
+        )
+        for (query in listOf("부엌", "kitchen", "Kitchen and cooking")) {
+            val result = SoundGroups.filter(sections, koKeys, titles, emptyMap(), query, SoundFilter.ALL)
+            assertEquals(query, listOf(SoundGroup.KITCHEN), result.groups())
+            assertEquals(query, result.cardOf(SoundGroup.KITCHEN).card.members, result.cardOf(SoundGroup.KITCHEN).shown)
+        }
+        // 영어 이름의 쉼표 자리를 띄어 쳐도 찾는다.
+        val background = SoundGroups.filter(sections, koKeys, titles, emptyMap(), "tv radio", SoundFilter.ALL)
+        assertEquals(listOf(SoundGroup.BACKGROUND), background.groups())
+    }
+
+    @Test
+    fun `문장 부호로 이은 이름은 띄어 쳐도 찾는다`() {
+        // 새로 지은 묶음 이름은 낱말을 '·' 로 잇는다(부엌·요리). 사람은 그 자리를 띄어 친다(#349).
+        assertEquals(listOf(SoundGroup.KITCHEN), search("부엌 요리").groups())
+        assertEquals(listOf(SoundGroup.HORNS), search("경적 자동차").groups())
+        assertEquals(listOf(SoundGroup.BACKGROUND), search("TV 라디오").groups())
+        // 소리 이름의 쉼표·괄호도 같다. 모델 이름은 "Fire engine, fire truck (siren)" 이다.
+        val fireTruck = search("fire engine fire truck siren")
+        assertEquals(listOf(SoundGroup.SIRENS), fireTruck.groups())
+        assertEquals(listOf("Fire engine, fire truck (siren)"), names(fireTruck.cardOf(SoundGroup.SIRENS).shown))
+    }
+
+    @Test
     fun `보이는 이름과 모델 이름을 이어 붙인 곳에서는 맞지 않는다`() {
         assertTrue(search("노크 소리knock").isEmpty())
         assertTrue(search("zzzz").isEmpty())

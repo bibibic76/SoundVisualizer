@@ -213,12 +213,14 @@ fun ClassifyTab() {
     LazyColumn(state = listState, modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         // 0번: 제목·설명·고급 모드 스위치. 1번(STICKY_HEADER_INDEX): 붙어 있는 찾기·거르기.
         item(key = "intro", contentType = "intro") {
+            // 화면 읽어주기로 제목 단위로 건너뛸 때 구역 머리(위협음)부터 닿으면, 그 위의 고급 모드 스위치를 지나친다.
+            // 설정 탭의 구역 제목처럼 탭 제목도 제목으로 둔다.
             Text(
                 stringResource(R.string.classify_title),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryTextColor,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
             )
             Text(stringResource(R.string.classify_desc_groups), fontSize = 14.sp, lineHeight = 21.sp, color = SecondaryTextColor)
             // 한 소리가 여러 이름으로 함께 들린다는 작은 안내. 13sp 는 앱에서 이미 쓰는 작은 글씨다. 이 회색은 배경 위에서
@@ -230,17 +232,27 @@ fun ClassifyTab() {
                 color = SecondaryTextColor,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )
-            // 켜는 것은 묻지 않는다. 끌 때만, 기본 모드에서 묶음을 고르면 하나씩 바꾼 것이 덮어써질 묶음이 있는지 본다.
-            // 찾는 말·거르기와 상관없이 모든 묶음을, 지난번에 바꿔 둔 것까지 저장값으로 본다.
-            ModernSwitch(
-                label = stringResource(R.string.classify_advanced),
-                desc = stringResource(R.string.classify_advanced_desc),
-                checked = advanced
-            ) { on ->
-                when {
-                    on -> SettingsManager.setClassifyAdvanced(true)
-                    SoundGroups.anyMixed(sections, overrides) -> confirmBasic = true
-                    else -> SettingsManager.setClassifyAdvanced(false)
+            // 스위치는 다른 스위치(홈의 외부 사운드 모드, 설정)처럼 카드 위에 둔다. 켜진 막대(AccentFillColor)가 카드 위에서는
+            // 3:1 을 넘지만 이 탭의 배경 위에서는 2.7:1 이라, 그림 요소의 대비 기준에 못 미쳤다(ColorContrastTest).
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardColor),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp)) {
+                    // 켜는 것은 묻지 않는다. 끌 때만, 기본 모드에서 묶음을 고르면 하나씩 바꾼 것이 덮어써질 묶음이 있는지 본다.
+                    // 찾는 말·거르기와 상관없이 모든 묶음을, 지난번에 바꿔 둔 것까지 저장값으로 본다.
+                    ModernSwitch(
+                        label = stringResource(R.string.classify_advanced),
+                        desc = stringResource(R.string.classify_advanced_desc),
+                        checked = advanced
+                    ) { on ->
+                        when {
+                            on -> SettingsManager.setClassifyAdvanced(true)
+                            SoundGroups.anyMixed(sections, overrides) -> confirmBasic = true
+                            else -> SettingsManager.setClassifyAdvanced(false)
+                        }
+                    }
                 }
             }
         }
@@ -338,17 +350,14 @@ private fun advancedContentType(item: AdvancedItem): String = when (item) {
 }
 
 /**
- * 새로 지은 묶음 이름의 찾기 값. 소리 이름처럼 앱 언어의 이름과 영어 이름 어느 쪽으로도 찾게 한다.
+ * 새로 지은 묶음 이름의 찾기 값([SoundGroups.titleKeys]). 앱 언어의 이름과 영어 이름 어느 쪽으로도 찾게 한다.
  * 영어 이름은 기본 문구(values)에 있어서, 앱 언어와 상관없이 꺼내려고 영어로 맞춘 리소스를 따로 만든다.
- * 이름이 소리 이름인 묶음은 그 소리의 찾기 값을 쓰므로([SoundGroups.filter]) 여기 넣지 않는다.
  */
 private fun groupTitleKeys(context: Context, resources: Resources): Map<SoundGroup, String> {
     val english = context.createConfigurationContext(
         Configuration(resources.configuration).apply { setLocale(Locale.ENGLISH) }
     ).resources
-    return SoundGroup.entries
-        .filter { it.titleRes != 0 }
-        .associateWith { SoundCatalog.searchKey(resources.getString(it.titleRes), english.getString(it.titleRes)) }
+    return SoundGroups.titleKeys(local = { resources.getString(it) }, english = { english.getString(it) })
 }
 
 /** 카드(묶음)의 이름. 새로 지은 이름이 없는 묶음은 이름이 곧 묶음 이름인 소리의 보이는 이름이다. */
@@ -486,6 +495,7 @@ private fun GroupHeading(title: String, count: Int) {
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             color = PrimaryTextColor,
+            style = wrappingLabelStyle(),
             modifier = Modifier.weight(1f, fill = false)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -537,10 +547,18 @@ private fun GroupCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.dropdownRow(description) { expanded = true }
     ) {
+        // 이름 칸은 종류 버튼(최대 150dp)을 뺀 폭이라, 독일어·러시아어의 긴 낱말("Hintergrundgeräusche")은 보통 글꼴에서도
+        // 칸을 넘는다. 종류 버튼처럼 하이픈을 넣어 꺾는다. 그러지 않으면 낱말 중간에서 표시 없이 끊긴다.
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 16.sp, color = PrimaryTextColor)
+            Text(title, fontSize = 16.sp, color = PrimaryTextColor, style = wrappingLabelStyle())
             if (accent != null) {
-                Text(accent, fontSize = 13.sp, color = AccentColor, modifier = Modifier.padding(top = 2.dp))
+                Text(
+                    accent,
+                    fontSize = 13.sp,
+                    color = AccentColor,
+                    style = wrappingLabelStyle(),
+                    modifier = Modifier.padding(top = 2.dp)
+                )
             }
             if (names.isNotEmpty()) {
                 PreviewLine(names, preview.more)
@@ -642,7 +660,7 @@ private fun SoundTypeRow(
         modifier = Modifier.dropdownRow(description) { expanded = true }
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(label, fontSize = 16.sp, color = PrimaryTextColor)
+            Text(label, fontSize = 16.sp, color = PrimaryTextColor, style = wrappingLabelStyle())
             if (changed) {
                 // 바꾼 소리는 기본 종류를 밝은 글자로 함께 보여 준다. 되돌리려면 목록에서 "(기본)" 을 고른다.
                 Text(

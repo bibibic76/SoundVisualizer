@@ -210,4 +210,6 @@ Build, test, CI and code structure docs are in Korean: see the "개발자용" (F
 
 This project is distributed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
 
+The exception is the Sounds tab's sound groups (`app/src/main/assets/sound_groups.tsv`) and sound names (`app/src/main/res/values*/sound_names.xml`). They are adapted from the AudioSet Ontology and are licensed under **CC BY-SA 4.0** instead (section 7 of [NOTICE](NOTICE)).
+
 Copyright and license notices for bundled third-party components (ONNX Runtime, the YAMNet model, AndroidX and more) are in the [NOTICE](NOTICE) file.

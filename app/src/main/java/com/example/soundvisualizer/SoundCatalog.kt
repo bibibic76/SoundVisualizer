@@ -117,6 +117,10 @@ object SoundCatalog {
      * 대소문자, 띄어쓰기, 악센트 같은 결합 부호를 가리지 않는다. "fire truck" 은 "Firetruck" 으로도,
      * "sirène" 은 "sirene" 으로도 찾힌다.
      *
+     * 문장 부호(쉼표, 가운뎃점 '·'·'・', 붙임표, 괄호)도 띄어쓰기처럼 뺀다. 묶음 이름은 낱말을 이런 부호로 잇는데
+     * ("부엌·요리", "TV, radio and …"), 사람은 띄어 쳐서 찾는다. 부호를 남겨 두면 "부엌 요리" 처럼 이어진 두 낱말로는
+     * 아무것도 찾지 못했다(#349). 보이는 이름과 모델 이름을 가르는 줄바꿈은 [searchKey] 가 다듬은 뒤에 넣으므로 그대로다.
+     *
      * 한글은 낱자로 풀어 첫소리와 받침을 같은 글자로 본다. 글자를 치는 중에는 입력 칸에 "ㅅ", "상"(다음 글자의
      * 첫소리가 받침으로 붙은 모양), "홪" 같은 모양이 잠깐 들어오는데, 음절째 비교하면 한 글자 칠 때마다 결과가
      * 사라졌다 나타난다. 겹받침·겹모음(ㄺ, ㅘ)도 낱자 둘로 푼다.
@@ -124,13 +128,15 @@ object SoundCatalog {
     internal fun normalize(text: String): String {
         val plain = Normalizer.normalize(text, Normalizer.Form.NFD)
             .replace(COMBINING_MARKS, "")
-            .replace(WHITESPACE, "")
+            .replace(SEPARATORS, "")
             .lowercase(Locale.ROOT)
         return buildString(plain.length) { for (c in plain) append(HANGUL_LETTERS[c] ?: c) }
     }
 
     private val COMBINING_MARKS = Regex("\\p{Mn}+")
-    private val WHITESPACE = Regex("\\s+")
+
+    /** 띄어쓰기와 문장 부호(유니코드 P 갈래). */
+    private val SEPARATORS = Regex("[\\s\\p{P}]+")
 
     /** 한글 낱자(첫소리·가운뎃소리·받침, 겹자모)를 입력 칸에 보이는 호환용 낱자로. NFD 가 음절을 이 낱자들로 푼다. */
     private val HANGUL_LETTERS: Map<Char, String> = buildMap {

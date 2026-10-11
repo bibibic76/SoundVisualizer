@@ -1,9 +1,11 @@
 package com.example.soundvisualizer
 
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.w3c.dom.Element
 import java.io.File
+import java.util.Locale
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
@@ -12,6 +14,9 @@ import javax.xml.parsers.DocumentBuilderFactory
  * 다른 문구는 번역이 늦으면 그 언어에서 영어로 보여도 된다(StringResourcesTest). 분류 탭은 묶음 화면으로 바뀌며 설명과
  * 안내를 새로 쓰고 키 이름도 바꿨다. 한 언어라도 빠지면 그 언어의 탭에 영어 안내가 섞이고, 옛 키가 남으면 지금 화면과
  * 맞지 않는 안내(소리마다 고르기)가 남는다. 그래서 이 탭의 문구만은 모든 언어에 있어야 한다.
+ *
+ * 문구의 뜻도 몇 가지 본다. 도움말의 초인종 예시는 모든 언어에서 '투표에만 들어간다' 는 단서를 붙이고(결정 6),
+ * 영어의 덮어쓰기 안내는 수가 하나일 때도 어색하지 않다.
  *
  * 유닛 테스트는 app 모듈 폴더에서 돈다.
  */
@@ -85,6 +90,27 @@ class SoundGroupStringsTest {
         assertTrue("classify_sibling_note 에 그 언어의 소리 이름을 그대로 씁니다:\n${problems.joinToString("\n")}", problems.isEmpty())
     }
 
+    @Test
+    fun `도움말의 초인종 예시는 새로 위협음으로 정한 소리가 투표에만 들어간다고 알린다`() {
+        // 새로 위협음으로 정한 소리는 AI 의 상위 3개 투표에만 들어간다(docs/ai/user-mapping.md). 그래서 도움말은 초인종이
+        // 울릴 때마다 위협음으로 알린다고 약속하지 않는다(#349 결정 6). 언어마다 그 말('투표')이 있는지 본다.
+        val problems = dirs.mapNotNull { dir ->
+            val help = strings.getValue(dir)[RENAMED_HELP_KEY] ?: return@mapNotNull null
+            val word = VOTE_WORDS[dir] ?: return@mapNotNull "$dir: 새 언어는 VOTE_WORDS 에 그 언어의 '투표' 낱말을 넣습니다"
+            if (word.lowercase(Locale.ROOT) in help.lowercase(Locale.ROOT)) null else "$dir: \"$word\" 이 없음"
+        }
+        assertTrue("$RENAMED_HELP_KEY 의 초인종 예시에 '투표에만 들어간다' 는 단서를 붙입니다:\n${problems.joinToString("\n")}", problems.isEmpty())
+    }
+
+    @Test
+    fun `묶음 덮어쓰기 안내의 영어는 하나만 바뀔 때도 어색하지 않다`() {
+        // 섞인 묶음은 소리 하나만 바뀌는 일이 흔하다. plurals 없이 수를 이름표 뒤에 두어, 수 뒤에 명사가 와서
+        // "1 sounds" 로 읽히지 않게 한다.
+        val message = strings.getValue("values").getValue("classify_group_overwrite_message")
+        val one = String.format(Locale.ROOT, message, "Siren", 1, "Danger")
+        assertFalse(one, Regex("""\b1 \p{L}+s\b""").containsMatchIn(one))
+    }
+
     private companion object {
         val CLASSIFY_PREFIXES = listOf("classify_", "cd_classify_", "sound_group_")
 
@@ -95,5 +121,27 @@ class SoundGroupStringsTest {
 
         /** 안내가 예로 드는 소리: Siren, Alarm. */
         val QUOTED_SOUNDS = listOf("sound_name_390", "sound_name_382")
+
+        /** 도움말의 단서에 쓴 언어마다의 '투표'. 낱말이 꼴을 바꾸는 언어(pl, ru)는 줄기만 둔다. */
+        val VOTE_WORDS = mapOf(
+            "values" to "vote",
+            "values-ar" to "تصويت",
+            "values-de" to "Abstimmung",
+            "values-es" to "votación",
+            "values-fr" to "vote",
+            "values-hi" to "वोट",
+            "values-in" to "voting",
+            "values-it" to "voto",
+            "values-ja" to "投票",
+            "values-ko" to "투표",
+            "values-pl" to "głosowani",
+            "values-pt-rBR" to "votação",
+            "values-ru" to "голосовани",
+            "values-th" to "โหวต",
+            "values-tr" to "oylama",
+            "values-vi" to "bỏ phiếu",
+            "values-zh-rCN" to "投票",
+            "values-zh-rTW" to "投票"
+        )
     }
 }
