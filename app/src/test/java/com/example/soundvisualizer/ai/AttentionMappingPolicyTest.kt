@@ -23,11 +23,15 @@ class AttentionMappingPolicyTest {
         for (name in listOf(
             "Singing bowl", "Truck", "Car", "Bus", "Motorcycle", "Train", "Vehicle",
             "Air brake", "Doorbell", "Alarm clock", "Honk", "French horn", "Whistle",
-            "Plop", "Gargling", "Yell", "Baby cry, infant cry"
+            "Plop", "Gargling"
         ) + attention.map { "$it-like sound" }) {
             assertEquals(name, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(name))
         }
-        for (name in listOf("Singing", "Choir", "Screaming", "Shout", "Laughter", "Crying, sobbing")) {
+        // #345 extends Speech to approved human vocalizations, including yell and crying.
+        for (name in listOf(
+            "Singing", "Choir", "Screaming", "Shout", "Laughter", "Crying, sobbing",
+            "Yell", "Baby cry, infant cry"
+        )) {
             assertEquals(name, "speech", YamnetThreeClassMapper.mapDisplayNameToCoarse(name))
         }
     }
