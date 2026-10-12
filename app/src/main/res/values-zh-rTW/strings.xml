@@ -350,7 +350,7 @@
     <string name="help_about_title">關於</string>
     <string name="help_about_version">版本 %1$s</string>
     <string name="help_about_team">製作團隊：SOVIS</string>
-    <string name="help_about_license">本應用程式以 Apache License 2.0 授權發布。</string>
+    <string name="help_about_license">本應用程式以 Apache License 2.0 授權發布。「分類」分頁中的聲音名稱和群組以 AudioSet 本體為基礎，並以 CC BY-SA 4.0 授權發布 (詳見下方的「開放原始碼授權」)。</string>
     <string name="help_licenses_button">開放原始碼授權</string>
     <string name="help_licenses_title">開放原始碼授權</string>
     <string name="help_close">關閉</string>

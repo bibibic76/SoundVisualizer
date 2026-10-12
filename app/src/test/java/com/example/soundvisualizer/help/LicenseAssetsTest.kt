@@ -1,5 +1,6 @@
 package com.example.soundvisualizer.help
 
+import com.example.soundvisualizer.SoundGroupFixtures
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -61,6 +62,26 @@ class LicenseAssetsTest {
         val sentences = File("../NOTICE").readText().replace(Regex("\\s+"), " ").split(Regex("(?<=\\.) "))
         val wrong = sentences.filter { ("온톨로지" in it || "Ontology" in it) && "(CC BY 4.0)" in it }
         assertTrue("온톨로지를 CC BY 4.0 으로 적은 문장:\n${wrong.joinToString("\n")}", wrong.isEmpty())
+    }
+
+    @Test
+    fun `도움말의 라이선스 안내는 모든 언어에서 소리 이름과 묶음의 CC BY-SA 4_0 을 적는다`() {
+        // 앱은 Apache License 2.0 이지만 소리 이름과 묶음 표는 AudioSet 온톨로지의 각색물이라 CC BY-SA 4.0 이다(#349).
+        // 앱 정보의 안내도 둘 다 적고, 자세한 고지는 바로 아래 버튼을 그 언어의 버튼 이름 그대로 가리킨다(#364).
+        val dirs = File("src/main/res").listFiles { f -> f.isDirectory && (f.name == "values" || f.name.startsWith("values-")) }
+            .orEmpty()
+            .filter { File(it, "strings.xml").isFile }
+            .map { it.name }
+            .sorted()
+        assertTrue("strings.xml 이 있는 언어 폴더를 찾지 못했습니다", dirs.size > 1)
+        val problems = dirs.mapNotNull { dir ->
+            val strings = SoundGroupFixtures.strings(dir)
+            val text = strings["help_about_license"] ?: return@mapNotNull "$dir: help_about_license 가 없습니다"
+            val button = strings["help_licenses_button"] ?: return@mapNotNull "$dir: help_licenses_button 이 없습니다"
+            val missing = listOf("Apache License 2.0", "AudioSet", "CC BY-SA 4.0", button).filter { it !in text }
+            if (missing.isEmpty()) null else "$dir: $missing"
+        }
+        assertTrue("help_about_license 에 빠진 말이 있습니다:\n${problems.joinToString("\n")}", problems.isEmpty())
     }
 
     private fun String.normalizeNewlines() = replace("\r\n", "\n")

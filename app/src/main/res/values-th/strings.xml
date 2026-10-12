@@ -350,7 +350,7 @@
     <string name="help_about_title">เกี่ยวกับแอป</string>
     <string name="help_about_version">เวอร์ชัน %1$s</string>
     <string name="help_about_team">สร้างโดยทีม SOVIS</string>
-    <string name="help_about_license">แอปนี้เผยแพร่ภายใต้ Apache License 2.0</string>
+    <string name="help_about_license">แอปนี้เผยแพร่ภายใต้ Apache License 2.0 ชื่อและกลุ่มของเสียงในแท็บเสียงอิงจาก AudioSet Ontology และเผยแพร่ภายใต้ CC BY-SA 4.0 (ดู “ใบอนุญาตโอเพนซอร์ส” ด้านล่าง)</string>
     <string name="help_licenses_button">ใบอนุญาตโอเพนซอร์ส</string>
     <string name="help_licenses_title">ใบอนุญาตโอเพนซอร์ส</string>
     <string name="help_close">ปิด</string>

@@ -215,6 +215,7 @@ C++은 **버퍼마다 좌우 채널의 최대 진폭(max|sample|)만** 계산합
 4. **YAMNet 추론**: 521개 소리 클래스의 확률을 냅니다. (`YamnetInference`, 연산 스레드 1개로 제한해 캡처·렌더와 CPU를 다투지 않게 함)
 5. **3종 분류**: 상위 클래스들을 투표해 환경음(`ambient`)·대화음(`speech`)·위협음(`danger`)으로 묶습니다. (`YamnetCoarseClassifier`, `YamnetThreeClassMapper`)
 6. **안전 신호 보존**: YAMNet top-5 안의 alarm·siren·explosion 계열은 모델 점수와 독립적으로 위험 신호로 보존합니다. (`YamnetSafetyCueDecision`)
+   - 올리는 조건(#353, #358): 단서가 top-5 안에서 확률 0.05 이상이어야 합니다. 단서는 이름에 siren·alarm(alarm clock 제외)·explosion·fireworks·firecracker 가 든 소리와 경적·깨짐 같은 승인 목록(`APPROVED_ATTENTION_CUE_LABELS`)이고, 분류 탭에서 위협음에서 뺀 소리는 빠집니다(`docs/ai/user-mapping.md`). 기본 매핑으로 낸 top-3 투표(`defaultCoarse`)가 대화음이거나, 1순위가 말소리·무음 계열이거나, 1순위 확신도가 0.12 미만이면 올리지 않습니다. 총기 후보가 함께 있어도 막지 않지만, 총기 이름 자체는 이 길로 올리지 않습니다.
 7. **후처리**: 확신도 기준과 히스테리시스를 적용해 라벨이 매번 흔들리지 않게 합니다. 위협음은 다른 종류보다 빨리 전환됩니다. 확신도가 기준에 못 미치면 **이전 라벨을 유지**합니다. (`AiPostProcessor`)
 8. 결과를 `AtomicReference`에 저장합니다. 읽는 쪽은 락 없이 가져갑니다.
 

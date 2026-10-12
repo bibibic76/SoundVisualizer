@@ -350,7 +350,7 @@
     <string name="help_about_title">O aplikacji</string>
     <string name="help_about_version">Wersja %1$s</string>
     <string name="help_about_team">Autorzy: zespół SOVIS</string>
-    <string name="help_about_license">Ta aplikacja jest udostępniana na warunkach Apache License 2.0.</string>
+    <string name="help_about_license">Ta aplikacja jest udostępniana na warunkach Apache License 2.0. Nazwy i grupy dźwięków na karcie „Dźwięki” są oparte na ontologii AudioSet i udostępniane na warunkach licencji CC BY-SA 4.0 (zobacz „Licencje open source” poniżej).</string>
     <string name="help_licenses_button">Licencje open source</string>
     <string name="help_licenses_title">Licencje open source</string>
     <string name="help_close">Zamknij</string>

@@ -350,7 +350,7 @@
     <string name="help_about_title">このアプリについて</string>
     <string name="help_about_version">バージョン %1$s</string>
     <string name="help_about_team">制作チーム：SOVIS</string>
-    <string name="help_about_license">このアプリは Apache License 2.0 のもとで配布されています。</string>
+    <string name="help_about_license">このアプリは Apache License 2.0 のもとで配布されています。「分類」タブの音の名前とグループは AudioSet オントロジーをもとにしており、CC BY-SA 4.0 のもとで配布されています（詳しくは下の「オープンソース ライセンス」をご覧ください）。</string>
     <string name="help_licenses_button">オープンソース ライセンス</string>
     <string name="help_licenses_title">オープンソース ライセンス</string>
     <string name="help_close">閉じる</string>
