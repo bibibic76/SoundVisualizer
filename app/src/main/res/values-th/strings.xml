@@ -177,7 +177,7 @@
     <string name="sound_group_breaking">กระจกแตกและเสียงพังโครม</string>
     <string name="sound_group_distress">เสียงตะโกน กรีดร้อง และร้องไห้</string>
     <string name="sound_group_signals">นาฬิกาปลุก เสียงบี๊บ และนกหวีด</string>
-    <string name="sound_group_voices">เสียงโห่ร้อง หัวเราะลั่น และเชียร์</string>
+    <string name="sound_group_voices">เสียงปรบมือ ฮัมเพลง และผิวปาก</string>
     <string name="sound_group_water">ก๊อกน้ำและน้ำไหล</string>
     <string name="sound_group_kitchen">ห้องครัวและการทำอาหาร</string>
     <string name="sound_group_appliances">เครื่องใช้ไฟฟ้าในบ้านและนาฬิกา</string>

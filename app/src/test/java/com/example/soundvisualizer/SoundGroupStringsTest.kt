@@ -16,7 +16,8 @@ import javax.xml.parsers.DocumentBuilderFactory
  * 맞지 않는 안내(소리마다 고르기)가 남는다. 그래서 이 탭의 문구만은 모든 언어에 있어야 한다.
  *
  * 문구의 뜻도 몇 가지 본다. 도움말의 초인종 예시는 모든 언어에서 '투표에만 들어간다' 는 단서를 붙이고(결정 6),
- * 영어의 덮어쓰기 안내는 수가 하나일 때도 어색하지 않다.
+ * 영어의 덮어쓰기 안내는 수가 하나일 때도 어색하지 않다. 묶음 이름은 다른 묶음의 이름이나 다른 묶음에 든 소리의
+ * 이름과 같지 않다(#349 의 번역 규칙, #370).
  *
  * 유닛 테스트는 app 모듈 폴더에서 돈다.
  */
@@ -109,6 +110,33 @@ class SoundGroupStringsTest {
         val message = strings.getValue("values").getValue("classify_group_overwrite_message")
         val one = String.format(Locale.ROOT, message, "Siren", 1, "Danger")
         assertFalse(one, Regex("""\b1 \p{L}+s\b""").containsMatchIn(one))
+    }
+
+    @Test
+    fun `묶음 이름은 다른 묶음의 이름이나 다른 묶음에 든 소리의 이름과 같지 않다`() {
+        // 같으면 화면에서도 찾기에서도 어느 묶음인지 가릴 수 없다. 소리를 다른 묶음으로 옮기면 그 소리 이름을 그대로 쓴
+        // 묶음 이름이 여기에 걸린다. 찾기와 같은 기준(대소문자·띄어쓰기·문장 부호 무시)으로 본다. 여러 낱말을 이은 이름의
+        // 한 낱말이 다른 묶음의 소리 이름인지(#370 에서 고친 목소리 묶음)는 언어마다 낱말을 나누는 법이 달라 보지 않는다.
+        val english = strings.getValue("values")
+        val names = SoundGroupFixtures.names
+        val table = SoundGroupFixtures.table
+        val problems = dirs.flatMap { dir ->
+            val texts = strings.getValue(dir)
+            fun text(key: String) = texts[key] ?: english.getValue(key)
+            fun soundName(name: String) = text("sound_name_${names.indexOf(name)}")
+            val titles = SoundGroup.entries.associateWith { group ->
+                group.titleSound?.let { soundName(it) } ?: text("sound_group_${group.id}")
+            }
+            val shared = titles.entries.groupBy({ SoundCatalog.normalize(it.value) }, { it.key }).values
+                .filter { it.size > 1 }
+                .map { "$dir: 이름이 같은 묶음 $it" }
+            val namedSounds = titles.filterKeys { it.titleRes != 0 }.flatMap { (group, title) ->
+                names.filter { table[it]?.group != group && SoundCatalog.normalize(soundName(it)) == SoundCatalog.normalize(title) }
+                    .map { "$dir: $group 의 이름 \"$title\" 이 다른 묶음(${table[it]?.group})의 소리 $it 의 이름이다" }
+            }
+            shared + namedSounds
+        }
+        assertTrue("묶음 이름이 겹친다:\n${problems.joinToString("\n")}", problems.isEmpty())
     }
 
     private companion object {
