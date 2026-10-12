@@ -99,8 +99,14 @@ class ClassifyTabInstrumentedTest {
         return entry to rule.activity.resources.getStringArray(R.array.sound_names)[entry.index]
     }
 
+    /**
+     * 탭을 연다. 탭은 소리 목록의 색인을 메인 스레드 밖에서 만들고 다 될 때까지 아무것도 그리지 않는다(#368). Compose 는
+     * 그 일을 기다리지 않아서, 처음 여는 탭은 목록이 그려지기 전에 확인이 시작될 수 있다(만들기를 4초 늦추면 실패했다).
+     * 목록이 그려질 때까지 기다린다. 색인은 프로세스에 남으므로 기다리는 것은 처음 한 번이다.
+     */
     private fun openTab() {
         rule.onNodeWithText(string(R.string.tab_classify)).performClick()
+        rule.waitUntil(timeoutMillis = 15_000) { rule.onAllNodes(classifyList).fetchSemanticsNodes().isNotEmpty() }
         rule.waitForIdle()
     }
 
