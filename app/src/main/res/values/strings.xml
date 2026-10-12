@@ -171,7 +171,7 @@
     <string name="sound_type_danger">Danger</string>
     <string name="classify_type_default">%1$s (default)</string>
     <string name="classify_changed_from">Default: %1$s</string>
-    <string name="classify_changed_count">Changed: %1$d</string>
+    <string name="classify_changed_count">Sounds changed: %1$d</string>
     <string name="classify_reset_all">Reset all</string>
     <string name="classify_reset_title">Reset all sounds?</string>
     <string name="classify_reset_message">Every sound you changed goes back to its default type.</string>
@@ -206,6 +206,7 @@
     <string name="sound_group_vehicle_warnings">Vehicle warnings</string>
     <string name="sound_group_breaking">Breaking glass and crashes</string>
     <string name="sound_group_distress">Shouting, screaming and crying</string>
+    <string name="sound_group_talking">Talking and whispering</string>
     <string name="sound_group_signals">Alarm clocks, beeps and whistles</string>
     <string name="sound_group_voices">Clapping, humming and whistling</string>
     <string name="sound_group_water">Taps and running water</string>

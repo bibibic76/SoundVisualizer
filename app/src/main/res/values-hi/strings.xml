@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">वाहनों के चेतावनी संकेत</string>
     <string name="sound_group_breaking">कांच का टूटना और धड़ाम की आवाज़ें</string>
     <string name="sound_group_distress">चिल्लाना, चीखना और रोना</string>
+    <string name="sound_group_talking">बोलना और फुसफुसाना</string>
     <string name="sound_group_signals">अलार्म घड़ी, बीप और सीटी</string>
     <string name="sound_group_voices">ताली बजाना, गुनगुनाना और सीटी बजाना</string>
     <string name="sound_group_water">नल और बहता पानी</string>

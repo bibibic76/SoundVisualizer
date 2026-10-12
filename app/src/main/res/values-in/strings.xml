@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Suara bahaya</string>
     <string name="classify_type_default">%1$s (default)</string>
     <string name="classify_changed_from">Default: %1$s</string>
-    <string name="classify_changed_count">Diubah: %1$d</string>
+    <string name="classify_changed_count">Suara diubah: %1$d</string>
     <string name="classify_reset_all">Reset semua</string>
     <string name="classify_reset_title">Reset semua suara?</string>
     <string name="classify_reset_message">Semua suara yang telah Anda ubah akan kembali ke jenis default.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Peringatan kendaraan</string>
     <string name="sound_group_breaking">Kaca pecah dan benturan</string>
     <string name="sound_group_distress">Teriakan, jeritan, dan tangisan</string>
+    <string name="sound_group_talking">Obrolan dan bisikan</string>
     <string name="sound_group_signals">Jam weker, bip, dan peluit</string>
     <string name="sound_group_voices">Tepuk tangan, senandung, dan siulan</string>
     <string name="sound_group_water">Keran dan air mengalir</string>

@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Dźwięki zagrożenia</string>
     <string name="classify_type_default">%1$s (domyślnie)</string>
     <string name="classify_changed_from">Domyślnie: %1$s</string>
-    <string name="classify_changed_count">Zmienione: %1$d</string>
+    <string name="classify_changed_count">Zmienione dźwięki: %1$d</string>
     <string name="classify_reset_all">Przywróć domyślne</string>
     <string name="classify_reset_title">Przywrócić domyślne rodzaje dźwięków?</string>
     <string name="classify_reset_message">Każdy zmieniony przez Ciebie dźwięk wróci do swojego domyślnego rodzaju.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Sygnały ostrzegawcze pojazdów</string>
     <string name="sound_group_breaking">Tłuczenie szkła i łoskot</string>
     <string name="sound_group_distress">Krzyki i płacz</string>
+    <string name="sound_group_talking">Mówienie i szept</string>
     <string name="sound_group_signals">Budziki, piknięcia i gwizdki</string>
     <string name="sound_group_voices">Oklaski, nucenie i gwizdanie</string>
     <string name="sound_group_water">Krany i płynąca woda</string>

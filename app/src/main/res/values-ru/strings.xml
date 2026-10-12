@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Опасные звуки</string>
     <string name="classify_type_default">%1$s (по умолчанию)</string>
     <string name="classify_changed_from">По умолчанию: %1$s</string>
-    <string name="classify_changed_count">Изменено: %1$d</string>
+    <string name="classify_changed_count">Изменено звуков: %1$d</string>
     <string name="classify_reset_all">Сбросить все</string>
     <string name="classify_reset_title">Сбросить типы всех звуков?</string>
     <string name="classify_reset_message">Каждый звук, который вы изменили, вернётся к своему типу по умолчанию.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Предупреждающие сигналы транспорта</string>
     <string name="sound_group_breaking">Бьющееся стекло и громкие удары</string>
     <string name="sound_group_distress">Крики и плач</string>
+    <string name="sound_group_talking">Разговоры и шёпот</string>
     <string name="sound_group_signals">Будильники, пиканье и свистки</string>
     <string name="sound_group_voices">Аплодисменты, напевание и свист</string>
     <string name="sound_group_water">Краны и текущая вода</string>

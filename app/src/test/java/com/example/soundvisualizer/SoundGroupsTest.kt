@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 분류 탭의 카드 나누기(규칙 B), 묶음 상태, 미리보기, 덮어쓰는 수(#349).
+ * 분류 탭의 카드 나누기(규칙 B), 묶음 상태, 미리보기, 덮어쓰는 수(#349), 묻는 때와 거르기에 남길 소리(#374).
  *
  * 지금 매핑으로는 어떤 매핑에서도 지켜야 할 규칙만 본다. 묶음마다의 기본 종류나 구역·카드의 수는 일부러 못박지 않는다.
  * 그것은 AI 의 매핑(가람 님 담당)이 정하고, 매핑이 바뀌어도 화면이 따라가야 하기 때문이다. 나머지 테스트는 기본 종류를
@@ -204,5 +204,59 @@ class SoundGroupsTest {
         assertEquals(4, SoundGroups.overwriteCount(sirens, one, AiClassification.DANGER))
         assertEquals(5, SoundGroups.overwriteCount(sirens, one, AiClassification.SPEECH))
         assertEquals(0, SoundGroups.overwriteCount(sirens, emptyMap(), AiClassification.AMBIENT))
+    }
+
+    @Test
+    fun `하나씩 바꾼 소리의 종류가 바뀔 때만 묻는다`() {
+        // 사이렌 카드의 기본 종류는 환경음이다(plain).
+        val sirens = card(plainSections, SoundGroup.SIRENS)
+        val types = listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
+        fun asks(overrides: Map<String, String>, picked: String) = SoundGroups.overwritesOneByOne(sirens, overrides, picked)
+
+        for (type in types) assertFalse("바꾼 것이 없다: $type", asks(emptyMap(), type))
+
+        val whole = sirens.members.associate { it.name to AiClassification.DANGER }
+        assertFalse("묶음째 바꾼 카드는 묻지 않는다", asks(whole, AiClassification.SPEECH))
+        assertFalse("묶음째 바꾼 카드는 기본 종류를 골라도 묻지 않는다", asks(whole, AiClassification.AMBIENT))
+
+        val one = mapOf("Civil defense siren" to AiClassification.DANGER)
+        assertFalse("하나씩 바꾼 소리와 같은 종류를 고르면 그 소리는 그대로다", asks(one, AiClassification.DANGER))
+        assertTrue("기본 종류를 고르면 하나씩 바꾼 것이 되돌려진다", asks(one, AiClassification.AMBIENT))
+        assertTrue(asks(one, AiClassification.SPEECH))
+
+        val two = one + ("Police car (siren)" to AiClassification.SPEECH)
+        for (type in types) assertTrue("하나씩 바꾼 소리 둘의 종류가 다르면 어느 쪽을 골라도 하나는 바뀐다: $type", asks(two, type))
+
+        // 묶음째 위협음으로 바꾼 뒤 민방위 사이렌만 기본 종류로 되돌린 카드. 저장값으로는 되돌린 소리와 건드리지 않은
+        // 소리를 가릴 수 없어서, 위협음을 고르면 묻지 않는다(알고 둔 한계).
+        val reverted = whole - "Civil defense siren"
+        assertEquals(GroupState.Mixed, SoundGroups.state(sirens, reverted))
+        assertFalse(asks(reverted, AiClassification.DANGER))
+        assertTrue(asks(reverted, AiClassification.AMBIENT))
+
+        val chainsaw = card(plainSections, SoundGroup.CHAINSAW)
+        val changedChainsaw = mapOf("Chainsaw" to AiClassification.DANGER)
+        for (type in types) {
+            assertFalse("소리 하나뿐인 카드는 섞이지 않는다", SoundGroups.overwritesOneByOne(chainsaw, changedChainsaw, type))
+        }
+    }
+
+    @Test
+    fun `남길 소리는 찾는 말과 거르기가 그대로인 동안만 남는다`() {
+        val empty = KeptSounds()
+        assertTrue(empty.namesFor("", SoundFilter.ALL).isEmpty())
+
+        val kept = empty.plus("사이렌", SoundFilter.DANGER, listOf("Siren"))
+        assertEquals(setOf("Siren"), kept.namesFor("사이렌", SoundFilter.DANGER))
+        assertTrue("찾는 말이 다르다", kept.namesFor("사이레", SoundFilter.DANGER).isEmpty())
+        assertTrue("거르기가 다르다", kept.namesFor("사이렌", SoundFilter.CHANGED).isEmpty())
+
+        val more = kept.plus("사이렌", SoundFilter.DANGER, listOf("Civil defense siren"))
+        assertEquals("같은 찾는 말과 거르기에서는 쌓인다", setOf("Siren", "Civil defense siren"), more.namesFor("사이렌", SoundFilter.DANGER))
+
+        val restarted = more.plus("", SoundFilter.DANGER, listOf("Doorbell"))
+        assertEquals("찾는 말이 바뀌면 앞의 것은 버린다", setOf("Doorbell"), restarted.namesFor("", SoundFilter.DANGER))
+        assertEquals(setOf("Knock"), restarted.plus("", SoundFilter.SPEECH, listOf("Knock")).names)
+        assertEquals("전체에서는 남기지 않는다", KeptSounds(), restarted.plus("", SoundFilter.ALL, listOf("Siren")))
     }
 }

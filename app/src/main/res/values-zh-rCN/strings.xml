@@ -149,7 +149,7 @@
     <string name="sound_type_danger">危险音</string>
     <string name="classify_type_default">%1$s（默认）</string>
     <string name="classify_changed_from">默认：%1$s</string>
-    <string name="classify_changed_count">已更改：%1$d 个</string>
+    <string name="classify_changed_count">已更改的声音：%1$d 个</string>
     <string name="classify_reset_all">全部恢复默认</string>
     <string name="classify_reset_title">要将所有声音恢复默认吗？</string>
     <string name="classify_reset_message">您更改过的所有声音都将恢复为默认类型。</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">车辆警示音</string>
     <string name="sound_group_breaking">玻璃破碎与撞击声</string>
     <string name="sound_group_distress">喊叫、尖叫与哭声</string>
+    <string name="sound_group_talking">说话声与耳语</string>
     <string name="sound_group_signals">闹钟、哔哔声与哨声</string>
     <string name="sound_group_voices">拍手、哼歌与吹口哨</string>
     <string name="sound_group_water">水龙头与流水</string>

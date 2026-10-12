@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -69,7 +71,7 @@ private const val STICKY_HEADER_INDEX = 1
 /** 줄 오른쪽 종류 버튼의 최대 폭. 흔한 폭(411dp)에서 줄 안쪽의 절반쯤이다. */
 private val TYPE_BUTTON_MAX_WIDTH = 150.dp
 
-/** 종류 목록을 여는 줄의 최소 높이. 손가락과 화면 읽어주기로 누르기 좋은 크기(48dp)다. */
+/** 종류 목록을 여는 줄과 거르기 칸의 최소 크기. 손가락과 화면 읽어주기로 누르기 좋은 크기(48dp)다. */
 private val MIN_TOUCH_HEIGHT = 48.dp
 
 /** 화면 읽어주기가 읽는 미리보기의 이름 사이. 화면에 보이는 " • " 는 기호라 읽히지 않게 쉼표로 바꾼다. */
@@ -80,9 +82,12 @@ private const val SPOKEN_SEPARATOR = ", "
  *
  * - **기본 모드**: 비슷한 소리를 묶은 카드에서 묶음째 고른다. 카드는 소리마다의 기본 종류 구역(위협음 → 대화음 →
  *   환경음)에 놓이고, 바꿔도 제 구역에 그대로 있다. 고르면 [SettingsManager.setSoundTypes] 가 찾는 말·거르기와
- *   상관없이 카드의 소리를 모두 한 번에 바꾼다. 소리마다 종류가 다른 카드는 바꾸기 전에 묻는다.
+ *   상관없이 카드의 소리를 모두 한 번에 바꾼다. 하나씩 바꿔 둔 소리의 종류가 바뀔 때만 먼저 묻는다
+ *   ([SoundGroups.overwritesOneByOne]).
  * - **고급 모드**: 같은 순서로 묶음 머리 밑에 소리를 한 줄씩 펴서 하나씩 바꾼다([SettingsManager.setSoundType]).
  *   켜 둔 것은 [SettingsManager.classifyAdvanced] 에 남는다. 하나씩 바꾼 묶음이 있는 채로 끄면 먼저 알린다.
+ *
+ * 거르기를 켠 채로 바꾼 카드(고급 모드는 그 줄)는 거르기에서 빠져도 찾는 말이나 거르기를 바꿀 때까지 남는다([KeptSounds]).
  *
  * 저장하는 것은 소리마다의 종류([SettingsManager.soundTypes])뿐이고, 묶음의 상태는 그때그때 정한다([SoundGroups]).
  * AI 는 추론마다 그 값을 읽어 판정에 반영한다(#321).
@@ -118,8 +123,11 @@ fun ClassifyTab() {
     var confirmReset by rememberSaveable { mutableStateOf(false) }
     // 하나씩 바꾼 묶음이 있는 채로 고급 모드를 끌 때 띄우는 알림. 화면을 돌려도 떠 있게 저장한다.
     var confirmBasic by rememberSaveable { mutableStateOf(false) }
-    // 소리마다 종류가 다른 카드에서 고른 것(카드 id, 종류). 묶음 전체를 바꿀지 묻는 동안만 있다.
+    // 하나씩 바꿔 둔 소리의 종류가 바뀌는 고르기(카드 id, 종류). 묶음 전체를 바꿀지 묻는 동안만 있다.
     var pendingPick by rememberSaveable { mutableStateOf<Pair<String, String>?>(null) }
+    // 거르기를 켠 채로 방금 바꾼 소리(#374). 바꾼 카드가 거르기에서 빠져 눈앞에서 사라지지 않게, 찾는 말이나 거르기를
+    // 바꿀 때까지 목록에 남긴다. 찾는 말·거르기처럼 화면을 돌려도 남게 저장한다.
+    var kept by rememberSaveable { mutableStateOf(KeptSounds()) }
 
     // 종류 색은 색이 바뀔 때만 새로 묶는다. 그릴 때마다 새로 묶으면 받는 쪽은 늘 바뀐 값으로 보아서, 찾기 칸의 커서만
     // 움직여도 색이 그대로인 거르기 칸·구역 머리·목록 줄까지 다시 그렸다.
@@ -143,8 +151,11 @@ fun ClassifyTab() {
     val titleKeys = data?.titleKeys.orEmpty()
     // 색인이 아직이면 거를 것이 없다. 그래도 거르기를 부르면 빈 결과를 위해 찾는 말을 다듬는데, 앱에서 처음 다듬는 것이면
     // 유니코드 정규화 준비까지 메인 스레드에서 한다. 색인을 만드는 쪽이 메인 스레드 밖에서 먼저 하게 둔다.
-    val shown = remember(sections, searchKeys, titleKeys, overrides, query, filter) {
-        if (data == null) emptyList() else SoundGroups.filter(sections, searchKeys, titleKeys, overrides, query, filter)
+    // 남길 소리는 고를 때 바로 적고, 바뀐 종류(overrides)는 그 뒤에 들어온다. 그래서 바꾼 카드가 한 번도 빠지지 않는다.
+    // 찾는 말이나 거르기가 남기기 시작할 때와 다르면 아래에서 지우기 전에도 아무것도 남기지 않는다.
+    val keptNames = kept.namesFor(query, filter)
+    val shown = remember(sections, searchKeys, titleKeys, overrides, query, filter, keptNames) {
+        if (data == null) emptyList() else SoundGroups.filter(sections, searchKeys, titleKeys, overrides, query, filter, keptNames)
     }
     val advancedItems = remember(shown, advanced) { if (advanced) SoundGroups.advancedItems(shown) else emptyList() }
     // 저장값에는 지금 목록에 없는 이름이 남아 있을 수 있다(모델의 이름이 바뀐 뒤 등). "바꾼 소리" 거르기와 같은 기준으로
@@ -158,9 +169,11 @@ fun ClassifyTab() {
     // 남은 자리를 다 차지해 결과가 하나도 보이지 않았다(#283, 에뮬레이터 계측 테스트). 거르기만 바꿀 때는 맨 위면
     // 그대로 둔다. 처음 값은 건너뛴다. 다른 탭에 갔다 돌아오면 이 화면이 새로 만들어지는데, 그때마다 올리면 내려 두었던
     // 자리를 잃는다.
+    // 남겨 두던 소리도 이때 지운다(#374). 바꾼 소리가 맞는지는 새 찾는 말·거르기로 다시 본다.
     val listState = rememberLazyListState()
     LaunchedEffect(listState) {
         snapshotFlow { search.text.toString() to filter }.drop(1).collect { (text, _) ->
+            kept = KeptSounds()
             if (text.isNotEmpty() || listState.firstVisibleItemIndex > STICKY_HEADER_INDEX) {
                 listState.scrollToItem(STICKY_HEADER_INDEX)
             }
@@ -173,8 +186,10 @@ fun ClassifyTab() {
             message = stringResource(R.string.classify_reset_message),
             confirmLabel = stringResource(R.string.classify_reset_confirm),
             cancelLabel = stringResource(R.string.classify_reset_cancel),
+            // 남겨 두던 소리도 지운다. 되돌린 소리가 "바꾼 소리" 거르기에 남아 있지 않게 한다.
             onConfirm = {
                 SettingsManager.resetSoundTypes()
+                kept = KeptSounds()
                 confirmReset = false
             },
             onDismiss = { confirmReset = false }
@@ -219,6 +234,9 @@ fun ClassifyTab() {
             confirmLabel = stringResource(R.string.classify_group_overwrite_confirm),
             cancelLabel = stringResource(R.string.classify_group_overwrite_cancel),
             onConfirm = {
+                // 그 카드에 보이던 소리를 남긴다. 묻는 동안에는 찾는 말과 거르기를 바꿀 수 없고, 화면을 돌려도 둘 다 그대로다.
+                val visible = shown.firstNotNullOfOrNull { section -> section.cards.firstOrNull { it.card.id == card.id } }
+                kept = kept.plus(query, filter, visible?.shown.orEmpty().map { it.name })
                 SettingsManager.setSoundTypes(card.members.map { it.name }, type)
                 pendingPick = null
             },
@@ -323,7 +341,10 @@ fun ClassifyTab() {
                         entry = item.entry,
                         type = SoundCatalog.typeOf(item.entry, overrides),
                         typeColors = typeColors,
-                        onPick = { SettingsManager.setSoundType(item.entry.name, it) }
+                        onPick = {
+                            kept = kept.plus(query, filter, listOf(item.entry.name))
+                            SettingsManager.setSoundType(item.entry.name, it)
+                        }
                     )
                 }
             }
@@ -341,11 +362,13 @@ fun ClassifyTab() {
                         labelOf = labelOf,
                         typeColors = typeColors,
                         onPick = { type ->
-                            // 소리마다 종류가 다른 카드는 먼저 묻는다. 하나씩 바꿔 둔 소리까지 덮어쓰기 때문이다.
-                            // 모두 같은 카드는 묻지 않고 바로 바꾼다. 기본 종류를 고르면 바꾼 것이 모두 지워진다.
-                            if (state is GroupState.Mixed) {
+                            // 하나씩 바꿔 둔 소리의 종류가 바뀔 때만 먼저 묻는다(#374). 그 소리와 같은 종류를 고르면 그
+                            // 소리는 그대로라 묻지 않는다. 모두 같은 카드도 묻지 않고 바로 바꾼다. 기본 종류를 고르면
+                            // 바꾼 것이 모두 지워진다. 보이던 소리는 거르기에서 빠져도 남긴다.
+                            if (SoundGroups.overwritesOneByOne(card, overrides, type)) {
                                 pendingPick = card.id to type
                             } else {
+                                kept = kept.plus(query, filter, shownCard.shown.map { it.name })
                                 SettingsManager.setSoundTypes(card.members.map { it.name }, type)
                             }
                         }
@@ -376,7 +399,8 @@ private fun SearchField(state: TextFieldState) {
     val keyboard = LocalSoftwareKeyboardController.current
     OutlinedTextField(
         state = state,
-        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+        // 거르기 칸의 누르는 칸 위쪽 여백(4dp 이상)과 합쳐 보이는 간격은 12dp 이상이다(FilterRow).
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         placeholder = { Text(stringResource(R.string.classify_search_hint)) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         trailingIcon = if (state.text.isEmpty()) null else {
@@ -412,15 +436,22 @@ private fun SearchField(state: TextFieldState) {
 /**
  * 전체·종류 셋·바꾼 소리 중 하나를 고르는 줄. 한 줄에 다 들어가지 않으면 다음 줄로 내린다.
  * 옆으로 밀게 두었더니 흔한 폭(411dp)에서도 마지막 "바꾼 소리" 칸이 화면 밖에 숨어 있었다.
+ *
+ * 칸은 보이는 크기(글자 한 줄과 위아래 8dp)를 그대로 두고 누르는 칸만 48dp 이상으로 키운다(#374). 보이는 칸은 누르는
+ * 칸 가운데에 있고, 위아래로 4dp 이상 빈다. 그 4dp 는 줄 사이 간격이던 자리라 줄 간격과 찾기 칸 아래 여백을 그만큼
+ * 줄였다. 그래서 보이는 칸이 40dp 이상이면(큰 글꼴) 줄 사이 8dp, 찾기 칸 아래 12dp 로 예전과 같다. 보통 글꼴에서는
+ * 보이는 칸이 40dp 보다 낮아 48dp 를 채우는 만큼 위아래가 더 비고, 줄 사이와 붙어 있는 머리가 예전보다 조금 높다.
+ * Compose 도 작은 누름 칸을 48dp 로 넓혀 판정하지만 이웃과 겹치지 않을 때만이라, 레이아웃으로 둔다.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FilterRow(filter: SoundFilter, typeColors: Map<String, Color>, onFilter: (SoundFilter) -> Unit) {
     // 고른 칸은 색으로만 보이므로 selectableGroup 과 selectable 로 "선택됨" 을 읽어 준다(설정 탭의 모드 칸과 같은 방식).
+    // 줄 사이 간격은 따로 두지 않는다. 위 줄의 아래와 아래 줄의 위에 비는 누르는 칸의 여백(4dp 이상씩)이 간격이라
+    // 보이는 간격은 8dp 이상이다.
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth().selectableGroup().padding(bottom = 4.dp)
+        modifier = Modifier.fillMaxWidth().selectableGroup()
     ) {
         SoundFilter.entries.forEach { option ->
             val selected = option == filter
@@ -430,30 +461,45 @@ private fun FilterRow(filter: SoundFilter, typeColors: Map<String, Color>, onFil
                 SoundFilter.DANGER -> AiClassification.DANGER
                 else -> null
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            val interaction = remember { MutableInteractionSource() }
+            // 바깥은 누르는 칸(48dp 이상), 안은 보이는 칸이다. 눌림 표시는 보이는 칸에만 그린다.
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(if (selected) AccentFillColor else ChipColor)
-                    .selectable(selected = selected, role = Role.RadioButton) { onFilter(option) }
-                    .padding(horizontal = 14.dp, vertical = 8.dp)
+                    .selectable(
+                        selected = selected,
+                        interactionSource = interaction,
+                        indication = null,
+                        role = Role.RadioButton
+                    ) { onFilter(option) }
+                    .sizeIn(minWidth = MIN_TOUCH_HEIGHT, minHeight = MIN_TOUCH_HEIGHT)
+                    .padding(vertical = 4.dp)
             ) {
-                if (type != null) {
-                    TypeDot(typeColors.getValue(type))
-                    Spacer(modifier = Modifier.width(6.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (selected) AccentFillColor else ChipColor)
+                        .indication(interaction, ripple())
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    if (type != null) {
+                        TypeDot(typeColors.getValue(type))
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    Text(
+                        stringResource(
+                            when (option) {
+                                SoundFilter.ALL -> R.string.classify_filter_all
+                                SoundFilter.CHANGED -> R.string.classify_filter_changed
+                                else -> typeNameRes(type)
+                            }
+                        ),
+                        color = if (selected) Color.White else PrimaryTextColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-                Text(
-                    stringResource(
-                        when (option) {
-                            SoundFilter.ALL -> R.string.classify_filter_all
-                            SoundFilter.CHANGED -> R.string.classify_filter_changed
-                            else -> typeNameRes(type)
-                        }
-                    ),
-                    color = if (selected) Color.White else PrimaryTextColor,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
             }
         }
     }

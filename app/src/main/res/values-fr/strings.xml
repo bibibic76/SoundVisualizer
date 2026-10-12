@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Signaux d\'alerte des véhicules</string>
     <string name="sound_group_breaking">Bris de verre et fracas</string>
     <string name="sound_group_distress">Cris et pleurs</string>
+    <string name="sound_group_talking">Parole et chuchotements</string>
     <string name="sound_group_signals">Réveils, bips et sifflets</string>
     <string name="sound_group_voices">Applaudissements, fredonnements et sifflements</string>
     <string name="sound_group_water">Robinets et eau qui coule</string>

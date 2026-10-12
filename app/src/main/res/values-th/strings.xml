@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">เสียงเตือนจากยานพาหนะ</string>
     <string name="sound_group_breaking">กระจกแตกและเสียงพังโครม</string>
     <string name="sound_group_distress">เสียงตะโกน กรีดร้อง และร้องไห้</string>
+    <string name="sound_group_talking">การพูดคุยและเสียงกระซิบ</string>
     <string name="sound_group_signals">นาฬิกาปลุก เสียงบี๊บ และนกหวีด</string>
     <string name="sound_group_voices">เสียงปรบมือ ฮัมเพลง และผิวปาก</string>
     <string name="sound_group_water">ก๊อกน้ำและน้ำไหล</string>

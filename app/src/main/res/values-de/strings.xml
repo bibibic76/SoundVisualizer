@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Gefahrengeräusche</string>
     <string name="classify_type_default">%1$s (Standard)</string>
     <string name="classify_changed_from">Standard: %1$s</string>
-    <string name="classify_changed_count">Geändert: %1$d</string>
+    <string name="classify_changed_count">Geänderte Geräusche: %1$d</string>
     <string name="classify_reset_all">Alle zurücksetzen</string>
     <string name="classify_reset_title">Alle Geräusche zurücksetzen?</string>
     <string name="classify_reset_message">Alle Geräusche, die Sie geändert haben, erhalten wieder ihre standardmäßige Art.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Warnsignale von Fahrzeugen</string>
     <string name="sound_group_breaking">Glasbruch und Krachen</string>
     <string name="sound_group_distress">Rufen, Schreien und Weinen</string>
+    <string name="sound_group_talking">Sprechen und Flüstern</string>
     <string name="sound_group_signals">Wecker, Pieptöne und Trillerpfeifen</string>
     <string name="sound_group_voices">Klatschen, Summen und Pfeifen</string>
     <string name="sound_group_water">Wasserhähne und fließendes Wasser</string>
