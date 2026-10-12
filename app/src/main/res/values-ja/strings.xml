@@ -177,7 +177,7 @@
     <string name="sound_group_breaking">ガラスが割れる音・物が壊れる音</string>
     <string name="sound_group_distress">大声・悲鳴・泣き声</string>
     <string name="sound_group_signals">目覚まし時計・電子音・ホイッスル</string>
-    <string name="sound_group_voices">叫び声・大笑い・歓声</string>
+    <string name="sound_group_voices">拍手・鼻歌・口笛</string>
     <string name="sound_group_water">蛇口・流れる水</string>
     <string name="sound_group_kitchen">台所・料理</string>
     <string name="sound_group_appliances">家電・時計</string>
