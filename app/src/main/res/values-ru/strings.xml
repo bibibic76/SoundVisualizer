@@ -350,7 +350,7 @@
     <string name="help_about_title">О приложении</string>
     <string name="help_about_version">Версия %1$s</string>
     <string name="help_about_team">Создано командой SOVIS</string>
-    <string name="help_about_license">Это приложение распространяется на условиях Apache License 2.0.</string>
+    <string name="help_about_license">Это приложение распространяется на условиях Apache License 2.0. Названия и группы звуков на вкладке «Звуки» основаны на онтологии AudioSet и распространяются на условиях лицензии CC BY-SA 4.0 (см. «Лицензии открытого ПО» ниже).</string>
     <string name="help_licenses_button">Лицензии открытого ПО</string>
     <string name="help_licenses_title">Лицензии открытого ПО</string>
     <string name="help_close">Закрыть</string>

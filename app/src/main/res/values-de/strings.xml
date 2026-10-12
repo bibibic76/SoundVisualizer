@@ -350,7 +350,7 @@
     <string name="help_about_title">Über diese App</string>
     <string name="help_about_version">Version %1$s</string>
     <string name="help_about_team">Entwickelt vom Team SOVIS</string>
-    <string name="help_about_license">Diese App wird unter der Apache License 2.0 bereitgestellt.</string>
+    <string name="help_about_license">Diese App wird unter der Apache License 2.0 bereitgestellt. Die Namen und Gruppen der Geräusche im Tab „Geräusche“ beruhen auf der AudioSet-Ontologie und stehen unter der Lizenz CC BY-SA 4.0 (siehe „Open-Source-Lizenzen“ unten).</string>
     <string name="help_licenses_button">Open-Source-Lizenzen</string>
     <string name="help_licenses_title">Open-Source-Lizenzen</string>
     <string name="help_close">Schließen</string>
