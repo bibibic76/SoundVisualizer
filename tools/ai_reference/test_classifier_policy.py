@@ -75,6 +75,18 @@ class ThreeClassMapperPolicyTest(unittest.TestCase):
         for label in ("Plop", "Gargling"):
             self.assertEqual("ambient", mapper.map_display_name_to_coarse(label))
 
+    def test_human_vocalization_labels_are_exact_speech_mappings(self) -> None:
+        for label in (
+            "Bellow", "Whoop", "Yell", "Cheering",
+            "Giggle", "Snicker", "Belly laugh", "Chuckle, chortle",
+            "Baby cry, infant cry", "Whimper", "Wail, moan",
+        ):
+            with self.subTest(label=label):
+                self.assertEqual("speech", mapper.map_display_name_to_coarse(label))
+        for label in ("Whimper (dog)", "Bellow-like sound", "Cheering music"):
+            with self.subTest(label=label):
+                self.assertEqual("ambient", mapper.map_display_name_to_coarse(label))
+
     def test_attention_nature_and_tool_labels_are_danger(self) -> None:
         for label in ("Chainsaw", "Thunder", "Thunderstorm"):
             with self.subTest(label=label):
