@@ -177,7 +177,7 @@
     <string name="sound_group_breaking">تحطّم الزجاج والانكسار</string>
     <string name="sound_group_distress">الصياح والصراخ والبكاء</string>
     <string name="sound_group_signals">المنبّهات والصفير والصفارات</string>
-    <string name="sound_group_voices">الزعيق والقهقهة والهتاف</string>
+    <string name="sound_group_voices">التصفيق والدندنة والصفير بالفم</string>
     <string name="sound_group_water">الصنابير والماء الجاري</string>
     <string name="sound_group_kitchen">المطبخ والطهي</string>
     <string name="sound_group_appliances">الأجهزة المنزلية والساعات</string>

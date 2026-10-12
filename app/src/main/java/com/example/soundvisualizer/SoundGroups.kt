@@ -32,18 +32,18 @@ enum class SoundGroup(@StringRes val titleRes: Int = 0, val titleSound: String? 
     THUNDER(titleSound = "Thunder"),
     CHAINSAW(titleSound = "Chainsaw"),
 
-    // 대화음
+    // 대화음. 사람의 발성(웃음·고함·울음·환호)이 대화음이 된 뒤(#369) 아기 울음은 외침·비명·울음 바로 뒤에 둔다(#370).
     TALKING(titleSound = "Speech"),
     DISTRESS(R.string.sound_group_distress),
+    BABY(titleSound = "Baby cry, infant cry"),
     CROWD(titleSound = "Crowd"),
     LAUGHTER(titleSound = "Laughter"),
     SINGING(titleSound = "Singing"),
 
-    // 환경음. 주의를 끄는 소리(초인종·전화·알람·아기·불·개)부터 둔다.
+    // 환경음. 주의를 끄는 소리(초인종·전화·알람·불·개)부터 둔다.
     DOORBELL(titleSound = "Doorbell"),
     PHONE(titleSound = "Telephone"),
     SIGNALS(R.string.sound_group_signals),
-    BABY(titleSound = "Baby cry, infant cry"),
     FIRE(titleSound = "Fire"),
     DOG(titleSound = "Dog"),
     VOICES(R.string.sound_group_voices),

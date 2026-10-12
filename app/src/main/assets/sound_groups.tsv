@@ -4,7 +4,7 @@
 # Adapted from the AudioSet Ontology by Google Inc.
 # (https://github.com/audioset/ontology, commit d417d32), licensed under
 # CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
-# Changes: the 521 YAMNet sound names were regrouped into everyday groups by SoundVisualizer contributors.
+# Changes: the 521 YAMNet sound names were regrouped into everyday groups by SoundVisualizer contributors (revised 2026-10: laughs, yells, cries and cheering moved to the speech groups).
 # This file is licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 # Provided as is, without warranties of any kind (Section 5 of the licence: Disclaimer of Warranties
 # and Limitation of Liability).
@@ -59,12 +59,23 @@ distress	Shout
 distress	Screaming
 distress	Crying, sobbing
 distress	Children shouting
+distress	Yell
+distress	Bellow
+distress	Whoop
+distress	Wail, moan
+baby	Baby cry, infant cry
+baby	Whimper
 crowd	Crowd
 crowd	Chatter
 crowd	Hubbub, speech noise, speech babble
 crowd	Children playing
+crowd	Cheering
 laughter	Laughter
 laughter	Baby laughter
+laughter	Giggle
+laughter	Belly laugh
+laughter	Chuckle, chortle
+laughter	Snicker
 singing	Singing
 singing	Choir
 singing	Child singing
@@ -87,8 +98,6 @@ signals	Ding
 signals	Ping
 signals	Whistle
 signals	Steam whistle
-baby	Baby cry, infant cry
-baby	Whimper
 fire	Fire
 fire	Crackle
 dog	Dog
@@ -98,16 +107,8 @@ dog	Yip
 dog	Growling
 dog	Howl
 dog	Whimper (dog)
-voices	Yell
-voices	Giggle
 voices	Applause
-voices	Bellow
-voices	Whoop
-voices	Cheering
 voices	Clapping
-voices	Belly laugh
-voices	Chuckle, chortle
-voices	Snicker
 voices	Humming
 voices	Whistling
 voices	Yodeling
@@ -307,7 +308,6 @@ body	Sniff
 body	Snort
 body	Sigh
 body	Groan
-body	Wail, moan
 body	Grunt
 body	Chewing, mastication
 body	Biting

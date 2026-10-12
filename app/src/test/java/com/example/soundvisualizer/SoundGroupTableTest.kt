@@ -176,6 +176,34 @@ class SoundGroupTableTest {
     }
 
     @Test
+    fun `대화음이 된 사람 발성은 대화음 묶음으로 옮겼다`() {
+        // #369 로 웃음·고함·울음·환호 11개가 대화음이 되어 환경음 묶음(목소리, 아기, 몸)에서 옮겼다(#370). 이미 있던 소리는
+        // 순서를 그대로 두고 뒤에 붙여 미리보기가 바뀌지 않는다. 어느 구역에 보이는지는 매핑이 정하므로 표와 순서만 본다.
+        assertEquals(
+            listOf("Laughter", "Baby laughter", "Giggle", "Belly laugh", "Chuckle, chortle", "Snicker"),
+            members(SoundGroup.LAUGHTER)
+        )
+        assertEquals(
+            listOf("Shout", "Screaming", "Crying, sobbing", "Children shouting", "Yell", "Bellow", "Whoop", "Wail, moan"),
+            members(SoundGroup.DISTRESS)
+        )
+        assertEquals(
+            listOf("Crowd", "Chatter", "Hubbub, speech noise, speech babble", "Children playing", "Cheering"),
+            members(SoundGroup.CROWD)
+        )
+        // 아기 울음 묶음은 그대로 두고 자리만 외침·비명·울음 바로 뒤로 옮겼다. 개의 낑낑거림은 개 묶음에 남는다.
+        assertEquals(listOf("Baby cry, infant cry", "Whimper"), members(SoundGroup.BABY))
+        assertEquals(SoundGroup.DISTRESS.ordinal + 1, SoundGroup.BABY.ordinal)
+        assertEquals(SoundGroup.DOG, group("Whimper (dog)"))
+        // 목소리 묶음에는 박수·콧노래·휘파람 같은 소리만 남고(이름도 그에 맞춤), 몸 소리 묶음에서는 신음이 빠졌다.
+        assertEquals(
+            listOf("Applause", "Clapping", "Humming", "Whistling", "Yodeling", "Chant", "Mantra", "Finger snapping", "Hands"),
+            members(SoundGroup.VOICES)
+        )
+        assertFalse("Wail, moan" in members(SoundGroup.BODY))
+    }
+
+    @Test
     fun `부모가 여럿인 소리 36개는 정해 둔 묶음에 있다`() {
         val moved = MULTI_PARENT.filter { (name, group) -> table[name]?.group != group }
         assertTrue("규칙 D 로 정한 자리에서 옮겼다. 일부러 옮긴 것이면 이 목록도 고친다: $moved", moved.isEmpty())
@@ -189,7 +217,8 @@ class SoundGroupTableTest {
          * 이런 소리는 어느 부모를 따를지 정해야 했다(규칙 D). 28개는 규칙대로, 8개는 뜻으로 정했다(Knock·Tap 은 초인종,
          * Bicycle bell 은 차량 경고음, Air horn 은 경적, Rattle·Hiss 는 물건 소리, Cowbell 은 종, Wind noise (microphone) 는
          * 배경 소리). #344 로 Emergency vehicle 등이 위협음이 된 뒤로는 기계적인 규칙이 사이렌 셋과 자동차 경적·경보음을
-         * 차량 경고음 쪽으로 보내지만, 묶음은 그대로 둔다. 온톨로지 파일은 저장소에 두지 않아 목록을 여기에 적는다.
+         * 차량 경고음 쪽으로 보내지만, 묶음은 그대로 둔다. #369 로 대화음이 되어 옮긴 사람 발성 11개(#370)는 모두 부모가
+         * 하나라 이 목록과 상관없고, 규칙의 결과도 그대로다. 온톨로지 파일은 저장소에 두지 않아 목록을 여기에 적는다.
          * 하나를 옮기면 이 목록도 일부러 고쳐야 한다.
          */
         val MULTI_PARENT = mapOf(
