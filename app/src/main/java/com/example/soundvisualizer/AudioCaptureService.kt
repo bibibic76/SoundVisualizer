@@ -37,6 +37,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
+import com.example.soundvisualizer.ai.AiClassificationResult
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticNotifier
@@ -448,6 +449,17 @@ class AudioCaptureService : Service() {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
                 null
             }
+            // 잠금 화면 알림이 AI 가 확정한 이름의 번호를 찾는 소리 목록(#356). 알림은 메인 스레드에서 이름을 고르므로
+            // 여기서 읽어 둔다. 결과는 아래에서 파이프라인을 붙인 뒤에야 나오므로 알림보다 늦을 일이 없다.
+            // 분류 탭이 이미 읽었으면 다시 읽지 않는다.
+            if (pipeline != null) {
+                try {
+                    SoundCatalog.load(appContext)
+                } catch (e: Exception) {
+                    // 알림은 그대로 뜬다. 확정 이름을 적어야 할 때만 이름 없이 뜬다.
+                    Log.w(TAG, "sound catalog load failed", e)
+                }
+            }
             synchronized(aiLock) { onAiPipelineLoadedLocked(pipeline) }
         }, "SV-AiInit").apply {
             isDaemon = true
@@ -802,17 +814,25 @@ class AudioCaptureService : Service() {
     /**
      * 잠겨 있거나 화면이 꺼진 동안 위협음이 들리기 시작하면 잠금 화면에 알리고 꺼진 화면을 깨운다(#310).
      * 언제 알릴지는 [DangerAlertPolicy] 가 정한다. 진동이 없는 폰에서도 돈다.
+     *
+     * 화면이 꺼져 쉬는 동안([pauseForScreenOff])에는 이 틱이 돌지 않는다. 그래서 화면이 꺼진 동안 알리는 것은 외부 사운드
+     * 모드와, '화면이 꺼지면 일시정지'를 끈 폰 안의 소리뿐이다. 화면을 켜면 잠금을 풀기 전에도 다시 들으므로, 잠금 화면이
+     * 보이는 동안에는 어느 쪽이든 알린다.
+     *
+     * 알릴지와 적을 이름은 결과 하나를 한 번만 읽어 고른다. 따로 읽으면 그사이 다음 추론이 끼어, 알리기로 한 결과와
+     * 다른 결과의 이름을 적을 수 있다.
      */
     private fun updateDangerAlert() {
         val enabled = SettingsManager.showDanger.value && SettingsManager.aiAvailable.value
+        val result = AiClassification.latest()
         val fire = dangerAlertPolicy.onTick(
             SystemClock.elapsedRealtime(),
-            AiClassification.coarse(),
+            result?.coarse ?: AiClassification.AMBIENT,
             checkSample[0],
             enabled
         ) { isLockedOrScreenOff() }
         if (!fire) return
-        val posted = DangerAlert.show(uiContext, dangerSoundName())
+        val posted = DangerAlert.show(uiContext, result?.let { dangerSoundName(it) })
         Log.i(TAG, "danger alert on lock screen: posted=$posted")
     }
 
@@ -821,13 +841,19 @@ class AudioCaptureService : Service() {
             getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
 
     /**
-     * 알림에 적을 소리 이름(앱 언어). AI 의 상위 후보 가운데 지금 위협음으로 보는 첫 소리다. 사용자가 분류 탭에서 바꾼
-     * 종류를 따른다(#325). 고르는 규칙은 [DangerAlertPolicy.namedHit] 에 있다. 없으면 null.
+     * 알림에 적을 소리 이름(앱 언어). AI 가 확정한 이름이 위협음이면 그 이름이고, 아니면 상위 후보 가운데 확률이 하한
+     * 이상인 첫 위협음이다. 사용자가 분류 탭에서 바꾼 종류를 따른다(#325). 고르는 규칙은
+     * [DangerAlertPolicy.alertSoundIndex] 에 있다. 없으면 null 이고 이름 없이 알린다.
+     *
+     * 확정 이름은 문자열뿐이라 번호를 소리 목록([SoundCatalog])에서 찾는다. 목록은 AI 를 불러올 때 함께 읽어 두므로
+     * ([startAiPipelineAsync]) 메인 스레드인 여기서는 파일을 읽지 않는다.
      */
-    private fun dangerSoundName(): String? {
-        val top5 = AiClassification.latest()?.top5 ?: return null
-        val hit = DangerAlertPolicy.namedHit(top5, SettingsManager::soundType) ?: return null
-        return uiContext.resources.getStringArray(R.array.sound_names).getOrNull(hit.index)
+    private fun dangerSoundName(result: AiClassificationResult): String? {
+        val catalog = SoundCatalog.cachedOrNull().orEmpty()
+        val index = DangerAlertPolicy.alertSoundIndex(result.display, result.top5, SettingsManager::soundType) { name ->
+            SoundCatalog.indexOf(catalog, name)
+        } ?: return null
+        return uiContext.resources.getStringArray(R.array.sound_names).getOrNull(index)
     }
 
     /** 캡처가 돌기 시작했다. 두 번 불러도 틱은 하나만 돈다. */

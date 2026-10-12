@@ -4,6 +4,7 @@ import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
 import org.junit.Test
@@ -60,6 +61,18 @@ class SoundCatalogTest {
         val overrides = mapOf("Siren" to AiClassification.AMBIENT)
         assertEquals(AiClassification.AMBIENT, SoundCatalog.typeOf(entry("Siren"), overrides))
         assertEquals(AiClassification.DANGER, SoundCatalog.typeOf(entry("Explosion"), overrides))
+    }
+
+    @Test
+    fun `모델 이름으로 클래스 번호를 찾는다`() {
+        // 잠금 화면 알림은 AI 가 확정한 이름(문자열)의 번호로 앱 언어의 이름을 꺼낸다(#356). 이름이 겹치면 다른 소리를 적는다.
+        assertEquals("모델 이름은 서로 겹치지 않는다", entries.size, entries.map { it.name }.toSet().size)
+        entries.forEach { assertEquals(it.name, it.index, SoundCatalog.indexOf(entries, it.name)) }
+        assertEquals(390, SoundCatalog.indexOf(entries, "Siren"))
+        assertEquals(421, SoundCatalog.indexOf(entries, "Gunshot, gunfire"))
+        assertNull("이름은 글자 그대로 맞춰 본다", SoundCatalog.indexOf(entries, "siren"))
+        assertNull(SoundCatalog.indexOf(entries, ""))
+        assertNull("목록을 아직 읽지 않았으면 찾지 못한다", SoundCatalog.indexOf(emptyList(), "Siren"))
     }
 
     @Test

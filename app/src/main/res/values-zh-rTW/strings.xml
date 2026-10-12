@@ -223,7 +223,7 @@
     <string name="stopped_turn_on">重新開啟</string>
     <string name="stopped_toast">聲音視覺化已關閉。圖形和震動提醒都已停止。</string>
     <string name="danger_alert_channel_name">危險音通知</string>
-    <string name="danger_alert_channel_desc">手機鎖定或螢幕關閉時聽到危險音，會在螢幕鎖定畫面上通知，並短暫開啟螢幕。不會發出聲音。</string>
+    <string name="danger_alert_channel_desc">手機鎖定或螢幕關閉時聽到危險音，會在螢幕鎖定畫面上通知，並短暫開啟螢幕。螢幕關閉時，只有在外部聲音模式下或關閉了「螢幕關閉時暫停」的情況下才會通知。不會發出聲音。</string>
     <string name="danger_alert_title">聽到危險音</string>
     <string name="danger_alert_text_named">聽到的聲音：%1$s。請留意周遭狀況。</string>
     <string name="danger_alert_text">請留意周遭狀況。</string>

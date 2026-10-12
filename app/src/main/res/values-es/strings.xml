@@ -223,7 +223,7 @@
     <string name="stopped_turn_on">Volver a encender</string>
     <string name="stopped_toast">El visor de sonido se apagó. Los gráficos y los avisos por vibración están desactivados.</string>
     <string name="danger_alert_channel_name">Alertas de sonidos de peligro</string>
-    <string name="danger_alert_channel_desc">Si se oye un sonido de peligro con el teléfono bloqueado o la pantalla apagada, aparece un aviso en la pantalla de bloqueo y la pantalla se enciende un momento. No emite sonido.</string>
+    <string name="danger_alert_channel_desc">Si se oye un sonido de peligro con el teléfono bloqueado o la pantalla apagada, aparece un aviso en la pantalla de bloqueo y la pantalla se enciende un momento. Con la pantalla apagada, solo funciona en el modo de sonido externo o si desactivas “Pausar con la pantalla apagada”. No emite sonido.</string>
     <string name="danger_alert_title">Se oyó un sonido de peligro</string>
     <string name="danger_alert_text_named">Se oyó: %1$s. Revisa lo que tienes alrededor.</string>
     <string name="danger_alert_text">Revisa lo que tienes alrededor.</string>

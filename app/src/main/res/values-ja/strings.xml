@@ -223,7 +223,7 @@
     <string name="stopped_turn_on">オンに戻す</string>
     <string name="stopped_toast">音の可視化がオフになりました。グラフィックと振動のお知らせはオフです。</string>
     <string name="danger_alert_channel_name">危険音の通知</string>
-    <string name="danger_alert_channel_desc">スマートフォンがロック中または画面がオフのときに危険音が聞こえると、ロック画面に通知し、画面を少しの間オンにします。音は鳴りません。</string>
+    <string name="danger_alert_channel_desc">スマートフォンがロック中または画面がオフのときに危険音が聞こえると、ロック画面に通知し、画面を少しの間オンにします。画面がオフの間は、外部音モードのときか、「画面オフ中は一時停止」をオフにしているときにだけ通知します。音は鳴りません。</string>
     <string name="danger_alert_title">危険音が聞こえました</string>
     <string name="danger_alert_text_named">聞こえた音：%1$s。周りを確認してください。</string>
     <string name="danger_alert_text">周りを確認してください。</string>

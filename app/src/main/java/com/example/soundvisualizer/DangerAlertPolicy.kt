@@ -14,6 +14,8 @@ import com.example.soundvisualizer.feedback.HapticPolicy
  * - **한 사건에 한 번만 알린다.** 잠겼거나 꺼졌는지는 아직 알리지 않은 사건 동안에만 묻는다. 그래서 사이렌이 이어지는 중에
  *   폰을 잠그면 그때 알린다.
  * - **알린 뒤 [cooldownMs] 안에는 다시 알리지 않는다.** 위협음이 짧게 끊겼다 이어지는 장면에서 알림이 쏟아지지 않게 한다.
+ *
+ * 알림에 적을 소리는 [alertSoundIndex] 가 고른다.
  */
 class DangerAlertPolicy(
     private val episodeGapMs: Long = EPISODE_GAP_MS,
@@ -66,15 +68,45 @@ class DangerAlertPolicy(
         const val COOLDOWN_MS = 30_000L
 
         /**
-         * 알림에 적을 소리: AI 상위 후보([top5], 확률 순) 가운데 지금 위협음으로 보는 첫 소리. 없으면 null.
-         * 1순위가 음악이고 사이렌이 안전 신호로 올라온 경우에도 "음악" 이 아니라 그 위협음을 고른다.
+         * 상위 후보에서 이름을 고를 때의 확률 하한([alertSoundIndex] 의 두 번째 규칙).
+         *
+         * AI 가 사이렌·경보 같은 강한 단서를 위협음으로 올리는 하한(ai/ 의 YamnetSafetyCueDecision 이 쓰는 0.05)과 같은
+         * 값이다. 그 상수는 공개되어 있지 않아 여기 따로 둔다. AI 가 단서로도 치지 않는 약한 후보를 "들린 소리" 로 적지
+         * 않으려는 것이다. 총소리 녹음의 마지막 후보 Smash, crash(0.028)가 그런 예다(#356).
+         */
+        const val CANDIDATE_MIN_PROBABILITY = 0.05f
+
+        /**
+         * 알림에 적을 소리의 YAMNet 클래스 번호. 앱 언어의 이름은 이 번호로 sound_names 에서 꺼낸다.
+         * 적을 소리가 없으면 null 이고, 그때는 이름 없이 알린다.
+         *
+         * 1. AI 가 확정한 이름([display])이 지금 위협음 종류면 그 이름을 쓴다. 알릴지는 여러 프레임을 거쳐 확정된 라벨로
+         *    정하는데, 이 이름은 확신도 기준을 넘긴 위협음 프레임 가운데 가장 최근 것의 이름이라 지금의 위협음을 만든
+         *    소리다. [top5] 는 가장 최근 한 프레임뿐이라, 사이렌이 이어지는 중에도 그 프레임에는 사이렌이 없을 수 있다.
+         *    그것만 보던 때는 구급차 녹음에 Siren 대신 Train whistle(0.06)을 적었다(#356).
+         * 2. 아니면 [top5] 에서 지금 위협음 종류이면서 확률이 [CANDIDATE_MIN_PROBABILITY] 이상인 첫 소리를 쓴다. 상위
+         *    3개의 투표로 위협음이 된 프레임은 1순위가 위협음이 아니어도 그 1순위가 확정 이름으로 남기 때문이다
+         *    (1위 Vehicle 에 2·3위 Train whistle·Reversing beeps).
+         * 3. 둘 다 없으면 null.
          *
          * 종류는 [typeOf] 로 묻는다. 사용자가 분류 탭에서 바꾼 종류를 따라야 AI 판정과 맞는다(#325). 위협음에서 뺀 소리의
          * 이름으로 알리지 않고, 위협음으로 새로 지정한 소리의 이름으로 알린다.
+         *
+         * @param display AI 가 확정한 이름([com.example.soundvisualizer.ai.AiClassificationResult.display])
+         * @param top5 같은 결과에 든 가장 최근 프레임의 상위 후보(확률 순)
+         * @param typeOf 소리 이름의 지금 종류
+         * @param indexOf 소리 이름의 클래스 번호. 확정 이름의 번호를 모르면 다른 소리를 적지 않고 이름 없이 알린다.
          */
-        fun namedHit(
+        fun alertSoundIndex(
+            display: String,
             top5: List<YamnetCoarseClassifier.TopClassHit>,
-            typeOf: (String) -> String
-        ): YamnetCoarseClassifier.TopClassHit? = top5.firstOrNull { typeOf(it.name) == AiClassification.DANGER }
+            typeOf: (String) -> String,
+            indexOf: (String) -> Int?
+        ): Int? {
+            if (display.isNotBlank() && typeOf(display) == AiClassification.DANGER) return indexOf(display)
+            return top5.firstOrNull {
+                it.probability >= CANDIDATE_MIN_PROBABILITY && typeOf(it.name) == AiClassification.DANGER
+            }?.index
+        }
     }
 }
