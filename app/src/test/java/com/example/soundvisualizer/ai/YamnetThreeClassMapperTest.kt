@@ -185,6 +185,20 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
+    fun approvedHumanVocalizationsAreSpeechUsingExactLabels() {
+        listOf(
+            "Bellow", "Whoop", "Yell", "Cheering",
+            "Giggle", "Snicker", "Belly laugh", "Chuckle, chortle",
+            "Baby cry, infant cry", "Whimper", "Wail, moan"
+        ).forEach { displayName ->
+            assertEquals(displayName, "speech", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Whimper (dog)", "Bellow-like sound", "Cheering music").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
     fun waterSoundsDoNotProduceDangerCoarseClassification() {
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             val probabilities = FloatArray(classNames.size)
