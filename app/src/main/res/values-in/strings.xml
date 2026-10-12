@@ -350,7 +350,7 @@
     <string name="help_about_title">Tentang</string>
     <string name="help_about_version">Versi %1$s</string>
     <string name="help_about_team">Dibuat oleh tim SOVIS</string>
-    <string name="help_about_license">Aplikasi ini didistribusikan berdasarkan Apache License 2.0.</string>
+    <string name="help_about_license">Aplikasi ini didistribusikan berdasarkan Apache License 2.0. Nama dan grup suara di tab Suara didasarkan pada ontologi AudioSet dan didistribusikan berdasarkan CC BY-SA 4.0 (lihat “Lisensi open source” di bawah).</string>
     <string name="help_licenses_button">Lisensi open source</string>
     <string name="help_licenses_title">Lisensi open source</string>
     <string name="help_close">Tutup</string>

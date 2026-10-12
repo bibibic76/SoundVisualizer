@@ -350,7 +350,7 @@
     <string name="help_about_title">À propos</string>
     <string name="help_about_version">Version %1$s</string>
     <string name="help_about_team">Créé par l\'équipe SOVIS</string>
-    <string name="help_about_license">Cette application est distribuée sous l\'Apache License 2.0.</string>
+    <string name="help_about_license">Cette application est distribuée sous l\'Apache License 2.0. Les noms et les groupes de sons de l\'onglet Sons sont basés sur l\'ontologie AudioSet et distribués sous la licence CC BY-SA 4.0 (voir « Licences open source » ci-dessous).</string>
     <string name="help_licenses_button">Licences open source</string>
     <string name="help_licenses_title">Licences open source</string>
     <string name="help_close">Fermer</string>

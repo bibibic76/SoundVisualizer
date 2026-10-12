@@ -350,7 +350,7 @@
     <string name="help_about_title">Hakkında</string>
     <string name="help_about_version">Sürüm %1$s</string>
     <string name="help_about_team">SOVIS ekibi tarafından geliştirildi</string>
-    <string name="help_about_license">Bu uygulama Apache License 2.0 kapsamında dağıtılmaktadır.</string>
+    <string name="help_about_license">Bu uygulama Apache License 2.0 kapsamında dağıtılmaktadır. “Sesler” sekmesindeki ses adları ve ses grupları AudioSet ontolojisine dayanır ve CC BY-SA 4.0 kapsamında dağıtılır (ayrıntılar için aşağıdaki “Açık kaynak lisansları” düğmesine dokunun).</string>
     <string name="help_licenses_button">Açık kaynak lisansları</string>
     <string name="help_licenses_title">Açık kaynak lisansları</string>
     <string name="help_close">Kapat</string>

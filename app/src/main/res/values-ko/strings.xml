@@ -357,7 +357,7 @@
     <string name="help_about_title">앱 정보</string>
     <string name="help_about_version">버전 %1$s</string>
     <string name="help_about_team">만든 팀: SOVIS</string>
-    <string name="help_about_license">이 앱은 Apache License 2.0으로 배포됩니다.</string>
+    <string name="help_about_license">이 앱은 Apache License 2.0으로 배포됩니다. 분류 탭의 소리 이름과 묶음은 AudioSet 온톨로지를 바탕으로 해 CC BY-SA 4.0을 따르며, 자세한 내용은 아래 ‘오픈소스 라이선스’에서 볼 수 있습니다.</string>
     <string name="help_licenses_button">오픈소스 라이선스</string>
     <string name="help_licenses_title">오픈소스 라이선스</string>
     <string name="help_close">닫기</string>

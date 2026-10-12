@@ -122,17 +122,70 @@ private fun onTimePeakSmoothTotal(loud: Float, loudFrames: Int, tail: Float, tai
     return peak
 }
 
-/** 가장자리 띠 시험의 화면: 세로, 가로. */
-private val BAND_SURFACES = listOf(W to H, H to W)
+/** 가장자리 띠 시험의 화면: 너비, 높이, 배율. */
+private data class BandSurface(val width: Float, val height: Float, val density: Float) {
+    override fun toString() = "${width.toInt()}x${height.toInt()}(배율 $density)"
+}
 
-/** 외곽선 두께. 엔진의 4dp 에 [DENSITY] 를 곱한 값이다. */
-private const val OUTLINE_STROKE_PX = 4f
+/**
+ * 가장자리 띠 시험의 화면: 배율 1 의 세로·가로와 흔한 폰(1080×2400, 420dpi)의 세로·가로.
+ * 1080×1920 은 파도 점이 네 모서리에서 똑같이 반 칸씩 떨어지고, 1080×2400 은 모서리마다 양쪽 점까지의 거리가 달라
+ * 모서리를 가로지르는 조각이 한쪽 변에 붙는다.
+ */
+private val BAND_SURFACES = listOf(
+    BandSurface(W, H, DENSITY), BandSurface(H, W, DENSITY),
+    BandSurface(1080f, 2400f, 2.625f), BandSurface(2400f, 1080f, 2.625f)
+)
+
+/** 외곽선 두께(dp). 엔진의 4dp 와 같다. */
+private const val OUTLINE_STROKE_DP = 4f
+
+/** 띠 시험에서 켜는 발광 세기. */
+private const val BAND_GLOW_INTENSITY = 50f
+
+/** 띠의 변 이름. [VisualizerEngine.SIDE_TOP] 등의 번호 순서다. */
+private val SIDE_NAMES = listOf("위", "오른쪽", "아래", "왼쪽")
+
+/** 변 [side] 에서 안쪽으로 잰 거리. 엔진의 식을 빌리지 않고 여기에 따로 적는다. */
+private fun sideDistance(side: Int, x: Float, y: Float, width: Float, height: Float): Float = when (side) {
+    VisualizerEngine.SIDE_TOP -> y
+    VisualizerEngine.SIDE_RIGHT -> width - x
+    VisualizerEngine.SIDE_BOTTOM -> height - y
+    VisualizerEngine.SIDE_LEFT -> x
+    else -> error("변 번호가 아니다: $side")
+}
+
+/** 띠를 재며 짚은 점을 변마다 모은다: 그 변에 맡긴 점이 그 변에서 들어온 가장 깊은 거리. 맡긴 점이 없는 변은 -1. */
+private class SideSamples(private val width: Float, private val height: Float) {
+    val deepest = FloatArray(4) { -1f }
+    fun add(side: Int, x: Float, y: Float) {
+        val d = sideDistance(side, x, y, width, height)
+        if (d > deepest[side]) deepest[side] = d
+    }
+}
+
+/** 띠 네 개의 넓이(px²). 위·아래 띠는 너비 전체, 왼쪽·오른쪽 띠는 그 사이 높이다. 매 프레임 래스터화하는 마스크의 크기다. */
+private fun bandArea(thickness: FloatArray, width: Float, height: Float): Float {
+    val top = thickness[VisualizerEngine.SIDE_TOP]
+    val bottom = thickness[VisualizerEngine.SIDE_BOTTOM]
+    val sides = thickness[VisualizerEngine.SIDE_LEFT] + thickness[VisualizerEngine.SIDE_RIGHT]
+    return width * (top + bottom) + sides * (height - top - bottom)
+}
+
+/** #365 전처럼 네 띠가 가장 두꺼운 변의 두께 하나를 쓸 때의 넓이. */
+private fun sharedBandArea(thickness: FloatArray, width: Float, height: Float): Float {
+    val t = thickness.max()
+    return bandArea(floatArrayOf(t, t, t, t), width, height)
+}
+
+/** 발광 세기 [glowIntensity] 의 블러 반경(px). 세기 × 0.5dp 이고 1dp 보다 작아지지 않는다. */
+private fun glowRadiusPx(glowIntensity: Float, density: Float): Float = maxOf(1f, glowIntensity * 0.5f) * density
 
 /** 가장자리 띠 시험에 넣는 소리: [frames] 프레임 동안 [level] 이 프레임마다 돌려주는 (좌, 우) 크기. */
 private class BandSound(val name: String, val frames: Int, val level: (frame: Int) -> Pair<Float, Float>)
 
 /**
- * 정해 둔 소리 일곱 가지와 무작위 소리 [randomCount] 개.
+ * 정해 둔 소리 아홉 가지와 무작위 소리 [randomCount] 개.
  * 뒤쪽만 들리는 모양은 소리를 끊은 직후에 나온다. 앞 채널은 바로 0 이 되고 뒤 채널은 몇 틱 늦게 따라오기 때문이다.
  */
 private fun bandSounds(rnd: java.util.Random, randomCount: Int = 20): List<BandSound> {
@@ -141,6 +194,8 @@ private fun bandSounds(rnd: java.util.Random, randomCount: Int = 20): List<BandS
         BandSound("양쪽 최대", 300) { 1f to 1f },
         BandSound("가운데 작게", 300) { 0.05f to 0.05f },
         BandSound("가운데 보통", 300) { 0.15f to 0.15f },
+        BandSound("왼쪽으로 치우침", 300) { 0.3f to 0.1f },
+        BandSound("오른쪽으로 치우침", 300) { 0.1f to 0.3f },
         BandSound("왼쪽만", 300) { 1f to 0f },
         BandSound("오른쪽만", 300) { 0f to 1f },
         BandSound("뒤쪽만", 122) { f -> if (f < 120) 0.8f to 0.8f else 0f to 0f },
@@ -156,9 +211,9 @@ private fun bandSounds(rnd: java.util.Random, randomCount: Int = 20): List<BandS
 
 /**
  * 가장자리 띠 시험의 설정. 소리를 바로 따라가게 해 정해 둔 소리의 모양이 그대로 나오게 한다.
- * 발광 세기 [glowIntensity] 의 반경은 세기 × 0.5dp 이고 1dp 보다 작아지지 않는다.
+ * 발광 세기 [glowIntensity] 의 반경은 [glowRadiusPx] 다.
  */
-private fun bandSettings(intensity: Float, glow: Boolean, glowIntensity: Float = 50f) = ModeSettings(
+private fun bandSettings(intensity: Float, glow: Boolean, glowIntensity: Float = BAND_GLOW_INTENSITY) = ModeSettings(
     intensity = intensity,
     sensitivity = 100f,
     speed = 100f,
@@ -173,9 +228,16 @@ private fun bandSettings(intensity: Float, glow: Boolean, glowIntensity: Float =
 private fun blurKernelReach(radiusPx: Float): Float = ceil(3f * (0.57735f * radiusPx + 0.5f))
 
 /** [sound] 를 끝까지 넣은 엔진. */
-private fun engineAfter(sound: BandSound, mode: VisualMode, settings: ModeSettings, width: Float, height: Float): VisualizerEngine {
+private fun engineAfter(
+    sound: BandSound,
+    mode: VisualMode,
+    settings: ModeSettings,
+    width: Float,
+    height: Float,
+    density: Float = DENSITY
+): VisualizerEngine {
     val fake = FakeInputs(mode = mode, settings = settings)
-    val engine = VisualizerEngine(DENSITY, fake).also { it.setSurfaceSize(width, height) }
+    val engine = VisualizerEngine(density, fake).also { it.setSurfaceSize(width, height) }
     var t = FRAME_60
     repeat(sound.frames) { f ->
         val (left, right) = sound.level(f)
@@ -445,35 +507,52 @@ class VisualizerEngineTest {
     }
 
     // ---------------------------------------------------------------
-    // 가장자리 띠로 잘라 그리기 (#172, #350): 잘라 낸 곳에 그릴 것이 없어야 한다
+    // 가장자리 띠로 잘라 그리기 (#172, #350, #365): 잘라 낸 곳에 그릴 것이 없어야 한다
     // ---------------------------------------------------------------
 
+    /**
+     * [band] 를 잴 때 짚은 점([samples])이 저마다 맡긴 변의 띠 안인지 본다. 점마다 [margin] 만큼 더 번지는 몫까지 띠 안이어야 한다.
+     * 띠 네 개를 합친 곳은 "어느 한 변에서 그 변의 두께 안"인 점 전체와 같으므로, 맡긴 변의 띠 안이면 잘리지 않는다.
+     * 맡긴 변에서 잰 깊이는 엔진이 그 변의 경계로 잡은 값 이하여야 한다(볼록 껍질). 차이는 부동소수 오차만 둔다.
+     */
+    private fun assertInSideBands(where: String, band: VisualizerEngine.DebugBand, samples: SideSamples, margin: Float) {
+        for (side in 0 until 4) {
+            val deepest = samples.deepest[side]
+            if (deepest < 0f) continue // 이 변에 맡긴 점이 없다.
+            val name = SIDE_NAMES[side]
+            assertTrue(
+                "$where: $name 변에 맡긴 도형이 ${deepest}px 들어왔는데 그 변의 경계는 ${band.bound[side]}px",
+                deepest <= band.bound[side] + 0.01f
+            )
+            if (!band.clipped) continue
+            assertTrue(
+                "$where: $name 변에 맡긴 도형이 ${deepest}px 들어오고 ${margin}px 더 번지는데 그 변의 띠는 ${band.thickness[side]}px",
+                deepest + margin <= band.thickness[side] + 0.01f
+            )
+        }
+    }
+
     @Test
-    fun `파도와 외곽선 곡선은 잘라 그릴 가장자리 띠 밖으로 나가지 않는다`() {
+    fun `파도와 외곽선 곡선은 조각을 맡긴 변의 띠 밖으로 나가지 않는다`() {
         // 화면 방향·크기·발광·소리를 바꿔 가며, 그릴 때와 같은 곡선을 점 사이까지 촘촘히 짚는다.
-        // 띠를 좁게 잡으면 파도 안쪽이나 둥근 모서리가 잘려 보인다.
+        // 띠를 좁게 잡으면 파도 안쪽이나 둥근 모서리가 잘려 보인다. 띠는 변마다 두께가 달라서(#365), 점마다 그 조각을 맡긴 변의 띠를 본다.
         val sounds = bandSounds(java.util.Random(172))
         var checked = 0
-        for ((width, height) in BAND_SURFACES) for (mode in listOf(VisualMode.Wave, VisualMode.Outline))
+        for (surface in BAND_SURFACES) for (mode in listOf(VisualMode.Wave, VisualMode.Outline))
             for (intensity in listOf(10f, 50f, 100f)) for (glow in listOf(false, true)) for (sound in sounds) {
-                val settings = bandSettings(intensity, glow)
-                val band = engineAfter(sound, mode, settings, width, height).debugWaveBand(samplesPerSegment = 16)
-                val where = "$mode ${width.toInt()}x${height.toInt()} 크기 $intensity 발광 $glow ${sound.name}"
-                // 조절점으로 잰 깊이는 곡선이 실제로 들어온 깊이 이상이다(볼록 껍질). 차이는 부동소수 오차만 둔다.
-                assertTrue(
-                    "$where: 곡선이 ${band.deepestSample}px 들어왔는데 조절점으로 잰 깊이는 ${band.bound}px",
-                    band.deepestSample <= band.bound + 0.01f
-                )
-                if (band.thickness < 0f) continue // 띠가 화면 짧은 변의 절반에 닿아 자르지 않고 그린다.
-                if (band.deepestSample > 0f) checked++
-                // 안티앨리어싱으로 번지는 1px 까지 띠 안에 있어야 한다. 외곽선은 선이 곡선 양쪽으로 두께의 절반씩 나간다.
-                val halfStroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_PX / 2f else 0f
-                assertTrue(
-                    "$where: 곡선이 ${band.deepestSample}px 들어왔는데 띠는 ${band.thickness}px",
-                    band.deepestSample + halfStroke + 1f <= band.thickness
-                )
+                val (width, height, density) = surface
+                val engine = engineAfter(sound, mode, bandSettings(intensity, glow), width, height, density)
+                val samples = SideSamples(width, height)
+                val band = engine.debugWaveBand(samplesPerSegment = 16, onSample = samples::add)
+                if (band.clipped && band.deepestSample > 0f) checked++
+                // 안티앨리어싱으로 번지는 1px 까지 띠 안에 있어야 한다. 외곽선은 선이 곡선 양쪽으로 두께의 절반씩 나가고,
+                // 발광은 블러가 번지는 폭만큼 더 나간다.
+                val halfStroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_DP * density / 2f else 0f
+                val glowSpread = if (glow) VisualizerEngine.glowSpread(glowRadiusPx(BAND_GLOW_INTENSITY, density)) else 0f
+                val where = "$mode $surface 크기 $intensity 발광 $glow ${sound.name}"
+                assertInSideBands(where, band, samples, margin = 1f + halfStroke + glowSpread)
             }
-        assertTrue("잘라 그린 파도가 거의 없어 확인한 것이 적다 ($checked)", checked > 550)
+        assertTrue("잘라 그린 파도가 거의 없어 확인한 것이 적다 ($checked)", checked > 1100)
     }
 
     @Test
@@ -488,44 +567,38 @@ class VisualizerEngineTest {
             BandSound("가운데 작게", 300) { 0.05f to 0.05f } to 10f
         )
         for ((sound, intensity) in cases) {
+            val samples = SideSamples(W, H)
             val band = engineAfter(sound, VisualMode.Wave, bandSettings(intensity, glow = false), W, H)
-                .debugWaveBand(samplesPerSegment = 16)
+                .debugWaveBand(samplesPerSegment = 16, onSample = samples::add)
             val pointsOnly = ceil(band.deepestPoint + 1f)
             assertTrue(
                 "${sound.name}: 곡선(${band.deepestSample}px)이 점으로만 잰 띠(${pointsOnly}px) 안에 든다",
                 band.deepestSample + 1f > pointsOnly
             )
-            assertTrue(
-                "${sound.name}: 곡선(${band.deepestSample}px)이 조절점으로 잰 띠(${band.thickness}px) 밖으로 나간다",
-                band.deepestSample + 1f <= band.thickness
-            )
+            assertTrue("${sound.name}: 자르지 않고 그린다", band.clipped)
+            assertInSideBands(sound.name, band, samples, margin = 1f)
         }
     }
 
     @Test
-    fun `패드 막대는 잘라 그릴 가장자리 띠 밖으로 나가지 않는다`() {
-        // 막대는 직선이고 안쪽 점은 그 막대의 두께만큼만 들어오므로, 가장 두꺼운 막대에 안티앨리어싱 1px 만 더한 띠면 된다.
-        // 막대 둘레를 변마다 짚어, 모서리를 가로질러 더 깊이 들어오는 선이 없는지도 본다.
+    fun `패드 막대는 놓인 변의 띠 밖으로 나가지 않는다`() {
+        // 막대는 직선이고 안쪽 점은 그 막대의 두께만큼만 들어오므로, 막대가 놓인 변의 띠는 그 변의 가장 두꺼운 막대에
+        // 안티앨리어싱 1px 만 더하면 된다(#365). 모서리 막대는 앞 절반과 뒤 절반이 이웃한 두 변에 놓인다.
+        // 막대 둘레를 선마다 짚어, 모서리를 가로질러 더 깊이 들어오는 선이 없는지도 본다.
         val sounds = bandSounds(java.util.Random(173))
         var checked = 0
-        for ((width, height) in BAND_SURFACES) for (intensity in listOf(10f, 50f, 100f))
+        for (surface in BAND_SURFACES) for (intensity in listOf(10f, 50f, 100f))
             for (glow in listOf(false, true)) for (sound in sounds) {
-                val band = engineAfter(sound, VisualMode.Pad, bandSettings(intensity, glow), width, height)
-                    .debugPadBand(samplesPerEdge = 8)
+                val (width, height, density) = surface
+                val engine = engineAfter(sound, VisualMode.Pad, bandSettings(intensity, glow), width, height, density)
+                val samples = SideSamples(width, height)
+                val band = engine.debugPadBand(samplesPerEdge = 8, onSample = samples::add)
                 if (band.deepestPoint <= 0f) continue // 보이는 막대가 없다.
-                val where = "${width.toInt()}x${height.toInt()} 크기 $intensity 발광 $glow ${sound.name}"
-                assertTrue(
-                    "$where: 막대가 ${band.deepestSample}px 들어왔는데 가장 두꺼운 막대는 ${band.bound}px",
-                    band.deepestSample <= band.bound + 0.01f
-                )
-                if (band.thickness < 0f) continue
-                checked++
-                assertTrue(
-                    "$where: 막대가 ${band.deepestSample}px 들어왔는데 띠는 ${band.thickness}px",
-                    band.deepestSample + 1f <= band.thickness
-                )
+                if (band.clipped) checked++
+                val glowSpread = if (glow) VisualizerEngine.glowSpread(glowRadiusPx(BAND_GLOW_INTENSITY, density)) else 0f
+                assertInSideBands("$surface 크기 $intensity 발광 $glow ${sound.name}", band, samples, margin = 1f + glowSpread)
             }
-        assertTrue("잘라 그린 패드가 거의 없어 확인한 것이 적다 ($checked)", checked > 300)
+        assertTrue("잘라 그린 패드가 거의 없어 확인한 것이 적다 ($checked)", checked > 600)
     }
 
     @Test
@@ -544,7 +617,7 @@ class VisualizerEngineTest {
             "모서리를 가로지르는 선(${band.deepestSample}px)이 막대 두께(${band.deepestPoint}px)보다 깊지 않다",
             band.deepestSample > band.deepestPoint + 1f
         )
-        assertEquals("자르지 않고 그려야 한다", -1f, band.thickness)
+        assertFalse("자르지 않고 그려야 한다 (${band.thickness.toList()})", band.clipped)
     }
 
     @Test
@@ -583,23 +656,106 @@ class VisualizerEngineTest {
         val reach = blurKernelReach(1f + 0.5f)
         val sounds = bandSounds(java.util.Random(350), randomCount = 5)
         var checked = 0
-        for ((width, height) in BAND_SURFACES) for (mode in listOf(VisualMode.Wave, VisualMode.Outline, VisualMode.Pad))
-            for (sound in sounds) {
+        for (surface in BAND_SURFACES.filter { it.density == 1f })
+            for (mode in listOf(VisualMode.Wave, VisualMode.Outline, VisualMode.Pad)) for (sound in sounds) {
+                val (width, height) = surface
                 val engine = engineAfter(sound, mode, settings, width, height)
-                val band = if (mode == VisualMode.Pad) engine.debugPadBand(samplesPerEdge = 8)
-                else engine.debugWaveBand(samplesPerSegment = 16)
-                if (band.thickness < 0f || band.deepestSample <= 0f) continue // 자르지 않거나 보이는 도형이 없다.
+                val samples = SideSamples(width, height)
+                val band = if (mode == VisualMode.Pad) engine.debugPadBand(samplesPerEdge = 8, onSample = samples::add)
+                else engine.debugWaveBand(samplesPerSegment = 16, onSample = samples::add)
+                if (!band.clipped || band.deepestSample <= 0f) continue // 자르지 않거나 보이는 도형이 없다.
                 checked++
-                // 도형 끝이 걸친 픽셀(안티앨리어싱 1px)에서 커널이 닿는 곳까지 띠 안이어야 한다. 외곽선은 선 두께의 절반이 더 나간다.
-                // 0.01px 은 점 사이를 짚을 때의 부동소수 오차 몫이다.
-                val halfStroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_PX / 2f else 0f
-                val where = "$mode ${width.toInt()}x${height.toInt()} ${sound.name}"
+                // 도형 끝이 걸친 픽셀(안티앨리어싱 1px)에서 커널이 닿는 곳까지, 도형을 맡긴 변의 띠 안이어야 한다.
+                // 외곽선은 선 두께의 절반이 더 나간다.
+                val halfStroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_DP / 2f else 0f
+                assertInSideBands("$mode $surface ${sound.name}", band, samples, margin = halfStroke + 1f + reach)
+            }
+        assertTrue("잘라 그린 경우가 적어 확인한 것이 적다 ($checked)", checked > 70)
+    }
+
+    @Test
+    fun `소리가 한쪽에서만 크면 조용한 변의 띠가 얇아져 띠 넓이가 한 두께로 그릴 때보다 준다`() {
+        // #365 전에는 네 띠가 가장 깊은 변의 두께 하나를 썼다. 그 두께로 돌아가면 조용한 변도 깊은 변만큼 두꺼워져 여기서 실패한다.
+        // 흔한 폰 화면에서 띠 네 개의 넓이, 곧 매 프레임 래스터화하는 마스크의 크기를 한 두께로 그릴 때와 견준다.
+        // 기준은 잰 값보다 넉넉히 낮게 잡았다. 세로 화면에서 파도는 왼쪽만 41%, 왼쪽으로 치우침 29%, 뒤쪽만 80% 줄었다.
+        class Case(val sound: BandSound, val quiet: Int, val loud: Int, val minSaving: Float)
+        val cases = listOf(
+            Case(BandSound("왼쪽만", 300) { 0.3f to 0f }, VisualizerEngine.SIDE_RIGHT, VisualizerEngine.SIDE_LEFT, 0.2f),
+            Case(BandSound("오른쪽만", 300) { 0f to 0.3f }, VisualizerEngine.SIDE_LEFT, VisualizerEngine.SIDE_RIGHT, 0.2f),
+            Case(BandSound("왼쪽으로 치우침", 300) { 0.3f to 0.1f }, VisualizerEngine.SIDE_RIGHT, VisualizerEngine.SIDE_LEFT, 0.1f),
+            Case(BandSound("뒤쪽만", 303) { f -> if (f < 300) 0.4f to 0.4f else 0f to 0f }, VisualizerEngine.SIDE_TOP, VisualizerEngine.SIDE_BOTTOM, 0.4f)
+        )
+        for (surface in BAND_SURFACES.filter { it.density > 1f }) for (mode in listOf(VisualMode.Wave, VisualMode.Outline, VisualMode.Pad))
+            for (case in cases) {
+                val (width, height, density) = surface
+                val engine = engineAfter(case.sound, mode, bandSettings(intensity = 50f, glow = false), width, height, density)
+                val band = if (mode == VisualMode.Pad) engine.debugPadBand(samplesPerEdge = 1) else engine.debugWaveBand(samplesPerSegment = 1)
+                val where = "$mode $surface ${case.sound.name} (위·오른쪽·아래·왼쪽 ${band.thickness.toList()})"
+                assertTrue("$where: 자르지 않고 그린다", band.clipped)
                 assertTrue(
-                    "$where: 도형이 ${band.deepestSample}px 들어오고 발광이 ${reach}px 더 번지는데 띠는 ${band.thickness}px",
-                    band.deepestSample + halfStroke + 1f + reach <= band.thickness + 0.01f
+                    "$where: 조용한 ${SIDE_NAMES[case.quiet]} 띠가 ${SIDE_NAMES[case.loud]} 띠보다 얇지 않다",
+                    band.thickness[case.quiet] < band.thickness[case.loud]
+                )
+                val saving = 1f - bandArea(band.thickness, width, height) / sharedBandArea(band.thickness, width, height)
+                assertTrue(
+                    "$where: 띠 넓이가 한 두께로 그릴 때보다 ${"%.1f".format(saving * 100f)}% 줄었다 (기준 ${case.minSaving * 100f}%)",
+                    saving >= case.minSaving
                 )
             }
-        assertTrue("잘라 그린 경우가 적어 확인한 것이 적다 ($checked)", checked > 60)
+    }
+
+    @Test
+    fun `소리가 없는 모서리를 가로지르는 조각은 조용한 변의 띠를 두껍게 하지 않는다`() {
+        // 뒤쪽만 들리면 위·왼쪽·오른쪽 변의 깊이는 0 이고, 네 모서리에서는 모서리 양쪽 변의 파도 점을 잇는 조각만 모서리를
+        // 가로질러 들어온다. 그 조각의 껍질은 두 변 쪽으로 모두 걸치고, 모서리에서 가까운 점이 놓인 변 쪽으로 얕다.
+        // - 1080×2400 은 네 모서리 모두 왼쪽·오른쪽 변의 점이 모서리에서 16.8px, 위·아래 변의 점이 29.6px 떨어져 있어,
+        //   모서리 조각의 껍질은 위·아래 변에 붙는다(16.8px). 이 조각을 시작점이 놓인 변이나 껍질이 먼 변에 맡기면
+        //   조용한 왼쪽·오른쪽 띠가 31px 로 두꺼워진다.
+        // - 1080×1920 은 모서리마다 양쪽 점이 똑같이 20px 떨어져, 껍질이 두 변에 똑같이 붙는다. 껍질만 보고 맡기면 아래 오른쪽
+        //   모서리 조각이 오른쪽에 가서 조용한 오른쪽 띠가 21px 이 된다. 아래 띠가 이미 덮으므로 그쪽에 맡겨야 한다.
+        // 어느 쪽에 맡기든 그 변에서 잰 껍질 값을 쓰면 경계는 맞다. 그래서 띠 안인지와 함께 띠 두께도 본다.
+        val rearOnly = BandSound("뒤쪽만", 303) { f -> if (f < 300) 0.4f to 0.4f else 0f to 0f }
+        val surfaces = BAND_SURFACES.filter { it.density > 1f } + BandSurface(W, H, DENSITY)
+        for (surface in surfaces) for (mode in listOf(VisualMode.Wave, VisualMode.Outline)) {
+            val (width, height, density) = surface
+            val engine = engineAfter(rearOnly, mode, bandSettings(intensity = 50f, glow = false), width, height, density)
+            val samples = SideSamples(width, height)
+            val band = engine.debugWaveBand(samplesPerSegment = 16, onSample = samples::add)
+            val stroke = if (mode == VisualMode.Outline) OUTLINE_STROKE_DP * density else 0f
+            val where = "$mode $surface (위·오른쪽·아래·왼쪽 ${band.thickness.toList()})"
+            assertTrue("$where: 자르지 않고 그린다", band.clipped)
+            assertInSideBands(where, band, samples, margin = 1f + stroke / 2f)
+            // 깊이가 0 인 변에는 안티앨리어싱 1px 과 선 두께만 남는다.
+            val quiet = ceil(1f + stroke)
+            assertEquals("$where: 조용한 왼쪽 띠", quiet, band.thickness[VisualizerEngine.SIDE_LEFT])
+            assertEquals("$where: 조용한 오른쪽 띠", quiet, band.thickness[VisualizerEngine.SIDE_RIGHT])
+            // 위 띠에는 모서리 조각만 든다. 껍질이 붙은 쪽은 모서리에서 가까운 점이 놓인 변이라 점 간격(둘레의 1/150)의 절반을
+            // 넘지 않는다. 1px 은 간격이 정수로 떨어질 때의 부동소수 오차 몫이다.
+            val halfSpacing = (width + height) / 150f
+            assertTrue(
+                "$where: 위 띠가 모서리 조각의 가까운 쪽(점 간격의 절반 ${halfSpacing}px)보다 두껍다",
+                band.thickness[VisualizerEngine.SIDE_TOP] <= halfSpacing + 1f + stroke + 1f
+            )
+        }
+    }
+
+    @Test
+    fun `패드는 막대가 하나도 놓이지 않은 변을 자르지도 그리지도 않는다`() {
+        // 왼쪽만 들리면 오른쪽 위·오른쪽 가운데·오른쪽 아래 막대가 모두 보이지 않는다. 그 변은 띠 두께가 0 이라 건너뛴다(#365).
+        // 예전에는 그 변도 가장 두꺼운 막대의 두께로 그렸고, 발광을 켜면 번지는 폭까지 더했다.
+        // 모서리 막대는 이웃한 두 변에 모두 들어가므로, 왼쪽 위·왼쪽 아래 막대가 있는 위·아래 변은 그린다.
+        val leftOnly = BandSound("왼쪽만", 300) { 0.3f to 0f }
+        for (surface in BAND_SURFACES) for (glow in listOf(false, true)) {
+            val (width, height, density) = surface
+            val band = engineAfter(leftOnly, VisualMode.Pad, bandSettings(intensity = 50f, glow), width, height, density)
+                .debugPadBand(samplesPerEdge = 1)
+            val where = "$surface 발광 $glow (위·오른쪽·아래·왼쪽 ${band.thickness.toList()})"
+            assertTrue("$where: 자르지 않고 그린다", band.clipped)
+            assertEquals("$where: 막대가 없는 오른쪽 변을 그린다", 0f, band.thickness[VisualizerEngine.SIDE_RIGHT])
+            for (side in listOf(VisualizerEngine.SIDE_TOP, VisualizerEngine.SIDE_BOTTOM, VisualizerEngine.SIDE_LEFT)) {
+                assertTrue("$where: 막대가 놓인 ${SIDE_NAMES[side]} 변을 그리지 않는다", band.thickness[side] > 0f)
+            }
+        }
     }
 
     // ---------------------------------------------------------------
