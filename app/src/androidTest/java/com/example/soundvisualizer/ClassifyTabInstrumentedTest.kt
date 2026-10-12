@@ -27,6 +27,8 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
@@ -118,6 +120,7 @@ class ClassifyTabInstrumentedTest {
         rule.onNode(hasSetTextAction()).performTextClearance()
         rule.onNode(hasSetTextAction()).performTextInput(text)
         rule.onNode(hasSetTextAction()).performImeAction()
+        waitForKeyboardHidden()
         rule.waitForIdle()
     }
 
@@ -125,7 +128,24 @@ class ClassifyTabInstrumentedTest {
     private fun clearSearch() {
         rule.onNode(hasSetTextAction()).performTextClearance()
         rule.onNode(hasSetTextAction()).performImeAction()
+        waitForKeyboardHidden()
         rule.waitForIdle()
+    }
+
+    /**
+     * 자판이 다 내려갈 때까지 기다린다. 찾는 말을 치면 탭이 찾기 칸을 맨 위로 올리지만, LauncherApp 이 화면 전체에 준
+     * safeDrawingPadding 에는 자판 높이도 들어 있어 자판이 내려가는 동안은 목록이 짧다. waitForIdle 은 자판을 기다리지
+     * 않아서, 작은 화면(CI 320×640)에서는 그 아래 찾은 줄이 아직 만들어지지 않아 바로 누르거나 확인하면 가끔 실패했다.
+     */
+    private fun waitForKeyboardHidden() {
+        rule.waitUntil(timeoutMillis = 5_000) {
+            var shown = true
+            rule.runOnUiThread {
+                shown = ViewCompat.getRootWindowInsets(rule.activity.window.decorView)
+                    ?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            }
+            !shown
+        }
     }
 
     private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
@@ -256,7 +276,9 @@ class ClassifyTabInstrumentedTest {
         search(label)
 
         // 줄 전체가 드롭다운이다. 누르면 종류 목록이 창으로 뜬다.
-        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, label, danger)).performClick()
+        val row = hasContentDescription(string(R.string.cd_classify_sound, label, danger))
+        scrollTo(row)
+        rule.onNode(row).performClick()
         rule.onNode(hasText(string(R.string.classify_type_default, danger)) and hasAnyAncestor(isPopup())).assertExists()
         rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
         rule.waitForIdle()
@@ -302,8 +324,8 @@ class ClassifyTabInstrumentedTest {
         rule.onNode(hasText(danger) and isSelectable()).performClick()
 
         search(doorbellLabel)
-        // 작은 화면에서는 거르기 칸까지 민 자리에서 결과 줄이 화면 밖에 남을 수 있다. 화면 밖 줄은 목록이 미리 만들어
-        // 두었을 때만 트리에 있어서, 밀지 않으면 이 확인이 가끔 실패했다. 그 줄까지 민다.
+        // 찾은 줄은 화면 밖에 있으면 목록이 미리 만들어 두었을 때만 트리에 있다. search() 가 자판을 기다려도 작은 화면에서는
+        // 화면 밖일 수 있어 그 줄까지 민다.
         val doorbellRow = hasContentDescription(string(R.string.cd_classify_sound_changed, doorbellLabel, danger, ambient))
         scrollTo(doorbellRow)
         rule.onNode(doorbellRow).assertExists()
@@ -334,7 +356,9 @@ class ClassifyTabInstrumentedTest {
         openTab()
         toggleAdvanced()
         search(label)
-        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, label, danger)).performClick()
+        val row = hasContentDescription(string(R.string.cd_classify_sound, label, danger))
+        scrollTo(row)
+        rule.onNode(row).performClick()
         rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
         rule.waitForIdle()
         assertEquals(mapOf(siren.name to AiClassification.AMBIENT), SettingsManager.soundTypes.value)

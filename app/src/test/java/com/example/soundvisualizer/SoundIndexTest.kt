@@ -18,7 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 
 /**
- * 분류 탭의 색인(#368). 앱 언어마다 한 번 만들어 두고, 찾는 결과는 탭이 그릴 때마다 만들던 때와 같아야 한다.
+ * 분류 탭의 색인(#368). 지금 앱 언어로 한 번 만들어 두고(앱 언어 하나의 것만 둔다), 찾는 결과는 탭이 그릴 때마다
+ * 만들던 때와 같아야 한다.
  *
  * 색인은 프로세스에 하나라 테스트마다 다른 언어 키를 쓴다. 키는 앱에서는 LocaleList.toLanguageTags() 의 값이다.
  * 리소스 대신 실제 문구 파일(values, values-ko)을 읽어 앱처럼 풀어 넘긴다.
@@ -161,7 +162,8 @@ class SoundIndexTest {
                 SoundCatalog.index(key) {
                     builds.incrementAndGet()
                     started.countDown()
-                    release.await()
+                    // 기다림이 실패해도 테스트가 멈추지 않게 끝을 둔다.
+                    release.await(30, TimeUnit.SECONDS)
                     build(key, "values-ko")
                 }
             }
@@ -172,15 +174,21 @@ class SoundIndexTest {
 
         // 곧 탭이 다시 만들어져 색인을 찾는다. 앞의 것이 끝나기를 기다려야 한다(따로 만들기 시작하면 안 된다).
         var second: SoundIndex? = null
-        val waiter = thread { second = SoundCatalog.index(key) { builds.incrementAndGet(); build(key, "values-ko") } }
-        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
-        while (waiter.state != Thread.State.BLOCKED && builds.get() < 2) {
-            assertTrue("뒤의 탭이 색인을 찾으러 오지 않았다", System.nanoTime() < deadline)
-            Thread.sleep(1)
+        val waiter = thread(isDaemon = true) {
+            second = SoundCatalog.index(key) { builds.incrementAndGet(); build(key, "values-ko") }
         }
-        release.countDown()
+        // 확인이 실패해도 앞의 것을 풀어 준다. 풀지 않으면 앞의 것이 자물쇠를 쥔 채 남아 runBlocking 이 끝나지 않는다.
+        try {
+            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+            while (waiter.state != Thread.State.BLOCKED && builds.get() < 2) {
+                assertTrue("뒤의 탭이 색인을 찾으러 오지 않았다", System.nanoTime() < deadline)
+                Thread.sleep(1)
+            }
+        } finally {
+            release.countDown()
+        }
         first.join()
-        waiter.join()
+        waiter.join(TimeUnit.SECONDS.toMillis(30))
 
         assertTrue(first.isCancelled)
         val cached = SoundCatalog.cachedIndexOrNull(key)
