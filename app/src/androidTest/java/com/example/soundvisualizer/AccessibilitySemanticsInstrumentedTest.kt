@@ -1,5 +1,7 @@
 package com.example.soundvisualizer
 
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -7,12 +9,15 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertWidthIsAtLeast
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -23,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -31,6 +37,7 @@ import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import java.util.Locale
+import kotlin.math.abs
 
 /**
  * 화면 읽어주기가 기대는 표시가 빠지지 않는지 본다(#300). 기기 언어와 상관없이 돌도록 글자는 모두 리소스에서 만든다.
@@ -39,7 +46,8 @@ import java.util.Locale
  * - 슬라이더는 화면에 보이는 숫자 그대로 읽힌다. 범위가 0부터가 아니면 기본 읽기(범위 안의 퍼센트)가 화면과 다르다.
  * - 홈의 상태 줄은 바뀌면 읽어 주는 영역(live region)이다.
  * - 분류 탭(#349)의 탭 제목, 구역 머리, 고급 모드의 묶음 머리는 제목이고, 묶음 카드는 한 덩어리로 읽는 48dp 이상의 드롭다운
- *   목록이며, 고급 모드 스위치는 줄 전체가 스위치다. 확인 창의 단추는 하는 일을 이름으로 읽는다.
+ *   목록이며, 고급 모드 스위치는 줄 전체가 스위치다. 거르기 칸은 48dp 이상의 라디오 단추다. 확인 창의 단추는 하는 일을
+ *   이름으로 읽는다.
  */
 @RunWith(AndroidJUnit4::class)
 class AccessibilitySemanticsInstrumentedTest {
@@ -200,6 +208,50 @@ class AccessibilitySemanticsInstrumentedTest {
         val advanced = hasText(string(R.string.classify_advanced)) and isToggleable()
         rule.onNode(classifyList).performScrollToNode(advanced)
         rule.onNode(advanced).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+    }
+
+    @Test
+    fun classifyFilterChipsAreRadioButtonsAtLeast48dp() {
+        // 거르기 칸은 보이는 칸(글자 한 줄과 위아래 8dp)이 48dp 보다 낮아 누르는 칸이 작았다(#374). 보이는 크기는 그대로 두고
+        // 누르는 칸만 48dp 이상이다. 레이아웃의 크기를 잰다. 누름 판정의 크기(touchBoundsInRoot)는 Compose 가 작은 칸도
+        // 48dp 로 넓혀 알려 주므로 고치기 전에도 48dp 라 이 확인에 쓰지 않는다. 라디오 단추로 읽히는 것도 이 48dp 칸이다.
+        openTab(R.string.tab_classify)
+        val labels = listOf(
+            R.string.classify_filter_all,
+            R.string.sound_type_ambient,
+            R.string.sound_type_speech,
+            R.string.sound_type_danger,
+            R.string.classify_filter_changed
+        )
+        for (label in labels) {
+            val chip = hasText(string(label)) and isSelectable()
+            rule.onNode(classifyList).performScrollToNode(chip)
+            rule.onNode(chip)
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+                .assertHeightIsAtLeast(48.dp)
+                .assertWidthIsAtLeast(48.dp)
+        }
+
+        // 보이는 칸은 그대로 글자 한 줄과 위아래 8dp 이고, 누르는 칸 가운데에 있다. 누르는 칸을 찍어 가운데 세로줄을 위와
+        // 아래에서 훑고, 배경색이 아닌 첫 줄을 보이는 칸의 끝으로 본다. 글자의 높이는 글꼴과 기기마다 달라 숫자로 두지 않고
+        // 그 칸의 글자(묶기 전 트리)를 잰다. 같은 글자인 구역 머리와 카드의 종류 버튼은 고를 수 있는 칸 안이 아니라 빠진다.
+        val dangerText = string(R.string.sound_type_danger)
+        val danger = hasText(dangerText) and isSelectable()
+        rule.onNode(classifyList).performScrollToNode(danger)
+        val box = rule.onNode(danger).fetchSemanticsNode().boundsInRoot
+        val text = rule.onAllNodes(hasText(dangerText) and hasAnyAncestor(isSelectable()), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .first { box.contains(it.boundsInRoot.center) }
+        val pixels = rule.onNode(danger).captureToImage().toPixelMap()
+        val background = BgColor.toArgb()
+        val x = pixels.width / 2
+        val top = (0 until pixels.height).first { pixels[x, it].toArgb() != background }
+        val bottom = (pixels.height - 1 downTo 0).first { pixels[x, it].toArgb() != background }
+        assertTrue("보이는 칸이 누르는 칸을 다 채웠다(위 $top, 아래 $bottom)", top > 0 && bottom < pixels.height - 1)
+        assertTrue("보이는 칸이 가운데가 아니다(위 $top, 아래 $bottom)", abs(top - (pixels.height - 1 - bottom)) <= 1)
+        val expected = text.boundsInRoot.height + with(rule.density) { 16.dp.toPx() }
+        assertEquals("보이는 칸의 높이는 글자와 위아래 8dp 다", expected, (bottom - top + 1).toFloat(), 1f)
+        assertNotEquals("보이는 칸의 안", background, pixels[2, pixels.height / 2].toArgb())
     }
 
     @Test

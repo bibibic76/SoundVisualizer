@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Peligro</string>
     <string name="classify_type_default">%1$s (por defecto)</string>
     <string name="classify_changed_from">Por defecto: %1$s</string>
-    <string name="classify_changed_count">Cambiados: %1$d</string>
+    <string name="classify_changed_count">Sonidos cambiados: %1$d</string>
     <string name="classify_reset_all">Restablecer todo</string>
     <string name="classify_reset_title">¿Restablecer todos los sonidos?</string>
     <string name="classify_reset_message">Todos los sonidos que hayas cambiado volverán a su tipo por defecto.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Avisos de vehículos</string>
     <string name="sound_group_breaking">Vidrios rotos y estampidos</string>
     <string name="sound_group_distress">Gritos y llanto</string>
+    <string name="sound_group_talking">Habla y susurros</string>
     <string name="sound_group_signals">Despertadores, pitidos y silbatos</string>
     <string name="sound_group_voices">Aplausos, tarareo y silbidos</string>
     <string name="sound_group_water">Grifos y agua corriente</string>

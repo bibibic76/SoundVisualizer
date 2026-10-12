@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Suoni di pericolo</string>
     <string name="classify_type_default">%1$s (predefinito)</string>
     <string name="classify_changed_from">Predefinito: %1$s</string>
-    <string name="classify_changed_count">Modificati: %1$d</string>
+    <string name="classify_changed_count">Suoni modificati: %1$d</string>
     <string name="classify_reset_all">Ripristina tutto</string>
     <string name="classify_reset_title">Ripristinare tutti i suoni?</string>
     <string name="classify_reset_message">Tutti i suoni che hai modificato torneranno al loro tipo predefinito.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Segnali di avviso dei veicoli</string>
     <string name="sound_group_breaking">Vetri rotti e schianti</string>
     <string name="sound_group_distress">Grida, strilli e pianto</string>
+    <string name="sound_group_talking">Parlato e sussurri</string>
     <string name="sound_group_signals">Sveglie, bip e fischietti</string>
     <string name="sound_group_voices">Applausi, canticchiare e fischiettare</string>
     <string name="sound_group_water">Rubinetti e acqua corrente</string>

@@ -113,9 +113,9 @@ class SoundGroupTableTest {
             }
         }
         assertEquals(
-            "새로 지은 묶음 이름은 14개다. 나머지는 이미 번역된 소리 이름을 쓴다",
+            "새로 지은 묶음 이름은 15개다. 나머지는 이미 번역된 소리 이름을 쓴다",
             setOf(
-                SoundGroup.HORNS, SoundGroup.VEHICLE_WARNINGS, SoundGroup.BREAKING, SoundGroup.DISTRESS,
+                SoundGroup.HORNS, SoundGroup.VEHICLE_WARNINGS, SoundGroup.BREAKING, SoundGroup.DISTRESS, SoundGroup.TALKING,
                 SoundGroup.SIGNALS, SoundGroup.VOICES, SoundGroup.WATER, SoundGroup.KITCHEN, SoundGroup.APPLIANCES,
                 SoundGroup.TOOLS, SoundGroup.NATURE, SoundGroup.BODY, SoundGroup.OBJECTS, SoundGroup.BACKGROUND
             ),

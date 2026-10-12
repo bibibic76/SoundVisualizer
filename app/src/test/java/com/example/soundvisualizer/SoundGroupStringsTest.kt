@@ -17,7 +17,8 @@ import javax.xml.parsers.DocumentBuilderFactory
  *
  * 문구의 뜻도 몇 가지 본다. 도움말의 초인종 예시는 모든 언어에서 '투표에만 들어간다' 는 단서를 붙이고(결정 6),
  * 영어의 덮어쓰기 안내는 수가 하나일 때도 어색하지 않다. 묶음 이름은 다른 묶음의 이름이나 다른 묶음에 든 소리의
- * 이름과 같지 않다(#349 의 번역 규칙, #370).
+ * 이름과 같지 않다(#349 의 번역 규칙, #370). 묶음 이름은 구역 머리(종류 이름)와도, 새로 지은 이름이면 제 묶음에 든
+ * 소리의 이름과도 같지 않다(#374). "바꾼 소리" 수는 무엇을 세는지(소리) 적는다(#374).
  *
  * 유닛 테스트는 app 모듈 폴더에서 돈다.
  */
@@ -139,6 +140,55 @@ class SoundGroupStringsTest {
         assertTrue("묶음 이름이 겹친다:\n${problems.joinToString("\n")}", problems.isEmpty())
     }
 
+    @Test
+    fun `묶음 이름은 구역 머리인 종류 이름과 같지 않다`() {
+        // 묶음은 기본 종류의 구역 머리 밑에 보인다. 같은 낱말이면 머리 밑에 같은 이름이 한 번 더 보여 무엇이 구역이고 무엇이
+        // 묶음인지 가릴 수 없다. 말소리 묶음이 소리 이름 'Speech' 를 쓰던 때 영어 등 6개 언어가 그랬다(#374).
+        val english = strings.getValue("values")
+        val names = SoundGroupFixtures.names
+        val problems = dirs.flatMap { dir ->
+            val texts = strings.getValue(dir)
+            fun text(key: String) = texts[key] ?: english.getValue(key)
+            val headings = SECTION_KEYS.map { text(it) }.associateBy { SoundCatalog.normalize(it) }
+            SoundGroup.entries.mapNotNull { group ->
+                val title = group.titleSound?.let { text("sound_name_${names.indexOf(it)}") } ?: text("sound_group_${group.id}")
+                headings[SoundCatalog.normalize(title)]?.let { "$dir: $group 의 이름 \"$title\" 이 구역 머리 \"$it\" 와 같다" }
+            }
+        }
+        assertTrue("묶음 이름이 구역 머리와 같다:\n${problems.joinToString("\n")}", problems.isEmpty())
+    }
+
+    @Test
+    fun `새로 지은 묶음 이름은 제 묶음에 든 소리의 이름과 같지 않다`() {
+        // 새로 지은 이름이 제 소리 하나의 이름과 같으면 그 소리 이름을 묶음 이름으로 쓴 것과 다르지 않다(#374). 다른 묶음의
+        // 소리와 겹치는지는 위의 테스트가 본다.
+        val english = strings.getValue("values")
+        val names = SoundGroupFixtures.names
+        val problems = dirs.flatMap { dir ->
+            val texts = strings.getValue(dir)
+            fun text(key: String) = texts[key] ?: english.getValue(key)
+            SoundGroup.entries.filter { it.titleRes != 0 }.flatMap { group ->
+                val title = text("sound_group_${group.id}")
+                SoundGroupFixtures.members(group)
+                    .filter { SoundCatalog.normalize(text("sound_name_${names.indexOf(it)}")) == SoundCatalog.normalize(title) }
+                    .map { "$dir: $group 의 이름 \"$title\" 이 제 소리 $it 의 이름이다" }
+            }
+        }
+        assertTrue("묶음 이름이 제 소리 이름과 같다:\n${problems.joinToString("\n")}", problems.isEmpty())
+    }
+
+    @Test
+    fun `바꾼 수는 소리를 센다고 적는다`() {
+        // "Changed: 3" 만으로는 소리를 세는지 묶음을 세는지 알 수 없다(#374). 수는 소리를 센다(묶음 하나를 바꾸면 그 소리 수만큼
+        // 는다). 언어마다 그 말('소리')이 있는지 본다.
+        val problems = dirs.mapNotNull { dir ->
+            val count = strings.getValue(dir)["classify_changed_count"] ?: return@mapNotNull null
+            val word = SOUND_WORDS[dir] ?: return@mapNotNull "$dir: 새 언어는 SOUND_WORDS 에 그 언어의 '소리' 낱말을 넣습니다"
+            if (word.lowercase(Locale.ROOT) in count.lowercase(Locale.ROOT)) null else "$dir: \"$word\" 이 없음"
+        }
+        assertTrue("classify_changed_count 에 무엇을 세는지 적습니다:\n${problems.joinToString("\n")}", problems.isEmpty())
+    }
+
     private companion object {
         val CLASSIFY_PREFIXES = listOf("classify_", "cd_classify_", "sound_group_")
 
@@ -149,6 +199,31 @@ class SoundGroupStringsTest {
 
         /** 안내가 예로 드는 소리: Siren, Alarm. */
         val QUOTED_SOUNDS = listOf("sound_name_390", "sound_name_382")
+
+        /** 구역 머리(종류 이름). */
+        val SECTION_KEYS = listOf("sound_type_ambient", "sound_type_speech", "sound_type_danger")
+
+        /** "바꾼 소리" 수에 쓴 언어마다의 '소리'. 낱말이 꼴을 바꾸는 언어(pl, ru)는 줄기만 둔다. */
+        val SOUND_WORDS = mapOf(
+            "values" to "sounds",
+            "values-ar" to "الأصوات",
+            "values-de" to "Geräusche",
+            "values-es" to "sonidos",
+            "values-fr" to "sons",
+            "values-hi" to "आवाज़ें",
+            "values-in" to "suara",
+            "values-it" to "suoni",
+            "values-ja" to "音",
+            "values-ko" to "소리",
+            "values-pl" to "dźwięk",
+            "values-pt-rBR" to "sons",
+            "values-ru" to "звук",
+            "values-th" to "เสียง",
+            "values-tr" to "ses",
+            "values-vi" to "âm thanh",
+            "values-zh-rCN" to "声音",
+            "values-zh-rTW" to "聲音"
+        )
 
         /** 도움말의 단서에 쓴 언어마다의 '투표'. 낱말이 꼴을 바꾸는 언어(pl, ru)는 줄기만 둔다. */
         val VOTE_WORDS = mapOf(

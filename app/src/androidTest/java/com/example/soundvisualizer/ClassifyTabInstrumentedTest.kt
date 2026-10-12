@@ -376,7 +376,8 @@ class ClassifyTabInstrumentedTest {
     }
 
     @Test
-    fun pickingATypeOnAMixedGroupAsksBeforeOverwriting() {
+    fun pickingOnAMixedGroupAsksOnlyWhenOneByOneChoicesChange() {
+        // 민방위 사이렌 하나만 환경음으로 바꿔 둔 사이렌 묶음. 묻는 것은 그 소리의 종류가 실제로 바뀔 때뿐이다(#374).
         rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.AMBIENT) }
         val (title, preview) = sirenCard()
         val danger = string(R.string.sound_type_danger)
@@ -387,7 +388,7 @@ class ClassifyTabInstrumentedTest {
         )
         openTab()
 
-        // 대화음을 고르면 다섯 개가 모두 바뀐다고 묻는다. 취소하면 아무것도 바뀌지 않는다.
+        // 대화음을 고르면 하나씩 바꾼 민방위 사이렌도 바뀌므로, 다섯 개가 모두 바뀐다고 묻는다. 취소하면 아무것도 바뀌지 않는다.
         pickOnCard(mixed, speech)
         rule.onNodeWithText(string(R.string.classify_group_overwrite_message, title, sirens.size, speech)).assertExists()
         rule.onNodeWithText(string(R.string.classify_group_overwrite_cancel)).performClick()
@@ -395,11 +396,9 @@ class ClassifyTabInstrumentedTest {
         rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
         assertEquals(mapOf("Civil defense siren" to AiClassification.AMBIENT), SettingsManager.soundTypes.value)
 
-        // 환경음을 고르고 확인하면 나머지 네 개가 바뀌어 다섯 개 모두 환경음이 된다.
+        // 환경음을 고르면 하나씩 바꾼 민방위 사이렌은 그대로라 묻지 않는다. 나머지 네 개가 바뀌어 다섯 개 모두 환경음이 된다.
         pickOnCard(mixed, ambient)
-        rule.onNodeWithText(string(R.string.classify_group_overwrite_message, title, sirens.size - 1, ambient)).assertExists()
-        rule.onNodeWithText(string(R.string.classify_group_overwrite_confirm)).performClick()
-        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
         assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
 
         // 모두 같은 종류가 된 묶음은 묻지 않는다. 기본 종류를 고르면 바로 원래대로다.
@@ -409,6 +408,140 @@ class ClassifyTabInstrumentedTest {
         )
         rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
         assertTrue(SettingsManager.soundTypes.value.isEmpty())
+    }
+
+    @Test
+    fun changedCardStaysUnderTheFilterUntilTheFilterOrSearchChanges() {
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        val dangerChip = hasText(danger) and isSelectable()
+        openTab()
+
+        // 위협음만 보면서 사이렌을 찾는다. 사이렌 묶음 이름이 맞아 묶음 전체가 남고, 미리보기는 찾지 않을 때와 같다.
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        search(sound("Siren").second)
+
+        // 묶음을 환경음으로 바꾸면 위협음 거르기에서 빠지지만, 누른 카드는 그 자리에 바뀐 종류로 남는다(#374).
+        pickOnCard(string(R.string.cd_classify_group, title, danger, sirens.size, preview), ambient)
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
+        assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+        val changed = hasContentDescription(string(R.string.cd_classify_group_changed, title, ambient, danger, sirens.size, preview))
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+
+        // 화면을 다시 만들어도(화면 회전 등) 찾는 말·거르기와 함께 남는다.
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+
+        // 거르기를 바꿨다가 돌아오면 지금 종류로 다시 거른다. 위협음인 사이렌이 없어 빈 결과다.
+        val allChip = hasText(string(R.string.classify_filter_all)) and isSelectable()
+        scrollTo(allChip)
+        rule.onNode(allChip).performClick()
+        rule.waitForIdle()
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        rule.waitForIdle()
+        scrollTo(hasText(string(R.string.classify_empty)))
+        rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
+        rule.onNode(changed).assertDoesNotExist()
+    }
+
+    @Test
+    fun changedRowStaysUnderTheFilterUntilTheSearchChanges() {
+        val (siren, label) = sound("Civil defense siren")
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        val dangerChip = hasText(danger) and isSelectable()
+        rule.runOnUiThread { SettingsManager.setClassifyAdvanced(true) }
+        openTab()
+
+        // 고급 모드에서 위협음만 보면서 소리 하나를 환경음으로 바꾼다. 그 줄은 바뀐 종류로 그 자리에 남는다(#374).
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        search(label)
+        val row = hasContentDescription(string(R.string.cd_classify_sound, label, danger))
+        scrollTo(row)
+        rule.onNode(row).performClick()
+        rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
+        assertEquals(mapOf(siren.name to AiClassification.AMBIENT), SettingsManager.soundTypes.value)
+        val changed = hasContentDescription(string(R.string.cd_classify_sound_changed, label, ambient, danger))
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+
+        // 찾는 말을 바꾸면 지금 종류로 다시 거른다. 같은 말을 다시 넣으면 바뀌지 않은 것으로 보일 수 있어 한 글자를 뺀다.
+        search(label.dropLast(1))
+        rule.onNode(changed).assertDoesNotExist()
+        scrollTo(hasText(string(R.string.classify_empty)))
+        rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
+    }
+
+    @Test
+    fun changedCardStaysUnderTheFilterAfterConfirmingTheOverwrite() {
+        // 민방위 사이렌만 대화음으로 바꿔 둔 사이렌 묶음. 위협음만 보면서 환경음을 고르면 그 소리가 바뀌므로 먼저 묻고,
+        // 확인해도 누른 카드가 그 자리에 남는다(#374).
+        rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.SPEECH) }
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        val dangerChip = hasText(danger) and isSelectable()
+        openTab()
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        rule.waitForIdle()
+
+        // 위협음에 맞는 네 개만 보여도 미리보기는 찾지 않을 때와 같다. 묻는 수는 위협음 넷과 대화음 하나다.
+        val mixed = string(
+            R.string.cd_classify_group_changed, title, string(R.string.classify_type_mixed), danger, sirens.size, preview
+        )
+        pickOnCard(mixed, ambient)
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_message, title, sirens.size, ambient)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_confirm)).performClick()
+        rule.waitForIdle()
+        assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+
+        val changed = hasContentDescription(string(R.string.cd_classify_group_changed, title, ambient, danger, sirens.size, preview))
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+    }
+
+    @Test
+    fun resetAllDropsTheKeptRows() {
+        // "바꾼 소리" 만 보면서 초인종을 위협음에서 대화음으로 바꾸면 그 줄이 남겨진다. 모두 되돌리면 바꾼 소리가 없으니
+        // 남겨 두던 줄도 사라지고 빈 결과다(#374).
+        val (_, label) = sound("Doorbell")
+        val danger = string(R.string.sound_type_danger)
+        val speech = string(R.string.sound_type_speech)
+        val ambient = string(R.string.sound_type_ambient)
+        rule.runOnUiThread {
+            SettingsManager.setSoundType("Doorbell", AiClassification.DANGER)
+            SettingsManager.setClassifyAdvanced(true)
+        }
+        openTab()
+        val changedChip = hasText(string(R.string.classify_filter_changed)) and isSelectable()
+        scrollTo(changedChip)
+        rule.onNode(changedChip).performClick()
+        rule.waitForIdle()
+
+        val row = hasContentDescription(string(R.string.cd_classify_sound_changed, label, danger, ambient))
+        scrollTo(row)
+        rule.onNode(row).performClick()
+        rule.onNode(hasText(speech) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
+        assertEquals(mapOf("Doorbell" to AiClassification.SPEECH), SettingsManager.soundTypes.value)
+
+        scrollTo(hasText(string(R.string.classify_reset_all)))
+        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        rule.onNodeWithText(string(R.string.classify_reset_confirm)).performClick()
+        rule.waitForIdle()
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
+        scrollTo(hasText(string(R.string.classify_empty)))
+        rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
+        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, label, ambient)).assertDoesNotExist()
     }
 
     @Test

@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Tehlike sesi</string>
     <string name="classify_type_default">%1$s (varsayılan)</string>
     <string name="classify_changed_from">Varsayılan: %1$s</string>
-    <string name="classify_changed_count">Değiştirilen: %1$d</string>
+    <string name="classify_changed_count">Değiştirilen sesler: %1$d</string>
     <string name="classify_reset_all">Tümünü sıfırla</string>
     <string name="classify_reset_title">Tüm sesler sıfırlansın mı?</string>
     <string name="classify_reset_message">Değiştirdiğiniz tüm sesler varsayılan türlerine döner.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Araç uyarı sesleri</string>
     <string name="sound_group_breaking">Cam kırılması ve parçalanma</string>
     <string name="sound_group_distress">Bağırma, çığlık ve ağlama</string>
+    <string name="sound_group_talking">Sohbet ve fısıltı</string>
     <string name="sound_group_signals">Çalar saatler, bip sesleri ve düdükler</string>
     <string name="sound_group_voices">Alkış, mırıldanma ve ıslık</string>
     <string name="sound_group_water">Musluklar ve akan su</string>

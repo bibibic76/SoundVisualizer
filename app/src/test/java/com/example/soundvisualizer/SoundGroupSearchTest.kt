@@ -26,8 +26,12 @@ class SoundGroupSearchTest {
     private val koTitles = SoundGroup.entries.filter { it.titleRes != 0 }
         .associateWith { SoundCatalog.searchKey(ko.getValue("sound_group_${it.id}"), "") }
 
-    private fun search(query: String, filter: SoundFilter = SoundFilter.ALL, overrides: Map<String, String> = emptyMap()) =
-        SoundGroups.filter(sections, koKeys, koTitles, overrides, query, filter)
+    private fun search(
+        query: String,
+        filter: SoundFilter = SoundFilter.ALL,
+        overrides: Map<String, String> = emptyMap(),
+        kept: Set<String> = emptySet()
+    ) = SoundGroups.filter(sections, koKeys, koTitles, overrides, query, filter, kept)
 
     private fun entry(name: String) = entries.first { it.name == name }
     private fun names(list: List<SoundEntry>) = list.map { it.name }
@@ -159,6 +163,35 @@ class SoundGroupSearchTest {
         assertEquals(listOf("Doorbell"), names(changed.cardOf(SoundGroup.DOORBELL).shown))
         assertEquals("찾는 말과 함께 쓴다", listOf(SoundGroup.DOORBELL), search("초인종", SoundFilter.CHANGED, overrides).groups())
         assertTrue(search("", SoundFilter.CHANGED).isEmpty())
+    }
+
+    @Test
+    fun `거르기에서 방금 바꾼 소리는 찾는 말이 그대로인 동안 남는다`() {
+        // 위협음만 보다가 사이렌 묶음을 환경음으로 바꾼 것이다(#374). 남기지 않으면 카드가 눈앞에서 사라진다.
+        val sirenNames = SoundGroupFixtures.members(SoundGroup.SIRENS)
+        val allAmbient = sirenNames.associateWith { AiClassification.AMBIENT }
+        assertFalse(SoundGroup.SIRENS in search("", SoundFilter.DANGER, allAmbient).groups())
+        val kept = search("", SoundFilter.DANGER, allAmbient, sirenNames.toSet())
+        assertEquals(kept.cardOf(SoundGroup.SIRENS).card.members, kept.cardOf(SoundGroup.SIRENS).shown)
+
+        // 남긴 소리는 거르기에 맞는 소리와 함께 표 순서로 보인다.
+        val one = search("", SoundFilter.DANGER, mapOf("Siren" to AiClassification.AMBIENT), setOf("Siren"))
+        assertEquals(sirenNames, names(one.cardOf(SoundGroup.SIRENS).shown))
+
+        // 거르기만 넘고 찾는 말은 넘지 않는다.
+        assertFalse(SoundGroup.SIRENS in search("노크", SoundFilter.DANGER, allAmbient, sirenNames.toSet()).groups())
+
+        // "바꾼 소리" 거르기에서 기본 종류로 되돌린 소리도 남는다.
+        val changed = search("", SoundFilter.CHANGED, emptyMap(), setOf("Doorbell"))
+        assertEquals(listOf(SoundGroup.DOORBELL), changed.groups())
+        assertEquals(listOf("Doorbell"), names(changed.cardOf(SoundGroup.DOORBELL).shown))
+
+        // 고급 모드는 그 줄과 그 위의 묶음·구역 머리가 남는다.
+        val rows = SoundGroups.advancedItems(search("", SoundFilter.DANGER, emptyMap(), setOf("Doorbell")))
+        assertEquals(
+            listOf("s:ambient", "g:doorbell:ambient", "r:${entry("Doorbell").index}"),
+            rows.dropWhile { it.key != "s:ambient" }.map { it.key }
+        )
     }
 
     @Test

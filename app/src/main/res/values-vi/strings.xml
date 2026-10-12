@@ -149,7 +149,7 @@
     <string name="sound_type_danger">Âm thanh nguy hiểm</string>
     <string name="classify_type_default">%1$s (mặc định)</string>
     <string name="classify_changed_from">Mặc định: %1$s</string>
-    <string name="classify_changed_count">Đã đổi: %1$d</string>
+    <string name="classify_changed_count">Âm thanh đã đổi: %1$d</string>
     <string name="classify_reset_all">Đặt lại tất cả</string>
     <string name="classify_reset_title">Đặt lại tất cả âm thanh về mặc định?</string>
     <string name="classify_reset_message">Mọi âm thanh bạn đã đổi sẽ trở về loại mặc định.</string>
@@ -176,6 +176,7 @@
     <string name="sound_group_vehicle_warnings">Tín hiệu cảnh báo của xe cộ</string>
     <string name="sound_group_breaking">Kính vỡ và tiếng đổ vỡ</string>
     <string name="sound_group_distress">Tiếng kêu, tiếng thét và tiếng khóc</string>
+    <string name="sound_group_talking">Nói chuyện và thì thầm</string>
     <string name="sound_group_signals">Đồng hồ báo thức, tiếng bíp và tiếng còi</string>
     <string name="sound_group_voices">Vỗ tay, ngân nga và huýt sáo</string>
     <string name="sound_group_water">Vòi nước và nước chảy</string>

@@ -33,7 +33,9 @@ enum class SoundGroup(@StringRes val titleRes: Int = 0, val titleSound: String? 
     CHAINSAW(titleSound = "Chainsaw"),
 
     // 대화음. 사람의 발성(웃음·고함·울음·환호)이 대화음이 된 뒤(#369) 아기 울음은 외침·비명·울음 바로 뒤에 둔다(#370).
-    TALKING(titleSound = "Speech"),
+    // 말소리 묶음은 새로 지은 이름을 쓴다(#374). 소리 이름 'Speech' 는 영어·폴란드어·러시아어·태국어·튀르키예어·
+    // 베트남어에서 구역 머리(대화음)와 같은 낱말이라, 구역 머리 바로 밑에 같은 이름이 한 번 더 보였다.
+    TALKING(R.string.sound_group_talking),
     DISTRESS(R.string.sound_group_distress),
     BABY(titleSound = "Baby cry, infant cry"),
     CROWD(titleSound = "Crowd"),
@@ -255,11 +257,14 @@ object SoundGroups {
      *   그래서 한글을 치는 중의 모양("상", "홪")에서도 결과가 끊기지 않는다.
      * - 카드 이름이 맞으면 묶음의 소리가 모두 맞은 것으로 본다. 소리 이름이 맞으면 그 소리만 맞은 것이다.
      * - 거르기는 소리마다 지금 종류(또는 바꿨는지)로 본다. 구역은 기본 종류라, 바꾼 묶음도 제 구역에 그대로 있다.
+     *   [kept] 에 든 소리(거르기를 켠 채로 방금 바꾼 소리, [KeptSounds])는 거르기에 맞지 않아도 맞은 것으로 본다.
+     *   찾는 말은 그대로 본다.
      * - 둘 다 맞는 소리가 하나라도 있으면 카드가 남는다. 남은 카드가 없는 구역은 뺀다.
      *
      * @param searchKeys 소리마다 [SoundCatalog.searchKey] 로 만든 값. entry.index 자리에 둔다.
      * @param titleKeys 새로 지은 묶음 이름의 [SoundCatalog.searchKey]([SoundGroups.titleKeys] 로 만든다).
      *   소리 이름이 곧 묶음 이름이면 그 소리의 값을 쓰므로 넣지 않아도 된다.
+     * @param kept 거르기와 상관없이 남길 소리의 모델 이름([KeptSounds.namesFor]).
      */
     fun filter(
         sections: List<SoundSection>,
@@ -267,14 +272,15 @@ object SoundGroups {
         titleKeys: Map<SoundGroup, String>,
         overrides: Map<String, String>,
         query: String,
-        filter: SoundFilter
+        filter: SoundFilter,
+        kept: Set<String> = emptySet()
     ): List<ShownSection> {
         val needle = SoundCatalog.normalize(query)
         return sections.mapNotNull { section ->
             val cards = section.cards.mapNotNull { card ->
                 val titleMatched = needle.isEmpty() || needle in titleKey(card, searchKeys, titleKeys)
                 val shown = card.members.filter { entry ->
-                    SoundCatalog.passes(entry, overrides, filter) &&
+                    (SoundCatalog.passes(entry, overrides, filter) || entry.name in kept) &&
                         (titleMatched || needle in searchKeys.getOrElse(entry.index) { "" })
                 }
                 if (shown.isEmpty()) null else ShownCard(card, shown)
@@ -312,7 +318,52 @@ object SoundGroups {
         }
     }
 
-    /** 기본 모드에서 [card] 를 [picked] 로 고르면 종류가 바뀌는 소리 수. 섞인 카드를 고를 때 묻는 창에 쓴다. */
+    /**
+     * 기본 모드에서 [card] 를 [picked] 로 고르면 종류가 바뀌는 소리 수. 묻는 창([overwritesOneByOne])에 쓴다.
+     * 하나씩 바꿔 둔 소리만이 아니라 기본 종류 그대로인 소리까지, 고르면 종류가 바뀌는 소리를 모두 센다.
+     */
     fun overwriteCount(card: SoundCard, overrides: Map<String, String>, picked: String): Int =
         card.members.count { SoundCatalog.typeOf(it, overrides) != picked }
+
+    /**
+     * 기본 모드에서 [card] 를 [picked] 로 고를 때 먼저 물을지(#374). 하나씩 바꿔 둔 소리의 종류가 실제로 바뀔 때만 묻는다.
+     *
+     * 하나씩 바꿔 둔 소리는 섞인 카드([GroupState.Mixed])에서 기본 종류가 아닌 소리다. "바꾼 소리" 거르기와 수도 같은
+     * 기준이다. 그 소리와 같은 종류를 고르면 그 소리는 그대로라 묻지 않고, 기본 종류를 고르면 그 소리가 되돌려지므로 늘
+     * 묻는다. 모두 같은 카드는 묶음째 바꾼 것이라 묻지 않는다.
+     *
+     * 묶음째 X 로 바꾼 뒤 한 소리만 기본 종류로 되돌린 카드에서 X 를 고르면 묻지 않는다. 저장값에는 기본 종류가 아닌
+     * 것만 남아 '되돌린 소리' 와 '건드리지 않은 소리' 를 가릴 수 없다.
+     */
+    fun overwritesOneByOne(card: SoundCard, overrides: Map<String, String>, picked: String): Boolean =
+        state(card, overrides) is GroupState.Mixed && card.members.any {
+            val type = SoundCatalog.typeOf(it, overrides)
+            type != it.defaultType && type != picked
+        }
+}
+
+/**
+ * 거르기를 켠 채로 방금 바꾼 소리(모델 이름, #374). 바꾼 소리가 거르기에서 빠져도 찾는 말이나 거르기를 바꿀 때까지
+ * 목록에 남겨, 누른 카드(고급 모드는 그 줄)가 눈앞에서 사라지지 않게 한다.
+ *
+ * 카드가 아니라 소리를 남긴다. 기본 모드는 남은 소리가 있는 카드가, 고급 모드는 그 줄과 그 위의 머리가 남고, "바꾼
+ * 소리" 거르기도 같은 방법으로 된다. [query]·[filter] 는 남기기 시작할 때의 것이고, 지금 것과 다르면 아무것도 남기지
+ * 않는다. 화면을 돌려도 남게 Serializable 이다(rememberSaveable).
+ */
+data class KeptSounds(
+    val query: String = "",
+    val filter: SoundFilter = SoundFilter.ALL,
+    val names: Set<String> = emptySet()
+) : java.io.Serializable {
+
+    /** 지금의 찾는 말과 거르기에서 남길 소리. 남기기 시작할 때와 다르면 빈 것이다. */
+    fun namesFor(query: String, filter: SoundFilter): Set<String> =
+        if (query == this.query && filter == this.filter) names else emptySet()
+
+    /**
+     * [added] 를 더한 것. 찾는 말이나 거르기가 남기기 시작할 때와 다르면 앞의 것은 버리고 새로 시작한다.
+     * 전체에서는 모든 소리가 거르기에 맞아 남길 것이 없으니 빈 것이다.
+     */
+    fun plus(query: String, filter: SoundFilter, added: Collection<String>): KeptSounds =
+        if (filter == SoundFilter.ALL) KeptSounds() else KeptSounds(query, filter, namesFor(query, filter) + added)
 }
