@@ -12,12 +12,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
+import android.media.AudioTimestamp
 import android.media.MediaRecorder
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
@@ -39,9 +41,12 @@ import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.AiClassificationResult
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
+import com.example.soundvisualizer.feedback.AiFeedFilter
+import com.example.soundvisualizer.feedback.AiLabelFreshness
 import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticNotifier
 import com.example.soundvisualizer.feedback.HapticPlayer
+import com.example.soundvisualizer.feedback.SelfVibrationTimeline
 import com.example.soundvisualizer.language.AppLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +59,7 @@ import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.util.Locale
 
 /**
  * 소리를 받는 포그라운드 서비스. 폰에서 재생되는 소리(MediaProjection 의 AudioPlaybackCapture)를 받고,
@@ -144,6 +150,12 @@ class AudioCaptureService : Service() {
 
     /** 잠겨 있거나 화면이 꺼진 동안의 위협음을 잠금 화면에 알릴지(#310). 확인 틱(메인 스레드)에서만 쓴다. */
     private val dangerAlertPolicy = DangerAlertPolicy()
+
+    /**
+     * 외부 사운드 모드에서 잠금 화면 알림이 쓰는 라벨. AI 가 1초 넘게 새 결과를 내지 않으면 라벨이 없다(#352). 진동이 쓰는 것과
+     * 따로 둔다([startHaptics]). 확인 틱(메인 스레드)에서만 쓴다.
+     */
+    private val alertFreshness = AiLabelFreshness()
 
     /** 화면이 켜진 뒤 미뤄 둔 AI 재시작. 취소할 수 있게 들고 있는다. 메인 스레드 전용. ([scheduleAiResume]) */
     private var aiResumeRunnable: Runnable? = null
@@ -513,7 +525,10 @@ class AudioCaptureService : Service() {
      * 큰 소리에 울린다([com.example.soundvisualizer.feedback.HapticPolicy]).
      *
      * 마이크로 듣는 실행은 앱의 진동을 소리로 다시 듣는다. 그래서 울림 사이의 쉼에서만 소리를 보고, 종류마다 상한보다 빠른
-     * 방식은 상한으로 울린다([CaptureSource.hearsOwnVibration], #290·#354). 소스는 onCreate 에서 정해져 실행 내내 바뀌지 않는다.
+     * 방식은 상한으로 울린다([CaptureSource.hearsOwnVibration], #290·#354). 울림마다 AI 입력에서 뺄 구간도 알린다
+     * ([SelfVibrationTimeline], #352). 그리고 AI 가 1초 넘게 새 결과를 내지 않으면 라벨이 없는 것으로 본다([AiLabelFreshness]).
+     * 감도를 높인 마이크는 사무실 잡음에도 소리가 나는 것으로 보는데, AI 는 쉬면서 마지막 라벨을 그대로 들고 있기 때문이다.
+     * 폰 안의 소리는 지금까지와 같다. 소스는 onCreate 에서 정해져 실행 내내 바뀌지 않는다.
      *
      * [HapticNotifier] 는 한 번만 시작·정지하는 객체라 켤 때마다 새로 만든다.
      */
@@ -521,11 +536,20 @@ class AudioCaptureService : Service() {
         if (stopLatch.isStopping) return
         synchronized(aiLock) {
             if (hapticNotifier != null) return
+            // 진동 스레드만 쓴다(라벨은 틱마다 그 스레드에서 읽는다). 쉬는 AI 의 라벨(null)을 다른 값으로 메우지 않는다.
+            val freshness = if (captureSource.hearsOwnVibration) AiLabelFreshness() else null
+            val labelSource: () -> String? = if (freshness != null) {
+                { freshness.label(SystemClock.elapsedRealtime(), AiClassification.latest()) }
+            } else {
+                { AiClassification.latest()?.coarse }
+            }
             hapticNotifier = HapticNotifier(
                 applicationContext,
                 unlabeledAlerts = { !SettingsManager.aiAvailable.value },
-                hearsOwnVibration = captureSource.hearsOwnVibration
-            ) { AiClassification.latest()?.coarse }.also { it.start() }
+                hearsOwnVibration = captureSource.hearsOwnVibration,
+                selfVibrationTimeline = if (captureSource.hearsOwnVibration) SelfVibrationTimeline.shared else null,
+                labelSource = labelSource
+            ).also { it.start() }
         }
     }
 
@@ -693,7 +717,9 @@ class AudioCaptureService : Service() {
         }
         isRecording = true
         val dualMono = captureSource == CaptureSource.Microphone
-        captureThread = Thread({ captureLoop(record, dualMono) }, "SV-AudioCapture").apply {
+        val hearsOwnVibration = captureSource.hearsOwnVibration
+        val debug = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        captureThread = Thread({ captureLoop(record, dualMono, hearsOwnVibration, debug) }, "SV-AudioCapture").apply {
             isDaemon = true
             start()
         }
@@ -729,8 +755,13 @@ class AudioCaptureService : Service() {
         return true
     }
 
-    /** @param dualMono 마이크 입력이라 좌우를 같게 만들지([toDualMono]) */
-    private fun captureLoop(record: AudioRecord, dualMono: Boolean) {
+    /**
+     * @param dualMono 마이크 입력이라 좌우를 같게 만들지([toDualMono])
+     * @param hearsOwnVibration 이 소스가 앱의 진동을 소리로 듣는지([CaptureSource.hearsOwnVibration]). 참이면 AI 에 넘기는 소리에서
+     *   우리 진동을 뺀다([AiFeedFilter], #352). 오버레이와 진동이 보는 크기는 그대로다.
+     * @param debug 디버그 빌드인지. 참이면 AI 입력 확인 줄을 남긴다([AiFeedDebugLog]).
+     */
+    private fun captureLoop(record: AudioRecord, dualMono: Boolean, hearsOwnVibration: Boolean, debug: Boolean) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val loopThread = Thread.currentThread()
         // direct buffer: AudioRecord 가 직접 채우고 JNI 가 주소로 읽는다 (Kotlin 힙 복사 0회, GC 0회).
@@ -738,8 +769,34 @@ class AudioCaptureService : Service() {
         // AI 경로는 FloatArray 를 받으므로 뷰와 스크래치를 한 번만 만들어 재사용한다.
         val floatView = buffer.asFloatBuffer()
         val aiScratch = FloatArray(READ_FLOATS)
+        // 외부 사운드 모드: AI 에 넘기기 직전에 우리 울림과 그 꼬리 구간을 바로 앞의 깨끗한 소리로 바꾼다(#352). 구간은 진동을
+        // 보낸 시각(elapsedRealtime)으로 오므로 프레임마다 캡처 시각을 센다([CaptureClock]). 캡처 스레드마다(처음 켤 때, 화면이
+        // 다시 켜질 때) 새로 만들어 지난 녹음의 프레임 번호와 소리를 잇지 않는다. 폰 안의 소리는 진동을 듣지 못하므로 만들지 않고,
+        // AI 입력은 지금까지와 같다.
+        val clock = if (hearsOwnVibration) CaptureClock(record.sampleRate) else null
+        val aiFeed = if (hearsOwnVibration) {
+            AiFeedFilter(record.sampleRate, SelfVibrationTimeline.shared::snapshot, READ_FLOATS / 2, diagnostics = debug)
+        } else {
+            null
+        }
+        // 오디오 서버의 캡처 시각 표시를 할당 없이 읽도록 한 번만 만든다. 두 read() 사이, 이 스레드에서만 부른다.
+        val timestamp = AudioTimestamp()
+        val pollTimestamp: (LongArray) -> Boolean = { out ->
+            val ok = record.getTimestamp(timestamp, AudioTimestamp.TIMEBASE_BOOTTIME) == AudioRecord.SUCCESS
+            if (ok) {
+                out[0] = timestamp.framePosition
+                out[1] = timestamp.nanoTime
+            }
+            ok
+        }
+        val feedLog = if (debug && clock != null && aiFeed != null) AiFeedDebugLog(clock, aiFeed) else null
+        // 거르다 예외가 나면 이 캡처가 끝날 때까지 AI 에 원래 소리를 넘긴다. 캡처 스레드가 죽으면 앱이 멈추고, 한 번 틀린 필터의
+        // 상태는 믿을 수 없다. 다음 캡처(화면이 다시 켜질 때 등)는 새 필터로 다시 거른다.
+        var aiFeedFailed = false
         while (isRecording) {
             val bytes = record.read(buffer, buffer.capacity(), AudioRecord.READ_BLOCKING)
+            // 읽기가 돌아온 시각. 시각 표시가 없을 때 캡처 시각을 어림하는 데 쓴다.
+            val readNs = if (clock != null) SystemClock.elapsedRealtimeNanos() else 0L
             if (bytes > 0) {
                 val floats = bytes / BYTES_PER_FLOAT
                 if (dualMono) toDualMono(floatView, floats, micMutedForCall)
@@ -749,12 +806,28 @@ class AudioCaptureService : Service() {
                 // 쉬는 오버레이를 소리가 난 이 버퍼에서 바로 깨운다(#170). 원자 변수를 읽고, 오버레이가 쉬는 중이면
                 // 소리 크기를 한 번 더 읽는다. 할당은 없다.
                 OverlayWake.onBuffer()
+                // AI 가 아직 없어도 버퍼마다 센다. 그래야 프레임 번호가 오디오 서버의 것과 맞는다.
+                val startMs = clock?.onRead(floats / 2, readNs, pollTimestamp) ?: 0.0
                 // AI 는 캡처 스레드에서 추론하지 않는다. 링버퍼로 복사만 하고 즉시 반환된다.
                 aiPipeline?.let { pipeline ->
                     floatView.position(0)
                     floatView.get(aiScratch, 0, floats)
+                    // 들어온 만큼 그대로 나가므로 AI 의 링버퍼와 쉬는 판단의 시각은 바뀌지 않는다. 오버레이와 진동은 위에서
+                    // 원래 버퍼를 읽었다.
+                    if (aiFeed != null && clock != null && !aiFeedFailed) {
+                        try {
+                            aiFeed.process(aiScratch, floats, startMs, clock.endExtraMs)
+                        } catch (e: Exception) {
+                            aiFeedFailed = true
+                            Log.e(TAG, "AI feed filter failed; feeding raw audio to the AI until this capture stops", e)
+                            // 반쯤 고친 버퍼일 수 있어 원래 소리를 다시 옮긴다.
+                            floatView.position(0)
+                            floatView.get(aiScratch, 0, floats)
+                        }
+                    }
                     pipeline.ingestInterleavedPcm(aiScratch, floats)
                 }
+                feedLog?.afterBuffer(readNs)
             } else if (bytes < 0) {
                 Log.w(TAG, "AudioRecord.read error $bytes, stopping capture loop")
                 // 우리가 멈춘 게 아닌데 캡처가 끊겼다 (오디오 서버 재시작 등).
@@ -821,13 +894,23 @@ class AudioCaptureService : Service() {
      *
      * 알릴지와 적을 이름은 결과 하나를 한 번만 읽어 고른다. 따로 읽으면 그사이 다음 추론이 끼어, 알리기로 한 결과와
      * 다른 결과의 이름을 적을 수 있다.
+     *
+     * 외부 사운드 모드에서는 AI 가 1초 넘게 새 결과를 내지 않으면 라벨이 없는 것(환경음)으로 본다([AiLabelFreshness], #352).
+     * AI 는 조용해지면 쉬면서 마지막 라벨을 그대로 들고 있는데, 이 틱이 보는 크기에는 마이크 감도가 걸려 있어 감도를 높이면
+     * 사무실 잡음에도 소리가 나는 것으로 보기 때문이다. 폰 안의 소리는 지금까지와 같다.
      */
     private fun updateDangerAlert() {
         val enabled = SettingsManager.showDanger.value && SettingsManager.aiAvailable.value
+        val now = SystemClock.elapsedRealtime()
         val result = AiClassification.latest()
+        val label = if (captureSource.hearsOwnVibration) {
+            alertFreshness.label(now, result) ?: AiClassification.AMBIENT
+        } else {
+            result?.coarse ?: AiClassification.AMBIENT
+        }
         val fire = dangerAlertPolicy.onTick(
-            SystemClock.elapsedRealtime(),
-            result?.coarse ?: AiClassification.AMBIENT,
+            now,
+            label,
             checkSample[0],
             enabled
         ) { isLockedOrScreenOff() }
@@ -861,6 +944,7 @@ class AudioCaptureService : Service() {
         blockedNotice.reset()
         micSilence.reset()
         dangerAlertPolicy.reset()
+        alertFreshness.reset()
         // 지난번 캡처가 남긴 피크·버퍼 수를 버린다. 남겨 두면 첫 틱이 방금 받은 소리로 착각한다.
         AudioEngine.takePeakSinceLastCheck(checkSample)
         mainHandler.removeCallbacks(blockedCheck)
@@ -1395,5 +1479,49 @@ class AudioCaptureService : Service() {
             }
         }
         return views
+    }
+}
+
+/**
+ * 디버그 빌드에서 깨끗한 AI 입력(#352)을 폰에서 소리를 녹음하지 않고 확인하는 줄(`logcat -s SvAiFeed`). 캡처 스레드에서만 쓴다.
+ * 줄을 만들 때만 할당한다(디버그 빌드, 구간마다 한 줄과 10초마다 한 줄).
+ *
+ * - `clock`: 캡처 시각을 오디오 서버의 시각 표시로 세는지(`ts`) 어림으로 세는지(`fb`)와 입력 지연(`lat`). 방식이 바뀔 때와
+ *   10초마다 남긴다.
+ * - `win`: 우리 울림 하나마다 원래 소리로 잰 값. `onset` 은 보낸 시각부터 모터 소리가 처음 구간 피크의 절반을 넘은 때,
+ *   `tail` 은 멈추라고 한 시각부터 마지막으로 쉼 소리를 넘은 때다. 꼬리 여유(느림 180ms, 중간 110ms)가 덮는지 이것으로 본다.
+ */
+private class AiFeedDebugLog(private val clock: CaptureClock, private val feed: AiFeedFilter) {
+    private var loggedMode: CaptureClock.Mode? = null
+    private var loggedAtNs = 0L
+
+    fun afterBuffer(nowNs: Long) {
+        if (clock.mode != loggedMode || nowNs - loggedAtNs >= CLOCK_LOG_NS) {
+            Log.d(
+                TAG,
+                "clock mode=${modeName()} lat=${"%.1f".format(Locale.US, clock.latencyMs)}ms " +
+                    "anchors=${clock.anchors} rejects=${clock.rejects} fails=${clock.failures} polls=${clock.polls}"
+            )
+            loggedMode = clock.mode
+            loggedAtNs = nowNs
+        }
+        if (feed.reportReady) {
+            val onset = if (feed.reportOnsetMs == AiFeedFilter.NONE) "-" else "${feed.reportOnsetMs}"
+            Log.d(
+                TAG,
+                "win mode=${modeName()} dur=${feed.reportDurMs} " +
+                    "deafPk=${"%.4f".format(Locale.US, feed.reportDeafPeak)} " +
+                    "gapPk=${"%.4f".format(Locale.US, feed.reportGapPeak)} " +
+                    "onset=${onset}ms tail=${feed.reportTailMs}ms pass=${feed.reportPassed} fill=${feed.reportFillMs}ms"
+            )
+            feed.consumeReport()
+        }
+    }
+
+    private fun modeName(): String = if (clock.mode == CaptureClock.Mode.TIMESTAMP) "ts" else "fb"
+
+    private companion object {
+        const val TAG = "SvAiFeed"
+        const val CLOCK_LOG_NS = 10_000_000_000L
     }
 }
