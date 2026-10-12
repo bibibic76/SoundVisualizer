@@ -24,6 +24,8 @@ import com.example.soundvisualizer.SettingsManager
  * @param hearsOwnVibration 이번 실행의 소스가 앱의 진동을 소리로 듣는지([com.example.soundvisualizer.CaptureSource.hearsOwnVibration]).
  *   참이면 울림 사이의 쉼에서만 소리를 보고([SelfVibrationGate], #290), 종류마다 상한보다 빠른 방식은 상한으로 울린다
  *   ([HapticSettings.externalCap], #354). 실행 내내 바뀌지 않는다.
+ * @param selfVibrationTimeline 울림마다 AI 입력에서 뺄 구간을 알릴 곳(#352). 외부 사운드 모드에서만 주고, 폰 안의 소리는
+ *   null 이라 지금까지와 같다.
  * @param labelSource 가장 최근 분류 라벨. 결과가 아직 없으면 null. 마지막 인자라 `HapticNotifier(context) { … }` 로 쓴다.
  */
 class HapticNotifier(
@@ -31,6 +33,7 @@ class HapticNotifier(
     private val configFor: (String) -> HapticPolicy.ClassConfig = LIVE_CONFIG,
     private val unlabeledAlerts: () -> Boolean = { false },
     hearsOwnVibration: Boolean = false,
+    private val selfVibrationTimeline: SelfVibrationTimeline? = null,
     private val labelSource: () -> String?
 ) {
     private companion object {
@@ -131,22 +134,38 @@ class HapticNotifier(
     private fun issue(command: HapticDriver.Command, now: Long, vibe: HapticPolicy.Vibe?) {
         if (!running) return
         when (command) {
-            is HapticDriver.Command.Play -> if (player.playPlan(command.plan)) {
-                plans++
-                // 보낸 직후부터 센다. 보내는 데 걸린 시간도 마이크가 그 울림을 들을 수 있는 구간이다.
-                selfGate?.onPlayed(
-                    SystemClock.elapsedRealtime(),
-                    command.plan.durationMs,
-                    HapticTuning.selfHearingGuardMs(vibe?.mode ?: HapticMode.Off)
-                )
-                if (debug) Log.d(TAG, command.plan.summary(now))
-            } else {
-                driver.onPreempted()
-                skipped++
+            is HapticDriver.Command.Play -> {
+                val duration = command.plan.durationMs
+                val mode = vibe?.mode ?: HapticMode.Off
+                // AI 입력에서 뺄 구간을 보내기 **전에** 알린다. 그래야 모터가 돌기 전에 캡처 스레드가 안다(#352).
+                // 꼬리 여유는 진동 판단과 따로, 캡처 시각으로 잰 방식마다의 값이다.
+                val feedGuard = HapticTuning.aiFeedGuardMs(mode)
+                val beforeSend = SystemClock.elapsedRealtime()
+                val feedWindow = selfVibrationTimeline?.open(
+                    beforeSend - HapticTuning.AI_FEED_PRE_MS,
+                    beforeSend + duration + feedGuard,
+                    beforeSend + duration
+                ) ?: 0L
+                if (player.playPlan(command.plan)) {
+                    plans++
+                    // 보낸 직후부터 센다. 보내는 데 걸린 시간도 마이크가 그 울림을 들을 수 있는 구간이다.
+                    // 진동 판단과 AI 입력이 같은 시각을 쓴다.
+                    val sent = SystemClock.elapsedRealtime()
+                    selfVibrationTimeline?.setEnd(feedWindow, sent + duration + feedGuard, sent + duration)
+                    selfGate?.onPlayed(sent, duration, HapticTuning.selfHearingGuardMs(mode))
+                    if (debug) Log.d(TAG, command.plan.summary(now))
+                } else {
+                    selfVibrationTimeline?.retract(feedWindow)
+                    driver.onPreempted()
+                    skipped++
+                }
             }
             HapticDriver.Command.Cancel -> {
                 player.cancel()
                 selfGate?.onCancelled(now)
+                // 꼬리 여유는 그대로 두고 AI 입력에서 빼는 구간도 앞당긴다. 틱이 시작된 시각(now)이 아니라 모터를 멈춘 뒤의
+                // 시각으로 끊어야, 그 사이에 돈 모터 소리와 꼬리를 덮는다.
+                selfVibrationTimeline?.cutLatest(SystemClock.elapsedRealtime())
             }
             HapticDriver.Command.None -> Unit
         }

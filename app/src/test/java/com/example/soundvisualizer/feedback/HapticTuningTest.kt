@@ -85,6 +85,38 @@ class HapticTuningTest {
     }
 
     @Test
+    fun `AI 입력의 꼬리 여유는 느림 180ms 중간 110ms 다`() {
+        // 숫자를 묻는 드문 테스트다. 이 두 값은 설계 시뮬레이션(#352)이 고른 짝이다. 느림(대화음)은 진동 소리를 말소리로 듣는
+        // 고리를 막고, 중간(위협음)은 박자 사이에 AI 가 듣는 소리를 늘려 사이렌 동안 빠지는 박자를 줄인다.
+        assertEquals(180L, HapticTuning.aiFeedGuardMs(HapticMode.Slow))
+        assertEquals(110L, HapticTuning.aiFeedGuardMs(HapticMode.Medium))
+        assertEquals(110L, HapticTuning.aiFeedGuardMs(HapticMode.Fast))
+        assertEquals(180L, HapticTuning.aiFeedGuardMs(HapticMode.Off))
+        assertEquals(180L, HapticTuning.aiFeedGuardMs(HapticMode.Continuous))
+    }
+
+    @Test
+    fun `AI 입력의 꼬리 여유와 상관없이 진동 판단의 꼬리 여유는 그대로다`() {
+        // #352 는 진동 판단(#290·#341)을 바꾸지 않는다. 두 여유는 다른 시계(읽은 시각, 캡처 시각)로 잰다.
+        assertEquals(180L, HapticTuning.selfHearingGuardMs(HapticMode.Slow))
+        assertEquals(180L, HapticTuning.selfHearingGuardMs(HapticMode.Medium))
+        assertEquals(110L, HapticTuning.selfHearingGuardMs(HapticMode.Fast))
+    }
+
+    @Test
+    fun `외부 사운드 모드에서 울리는 방식은 AI 입력의 꼬리 뒤에도 깨끗한 쉼이 남는다`() {
+        // 쉼에서 듣는 소리가 다음 구간의 테이프가 된다. 0.09초보다 짧으면 더 앞의 소리를 이어 붙이게 된다.
+        for (label in listOf(AiClassification.SPEECH, AiClassification.DANGER)) {
+            val cap = HapticSettings.externalCap(label)
+            for (mode in HapticMode.entries.filter { it != HapticMode.Off && it <= cap }) {
+                val gap = HapticTuning.periodMs(mode) - HapticTuning.onMs(mode) - HapticTuning.aiFeedGuardMs(mode) -
+                    HapticTuning.AI_FEED_PRE_MS
+                assertTrue("$label $mode 의 깨끗한 쉼 ${gap}ms", gap >= HapticTuning.AI_FEED_TAPE_MIN_MS)
+            }
+        }
+    }
+
+    @Test
     fun `외부 사운드 모드의 느림은 이어 준 소리의 여유가 다음 박자보다 넉넉히 먼저 끝난다`() {
         // 이어 준 크기는 꼬리 끝보다 SELF_HEARING_CREDIT_LEAD_MS 이른 소리로 친다. 거기서 소리가 끝났다고 보는 여유가 다음
         // 박자에 닿으면, 울림을 보내는 데 조금만 오래 걸려도 소리가 끝난 뒤 한 번 더 울린다(#290 리뷰). 중간·빠름은 다음 박자가

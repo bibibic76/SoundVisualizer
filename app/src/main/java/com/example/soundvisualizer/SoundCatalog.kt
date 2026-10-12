@@ -34,7 +34,8 @@ enum class SoundFilter { ALL, AMBIENT, SPEECH, DANGER, CHANGED }
  * 분류 탭이 그리는 데 쓰는 것을 앱 언어 하나로 한 번 만들어 둔 것(#368). [SoundCatalog.loadIndex] 가 만든다.
  *
  * 탭은 페이저 안에 있어서 홈에서 설정으로 넘기기만 해도 옆 쪽으로 미리 만들어진다. 그때마다 메인 스레드에서 이것을
- * 다시 만들면 이름 521개를 읽고 정규화를 1,042번 한다. 그래서 언어마다 한 번, 메인 스레드 밖에서 만들어 두고 쓴다.
+ * 다시 만들면 이름 521개를 읽고 정규화를 1,042번 한다. 그래서 지금 앱 언어로 한 번, 메인 스레드 밖에서 만들어 두고 쓴다.
+ * 두는 것은 앱 언어 하나의 것뿐이라, 언어가 바뀌면 새로 만들고 앞의 것은 버린다.
  *
  * 문자열만 들고 Context·Resources 는 들고 있지 않는다. 프로세스가 끝날 때까지 남는 값이라, 들고 있으면 언어를 바꿔
  * 액티비티를 다시 만든 뒤에도 옛 액티비티가 메모리에 남는다.
@@ -86,7 +87,10 @@ object SoundCatalog {
             fromNames(names, groups)
         }.also { cached = it }
 
-    /** 분류 탭의 색인. 앱 언어 하나의 것만 둔다. 언어가 바뀌면 액티비티가 다시 만들어지고, 탭이 새 언어로 다시 만든다. */
+    /**
+     * 분류 탭의 색인. 앱 언어 하나의 것만 둔다. 언어가 바뀌면 액티비티가 다시 만들어지고, 탭이 새 언어로 다시 만든다.
+     * 앞 언어의 것은 버리므로 그 언어로 돌아가면 다시 만든다.
+     */
     @Volatile
     private var cachedIndex: SoundIndex? = null
 
@@ -106,22 +110,27 @@ object SoundCatalog {
      * [resources] 는 액티비티의 것을 넘긴다. Android 12 이하에서는 앱 언어가 액티비티의 컨텍스트에만 입혀지고,
      * applicationContext 의 리소스는 폰 언어 그대로다(AppLanguage). 거기서 읽으면 폰 언어의 이름이 보인다.
      *
+     * 키와 이름은 [resources] 의 설정을 한 번 떠 둔 것에서 읽는다. 액티비티의 리소스는 언어가 바뀌면 그 자리에서 바뀔 수
+     * 있어서(Android 13 이상), 키를 읽은 뒤 만드는 사이에 언어가 바뀌면 다른 언어의 이름이 그 키로 캐시에 들어간다.
+     *
      * 다 만든 색인은 여기서 캐시에 넣는다. 부른 쪽(탭의 코루틴)이 그사이 취소돼도(만드는 중에 탭을 떠남) 만든 것을
      * 버리지 않아서, 다음에 들어올 때 바로 그린다.
      */
     fun loadIndex(context: Context, resources: Resources): SoundIndex {
-        val locales = resources.configuration.locales.toLanguageTags()
+        val config = Configuration(resources.configuration)
+        val locales = config.locales.toLanguageTags()
         return index(locales) {
+            val local = context.createConfigurationContext(config).resources
             // 새로 지은 묶음 이름은 영어로도 찾는다. 영어는 기본 문구(values)에 있어서, 앱 언어와 상관없이 꺼내려고
             // 영어로 맞춘 리소스를 따로 만든다.
             val english = context.createConfigurationContext(
-                Configuration(resources.configuration).apply { setLocale(Locale.ENGLISH) }
+                Configuration(config).apply { setLocale(Locale.ENGLISH) }
             ).resources
             buildIndex(
                 locales,
                 load(context),
-                resources.getStringArray(R.array.sound_names).asList(),
-                titleLocal = { resources.getString(it) },
+                local.getStringArray(R.array.sound_names).asList(),
+                titleLocal = { local.getString(it) },
                 titleEnglish = { english.getString(it) }
             )
         }
