@@ -270,4 +270,77 @@ class HapticPolicyTest {
         policy.reset()
         assertNull(policy.onTick(300, null, QUIET, config(), unlabeledAlerts = true))
     }
+
+    // ---------------------------------------------------------------
+    // 외부 사운드 모드: 자기 진동이 섞인 동안 기다리기 (#290)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `기다리는 동안은 마지막 깨끗한 판단대로 계속 울린다`() {
+        val policy = HapticPolicy()
+        assertNotNull(policy.onTick(0, DANGER, LOUD, config()))
+        // 문은 섞인 값을 0 으로 넘기고 기다리게 한다. 0.4초 여유가 지나도 판단을 바꾸지 않는다.
+        var t = TICK
+        while (t <= 600) {
+            assertEquals("t=$t", vibe(HapticMode.Medium), policy.onTick(t, DANGER, 0f, config(), holding = true))
+            t += TICK
+        }
+        assertNull("깨끗한 값을 다시 읽으면 0.4초 여유대로 멈춘다", policy.onTick(t, DANGER, QUIET, config()))
+    }
+
+    @Test
+    fun `기다리는 동안 새로 울리기 시작하지 않는다`() {
+        val policy = HapticPolicy()
+        assertNull(policy.onTick(0, DANGER, QUIET, config()))
+        assertNull("조용하던 중에 섞인 값으로 울리기 시작했다", policy.onTick(100, DANGER, 0f, config(), holding = true))
+        assertNull(policy.onTick(200, DANGER, 0f, config(), holding = true))
+    }
+
+    @Test
+    fun `기다리는 동안에도 꺼진 종류로 바뀌면 같은 틱에 멈춘다`() {
+        val cfg = perLabel(DANGER to HapticSettings(HapticMode.Fast, 80))
+        val policy = HapticPolicy()
+        assertNotNull(policy.onTick(0, DANGER, LOUD, cfg))
+        assertNotNull(policy.onTick(100, DANGER, 0f, cfg, holding = true))
+        assertNull("꺼진 종류(대화음)로 바뀌었는데 울린다(#244)", policy.onTick(200, SPEECH, 0f, cfg, holding = true))
+    }
+
+    @Test
+    fun `기다리는 동안은 종류를 모르는 큰 소리가 시작되지도 끝나지도 않는다`() {
+        val policy = HapticPolicy()
+        assertNull("섞인 값으로 큰 소리가 시작됐다", policy.onTick(0, null, 0.9f, config(), unlabeledAlerts = true, holding = true))
+        assertNotNull(policy.onTick(100, null, LOUD, config(), unlabeledAlerts = true))
+        var t = 200L
+        while (t <= 800) {
+            assertNotNull("t=$t", policy.onTick(t, null, 0f, config(), unlabeledAlerts = true, holding = true))
+            t += TICK
+        }
+        assertNull(policy.onTick(t, null, QUIET, config(), unlabeledAlerts = true))
+    }
+
+    @Test
+    fun `reset 하면 기다리던 판단도 잊는다`() {
+        val policy = HapticPolicy()
+        assertNotNull(policy.onTick(0, DANGER, LOUD, config()))
+        policy.reset()
+        assertNull(policy.onTick(100, DANGER, 0f, config(), holding = true))
+    }
+
+    @Test
+    fun `이어 준 크기는 그 크기가 들린 시각부터 여유를 센다`() {
+        val policy = HapticPolicy()
+        assertNotNull(policy.onTick(0, DANGER, LOUD, config()))
+        // 문은 섞인 값 자리에 앞 쉼의 크기를 돌려주되, 그 구간이 시작된 시각(100)의 소리로 친다.
+        assertNotNull(policy.onTick(500, DANGER, LOUD, config(), holding = true, levelAtMs = 100))
+        assertNull("듣지 못한 구간 끝까지 소리가 이어졌다고 쳤다", policy.onTick(550, DANGER, QUIET, config()))
+    }
+
+    @Test
+    fun `종류를 모를 때도 이어 준 크기로 큰 소리가 이어진 시각을 늘린다`() {
+        val policy = HapticPolicy()
+        assertNotNull(policy.onTick(0, null, LOUD, config(), unlabeledAlerts = true))
+        // 듣지 않는 동안 앞 쉼의 큰 소리를 이어 받는다. 0.4초가 지나도 쉼에서 처음 읽은 값이 잠깐 작다고 끝나지 않는다.
+        assertNotNull(policy.onTick(300, null, LOUD, config(), unlabeledAlerts = true, holding = true, levelAtMs = 300))
+        assertNotNull(policy.onTick(600, null, 0.1f, config(), unlabeledAlerts = true))
+    }
 }

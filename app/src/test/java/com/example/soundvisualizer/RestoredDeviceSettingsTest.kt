@@ -23,7 +23,7 @@ class RestoredDeviceSettingsTest {
             .putString(STOP_KEY, StopReason.ProjectionStopped.name)
             .putInt(SEQ_KEY, 3)
             .putBoolean(TILE_KEY, true)
-            .putInt(MIC_KEY, 400)
+            .putInt(MIC_KEY, 424)
             .putInt(COLOR_KEY, 0x112233)
             .apply()
         return prefs
@@ -52,7 +52,7 @@ class RestoredDeviceSettingsTest {
         assertEquals(StopReason.ProjectionStopped, SettingsManager.lastUnexpectedStop.value)
         assertEquals(3, SettingsManager.lastUnexpectedStopSeq.value)
         assertTrue(SettingsManager.tileAdded.value)
-        assertEquals(400, SettingsManager.micSensitivity.value)
+        assertEquals(424, SettingsManager.micSensitivity.value)
     }
 
     @Test
@@ -77,7 +77,7 @@ class RestoredDeviceSettingsTest {
         assertFalse("다시 깐 앱에는 타일이 없다", SettingsManager.tileAdded.value)
         assertNull("지난 설치의 꺼짐 안내가 떴다", SettingsManager.lastUnexpectedStop.value)
         assertEquals(0, SettingsManager.lastUnexpectedStopSeq.value)
-        assertEquals("같은 폰의 마이크라 감도는 그대로 둔다", 400, SettingsManager.micSensitivity.value)
+        assertEquals("같은 폰의 마이크라 감도는 그대로 둔다", 424, SettingsManager.micSensitivity.value)
         assertEquals("사용자 설정은 그대로다", 0x112233, SettingsManager.colorAmbient.value)
     }
 

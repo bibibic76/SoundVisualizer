@@ -138,10 +138,10 @@ class YamnetThreeClassMapperTest {
     }
 
     @Test
-    fun G_proxyPlopRemainsDangerButWaterSoundsAreAmbient() {
+    fun G_formerGunshotProxiesAndWaterSoundsAreAmbient() {
         assertCase("proxy_plop")
-        assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Plop"))
-        assertEquals("danger", YamnetThreeClassMapper.mapDisplayNameToCoarse("Gargling"))
+        assertEquals("ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse("Plop"))
+        assertEquals("ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse("Gargling"))
         listOf("Rain", "Raindrop", "Rain on surface", "Waterfall").forEach { displayName ->
             assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
         }
@@ -180,6 +180,20 @@ class YamnetThreeClassMapperTest {
             assertEquals(displayName, "danger", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
         }
         listOf("Rain", "Wind", "Distant thunder", "Chainsaw-like sound").forEach { displayName ->
+            assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+    }
+
+    @Test
+    fun approvedHumanVocalizationsAreSpeechUsingExactLabels() {
+        listOf(
+            "Bellow", "Whoop", "Yell", "Cheering",
+            "Giggle", "Snicker", "Belly laugh", "Chuckle, chortle",
+            "Baby cry, infant cry", "Whimper", "Wail, moan"
+        ).forEach { displayName ->
+            assertEquals(displayName, "speech", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
+        }
+        listOf("Whimper (dog)", "Bellow-like sound", "Cheering music").forEach { displayName ->
             assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
         }
     }

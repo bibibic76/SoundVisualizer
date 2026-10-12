@@ -94,18 +94,13 @@ def map_display_name_to_coarse(display_name: str) -> str:
     return "ambient"
 
 
-def _matches_temporary_gunshot_proxy_danger(s: str) -> bool:
-    if "plop" in s:
-        return True
-    if "gargling" in s:
-        return True
-    return False
-
-
 def _matches_danger(s: str) -> bool:
-    if _matches_temporary_gunshot_proxy_danger(s):
+    # Approved exact attention labels (#343); safety-cue allowlist is unchanged.
+    if s in {
+        "reversing beeps", "train horn", "train whistle", "foghorn", "bicycle bell",
+        "emergency vehicle", "skidding", "tire squeal", "slam",
+    }:
         return True
-
     # Product policy: these exact YAMNet labels require immediate attention.
     # Keep exact matching so nearby unapproved labels do not inherit Danger.
     if s in {"chainsaw", "thunder", "thunderstorm"}:
@@ -150,6 +145,17 @@ def _matches_danger(s: str) -> bool:
 
 
 def _matches_speech(s: str) -> bool:
+    # Instrument, not a human vocalization.
+    if s == "singing bowl":
+        return False
+    # Product policy: Speech is the human-vocalization bucket, not only
+    # intelligible language. Exact labels exclude Whimper (dog) (#345).
+    if s in {
+        "bellow", "whoop", "yell", "cheering",
+        "giggle", "snicker", "belly laugh", "chuckle, chortle",
+        "baby cry, infant cry", "whimper", "wail, moan",
+    }:
+        return True
     if "speech" in s or "conversation" in s or "narration" in s:
         return True
     if "speaking" in s or "babbling" in s:

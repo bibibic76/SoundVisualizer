@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Słucha przez mikrofon dźwięków wokół Ciebie zamiast dźwięku odtwarzanego na telefonie. Sam dźwięk nie jest nigdzie zapisywany ani wysyłany.</string>
     <string name="home_external_mode_locked">Nie można tego zmienić, gdy wizualizacja działa. Zatrzymaj ją i zmień ustawienie – zacznie obowiązywać przy następnym uruchomieniu.</string>
     <string name="home_mic_sensitivity">Czułość mikrofonu</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Stan: w gotowości</string>
     <string name="home_capture_blocked">Do wizualizacji nie dociera żaden dźwięk, więc nie ma czego rysować. Aplikacja, która teraz odtwarza dźwięk, może nie zezwalać na jego udostępnianie (tak działają filmy chronione przed nagrywaniem) lub dźwięk może być w niej wyciszony.</string>
     <string name="home_ai_unavailable_loud">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia, a wibrują tylko głośne dźwięki – z ustawieniem wibracji dla dźwięków zagrożenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Strona %1$d z %2$d</string>
     <string name="tutorial_pause">Wstrzymaj animację</string>
     <string name="tutorial_play">Odtwórz animację</string>
+    <string name="tutorial_sound_on">Włącz dźwięk</string>
+    <string name="tutorial_sound_off">Wyłącz dźwięk</string>
     <string name="tutorial_sound_title">Zobacz dźwięk na ekranie</string>
     <string name="tutorial_sound_body">Dźwięk z gry lub filmu jest rysowany wzdłuż krawędzi ekranu. Im głośniejszy dźwięk, tym większa grafika. Pokazywany jest tylko dźwięk odtwarzany na telefonie. Dźwięki wokół Ciebie nie są wychwytywane.</string>
     <string name="tutorial_sound_body_external">Tryb dźwięków zewnętrznych jest włączony, więc dźwięki wokół Ciebie, które słyszy mikrofon, są rysowane wzdłuż krawędzi ekranu. Im głośniejszy dźwięk, tym większa grafika. W tym trybie dźwięk odtwarzany na telefonie nie jest pokazywany.</string>
@@ -133,9 +135,11 @@
     <string name="ai_show_speech">Pokaż mowę</string>
     <string name="ai_show_danger">Pokaż dźwięki zagrożenia</string>
     <string name="ai_unavailable">Rozpoznawanie rodzaju dźwięku nie działa, więc wszystkie dźwięki są pokazywane w kolorze dźwięków otoczenia. Spróbuj wyłączyć i ponownie włączyć wizualizację.</string>
-    <string name="classify_title">Wybierz rodzaj każdego dźwięku</string>
-    <string name="classify_desc">Oto wszystkie dźwięki, które AI potrafi rozpoznać, i rodzaj, do którego należy każdy z nich. Gdy zmienisz rodzaj dźwięku, jego kolor i wibracje od razu dostosują się do nowego rodzaju.</string>
-    <string name="classify_danger_note">Dźwięk przeniesiony z dźwięków zagrożenia do innego rodzaju nie będzie już miał ich koloru ani wibracji. Podobne dźwięki mają osobne wiersze (syreny zajmują pięć), więc aby przenieść je wszystkie, zmień każdy z tych wierszy.</string>
+    <string name="classify_title">Wybierz rodzaje dźwięków</string>
+    <string name="classify_desc_groups">Dźwięki rozpoznawane przez AI są zebrane w grupy podobnych dźwięków według rodzaju, do którego domyślnie należą. Gdy zmienisz rodzaj grupy, kolor i wibracje jej dźwięków od razu dostosują się do nowego rodzaju.</string>
+    <string name="classify_sibling_note">AI często rozpoznaje ten sam dźwięk jednocześnie pod kilkoma nazwami. Syrena na przykład jest rozpoznawana także jako „Alarm”, który jest w innej grupie. Jeśli po zmianie dźwięk nadal jest pokazywany jako poprzedni rodzaj, zmień też powiązane grupy lub dźwięki.</string>
+    <string name="classify_advanced">Tryb zaawansowany</string>
+    <string name="classify_advanced_desc">Pokazuje każdy dźwięk w jego grupie, aby można było zmieniać dźwięki pojedynczo.</string>
     <string name="classify_search_hint">Szukaj dźwięków</string>
     <string name="cd_classify_clear_search">Wyczyść wyszukiwanie</string>
     <string name="classify_filter_all">Wszystkie</string>
@@ -145,7 +149,7 @@
     <string name="sound_type_danger">Dźwięki zagrożenia</string>
     <string name="classify_type_default">%1$s (domyślnie)</string>
     <string name="classify_changed_from">Domyślnie: %1$s</string>
-    <string name="classify_changed_count">Zmienione: %1$d</string>
+    <string name="classify_changed_count">Zmienione dźwięki: %1$d</string>
     <string name="classify_reset_all">Przywróć domyślne</string>
     <string name="classify_reset_title">Przywrócić domyślne rodzaje dźwięków?</string>
     <string name="classify_reset_message">Każdy zmieniony przez Ciebie dźwięk wróci do swojego domyślnego rodzaju.</string>
@@ -154,6 +158,35 @@
     <string name="classify_empty">Brak pasujących dźwięków.</string>
     <string name="cd_classify_sound">%1$s, rodzaj: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, rodzaj: %2$s, domyślnie: %3$s</string>
+    <string name="classify_type_mixed">Mieszany</string>
+    <string name="classify_group_mixed_note">Niektóre dźwięki zmienione pojedynczo</string>
+    <string name="classify_group_changed_line">Teraz: %1$s · Domyślnie: %2$s</string>
+    <string name="classify_group_overwrite_title">Zmienić całą grupę?</string>
+    <string name="classify_group_overwrite_message">Dźwięki z grupy „%1$s”, które zmienią się na „%3$s”: %2$d. Dźwięki zmienione pojedynczo też zostaną nadpisane.</string>
+    <string name="classify_group_overwrite_confirm">Zmień</string>
+    <string name="classify_group_overwrite_cancel">Anuluj</string>
+    <string name="classify_basic_warning_title">Przełączyć na tryb podstawowy?</string>
+    <string name="classify_basic_warning_message">W niektórych grupach są dźwięki zmienione przez Ciebie pojedynczo. Jeśli w trybie podstawowym wybierzesz rodzaj dla takiej grupy, wszystkie jej dźwięki otrzymają ten rodzaj, a Twoje pojedyncze zmiany w tej grupie zostaną nadpisane. Nic się nie zmieni, dopóki nie wybierzesz.</string>
+    <string name="classify_basic_warning_confirm">Przełącz na podstawowy</string>
+    <string name="classify_basic_warning_cancel">Zostań w zaawansowanym</string>
+    <string name="cd_classify_group">Grupa %1$s, rodzaj: %2$s, liczba dźwięków: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Grupa %1$s, rodzaj: %2$s, domyślnie: %3$s, liczba dźwięków: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Grupa %1$s, liczba dźwięków: %2$d</string>
+    <string name="sound_group_horns">Klaksony i alarmy samochodowe</string>
+    <string name="sound_group_vehicle_warnings">Sygnały ostrzegawcze pojazdów</string>
+    <string name="sound_group_breaking">Tłuczenie szkła i łoskot</string>
+    <string name="sound_group_distress">Krzyki i płacz</string>
+    <string name="sound_group_talking">Mówienie i szept</string>
+    <string name="sound_group_signals">Budziki, piknięcia i gwizdki</string>
+    <string name="sound_group_voices">Oklaski, nucenie i gwizdanie</string>
+    <string name="sound_group_water">Krany i płynąca woda</string>
+    <string name="sound_group_kitchen">Kuchnia i gotowanie</string>
+    <string name="sound_group_appliances">Sprzęty domowe i zegary</string>
+    <string name="sound_group_tools">Narzędzia i maszyny</string>
+    <string name="sound_group_nature">Przyroda i pogoda</string>
+    <string name="sound_group_body">Kaszel, oddech i odgłosy ciała</string>
+    <string name="sound_group_objects">Przedmioty i krótkie dźwięki</string>
+    <string name="sound_group_background">Telewizor, radio i dźwięki w tle</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Wibracje</string>
@@ -172,6 +205,8 @@
     <string name="haptic_mode_continuous">Ciągłe</string>
     <string name="haptic_preview_hint">Naciśnij tryb lub zmień siłę, aby przez 2 sekundy poczuć próbną wibrację.</string>
     <string name="haptic_preview_hint_running">Gdy wizualizacja działa, próbna wibracja się nie włącza, żeby nie pomylić jej z prawdziwą.</string>
+    <string name="haptic_cap_external">W trybie dźwięków zewnętrznych dla rodzaju „%1$s” możesz wybrać najwyżej „%2$s”, żeby telefon nie pomylił własnych wibracji z dźwiękiem. Jeśli ustawiony jest szybszy tryb, ten rodzaj wibruje jak „%2$s”, a po wyłączeniu trybu dźwięków zewnętrznych znów wibruje zgodnie z ustawieniem.</string>
+    <string name="haptic_off_external">W trybie dźwięków zewnętrznych dźwięki otoczenia nie wywołują wibracji, bo wokół zawsze słychać jakiś dźwięk i wibracje nigdy by nie ustały. Po wyłączeniu trybu dźwięków zewnętrznych znów wywołują wibracje zgodnie z ustawieniem.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Wybierz kolor</string>
@@ -218,6 +253,11 @@
     <string name="stopped_text_overlay_failed">Nie udało się wyświetlić grafiki nad innymi aplikacjami, więc wizualizacja została wyłączona. Sprawdź, czy uprawnienie „Wyświetlanie nad innymi aplikacjami” jest przyznane.</string>
     <string name="stopped_turn_on">Włącz ponownie</string>
     <string name="stopped_toast">Wizualizacja dźwięku wyłączona. Grafika i wibracje są wyłączone.</string>
+    <string name="danger_alert_channel_name">Alerty o dźwiękach zagrożenia</string>
+    <string name="danger_alert_channel_desc">Gdy przy zablokowanym telefonie lub wyłączonym ekranie słychać dźwięk zagrożenia, na ekranie blokady pojawia się alert, a ekran na chwilę się włącza. Przy wyłączonym ekranie alert działa tylko w trybie dźwięków zewnętrznych lub po wyłączeniu opcji „Pauza przy wyłączonym ekranie”. Alert nie wydaje dźwięku.</string>
+    <string name="danger_alert_title">Słychać dźwięk zagrożenia</string>
+    <string name="danger_alert_text_named">Usłyszano: %1$s. Sprawdź, co dzieje się wokół.</string>
+    <string name="danger_alert_text">Sprawdź, co dzieje się wokół.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Wizualizacja audio</string>
@@ -259,9 +299,11 @@
 
     <string name="help_sound_title">Rodzaje dźwięków i wibracje</string>
     <string name="help_sound_kinds">AI dzieli to, co słychać, na dźwięki otoczenia, mowę i dźwięki zagrożenia. Domyślnie dźwięki otoczenia są oznaczane na biało, mowa na żółto, a dźwięki zagrożenia na czerwono. Na karcie „Ustawienia” możesz zmienić kolor każdego rodzaju i to, czy jest pokazywany.</string>
+    <string name="help_sound_classify_groups">Na karcie „Dźwięki” podobne dźwięki są zebrane w grupy, a Ty wybierasz, do jakiego rodzaju należy każda grupa. Jeśli na przykład zmienisz grupę „Dzwonek do drzwi” na dźwięki zagrożenia, to gdy AI rozpozna dzwonek do drzwi albo pukanie, dźwięk dostanie kolor i wibrację dźwięków zagrożenia. Dźwięk, który ustawisz jako dźwięk zagrożenia, bierze jednak udział tylko w głosowaniu AI nad rodzajem, więc nie oznacza to, że każdy dzwonek do drzwi zostanie pokazany jako dźwięk zagrożenia. Aby zmieniać dźwięki pojedynczo, włącz tryb zaawansowany.</string>
     <string name="help_sound_danger">Gdy zostanie wykryty dźwięk zagrożenia (np. strzał), kolor zmienia się natychmiast, a nie stopniowo.</string>
     <string name="help_sound_haptic">Wibracje dadzą Ci znać o dźwięku, nawet gdy nie patrzysz na ekran. Domyślnie wibracje są włączone tylko dla dźwięków zagrożenia. Dla każdego rodzaju możesz wybrać tryb (Wyłączone, Wolne, Średnie, Szybkie, Ciągłe) i siłę.</string>
     <string name="help_sound_haptic_rule">Wibracje działają tylko dla rodzajów dźwięków pokazywanych na ekranie. Telefon wibruje, dopóki trwa dźwięk tego rodzaju, i przestaje, gdy dźwięk ucichnie. Tryb „Średnie” pulsuje co pół sekundy, „Wolne” dwa razy wolniej, a „Szybkie” dwa razy szybciej, natomiast „Ciągłe” wibruje bez przerwy. W każdym trybie wibracje mają wybraną przez Ciebie siłę.</string>
+    <string name="help_sound_haptic_external">W trybie dźwięków zewnętrznych telefon sprawdza, czy dźwięk nadal trwa, tylko w przerwach między impulsami, żeby nie pomylić własnych wibracji z dźwiękiem. Dlatego po ucichnięciu dźwięku wibracje mogą trwać jeszcze chwilę, zwykle krócej niż sekundę. Aby te przerwy były wystarczająco długie, w tym trybie możesz wybrać najwyżej „Wolne” dla mowy i „Średnie” dla dźwięków zagrożenia, a dźwięki otoczenia nie wywołują wibracji, bo wokół zawsze słychać jakiś dźwięk. Rodzaje ustawione na szybszy tryb wibrują w najszybszym dozwolonym trybie, a po wyłączeniu trybu dźwięków zewnętrznych znów wibrują zgodnie z ustawieniem.</string>
 
     <string name="help_notes_title">Warto wiedzieć</string>
     <string name="help_note_direction">Aplikacja odróżnia lewą stronę od prawej, ale nie przód od tyłu. Grafika u góry i u dołu ekranu pokazuje dźwięki słyszalne jednakowo z obu stron oraz wrażenie przestrzeni.</string>
@@ -270,7 +312,7 @@
     <string name="help_note_sources">Przechwytywane są tylko dźwięki multimediów i gier. Rozmowy telefoniczne, dźwięki powiadomień i alarmy nie są przechwytywane, a dźwięku z aplikacji, które blokują jego przechwytywanie (np. niektórych aplikacji wideo), nie da się pokazać. Jeśli dźwięk jest odtwarzany, a mimo to przez około 15 sekund nic nie jest rysowane, poinformujemy Cię o tym na karcie „Główna” i w powiadomieniu o działaniu aplikacji. Aplikacja, która sama się wyciszyła, wygląda dla nas dokładnie tak samo jak aplikacja blokująca przechwytywanie, więc nie możemy Ci powiedzieć, o którą z tych dwóch sytuacji chodzi.</string>
     <string name="help_note_sources_external">Tryb dźwięków zewnętrznych odbiera wszystkie dźwięki wokół Ciebie, które słyszy mikrofon – także alarmy, dzwonki do drzwi i dźwięk z Twojego telefonu. Podczas rozmowy, gdy inna aplikacja używa mikrofonu albo gdy mikrofon jest zablokowany w Szybkich ustawieniach, nie dociera żaden dźwięk, a karta „Główna” i powiadomienie o działaniu aplikacji Cię o tym poinformują.</string>
     <string name="help_note_volume">Dźwięk odtwarzany na telefonie jest przechwytywany z poziomem ustawionym przez głośność multimediów. Jeśli mocno ściszysz telefon, grafika i wibracje mogą nie reagować, a przy głośności zero nic nie jest przechwytywane. Jeśli reakcja jest słaba, trochę zwiększ głośność. Tryb dźwięków zewnętrznych nie zależy od głośności.</string>
-    <string name="help_note_mic_sensitivity">W trybie dźwięków zewnętrznych czułość mikrofonu zmienia tylko to, jak głośne dźwięki wydają się grafice i wibracjom. Zwiększ ją, jeśli ciche dźwięki są ledwo widoczne, a zmniejsz, jeśli w głośnym miejscu widać też szum tła. Nie zmienia dźwięku, którego AI używa do rozpoznawania rodzajów dźwięków.</string>
+    <string name="help_note_mic_sensitivity">W trybie dźwięków zewnętrznych czułość mikrofonu zmienia tylko to, jak głośne dźwięki wydają się grafice, wibracjom i alertowi o dźwiękach zagrożenia na ekranie blokady. Zwiększ ją, jeśli ciche dźwięki są ledwo widoczne, a zmniejsz, jeśli w głośnym miejscu widać też szum tła. Jeśli ustawisz czułość poniżej domyślnej pozycji (4. od lewej), ciche dźwięki mogą nie wywoływać wibracji ani alertu o dźwiękach zagrożenia. Czułość nie zmienia dźwięku, którego AI używa do rozpoznawania rodzajów dźwięków. Dlatego dźwięki za ciche dla AI nie wywołują wibracji ani alertu o dźwiękach zagrożenia, nawet jeśli po zwiększeniu czułości grafika je pokazuje. W takim przypadku połóż telefon blisko miejsca, z którego dochodzi dźwięk, i nie zasłaniaj mikrofonu.</string>
     <string name="help_note_stopped">Rozpoczęcie nagrywania ekranu, udostępniania ekranu lub przesyłania obrazu wyłącza wizualizację, ponieważ korzysta ona z tej samej zgody na nagrywanie ekranu, a Android pozwala używać jej tylko jednej aplikacji naraz. Jeśli inna aplikacja nagrywa, udostępnia lub przesyła obraz, ponowne włączenie wizualizacji to przerwie. Zwykle, gdy wizualizacja wyłączy się bez Twojego udziału, telefon wibruje trzy razy długo i wyświetla powiadomienie z przyciskiem „Włącz ponownie”. Zatrzymanie przechwytywania dźwięku z panelu udostępniania ekranu w telefonie daje ten sam komunikat, a o wymuszonym zatrzymaniu aplikacji lub jej awarii nie da się Cię powiadomić. Jeśli powiadomienia są wyłączone, dowiesz się tylko z wibracji, a po otwarciu aplikacji karta „Główna” pokaże, co się wyłączyło.</string>
     <string name="help_note_stopped_external">Tryb dźwięków zewnętrznych pozostaje włączony niezależnie od nagrywania ekranu, udostępniania ekranu czy przesyłania obrazu. Zwykle, gdy wyłączy się bez Twojego udziału, telefon wibruje trzy razy długo i wyświetla powiadomienie z przyciskiem „Włącz ponownie”. O wymuszonym zatrzymaniu aplikacji lub jej awarii nie da się Cię powiadomić. Jeśli powiadomienia są wyłączone, dowiesz się tylko z wibracji, a po otwarciu aplikacji karta „Główna” pokaże, co się wyłączyło.</string>
     <string name="help_note_screen_off">Gdy ekran jest wyłączony, wizualizacja wstrzymuje się, aby oszczędzać baterię, a po włączeniu ekranu wraca do pracy. Możesz to zmienić w sekcji „Bateria” na karcie „Ustawienia”. Tryb dźwięków zewnętrznych słucha dalej także przy wyłączonym ekranie.</string>
@@ -285,13 +327,14 @@
     <string name="help_faq_no_graphic_a_external">Sprawdź, czy mikrofon nie jest zablokowany. Podczas rozmowy, gdy inna aplikacja używa mikrofonu albo gdy mikrofon jest zablokowany w Szybkich ustawieniach, nie dociera żaden dźwięk, a karta „Główna” i powiadomienie o działaniu aplikacji Cię o tym poinformują. Jeśli ciche dźwięki są ledwo widoczne, zwiększ czułość mikrofonu na karcie „Główna”. Upewnij się też, że na karcie „Ustawienia” wartość „Krycie” nie jest zbyt niska, a pokazywanie rodzaju dźwięku, który właśnie słychać, nie jest wyłączone.</string>
     <string name="help_faq_no_vibration_q">Telefon nie wibruje.</string>
     <string name="help_faq_no_vibration_answer">W ustawieniach, w sekcji „Rodzaje dźwięków (AI)”, sprawdź, czy dla danego rodzaju włączone są obie opcje: „Pokaż” i „Wibracje”. Przy wyłączonym ekranie aplikacja domyślnie się wstrzymuje, więc jeśli chcesz dostawać wibracje także wtedy, wyłącz „Pauza przy wyłączonym ekranie” w sekcji „Bateria” w ustawieniach. Gdy rozpoznawanie rodzaju dźwięku nie działa, wibrują tylko głośne dźwięki – z ustawieniem dla dźwięków zagrożenia. Jeśli wibracje są wyłączone w ustawieniach telefonu, telefon może nie wibrować. Jeśli pokazujesz dźwięk z telefonu, a głośność multimediów jest bardzo niska, trochę ją zwiększ.</string>
+    <string name="help_faq_no_vibration_answer_external">W ustawieniach, w sekcji „Rodzaje dźwięków (AI)”, sprawdź, czy dla danego rodzaju włączone są obie opcje: „Pokaż” i „Wibracje”. W trybie dźwięków zewnętrznych dźwięki otoczenia, takie jak dzwonek do drzwi, nie wywołują wibracji. Aby dostawać wibracje dla takiego dźwięku, zmień go na karcie „Dźwięki” na dźwięki zagrożenia albo mowę. Mowa wibruje najwyżej w trybie „Wolne”, a dźwięki zagrożenia najwyżej w trybie „Średnie”. Podczas rozmowy, gdy inna aplikacja używa mikrofonu albo gdy mikrofon jest zablokowany w Szybkich ustawieniach, nie dociera żaden dźwięk, a karta „Główna” i powiadomienie o działaniu aplikacji Cię o tym poinformują. Jeśli czułość mikrofonu na karcie „Główna” jest ustawiona poniżej domyślnej pozycji (4. od lewej), zwiększ ją z powrotem. Dźwięki za ciche dla AI nie wywołują wibracji, nawet jeśli po dalszym zwiększeniu czułości grafika je pokazuje. W takim przypadku połóż telefon blisko miejsca, z którego dochodzi dźwięk, i nie zasłaniaj mikrofonu. Gdy rozpoznawanie rodzaju dźwięku nie działa, wibrują tylko głośne dźwięki – z ustawieniem dla dźwięków zagrożenia, najwyżej w trybie „Średnie”. To, co liczy się wtedy jako głośny dźwięk, zależy od czułości mikrofonu. Jeśli wibracje są wyłączone w ustawieniach telefonu, telefon może nie wibrować.</string>
     <string name="help_faq_install_q">Nie mogę zainstalować nowej wersji.</string>
     <string name="help_faq_install_a">Plik APK zbudowany w innym miejscu ma inny podpis, więc nie może zastąpić zainstalowanej aplikacji. Najpierw odinstaluj obecną aplikację, a potem zainstaluj nową wersję. Spowoduje to zresetowanie ustawień.</string>
     <string name="help_faq_battery_q">Czy aplikacja mocno zużywa baterię?</string>
     <string name="help_faq_battery_a">Aplikacja rysuje grafikę tylko wtedy, gdy słychać dźwięk, a w ciszy przechodzi w stan spoczynku. Ponieważ jednak cały czas przechwytuje dźwięk, zalecamy ją wyłączać, gdy z niej nie korzystasz.</string>
     <string name="help_faq_battery_less_drawing">Gdy słychać dźwięk, najwięcej energii zużywa rysowanie grafiki. Jeśli włączysz „Rzadziej rysuj grafikę” w sekcji „Bateria” na karcie „Ustawienia”, aplikacja będzie zużywać mniej energii, ale ruch będzie mniej płynny.</string>
     <string name="help_faq_language_q">Jak zmienić język aplikacji?</string>
-    <string name="help_faq_language_a">Naciśnij „Język” u góry karty „Ustawienia” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
+    <string name="help_faq_language_a">Naciśnij przycisk z globusem w prawym dolnym rogu karty „Główna” i wybierz język. Opcja „Domyślny język systemu” sprawia, że aplikacja używa języka telefonu. W systemie Android 13 lub nowszym możesz go też zmienić w ustawieniach telefonu, w sekcji „Języki aplikacji”.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Zgłoś problem</string>
@@ -308,7 +351,7 @@
     <string name="help_about_title">O aplikacji</string>
     <string name="help_about_version">Wersja %1$s</string>
     <string name="help_about_team">Autorzy: zespół SOVIS</string>
-    <string name="help_about_license">Ta aplikacja jest udostępniana na warunkach Apache License 2.0.</string>
+    <string name="help_about_license">Ta aplikacja jest udostępniana na warunkach Apache License 2.0. Nazwy i grupy dźwięków na karcie „Dźwięki” są oparte na ontologii AudioSet i udostępniane na warunkach licencji CC BY-SA 4.0 (zobacz „Licencje open source” poniżej).</string>
     <string name="help_licenses_button">Licencje open source</string>
     <string name="help_licenses_title">Licencje open source</string>
     <string name="help_close">Zamknij</string>

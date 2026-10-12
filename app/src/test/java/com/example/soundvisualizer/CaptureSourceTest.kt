@@ -23,6 +23,7 @@ class CaptureSourceTest {
         assertEquals(ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION, source.foregroundServiceType)
         assertTrue(source.watchesBlockedCapture)
         assertTrue("폰 안의 소리는 화면이 꺼지면 쉬는 설정을 따른다", source.followsScreenOffPause)
+        assertFalse("폰 안의 소리는 앱의 진동을 듣지 못한다", source.hearsOwnVibration)
     }
 
     @Test
@@ -34,6 +35,7 @@ class CaptureSourceTest {
         assertEquals(ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE, source.foregroundServiceType)
         assertFalse("마이크가 조용한 것으로 재생 중인 앱을 탓하지 않는다", source.watchesBlockedCapture)
         assertFalse("외부 사운드 모드는 화면이 꺼져도 듣는다(#260)", source.followsScreenOffPause)
+        assertTrue("마이크는 앱의 진동을 소리로 듣는다(#290)", source.hearsOwnVibration)
     }
 
     @Test

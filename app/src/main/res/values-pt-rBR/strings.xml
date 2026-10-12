@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Ouve os sons ao seu redor pelo microfone, em vez do som que toca no celular. O áudio em si nunca é salvo nem enviado a lugar nenhum.</string>
     <string name="home_external_mode_locked">Não dá para mudar enquanto está em execução. Pare a visualização e mude; a alteração vale na próxima vez que você iniciar.</string>
     <string name="home_mic_sensitivity">Sensibilidade do microfone</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Status: Pronto</string>
     <string name="home_capture_blocked">A visualização não está recebendo nenhum som, então não há nada para desenhar. Pode ser que o app que está tocando não permita compartilhar o som dele (é o caso dos vídeos protegidos) ou que o som esteja desligado dentro do próprio app.</string>
     <string name="home_ai_unavailable_loud">A detecção do tipo de som não está funcionando, então todos os sons aparecem na cor dos sons ambientes e só os sons altos vibram, com o ajuste de vibração dos sons de perigo. Tente desligar e ligar a visualização de novo.</string>
@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Página %1$d de %2$d</string>
     <string name="tutorial_pause">Pausar animação</string>
     <string name="tutorial_play">Reproduzir animação</string>
+    <string name="tutorial_sound_on">Ativar som</string>
+    <string name="tutorial_sound_off">Desativar som</string>
     <string name="tutorial_sound_title">Veja o som na sua tela</string>
     <string name="tutorial_sound_body">O som do seu jogo ou vídeo é desenhado nas bordas da tela. Quanto mais alto o som, maior o desenho. Só aparece o som que toca no seu celular. Os sons ao seu redor não são captados.</string>
     <string name="tutorial_sound_body_external">O modo de som externo está ligado, então os sons ao seu redor captados pelo microfone são desenhados nas bordas da tela. Quanto mais alto o som, maior o desenho. Neste modo, o som que toca no seu celular não aparece.</string>
@@ -133,9 +135,11 @@
     <string name="ai_show_speech">Mostrar vozes</string>
     <string name="ai_show_danger">Mostrar sons de perigo</string>
     <string name="ai_unavailable">A detecção do tipo de som não está funcionando, então todos os sons aparecem na cor dos sons ambientes. Tente desligar e ligar a visualização de novo.</string>
-    <string name="classify_title">Escolha o tipo de cada som</string>
-    <string name="classify_desc">Aqui estão todos os sons que a IA consegue reconhecer e o tipo de cada um. Se você mudar o tipo de um som, a cor e a vibração dele passam a seguir o novo tipo na hora.</string>
-    <string name="classify_danger_note">Se você tirar um som dos sons de perigo, ele deixa de ter a cor e a vibração dos sons de perigo. Sons parecidos ficam em linhas separadas (as sirenes ocupam cinco); para tirar todos, mude cada linha.</string>
+    <string name="classify_title">Escolha os tipos de som</string>
+    <string name="classify_desc_groups">Os sons que a IA reconhece ficam agrupados com sons parecidos, de acordo com o tipo padrão de cada um. Se você mudar o tipo de um grupo, a cor e a vibração dos sons dele passam a seguir o novo tipo na hora.</string>
+    <string name="classify_sibling_note">A IA muitas vezes reconhece um mesmo som com vários nomes ao mesmo tempo. Uma sirene, por exemplo, também é reconhecida como “Alarme”, que fica em outro grupo. Se, depois de uma mudança, um som continuar aparecendo com o tipo antigo, mude também os grupos ou sons relacionados.</string>
+    <string name="classify_advanced">Modo avançado</string>
+    <string name="classify_advanced_desc">Mostra cada som dentro do grupo para você mudar os sons um a um.</string>
     <string name="classify_search_hint">Pesquisar sons</string>
     <string name="cd_classify_clear_search">Limpar pesquisa</string>
     <string name="classify_filter_all">Todos</string>
@@ -145,7 +149,7 @@
     <string name="sound_type_danger">Som de perigo</string>
     <string name="classify_type_default">%1$s (padrão)</string>
     <string name="classify_changed_from">Padrão: %1$s</string>
-    <string name="classify_changed_count">Alterados: %1$d</string>
+    <string name="classify_changed_count">Sons alterados: %1$d</string>
     <string name="classify_reset_all">Redefinir tudo</string>
     <string name="classify_reset_title">Redefinir todos os sons?</string>
     <string name="classify_reset_message">Todos os sons que você alterou voltam ao tipo padrão.</string>
@@ -154,6 +158,35 @@
     <string name="classify_empty">Nenhum som encontrado.</string>
     <string name="cd_classify_sound">%1$s, tipo: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, tipo: %2$s, padrão: %3$s</string>
+    <string name="classify_type_mixed">Misto</string>
+    <string name="classify_group_mixed_note">Alguns sons alterados um a um</string>
+    <string name="classify_group_changed_line">Atual: %1$s · Padrão: %2$s</string>
+    <string name="classify_group_overwrite_title">Alterar o grupo inteiro?</string>
+    <string name="classify_group_overwrite_message">Sons do grupo “%1$s” que vão mudar para “%3$s”: %2$d. Os sons que você alterou um a um também serão substituídos.</string>
+    <string name="classify_group_overwrite_confirm">Alterar</string>
+    <string name="classify_group_overwrite_cancel">Cancelar</string>
+    <string name="classify_basic_warning_title">Mudar para o modo básico?</string>
+    <string name="classify_basic_warning_message">Alguns grupos têm sons que você alterou um a um. No modo básico, se você escolher um tipo para um desses grupos, todos os sons dele passam a ter esse tipo e as alterações feitas um a um nesse grupo são substituídas. Nada muda até você escolher.</string>
+    <string name="classify_basic_warning_confirm">Mudar para básico</string>
+    <string name="classify_basic_warning_cancel">Ficar no avançado</string>
+    <string name="cd_classify_group">Grupo %1$s, tipo: %2$s, sons: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Grupo %1$s, tipo: %2$s, padrão: %3$s, sons: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Grupo %1$s, sons: %2$d</string>
+    <string name="sound_group_horns">Buzinas e alarmes de carro</string>
+    <string name="sound_group_vehicle_warnings">Sinais de alerta de veículos</string>
+    <string name="sound_group_breaking">Vidro quebrado e pancadas</string>
+    <string name="sound_group_distress">Gritos e choro</string>
+    <string name="sound_group_talking">Fala e sussurros</string>
+    <string name="sound_group_signals">Despertadores, bipes e apitos</string>
+    <string name="sound_group_voices">Aplausos, cantarolar e assobios</string>
+    <string name="sound_group_water">Torneiras e água corrente</string>
+    <string name="sound_group_kitchen">Cozinha e comida</string>
+    <string name="sound_group_appliances">Eletrodomésticos e relógios</string>
+    <string name="sound_group_tools">Ferramentas e máquinas</string>
+    <string name="sound_group_nature">Natureza e clima</string>
+    <string name="sound_group_body">Tosse, respiração e sons do corpo</string>
+    <string name="sound_group_objects">Objetos e sons curtos</string>
+    <string name="sound_group_background">TV, rádio e som de fundo</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrar</string>
@@ -172,6 +205,8 @@
     <string name="haptic_mode_continuous">Contínua</string>
     <string name="haptic_preview_hint">Toque em um modo ou mude a intensidade para sentir a vibração por 2 segundos.</string>
     <string name="haptic_preview_hint_running">Enquanto a visualização está em execução, a prévia não vibra, para não se confundir com os avisos reais.</string>
+    <string name="haptic_cap_external">No modo de som externo, o máximo que você pode escolher para o tipo %1$s é %2$s, para que o celular não confunda a própria vibração com som. Se estiver definido um modo mais rápido, ele vibra como %2$s, e quando você desliga o modo de som externo, volta a vibrar como você definiu.</string>
+    <string name="haptic_off_external">No modo de som externo, os sons ambientes não vibram, porque sempre há algum som ao seu redor e a vibração nunca pararia. Quando você desliga o modo de som externo, eles voltam a vibrar como você definiu.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Escolha uma cor</string>
@@ -218,6 +253,11 @@
     <string name="stopped_text_overlay_failed">Não foi possível mostrar os gráficos por cima de outros apps, então a visualização foi desligada. Verifique se a permissão “Sobrepor a outros apps” está concedida.</string>
     <string name="stopped_turn_on">Ligar de novo</string>
     <string name="stopped_toast">A visualização de sons foi desligada. Os gráficos e os avisos por vibração estão desligados.</string>
+    <string name="danger_alert_channel_name">Alertas de sons de perigo</string>
+    <string name="danger_alert_channel_desc">Se um som de perigo for ouvido com o celular bloqueado ou a tela desligada, um alerta aparece na tela de bloqueio e a tela acende por alguns segundos. Com a tela desligada, o alerta só funciona no modo de som externo ou se “Pausar com a tela desligada” estiver desativado. Não faz nenhum som.</string>
+    <string name="danger_alert_title">Som de perigo ouvido</string>
+    <string name="danger_alert_text_named">Ouvido: %1$s. Verifique o que está ao seu redor.</string>
+    <string name="danger_alert_text">Verifique o que está ao seu redor.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualizar sons</string>
@@ -259,9 +299,11 @@
 
     <string name="help_sound_title">Tipos de som e vibração</string>
     <string name="help_sound_kinds">A IA separa os sons em três tipos: sons ambientes, vozes e sons de perigo. Por padrão, os sons ambientes aparecem em branco, as vozes em amarelo e os sons de perigo em vermelho. Na aba Ajustes, você pode mudar a cor de cada tipo e escolher se ele é mostrado.</string>
+    <string name="help_sound_classify_groups">Na aba Sons, os sons parecidos ficam agrupados e você escolhe o tipo de cada grupo. Por exemplo, se mudar o grupo “Campainha” para som de perigo, quando a IA reconhecer uma campainha ou uma batida na porta, o som passa a ter a cor e a vibração dos sons de perigo. Mas um som que você mesmo muda para som de perigo só participa da votação da IA sobre o tipo, então isso não quer dizer que toda campainha vai aparecer como som de perigo. Ative o modo avançado para mudar os sons um a um.</string>
     <string name="help_sound_danger">Quando um som de perigo (como um tiro) é detectado, a cor muda na hora, sem transição gradual.</string>
     <string name="help_sound_haptic">A vibração avisa mesmo quando você não está olhando para a tela. Por padrão, só os sons de perigo vibram, e você pode escolher o modo (Desligada, Lenta, Média, Rápida, Contínua) e a intensidade de cada tipo.</string>
     <string name="help_sound_haptic_rule">Só vibram os tipos mostrados na tela. O celular vibra enquanto durar um som desse tipo e para quando ele termina. Média pulsa a cada meio segundo, Lenta na metade desse ritmo e Rápida no dobro, enquanto Contínua vibra sem interrupção. Em todos os modos, a vibração mantém a intensidade que você escolheu.</string>
+    <string name="help_sound_haptic_external">No modo de som externo, o celular só verifica se ainda há som nas pausas entre os pulsos, para não confundir a própria vibração com som. Por isso, a vibração pode durar mais um instante depois que o som termina, geralmente menos de um segundo. Para que essas pausas sejam longas o bastante, neste modo o máximo que você pode escolher é Lenta para vozes e Média para sons de perigo, e os sons ambientes não vibram, porque sempre há algum som ao seu redor. Os tipos definidos com um modo mais rápido vibram no mais rápido permitido, e quando você desliga o modo de som externo, voltam a vibrar como você definiu.</string>
 
     <string name="help_notes_title">Bom saber</string>
     <string name="help_note_direction">O app diferencia esquerda e direita, mas não frente e trás. Os gráficos nas partes de cima e de baixo da tela representam sons que chegam igualmente dos dois lados e a sensação de espaço.</string>
@@ -270,7 +312,7 @@
     <string name="help_note_sources">Só são capturados sons de mídia e de jogos. Chamadas telefônicas, sons de notificação e alarmes ficam de fora, e o som de apps que bloqueiam a captura de áudio (como alguns apps de vídeo) não pode ser visualizado. Se houver som tocando e mesmo assim nada for desenhado por cerca de 15 segundos, a aba Início e a notificação em andamento avisam você. Um app que desligou o próprio som fica exatamente igual, então não temos como dizer qual dos dois é o caso.</string>
     <string name="help_note_sources_external">O modo de som externo capta todos os sons ao seu redor que o microfone ouve, inclusive alarmes, campainhas e o som do próprio celular. Durante uma ligação, enquanto outro app usa o microfone ou se o microfone estiver bloqueado nas Configurações rápidas, nenhum som chega, e a aba Início e a notificação em andamento avisam você.</string>
     <string name="help_note_volume">O som que toca no celular é capturado no nível definido pelo volume de mídia. Se você abaixar muito o volume, os gráficos e a vibração podem não reagir, e com o volume no zero nada é capturado. Se a resposta estiver fraca, aumente um pouco o volume. O modo de som externo não depende do volume.</string>
-    <string name="help_note_mic_sensitivity">No modo de som externo, a sensibilidade do microfone só muda o quão altos os sons parecem para os gráficos e a vibração. Aumente-a se sons baixos quase não aparecerem e diminua-a se, em um lugar barulhento, o ruído de fundo também aparecer. Ela não muda o som que a IA usa para distinguir os tipos de som.</string>
+    <string name="help_note_mic_sensitivity">No modo de som externo, a sensibilidade do microfone só muda o quão altos os sons parecem para os gráficos, a vibração e o alerta de sons de perigo na tela de bloqueio. Aumente-a se sons baixos quase não aparecerem e diminua-a se, em um lugar barulhento, o ruído de fundo também aparecer. Se você deixar a sensibilidade abaixo da posição padrão (a 4ª a partir da esquerda), sons baixos podem não vibrar nem acionar o alerta de sons de perigo. A sensibilidade não muda o som que a IA usa para distinguir os tipos de som. Por isso, sons baixos demais para a IA ouvir não vibram nem acionam o alerta de sons de perigo, mesmo que você aumente a sensibilidade e os gráficos os mostrem. Nesse caso, deixe o celular perto de onde vem o som e não cubra o microfone.</string>
     <string name="help_note_stopped">Começar uma gravação de tela, um compartilhamento de tela ou uma transmissão desliga a visualização, porque ela usa a mesma autorização de gravação de tela e o Android deixa só um app usá-la por vez. Se outro app estiver gravando, compartilhando ou transmitindo, ligar a visualização de novo encerra o que ele está fazendo. Na maioria dos casos, quando ela desliga sem que você a tenha parado, o celular vibra três vezes de forma longa e mostra uma notificação com o botão “Ligar de novo”. Encerrar a captura de som pelos controles de compartilhamento de tela do celular mostra o mesmo aviso, e um encerramento forçado ou uma falha do app não conseguem avisar de jeito nenhum. Se as notificações estiverem desativadas, só a vibração avisa, e a aba Início mostra o que foi desligado quando você abre o app.</string>
     <string name="help_note_stopped_external">O modo de som externo continua ligado mesmo com gravação de tela, compartilhamento de tela ou transmissão. Na maioria dos casos, quando ele desliga sem que você o tenha parado, o celular vibra três vezes de forma longa e mostra uma notificação com o botão “Ligar de novo”. Um encerramento forçado ou uma falha do app não conseguem avisar de jeito nenhum. Se as notificações estiverem desativadas, só a vibração avisa, e a aba Início mostra o que foi desligado quando você abre o app.</string>
     <string name="help_note_screen_off">Com a tela desligada, o app fica em pausa para economizar bateria e volta a funcionar quando você liga a tela. Você pode mudar isso em Bateria, na aba Ajustes. O modo de som externo continua ouvindo mesmo com a tela desligada.</string>
@@ -285,13 +327,14 @@
     <string name="help_faq_no_graphic_a_external">Verifique se o microfone não está bloqueado. Durante uma ligação, enquanto outro app usa o microfone ou se o microfone estiver bloqueado nas Configurações rápidas, nenhum som chega, e a aba Início e a notificação em andamento avisam você. Se sons baixos quase não aparecerem, aumente a sensibilidade do microfone na aba Início. Confira também, na aba Ajustes, se a Opacidade não está baixa demais e se a exibição do tipo de som atual não está desativada.</string>
     <string name="help_faq_no_vibration_q">Não está vibrando.</string>
     <string name="help_faq_no_vibration_answer">Em Ajustes, em “Tipos de som (IA)”, confira se as opções “Mostrar” e “Vibrar” desse tipo estão ativadas. Com a tela desligada, o app pausa por padrão; para continuar recebendo avisos por vibração nesse momento, desative “Pausar com a tela desligada” em Bateria, nos Ajustes. Enquanto a detecção do tipo de som não estiver funcionando, só os sons altos vibram, com o ajuste dos sons de perigo. Se a vibração estiver desativada nas configurações do celular, ele pode não vibrar. Se você estiver visualizando o som do celular e o volume de mídia estiver muito baixo, aumente-o um pouco.</string>
+    <string name="help_faq_no_vibration_answer_external">Em Ajustes, em “Tipos de som (IA)”, confira se as opções “Mostrar” e “Vibrar” desse tipo estão ativadas. No modo de som externo, os sons ambientes, como a campainha, não vibram. Para receber a vibração, mude esse som para som de perigo ou voz na aba Sons. A vibração vai até Lenta para vozes e até Média para sons de perigo. Durante uma ligação, enquanto outro app usa o microfone ou se o microfone estiver bloqueado nas Configurações rápidas, nenhum som chega, e a aba Início e a notificação em andamento avisam você. Se você deixou a sensibilidade do microfone da aba Início abaixo da posição padrão (a 4ª a partir da esquerda), aumente-a de novo. Sons baixos demais para a IA ouvir não vibram, mesmo que você aumente mais a sensibilidade e os gráficos os mostrem. Nesse caso, deixe o celular perto de onde vem o som e não cubra o microfone. Enquanto a detecção do tipo de som não estiver funcionando, só os sons altos vibram, com o ajuste dos sons de perigo, até Média. O que conta como alto depende, nessa situação, da sensibilidade do microfone. Se a vibração estiver desativada nas configurações do celular, ele pode não vibrar.</string>
     <string name="help_faq_install_q">Não consigo instalar a nova versão.</string>
     <string name="help_faq_install_a">Um APK gerado em outro lugar tem uma assinatura diferente e não pode ser instalado por cima do app atual. Desinstale o app atual primeiro e depois instale a nova versão. Isso redefine seus ajustes.</string>
     <string name="help_faq_battery_q">Gasta muita bateria?</string>
     <string name="help_faq_battery_a">O app só desenha quando há som e fica em espera quando está tudo em silêncio. Mas, como continua capturando o som, recomendamos desligar quando não estiver usando.</string>
     <string name="help_faq_battery_less_drawing">Quando há som, desenhar os gráficos é o que mais consome energia. Se você ativar “Desenhar os gráficos com menos frequência” em Bateria, na aba Ajustes, o app passa a consumir menos energia, mas o movimento fica menos suave.</string>
     <string name="help_faq_language_q">Como mudo o idioma do app?</string>
-    <string name="help_faq_language_a">Toque em “Idioma” no topo da aba Ajustes e escolha um. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
+    <string name="help_faq_language_a">Toque no botão de globo no canto inferior direito da aba Início e escolha um idioma. “Padrão do sistema” segue o idioma do celular. No Android 13 e versões mais recentes, você também pode mudar em “Idiomas dos apps” nas configurações do celular.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Relatar um problema</string>
@@ -308,7 +351,7 @@
     <string name="help_about_title">Sobre</string>
     <string name="help_about_version">Versão %1$s</string>
     <string name="help_about_team">Feito pela equipe SOVIS</string>
-    <string name="help_about_license">Este app é distribuído sob a Apache License 2.0.</string>
+    <string name="help_about_license">Este app é distribuído sob a Apache License 2.0. Os nomes e os grupos de sons da aba Sons são baseados na ontologia AudioSet e distribuídos sob a licença CC BY-SA 4.0 (veja “Licenças de código aberto” abaixo).</string>
     <string name="help_licenses_button">Licenças de código aberto</string>
     <string name="help_licenses_title">Licenças de código aberto</string>
     <string name="help_close">Fechar</string>

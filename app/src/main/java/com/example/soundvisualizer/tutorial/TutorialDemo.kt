@@ -35,7 +35,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.BgColor
 import com.example.soundvisualizer.CardColor
@@ -77,6 +80,8 @@ import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.VisualizerEngine
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /** 가로로 눕힌 폰 그림의 가로:세로. 요즘 폰 화면(19.5:9 안팎)에 테두리를 더한 비율이다. */
 private const val PHONE_ASPECT = 2.05f
@@ -110,22 +115,41 @@ private const val FRAME_NS = 16_666_667L
 private const val MIN_REDRAW_NS = 16_400_000L
 
 /**
+ * 그림의 프레임을 따라 무언가를 내는 쪽(진짜 진동 [TutorialHaptics], 소리 [TutorialSounds]). 그림이 움직이는 동안
+ * 프레임마다 [onFrame] 을, 멈출 때(쪽을 넘김·멈춤 버튼·그림이 사라짐) [stop] 을 부른다. 메인 스레드에서만 부른다.
+ */
+internal interface TutorialFrameFollower {
+    /** 그림이 새로 그릴 때. [t] 는 대본의 시각(초)이다. 처음에는 멈춰 둔 장면의 시각에서 시작한다. */
+    fun onFrame(t: Float)
+
+    /** 그림이 멈출 때. 다시 움직이면 [onFrame] 이 멈춘 시각부터 이어서 온다(#331). */
+    fun stop()
+}
+
+/**
  * 튜토리얼 한 쪽의 그림. 가로로 눕힌 폰 안의 게임 장면 위에 **실제 오버레이 엔진**이 [TutorialScript] 의 소리를 그린다.
  *
  * - 폰 그림이 실제 화면보다 작으므로 엔진의 density 를 그 비율만큼 줄인다. 여백·두께·보이기 시작하는 깊이가
  *   실제 화면을 줄여 놓은 비율로 맞는다.
- * - [running] 일 때만 움직인다. 페이저가 옆 쪽을 미리 그려 두는 동안이나 멈춤을 눌렀을 때는 그 쪽이 말하려는
- *   장면([TutorialScene.stillAtSec]) 한 장을 보여 준다. 움직이기 시작할 때마다 대본을 처음부터 튼다.
+ * - [running] 일 때만 움직인다. 처음에는 그 쪽이 말하려는 장면([TutorialScene.stillAtSec]) 한 장을 보여 주고
+ *   (페이저가 옆 쪽을 미리 그려 둘 때, 애니메이션을 꺼 둔 사람), 움직이기 시작하면 **그 장면에서 이어서** 움직인다.
+ *   멈추면(쪽을 넘김·멈춤 버튼) 그 자리에서 멈추고, 다시 움직이면 거기서 이어 간다(#331).
  * - 그림은 옆의 글이 말하는 것을 보여 주기만 하므로 화면 읽어주기에서는 통째로 건너뛴다.
+ * - 진동 쪽은 그림 속 폰이 떠는 순간마다 진짜 폰도 울린다([TutorialHaptics], #323). 움직이는 동안만 울린다.
+ * - 소리를 켜 두었으면 그림이 그리는 소리를 실제 녹음으로 함께 낸다([TutorialSounds], #327). 움직이는 동안만 낸다.
  *
  * @param time 대본의 지금 시각. 종류 쪽의 범례가 함께 읽는다.
+ * @param haptics 진짜 진동. 진동 쪽이 아니거나 진동 모터가 없으면 null 이다.
+ * @param sounds 그 쪽의 소리. 소리를 꺼 두었으면 null 이다. 움직이는 도중에 바뀌어도 다음 프레임부터 따른다.
  */
 @Composable
 internal fun TutorialIllustration(
     scene: TutorialScene,
     running: Boolean,
     time: MutableFloatState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    haptics: TutorialFrameFollower? = if (scene == TutorialScene.Vibration) rememberTutorialHaptics() else null,
+    sounds: TutorialFrameFollower? = null
 ) {
     BoxWithConstraints(modifier = modifier.clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
         val markRoom = if (scene == TutorialScene.Vibration) VIBRATION_MARK_ROOM else 0.dp
@@ -138,7 +162,7 @@ internal fun TutorialIllustration(
                     if (markRoom > 0.dp) {
                         VibrationMarks(scene, time, running, mirrored = false, Modifier.width(markRoom).height(phoneHeight))
                     }
-                    DemoPhone(scene, time, running, phoneWidth, phoneHeight)
+                    DemoPhone(scene, time, running, phoneWidth, phoneHeight, haptics, sounds)
                     if (markRoom > 0.dp) {
                         VibrationMarks(scene, time, running, mirrored = true, Modifier.width(markRoom).height(phoneHeight))
                     }
@@ -154,7 +178,9 @@ private fun DemoPhone(
     time: MutableFloatState,
     running: Boolean,
     phoneWidth: Dp,
-    phoneHeight: Dp
+    phoneHeight: Dp,
+    haptics: TutorialFrameFollower?,
+    sounds: TutorialFrameFollower?
 ) {
     val density = LocalDensity.current
     val screenWidthPx = with(density) { (phoneWidth - BEZEL * 2).toPx() }
@@ -162,45 +188,65 @@ private fun DemoPhone(
     val engineDensity = screenHeightPx / REFERENCE_SHORT_SIDE_DP
     // 입력은 이 쪽만 쓴다. 넘기는 동안 두 쪽의 엔진이 함께 돌기 때문이다.
     val inputs = remember(scene) { TutorialDemoInputs(scene, LiveVisualizerInputs::colorFor) }
-    // 움직이기 시작할 때마다 새 엔진으로 처음부터 그린다. 멈춰 있던 동안의 상태가 남지 않는다.
+    // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
     // 입력은 반드시 넘긴다. 빼면 기본값인 실제 소리가 그려진다.
-    // 멈춰 둘 장면은 여기서 바로 만든다. 효과(LaunchedEffect)에서 만들면 첫 그리기가 효과보다 먼저라 빈 장면이 그려지고,
-    // 그 뒤로 다시 그리게 하는 것이 없어 애니메이션을 꺼 둔 사람에게는 폰 그림이 끝내 비어 있다.
-    val engine = remember(inputs, engineDensity, running, screenWidthPx, screenHeightPx) {
-        VisualizerEngine(engineDensity, inputs).also {
-            // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
-            it.setSurfaceSize(screenWidthPx, screenHeightPx)
-            if (!running) it.runTo(inputs, scene.stillAtSec)
+    fun newEngine(source: TutorialDemoInputs) =
+        VisualizerEngine(engineDensity, source).also { it.setSurfaceSize(screenWidthPx, screenHeightPx) }
+
+    // 그 쪽의 엔진 하나. 멈춰 둘 장면([TutorialScene.stillAtSec])까지 대본을 미리 돌린 채로 만든다.
+    // - 대본을 2초 남짓 미리 돌려야 해서(엔진 틱 백여 번) 쪽마다 한 번만, 백그라운드에서 만든다(#318). 다 만들어지면
+    //   상태가 바뀌어 다시 그린다. 애니메이션을 꺼 둔 사람에게도 그림이 비지 않는다.
+    // - 움직이기 시작하면 이 엔진이 그 장면에서 이어서 움직인다. 예전에는 새 엔진으로 대본을 0초부터 틀어, 넘기는 동안
+    //   보이던 장면(예: 빨간 위협음)이 손을 떼는 순간 빈 화면으로 툭 바뀌었다(#331). 멈추면 그 자리에서 멈춘다.
+    val engine by produceState<VisualizerEngine?>(null, inputs, engineDensity, screenWidthPx, screenHeightPx) {
+        val ready = withContext(Dispatchers.Default) {
+            newEngine(inputs).also { it.runTo(inputs, scene.stillAtSec) }
         }
+        // 엔진을 새로 만들었으면(크기가 바뀌었을 때 등) 시각도 그 장면으로 되돌린다. 범례와 진동 표시가 함께 읽는다.
+        time.floatValue = scene.stillAtSec
+        value = ready
     }
     // 엔진이 새로 계산할 때마다 올린다. 그리기가 이 값을 읽어, 시각(time)이 같은 값이어도 다시 그린다.
     val frame = remember { mutableIntStateOf(0) }
+    // 소리는 움직이는 도중에도 켜고 끈다. 돌고 있는 루프가 지금 것을 읽게 한다.
+    val currentSounds by rememberUpdatedState(sounds)
 
-    LaunchedEffect(engine) {
+    LaunchedEffect(engine, running) {
+        val live = engine ?: return@LaunchedEffect
         if (!running) {
-            time.floatValue = scene.stillAtSec
             frame.intValue++
             return@LaunchedEffect
         }
-        time.floatValue = 0f
+        // 멈춘 시각(처음이면 멈춰 둔 장면의 시각)에서 이어 간다.
+        val base = time.floatValue
         var start = -1L
         var lastDraw = 0L
-        while (true) {
-            // 끝없이 도는 애니메이션으로 알린다. UI 테스트처럼 이런 애니메이션을 멈춰 두는 곳에서 화면이 한가해질 수
-            // 있다(무한 전환 rememberInfiniteTransition 과 같은 길). 앱에서는 withFrameNanos 와 똑같다.
-            withInfiniteAnimationFrameNanos { nanos ->
-                if (start < 0L) start = nanos
-                if (nanos - lastDraw >= MIN_REDRAW_NS) {
-                    lastDraw = nanos
-                    val t = (nanos - start) / 1_000_000_000f
-                    inputs.timeSec = t
-                    // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
-                    // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
-                    if (engine.isIdle) engine.pollWake() else engine.tick(nanos)
-                    time.floatValue = t
-                    frame.intValue++
+        try {
+            while (true) {
+                // 끝없이 도는 애니메이션으로 알린다. UI 테스트처럼 이런 애니메이션을 멈춰 두는 곳에서 화면이 한가해질 수
+                // 있다(무한 전환 rememberInfiniteTransition 과 같은 길). 앱에서는 withFrameNanos 와 똑같다.
+                withInfiniteAnimationFrameNanos { nanos ->
+                    if (start < 0L) start = nanos
+                    if (nanos - lastDraw >= MIN_REDRAW_NS) {
+                        lastDraw = nanos
+                        val t = base + (nanos - start) / 1_000_000_000f
+                        inputs.timeSec = t
+                        // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
+                        // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
+                        // 멈췄다 다시 움직인 첫 틱은 프레임 간격이 길지만, 엔진이 한 틱의 걸음을 네 프레임까지로 자른다.
+                        if (live.isIdle) live.pollWake() else live.tick(nanos)
+                        time.floatValue = t
+                        frame.intValue++
+                        // 그림의 떨림(아래 graphicsLayer)과 같은 프레임에 진짜 진동과 소리를 보낸다.
+                        haptics?.onFrame(t)
+                        currentSounds?.onFrame(t)
+                    }
                 }
             }
+        } finally {
+            // 멈추거나(쪽을 넘김·멈춤 버튼) 그림이 사라지면 울리던 진동과 나던 소리도 끊는다.
+            haptics?.stop()
+            currentSounds?.stop()
         }
     }
 
@@ -209,7 +255,7 @@ private fun DemoPhone(
         modifier = Modifier
             .size(phoneWidth, phoneHeight)
             .graphicsLayer {
-                // 기본 위협음 진동(강하게 두 번)에 맞춰 떤다. 실제 진동은 울리지 않는다.
+                // 처음 설정의 위협음 진동(0.5초마다 0.2초)에 맞춰 떤다. 진짜 진동은 같은 순간에 [TutorialHaptics] 가 울린다.
                 val t = time.floatValue
                 translationX = if (running && TutorialScript.vibrating(scene, t)) {
                     sin(t * 2f * PI.toFloat() * 32f) * shakePx
@@ -272,7 +318,8 @@ private fun DemoPhone(
                         }
                         // 값은 쓰지 않고, 읽어서 엔진이 새로 계산할 때마다 다시 그리게 한다(VisualizerOverlay 와 같은 방식).
                         val serial = frame.intValue.toLong()
-                        drawIntoCanvas { engine.draw(it.nativeCanvas, w, h, serial) }
+                        // 멈춘 장면이 아직 만들어지는 중이면(잠깐) 게임 장면만 그린다.
+                        drawIntoCanvas { engine?.draw(it.nativeCanvas, w, h, serial) }
                     }
                 }
         )
@@ -436,14 +483,14 @@ private fun HomePhone(width: Dp, height: Dp, running: Boolean) {
                             val p = pulse?.value ?: 0.35f
                             val grow = 7.dp.toPx() * p
                             drawRoundRect(
-                                color = AccentColor.copy(alpha = 0.8f * (1f - p)),
+                                color = AccentFillColor.copy(alpha = 0.8f * (1f - p)),
                                 topLeft = Offset(-grow, -grow),
                                 size = Size(size.width + grow * 2, size.height + grow * 2),
                                 cornerRadius = CornerRadius(corner.toPx() + grow),
                                 style = Stroke(width = 1.5.dp.toPx())
                             )
                         }
-                        .background(AccentColor, RoundedCornerShape(corner))
+                        .background(AccentFillColor, RoundedCornerShape(corner))
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {

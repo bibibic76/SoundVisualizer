@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Nghe âm thanh xung quanh bạn qua micrô thay vì âm thanh đang phát trên điện thoại. Bản thân âm thanh không bao giờ được lưu hay gửi đi đâu cả.</string>
     <string name="home_external_mode_locked">Không thể thay đổi khi đang chạy. Hãy dừng âm thanh trực quan rồi thay đổi, thay đổi sẽ áp dụng từ lần bật tiếp theo.</string>
     <string name="home_mic_sensitivity">Độ nhạy micrô</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Trạng thái: Sẵn sàng</string>
     <string name="home_capture_blocked">Ứng dụng không nhận được âm thanh nào nên không vẽ được gì. Có thể ứng dụng đang phát không cho chia sẻ âm thanh của mình (video được bảo vệ thường là như vậy), hoặc chính ứng dụng đó đang tắt tiếng.</string>
     <string name="home_ai_unavailable_loud">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường, và chỉ âm thanh lớn mới rung, theo cài đặt rung của âm thanh nguy hiểm. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Trang %1$d trên %2$d</string>
     <string name="tutorial_pause">Tạm dừng hoạt ảnh</string>
     <string name="tutorial_play">Phát hoạt ảnh</string>
+    <string name="tutorial_sound_on">Bật âm thanh</string>
+    <string name="tutorial_sound_off">Tắt âm thanh</string>
     <string name="tutorial_sound_title">Nhìn thấy âm thanh trên màn hình</string>
     <string name="tutorial_sound_body">Âm thanh từ trò chơi hoặc video được vẽ dọc theo các cạnh màn hình. Âm thanh càng lớn thì đồ họa càng lớn. Chỉ âm thanh đang phát trên điện thoại mới được hiển thị. Ứng dụng không thu âm thanh xung quanh bạn.</string>
     <string name="tutorial_sound_body_external">Chế độ âm thanh bên ngoài đang bật, nên âm thanh xung quanh bạn mà micrô thu được sẽ được vẽ dọc theo các cạnh màn hình. Âm thanh càng lớn thì đồ họa càng lớn. Ở chế độ này, âm thanh đang phát trên điện thoại không được hiển thị.</string>
@@ -133,9 +135,11 @@
     <string name="ai_show_speech">Hiện giọng nói</string>
     <string name="ai_show_danger">Hiện âm thanh nguy hiểm</string>
     <string name="ai_unavailable">Ứng dụng không nhận diện được loại âm thanh nên mọi âm thanh đều hiện bằng màu của âm thanh môi trường. Hãy thử tắt âm thanh trực quan rồi bật lại.</string>
-    <string name="classify_title">Chọn loại cho từng âm thanh</string>
-    <string name="classify_desc">Đây là tất cả các âm thanh mà AI nhận diện được, cùng với loại mà mỗi âm thanh đang được xếp vào. Khi bạn đổi loại của một âm thanh, màu và rung của âm thanh đó sẽ đổi theo loại mới ngay lập tức.</string>
-    <string name="classify_danger_note">Khi bạn đưa một âm thanh ra khỏi loại âm thanh nguy hiểm, âm thanh đó sẽ không còn có màu và rung của âm thanh nguy hiểm nữa. Các âm thanh tương tự nằm ở các dòng riêng (còi hụ có năm dòng), nên muốn đưa tất cả ra thì hãy đổi từng dòng.</string>
+    <string name="classify_title">Chọn loại âm thanh</string>
+    <string name="classify_desc_groups">Các âm thanh AI nhận diện được nằm chung nhóm với những âm thanh tương tự, xếp theo loại mặc định của từng âm thanh. Khi bạn đổi loại của một nhóm, màu và rung của các âm thanh trong nhóm sẽ đổi theo loại mới ngay lập tức.</string>
+    <string name="classify_sibling_note">AI thường nhận ra một âm thanh bằng nhiều tên cùng lúc. Ví dụ, còi hụ cũng được nhận ra là “Báo động”, vốn nằm ở nhóm khác. Nếu sau khi đổi mà một âm thanh vẫn hiện theo loại cũ, hãy đổi cả các nhóm hoặc âm thanh liên quan.</string>
+    <string name="classify_advanced">Chế độ nâng cao</string>
+    <string name="classify_advanced_desc">Hiện mọi âm thanh theo nhóm để bạn đổi riêng từng âm thanh.</string>
     <string name="classify_search_hint">Tìm âm thanh</string>
     <string name="cd_classify_clear_search">Xóa từ khóa tìm kiếm</string>
     <string name="classify_filter_all">Tất cả</string>
@@ -145,7 +149,7 @@
     <string name="sound_type_danger">Âm thanh nguy hiểm</string>
     <string name="classify_type_default">%1$s (mặc định)</string>
     <string name="classify_changed_from">Mặc định: %1$s</string>
-    <string name="classify_changed_count">Đã đổi: %1$d</string>
+    <string name="classify_changed_count">Âm thanh đã đổi: %1$d</string>
     <string name="classify_reset_all">Đặt lại tất cả</string>
     <string name="classify_reset_title">Đặt lại tất cả âm thanh về mặc định?</string>
     <string name="classify_reset_message">Mọi âm thanh bạn đã đổi sẽ trở về loại mặc định.</string>
@@ -154,6 +158,35 @@
     <string name="classify_empty">Không có âm thanh nào phù hợp.</string>
     <string name="cd_classify_sound">%1$s, loại: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, loại: %2$s, mặc định: %3$s</string>
+    <string name="classify_type_mixed">Hỗn hợp</string>
+    <string name="classify_group_mixed_note">Một số âm thanh đã được đổi riêng</string>
+    <string name="classify_group_changed_line">Hiện tại: %1$s · Mặc định: %2$s</string>
+    <string name="classify_group_overwrite_title">Đổi cả nhóm?</string>
+    <string name="classify_group_overwrite_message">%2$d âm thanh trong nhóm “%1$s” sẽ chuyển thành “%3$s”. Những âm thanh bạn đã đổi riêng cũng sẽ bị ghi đè.</string>
+    <string name="classify_group_overwrite_confirm">Đổi</string>
+    <string name="classify_group_overwrite_cancel">Hủy</string>
+    <string name="classify_basic_warning_title">Chuyển sang chế độ cơ bản?</string>
+    <string name="classify_basic_warning_message">Một số nhóm có âm thanh bạn đã đổi riêng. Ở chế độ cơ bản, nếu bạn chọn loại cho một nhóm như vậy, mọi âm thanh trong nhóm sẽ nhận loại đó và những thay đổi riêng trong nhóm sẽ bị ghi đè. Không có gì thay đổi cho đến khi bạn chọn.</string>
+    <string name="classify_basic_warning_confirm">Chuyển sang cơ bản</string>
+    <string name="classify_basic_warning_cancel">Giữ chế độ nâng cao</string>
+    <string name="cd_classify_group">Nhóm %1$s, loại: %2$s, số âm thanh: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Nhóm %1$s, loại: %2$s, mặc định: %3$s, số âm thanh: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Nhóm %1$s, số âm thanh: %2$d</string>
+    <string name="sound_group_horns">Còi xe và báo động ô tô</string>
+    <string name="sound_group_vehicle_warnings">Tín hiệu cảnh báo của xe cộ</string>
+    <string name="sound_group_breaking">Kính vỡ và tiếng đổ vỡ</string>
+    <string name="sound_group_distress">Tiếng kêu, tiếng thét và tiếng khóc</string>
+    <string name="sound_group_talking">Nói chuyện và thì thầm</string>
+    <string name="sound_group_signals">Đồng hồ báo thức, tiếng bíp và tiếng còi</string>
+    <string name="sound_group_voices">Vỗ tay, ngân nga và huýt sáo</string>
+    <string name="sound_group_water">Vòi nước và nước chảy</string>
+    <string name="sound_group_kitchen">Nhà bếp và nấu ăn</string>
+    <string name="sound_group_appliances">Đồ gia dụng và đồng hồ</string>
+    <string name="sound_group_tools">Dụng cụ và máy móc</string>
+    <string name="sound_group_nature">Thiên nhiên và thời tiết</string>
+    <string name="sound_group_body">Ho, hơi thở và âm thanh cơ thể</string>
+    <string name="sound_group_objects">Đồ vật và âm thanh ngắn</string>
+    <string name="sound_group_background">Tivi, radio và âm thanh nền</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Rung</string>
@@ -172,6 +205,8 @@
     <string name="haptic_mode_continuous">Liên tục</string>
     <string name="haptic_preview_hint">Nhấn vào một chế độ hoặc thay đổi cường độ để thử cảm giác rung trong 2 giây.</string>
     <string name="haptic_preview_hint_running">Khi âm thanh trực quan đang chạy, rung thử sẽ không phát để không lẫn với rung thật.</string>
+    <string name="haptic_cap_external">Trong Chế độ âm thanh bên ngoài, bạn chỉ có thể chọn tối đa %2$s cho %1$s để điện thoại không nhầm tiếng rung của chính nó là âm thanh. Nếu đang đặt nhanh hơn, loại này sẽ rung như %2$s, và khi bạn tắt Chế độ âm thanh bên ngoài, loại này sẽ rung lại như bạn đã đặt.</string>
+    <string name="haptic_off_external">Trong Chế độ âm thanh bên ngoài, âm thanh môi trường sẽ không rung vì xung quanh bạn luôn có âm thanh nào đó và rung sẽ không bao giờ dừng. Khi bạn tắt Chế độ âm thanh bên ngoài, loại này sẽ rung lại như bạn đã đặt.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Chọn màu</string>
@@ -218,6 +253,11 @@
     <string name="stopped_text_overlay_failed">Không thể hiển thị đồ họa lên trên các ứng dụng khác nên âm thanh trực quan đã tắt. Hãy kiểm tra xem quyền “Hiển thị trên các ứng dụng khác” đã được cấp chưa.</string>
     <string name="stopped_turn_on">Bật lại</string>
     <string name="stopped_toast">Âm thanh trực quan đã tắt. Đồ họa và thông báo rung đều tắt.</string>
+    <string name="danger_alert_channel_name">Cảnh báo âm thanh nguy hiểm</string>
+    <string name="danger_alert_channel_desc">Khi nghe thấy âm thanh nguy hiểm lúc điện thoại đang khóa hoặc màn hình đang tắt, ứng dụng sẽ hiện cảnh báo trên màn hình khóa và bật màn hình trong giây lát. Khi màn hình tắt, cảnh báo chỉ hoạt động trong Chế độ âm thanh bên ngoài hoặc khi bạn đã tắt “Tạm dừng khi màn hình tắt”. Cảnh báo không phát ra âm thanh.</string>
+    <string name="danger_alert_title">Đã nghe thấy âm thanh nguy hiểm</string>
+    <string name="danger_alert_text_named">Đã nghe thấy: %1$s. Hãy kiểm tra xung quanh.</string>
+    <string name="danger_alert_text">Hãy kiểm tra xung quanh.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Âm thanh trực quan</string>
@@ -259,9 +299,11 @@
 
     <string name="help_sound_title">Loại âm thanh và rung</string>
     <string name="help_sound_kinds">AI phân loại âm thanh bạn nghe thấy thành âm thanh môi trường, giọng nói và âm thanh nguy hiểm. Theo mặc định, âm thanh môi trường có màu trắng, giọng nói màu vàng và âm thanh nguy hiểm màu đỏ. Bạn có thể đổi màu và chọn có hiện hay không cho từng loại trong thẻ Cài đặt.</string>
+    <string name="help_sound_classify_groups">Trong thẻ Phân loại, các âm thanh tương tự được gom thành nhóm và bạn chọn mỗi nhóm được tính là loại nào. Ví dụ, nếu đổi nhóm “Chuông cửa” thành âm thanh nguy hiểm, khi AI nhận ra chuông cửa hoặc gõ cửa, âm thanh đó sẽ có màu và rung của âm thanh nguy hiểm. Tuy nhiên, âm thanh do bạn tự đổi thành âm thanh nguy hiểm chỉ tham gia vào việc bỏ phiếu chọn loại của AI, nên không có nghĩa là chuông cửa lúc nào cũng sẽ hiện là âm thanh nguy hiểm. Để đổi riêng từng âm thanh, hãy bật chế độ nâng cao.</string>
     <string name="help_sound_danger">Khi phát hiện âm thanh nguy hiểm (như tiếng súng), màu sẽ đổi ngay lập tức thay vì chuyển dần.</string>
     <string name="help_sound_haptic">Rung giúp báo cho bạn biết ngay cả khi bạn không nhìn màn hình. Theo mặc định, chỉ âm thanh nguy hiểm mới rung. Bạn có thể chọn chế độ (Tắt, Chậm, Vừa, Nhanh, Liên tục) và cường độ cho từng loại.</string>
     <string name="help_sound_haptic_rule">Chỉ những loại đang được hiện trên màn hình mới rung. Điện thoại rung suốt khi âm thanh thuộc loại đó còn kéo dài và dừng khi âm thanh dừng. Vừa rung theo nhịp mỗi nửa giây, Chậm bằng một nửa nhịp đó và Nhanh gấp đôi, còn Liên tục rung không ngắt quãng. Ở mọi chế độ, rung luôn giữ đúng cường độ bạn đã chọn.</string>
+    <string name="help_sound_haptic_external">Trong Chế độ âm thanh bên ngoài, điện thoại chỉ kiểm tra xem âm thanh còn kéo dài hay không trong những khoảng nghỉ giữa các nhịp rung, để không nhầm tiếng rung của chính nó là âm thanh. Vì vậy, điện thoại có thể vẫn rung thêm một chút sau khi âm thanh dừng, thường chưa đến một giây. Để các khoảng nghỉ đó đủ dài, trong chế độ này bạn chỉ có thể chọn tối đa Chậm cho giọng nói và Vừa cho âm thanh nguy hiểm, còn âm thanh môi trường sẽ không rung vì xung quanh bạn luôn có âm thanh nào đó. Các loại đang đặt nhanh hơn sẽ rung ở mức nhanh nhất được phép, và khi bạn tắt Chế độ âm thanh bên ngoài, các loại này sẽ rung lại như bạn đã đặt.</string>
 
     <string name="help_notes_title">Lưu ý</string>
     <string name="help_note_direction">Ứng dụng phân biệt được trái và phải, nhưng không phân biệt được phía trước và phía sau. Đồ họa ở cạnh trên và cạnh dưới màn hình biểu thị âm thanh nghe như nhau ở cả hai bên, cũng như cảm giác không gian.</string>
@@ -270,7 +312,7 @@
     <string name="help_note_sources">Ứng dụng chỉ thu âm thanh của nội dung nghe nhìn và trò chơi. Cuộc gọi điện thoại, âm thanh thông báo và báo thức sẽ không được thu, và âm thanh từ những ứng dụng chặn thu âm thanh (như một số ứng dụng video) thì không thể trực quan hóa được. Nếu có âm thanh đang phát mà vẫn không vẽ được gì trong khoảng 15 giây, thẻ Trang chủ và thông báo khi đang chạy sẽ cho bạn biết. Tuy nhiên, trường hợp ứng dụng đang phát tự tắt tiếng cũng trông y hệt như vậy, nên ứng dụng này không thể cho bạn biết đó là nguyên nhân nào trong hai nguyên nhân trên.</string>
     <string name="help_note_sources_external">Chế độ âm thanh bên ngoài nhận mọi âm thanh xung quanh mà micrô nghe được, kể cả chuông báo thức, chuông cửa và âm thanh từ chính điện thoại của bạn. Khi đang gọi điện, khi ứng dụng khác đang dùng micrô, hoặc nếu micrô bị chặn trong Cài đặt nhanh, sẽ không có âm thanh nào vào, và thẻ Trang chủ cùng thông báo khi đang chạy sẽ cho bạn biết.</string>
     <string name="help_note_volume">Âm thanh đang phát trên điện thoại được thu theo mức âm lượng nội dung nghe nhìn. Nếu bạn giảm âm lượng xuống rất thấp, đồ họa và rung có thể không phản hồi, và ở mức 0 thì không thu được gì. Nếu phản hồi yếu, hãy tăng âm lượng lên một chút. Chế độ âm thanh bên ngoài không phụ thuộc vào âm lượng.</string>
-    <string name="help_note_mic_sensitivity">Trong Chế độ âm thanh bên ngoài, Độ nhạy micrô chỉ thay đổi độ lớn của âm thanh mà đồ họa và rung cảm nhận được. Hãy tăng lên nếu âm thanh nhỏ hầu như không hiện, và giảm xuống nếu ở nơi ồn ào tiếng ồn nền cũng hiện ra. Cài đặt này không thay đổi âm thanh mà AI dùng để phân biệt loại âm thanh.</string>
+    <string name="help_note_mic_sensitivity">Trong Chế độ âm thanh bên ngoài, Độ nhạy micrô chỉ thay đổi độ lớn của âm thanh mà đồ họa, rung và cảnh báo âm thanh nguy hiểm trên màn hình khóa cảm nhận được. Hãy tăng lên nếu âm thanh nhỏ hầu như không hiện, và giảm xuống nếu ở nơi ồn ào tiếng ồn nền cũng hiện ra. Nếu bạn giảm độ nhạy xuống dưới nấc mặc định (nấc thứ 4 từ trái sang), âm thanh nhỏ có thể không rung và không có cảnh báo âm thanh nguy hiểm. Độ nhạy không thay đổi âm thanh mà AI dùng để phân biệt loại âm thanh. Vì vậy, âm thanh quá nhỏ để AI nghe được sẽ không rung và không có cảnh báo âm thanh nguy hiểm, kể cả khi bạn tăng độ nhạy và đồ họa vẫn hiện âm thanh đó. Khi đó, hãy đặt điện thoại gần nơi phát ra âm thanh và đừng che micrô.</string>
     <string name="help_note_stopped">Khi bạn bắt đầu ghi màn hình, chia sẻ màn hình hoặc truyền màn hình, âm thanh trực quan sẽ tắt, vì tất cả đều dùng chung một sự đồng ý ghi màn hình mà Android chỉ cho phép một ứng dụng dùng tại một thời điểm. Nếu một ứng dụng khác đang ghi, chia sẻ hoặc truyền màn hình, việc bật lại sẽ kết thúc hoạt động đó. Trong hầu hết trường hợp, khi ứng dụng tắt mà không phải do bạn tắt, điện thoại sẽ rung dài ba lần và hiện thông báo kèm nút “Bật lại”. Nếu bạn ngừng thu âm thanh từ phần điều khiển chia sẻ màn hình của điện thoại thì cũng hiện thông báo tương tự; còn khi ứng dụng bị buộc dừng hoặc gặp sự cố thì không thể báo cho bạn. Nếu bạn đã tắt thông báo, chỉ có rung cho bạn biết, và khi bạn mở ứng dụng, thẻ Trang chủ sẽ cho biết điều gì đã tắt.</string>
     <string name="help_note_stopped_external">Chế độ âm thanh bên ngoài vẫn bật bất kể việc ghi màn hình, chia sẻ màn hình hay truyền màn hình. Trong hầu hết trường hợp, khi chế độ này tắt mà không phải do bạn tắt, điện thoại sẽ rung dài ba lần và hiện thông báo kèm nút “Bật lại”. Khi ứng dụng bị buộc dừng hoặc gặp sự cố thì không thể báo cho bạn. Nếu bạn đã tắt thông báo, chỉ có rung cho bạn biết, và khi bạn mở ứng dụng, thẻ Trang chủ sẽ cho biết điều gì đã tắt.</string>
     <string name="help_note_screen_off">Khi màn hình tắt, ứng dụng tạm dừng để tiết kiệm pin và tiếp tục khi bạn bật màn hình. Bạn có thể thay đổi điều này ở mục Pin trong thẻ Cài đặt. Chế độ âm thanh bên ngoài vẫn tiếp tục nghe khi màn hình tắt.</string>
@@ -285,13 +327,14 @@
     <string name="help_faq_no_graphic_a_external">Hãy kiểm tra xem micrô có đang bị chặn không. Khi đang gọi điện, khi ứng dụng khác đang dùng micrô, hoặc nếu micrô bị chặn trong Cài đặt nhanh, sẽ không có âm thanh nào vào, và thẻ Trang chủ cùng thông báo khi đang chạy sẽ cho bạn biết. Nếu âm thanh nhỏ hầu như không hiện, hãy tăng Độ nhạy micrô ở thẻ Trang chủ. Ngoài ra, hãy đảm bảo Độ đậm trong thẻ Cài đặt không quá thấp và tùy chọn “Hiện” của loại âm thanh đang phát vẫn đang bật.</string>
     <string name="help_faq_no_vibration_q">Điện thoại không rung.</string>
     <string name="help_faq_no_vibration_answer">Trong Cài đặt, ở mục Loại âm thanh (AI), hãy đảm bảo cả “Hiện” và “Rung” đều đang bật cho loại âm thanh đó. Theo mặc định, ứng dụng tạm dừng khi màn hình tắt, vì vậy nếu vẫn muốn nhận thông báo rung lúc đó, hãy tắt “Tạm dừng khi màn hình tắt” trong mục Pin của Cài đặt. Khi ứng dụng không nhận diện được loại âm thanh, chỉ âm thanh lớn mới rung, theo cài đặt của âm thanh nguy hiểm. Nếu bạn đã tắt rung trong cài đặt điện thoại, ứng dụng có thể không rung. Nếu bạn đang trực quan hóa âm thanh trên điện thoại mà âm lượng nội dung nghe nhìn rất thấp, hãy tăng lên một chút.</string>
+    <string name="help_faq_no_vibration_answer_external">Trong Cài đặt, ở mục Loại âm thanh (AI), hãy đảm bảo cả “Hiện” và “Rung” đều đang bật cho loại âm thanh đó. Trong Chế độ âm thanh bên ngoài, âm thanh môi trường như chuông cửa sẽ không rung. Để nhận rung cho âm thanh đó, hãy đổi nó thành âm thanh nguy hiểm hoặc giọng nói trong thẻ Phân loại. Giọng nói chỉ rung tối đa ở mức Chậm và âm thanh nguy hiểm tối đa ở mức Vừa. Khi đang gọi điện, khi ứng dụng khác đang dùng micrô, hoặc nếu micrô bị chặn trong Cài đặt nhanh, sẽ không có âm thanh nào vào, và thẻ Trang chủ cùng thông báo khi đang chạy sẽ cho bạn biết. Nếu bạn đã giảm Độ nhạy micrô ở thẻ Trang chủ xuống dưới nấc mặc định (nấc thứ 4 từ trái sang), hãy tăng lại. Âm thanh quá nhỏ để AI nghe được sẽ không rung, kể cả khi bạn tăng độ nhạy thêm và đồ họa vẫn hiện âm thanh đó. Khi đó, hãy đặt điện thoại gần nơi phát ra âm thanh và đừng che micrô. Khi ứng dụng không nhận diện được loại âm thanh, chỉ âm thanh lớn mới rung, theo cài đặt của âm thanh nguy hiểm và tối đa ở mức Vừa. Lúc này, Độ nhạy micrô quyết định âm thanh nào được coi là lớn. Nếu bạn đã tắt rung trong cài đặt điện thoại, ứng dụng có thể không rung.</string>
     <string name="help_faq_install_q">Không cài được phiên bản mới.</string>
     <string name="help_faq_install_a">APK được tạo ở nơi khác có chữ ký khác nên không thể cài đè lên ứng dụng hiện có. Hãy gỡ cài đặt ứng dụng hiện có trước rồi mới cài. Việc này sẽ đặt lại các cài đặt của bạn.</string>
     <string name="help_faq_battery_q">Ứng dụng có tốn nhiều pin không?</string>
     <string name="help_faq_battery_a">Ứng dụng chỉ vẽ khi có âm thanh và chuyển sang trạng thái chờ khi yên tĩnh. Tuy nhiên, vì ứng dụng liên tục thu âm thanh, bạn nên tắt ứng dụng khi không sử dụng.</string>
     <string name="help_faq_battery_less_drawing">Khi có âm thanh, việc vẽ đồ họa tốn pin nhiều nhất. Nếu bạn bật “Giảm tần suất vẽ đồ họa” ở mục Pin trong thẻ Cài đặt, ứng dụng sẽ tốn ít pin hơn, nhưng chuyển động sẽ kém mượt hơn.</string>
     <string name="help_faq_language_q">Làm cách nào để đổi ngôn ngữ ứng dụng?</string>
-    <string name="help_faq_language_a">Nhấn “Ngôn ngữ” ở đầu thẻ Cài đặt rồi chọn một ngôn ngữ. “Mặc định của hệ thống” sẽ dùng ngôn ngữ của điện thoại. Trên Android 13 trở lên, bạn cũng có thể đổi trong mục “Ngôn ngữ ứng dụng” ở phần cài đặt của điện thoại.</string>
+    <string name="help_faq_language_a">Nhấn nút hình quả địa cầu ở góc dưới bên phải thẻ Trang chủ rồi chọn một ngôn ngữ. “Mặc định của hệ thống” sẽ dùng ngôn ngữ của điện thoại. Trên Android 13 trở lên, bạn cũng có thể đổi trong mục “Ngôn ngữ ứng dụng” ở phần cài đặt của điện thoại.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Báo cáo sự cố</string>
@@ -308,7 +351,7 @@
     <string name="help_about_title">Giới thiệu</string>
     <string name="help_about_version">Phiên bản %1$s</string>
     <string name="help_about_team">Phát triển bởi nhóm SOVIS</string>
-    <string name="help_about_license">Ứng dụng này được phân phối theo Apache License 2.0.</string>
+    <string name="help_about_license">Ứng dụng này được phân phối theo Apache License 2.0. Tên và nhóm âm thanh trong thẻ Phân loại dựa trên AudioSet Ontology và được phân phối theo giấy phép CC BY-SA 4.0 (xem “Giấy phép nguồn mở” bên dưới).</string>
     <string name="help_licenses_button">Giấy phép nguồn mở</string>
     <string name="help_licenses_title">Giấy phép nguồn mở</string>
     <string name="help_close">Đóng</string>

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.AiUnavailableNotice
 import com.example.soundvisualizer.feedback.HapticPlayer
+import com.example.soundvisualizer.language.LanguageButton
 import kotlin.math.roundToInt
 
 /** 홈의 실행·실행 종료 버튼 안쪽 여백. 번역된 이름이 길어도 글자 자리가 넉넉하도록 좌우를 기본(24dp)보다 줄였다. */
@@ -84,7 +85,10 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
                                 else -> R.string.home_status_running
                             }
                         ),
-                        fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor
+                        fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SecondaryTextColor,
+                        // 실행·실행 종료를 누른 결과를 화면 읽어주기가 알려 준다. 그러지 않으면 화면을 볼 수 없는
+                        // 사람은 켜졌는지 꺼졌는지 다시 찾아 읽어야 안다(#300). 이 글은 켜고 끌 때만 바뀐다.
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
                     )
                 }
                 // 돌고 있는데도 화면에 아무 일이 없어 보이는 두 경우를 상태 바로 아래에 알린다.
@@ -153,18 +157,26 @@ fun HomeTab(onStart: () -> Unit, onStop: () -> Unit, onOpenTutorial: () -> Unit)
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // 처음 열 때 한 번 저절로 뜬 튜토리얼을 다시 보는 곳. 실행 버튼들과 겨루지 않게 회색 글자 버튼으로 둔다.
-            TextButton(
-                onClick = onOpenTutorial,
+            // 맨 아래 한 줄: 왼쪽은 튜토리얼 다시 보기, 오른쪽은 언어(#308). 실행 버튼들과 겨루지 않게 둘 다 회색 글자로 작게 둔다.
+            // 오른쪽에서 왼쪽으로 쓰는 언어(아랍어)에서는 줄이 뒤집혀 언어가 왼쪽 아래에 온다.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth()
                     .padding(top = 24.dp, bottom = 8.dp)
-                    .heightIn(min = 48.dp)
             ) {
-                Text(
-                    stringResource(R.string.home_tutorial),
-                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, color = SecondaryTextColor
-                )
+                // 처음 열 때 한 번 저절로 뜬 튜토리얼을 다시 보는 곳. 이름이 긴 번역은 줄을 바꾸고 언어 버튼은 밀어내지 않는다.
+                TextButton(
+                    onClick = onOpenTutorial,
+                    modifier = Modifier.weight(1f, fill = false).heightIn(min = 48.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.home_tutorial),
+                        fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Start, color = SecondaryTextColor
+                    )
+                }
+                LanguageButton(modifier = Modifier.padding(start = 8.dp))
             }
         }
     }
@@ -208,7 +220,7 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
         Button(
             onClick = onStart,
             enabled = !isRunning,
-            colors = ButtonDefaults.buttonColors(containerColor = AccentColor, disabledContainerColor = Color(0xFF333A44)),
+            colors = ButtonDefaults.buttonColors(containerColor = AccentFillColor, disabledContainerColor = Color(0xFF333A44)),
             shape = RoundedCornerShape(14.dp),
             contentPadding = HomeButtonPadding,
             modifier = Modifier.weight(1f).heightIn(min = 56.dp).fillMaxHeight()
@@ -230,7 +242,7 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
 }
 
 /**
- * 외부 사운드 모드의 마이크 감도(#226). 칸마다 약 3dB 이고, 끄는 동안 바로 적용한다.
+ * 외부 사운드 모드의 마이크 감도(#226). 16칸이고 칸마다 약 2.5dB 이며(맨 오른쪽 ×32), 끄는 동안 바로 적용한다.
  *
  * 올리면 작은 소리도 그리지만 조용하지 않은 곳의 잡음도 그리므로, 기본은 감도를 조절하기 전과 같은 100% 다.
  * 오버레이·진동이 보는 크기에만 곱하고 AI 가 받는 소리는 그대로다([MicSensitivity]).
@@ -239,15 +251,18 @@ private fun StartStopButtons(isRunning: Boolean, onStart: () -> Unit, onStop: ()
 private fun MicSensitivitySlider() {
     val percent by SettingsManager.micSensitivity.collectAsState()
     val name = stringResource(R.string.home_mic_sensitivity)
-    val value = stringResource(R.string.home_mic_sensitivity_value, percent)
     val last = MicSensitivity.STEPS.size - 1
+    // 화면에는 숫자 없이 슬라이더의 칸만 보인다(#306). 화면 읽어주기는 칸을 볼 수 없으므로 "4/16" 처럼 몇 번째 칸인지 읽는다.
+    val position = stringResource(R.string.home_mic_sensitivity_value, MicSensitivity.level(percent), last + 1)
     Column(modifier = Modifier.padding(bottom = 20.dp)) {
-        // 이름과 값은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clearAndSetSemantics { }) {
-            Text(name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentColor)
-        }
+        // 이름은 아래 슬라이더가 함께 읽어 주므로 화면 읽어주기에서는 건너뛴다(ModernSlider 와 같다).
+        Text(
+            name,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryTextColor,
+            modifier = Modifier.clearAndSetSemantics { }
+        )
         Slider(
             value = MicSensitivity.indexOf(percent).toFloat(),
             onValueChange = { SettingsManager.setMicSensitivity(MicSensitivity.STEPS[it.roundToInt().coerceIn(0, last)]) },
@@ -255,13 +270,13 @@ private fun MicSensitivitySlider() {
             steps = last - 1,
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,
-                activeTrackColor = AccentColor,
+                activeTrackColor = AccentFillColor,
                 inactiveTrackColor = Color(0xFF333A44)
             ),
-            // 값을 화면 글자 그대로 읽힌다. 두지 않으면 슬라이더 위치(칸 번호)를 퍼센트로 읽는다.
+            // 몇 번째 칸인지 읽힌다. 두지 않으면 슬라이더 위치를 퍼센트로 읽는데, 그 퍼센트는 실제 감도가 아니다.
             modifier = Modifier.fillMaxWidth().semantics {
                 contentDescription = name
-                stateDescription = value
+                stateDescription = position
             }
         )
     }

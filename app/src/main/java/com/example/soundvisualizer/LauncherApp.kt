@@ -1,6 +1,8 @@
 package com.example.soundvisualizer
 
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.help.HelpTab
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 @Composable
@@ -35,15 +38,9 @@ fun LauncherApp(
     onAddTile: () -> Unit,
     onOpenTutorial: () -> Unit
 ) {
-    // 분류 탭은 AI 판정에 연결되기 전까지(#291) 개발자 모드에서만 맨 뒤에 붙는다. 맨 뒤라서 홈·설정·도움말의
-    // 번호([MainActivity] 의 TAB_*)는 개발자 모드와 상관없이 그대로다.
-    val developerMode = SettingsManager.developerMode.collectAsState()
-
     // 탭 이름은 화면 맨 위에 있다. 큰 화면에서 한 손으로 쓰면 거기까지 손이 가지 않으므로
     // 화면 아무 데서나 좌우로 밀어도 넘어가게 한다.
-    val pagerState = rememberPagerState(initialPage = selectedTab) {
-        if (developerMode.value) TAB_COUNT_WITH_CLASSIFY else TAB_COUNT
-    }
+    val pagerState = rememberPagerState(initialPage = selectedTab) { TAB_COUNT }
     val scope = rememberCoroutineScope()
 
     // 액티비티가 탭을 정해 주는 경로(타일 길게 누르기, 멈춤 안내의 홈 이동)를 그대로 살린다.
@@ -58,9 +55,11 @@ fun LauncherApp(
     // 취소된다. 꺼짐 안내로 홈까지 가야 하는데 가운데 설정 탭에 멈출 수 있는 고리였다(#185).
     // 에뮬레이터에서 증상 자체를 재현하지는 못했다. 애니메이션이 1번을 "지금 보는 탭" 으로 잡기 전에
     // 끝나는 것으로 보인다. 그래도 값이 오가는 고리는 끊어 둔다.
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.settledPage }.collect { onSelectTab(it) }
-    }
+    //
+    // 페이저의 settledPage 는 이 고리를 다 끊지 못한다. 손을 떼는 순간에도 바뀌기 때문이다([rememberRestingPage]).
+    // 빠르게 연달아 넘기면 지나가던 탭이 돌아와, 위 효과가 넘어가던 화면을 그 탭으로 끌어올 수 있었다(#339).
+    val restingPage by rememberRestingPage(pagerState)
+    LaunchedEffect(restingPage) { onSelectTab(restingPage) }
     // 분류 탭의 찾기 칸에 글자를 넣던 채로 다른 탭으로 넘기면, 칸이 포커스를 쥔 채 그 쪽을 붙들어 두어
     // 자판이 다른 탭 위에 남을 수 있다. 탭이 바뀌면 포커스를 놓는다.
     val focusManager = LocalFocusManager.current
@@ -72,7 +71,7 @@ fun LauncherApp(
     // 비켜 놓은 자리에도 앱 배경색이 보이는 것은 바깥 Surface 가 창 전체를 칠하기 때문이다.
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         // TabRow. 번역된 탭 이름이 길어 한 줄에 다 안 들어가면 옆으로 밀어 볼 수 있게 한다.
-        // selectableGroup 은 화면 읽어주기에 "셋(개발자 모드면 넷) 중 몇 번째"를 알려준다.
+        // selectableGroup 은 화면 읽어주기에 "넷 중 몇 번째"를 알려준다.
         //
         // 선택 표시는 액티비티가 든 값이 아니라 지금 보고 있는 쪽(currentPage)을 따른다. 밀다가 절반을
         // 넘기는 순간 밑줄이 따라오므로, 손을 떼기 전에도 어디로 가는지 보인다.
@@ -85,19 +84,21 @@ fun LauncherApp(
                 scope.launch { pagerState.animateScrollToPage(1) }
             }
             Spacer(modifier = Modifier.width(24.dp))
-            TabButton(stringResource(R.string.tab_help), pagerState.currentPage == 2) {
-                scope.launch { pagerState.animateScrollToPage(2) }
+            TabButton(stringResource(R.string.tab_classify), pagerState.currentPage == TAB_CLASSIFY) {
+                scope.launch { pagerState.animateScrollToPage(TAB_CLASSIFY) }
             }
-            if (developerMode.value) {
-                Spacer(modifier = Modifier.width(24.dp))
-                TabButton(stringResource(R.string.tab_classify), pagerState.currentPage == TAB_CLASSIFY) {
-                    scope.launch { pagerState.animateScrollToPage(TAB_CLASSIFY) }
-                }
+            Spacer(modifier = Modifier.width(24.dp))
+            TabButton(stringResource(R.string.tab_help), pagerState.currentPage == TAB_HELP) {
+                scope.launch { pagerState.animateScrollToPage(TAB_HELP) }
             }
         }
 
         // 남은 높이를 전부 준다. 탭은 모두 fillMaxSize 라 한 쪽씩 화면을 채운다.
-        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f),
+            flingBehavior = PagerDefaults.flingBehavior(state = pagerState, snapPositionalThreshold = PAGE_SNAP_THRESHOLD)
+        ) { page ->
             when (page) {
                 0 -> HomeTab(onStart, onStop, onOpenTutorial)
                 1 -> SettingsTab(onAddTile)
@@ -108,26 +109,63 @@ fun LauncherApp(
     }
 }
 
-/** 홈·설정·도움말. [LauncherApp] 의 탭 수와 [MainActivity] 의 TAB_* 이 같은 수를 가리킨다. */
-private const val TAB_COUNT = 3
+/** 홈·설정·분류·도움말. 홈과 설정의 번호는 [MainActivity] 의 TAB_* 와 같다. */
+private const val TAB_COUNT = 4
 
-/** 개발자 모드에서만 맨 뒤에 붙는 분류 탭(#283). AI 판정에 연결되면(#291) 모두에게 보인다. */
-private const val TAB_CLASSIFY = 3
-private const val TAB_COUNT_WITH_CLASSIFY = 4
+/**
+ * 손을 뗐을 때 다음 쪽(탭, 튜토리얼)으로 넘어가는 데 필요한 끈 거리(쪽 너비에 대한 비율). 빠르게 튕기면(400dp/s 이상)
+ * 거리와 상관없이 튕긴 쪽으로 넘어가고, 그보다 느리면 이 거리만 본다.
+ *
+ * 페이저의 기본값(절반)도, 30%(#335)도 짧게 미끄러뜨리고 놓을 때 앞 쪽으로 튕겨 돌아가는 일이 잦았다(#333, #337).
+ * 그래서 10%로 둔다. 페이저는 가로로 먼저 움직일 때만 끌리므로 위아래로 밀거나 살짝 건드린 것으로는 넘어가지 않고,
+ * 슬라이더를 끄는 손동작은 슬라이더가 받는다.
+ */
+internal const val PAGE_SNAP_THRESHOLD = 0.1f
+
+/**
+ * 페이저(탭 화면, 튜토리얼)가 손을 떼고 정말 멈춘 쪽. 넘기는 동안에는 앞서 멈췄던 쪽에 머문다.
+ *
+ * 페이저의 settledPage 는 이름과 달리 움직이는 도중에도 바뀐다. 페이저는 스크롤을 새로 시작할 때마다 그 순간 가장
+ * 가까운 쪽을 settledPage 로 적어 두는데, 끌던 손을 떼고 미끄러지기 시작하는 것도 새 스크롤이다. 그래서 앞 넘김이
+ * 끝나기 전에 다시 넘기면, 손을 떼는 순간 지나가던 쪽이 settledPage 가 된다. 튜토리얼은 그 쪽 제목으로 초점을
+ * 옮겼고, 초점을 받은 제목이 자기를 화면에 보이려고 페이저를 끌어와, 넘어가던 화면이 앞 쪽으로 되돌아갔다(#339).
+ */
+@Composable
+internal fun rememberRestingPage(pagerState: PagerState): IntState {
+    val resting = remember(pagerState) { mutableIntStateOf(pagerState.currentPage) }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { if (pagerState.isScrollInProgress) null else pagerState.currentPage }
+            .filterNotNull()
+            .collect { resting.intValue = it }
+    }
+    return resting
+}
+
+/**
+ * 분류 탭(#283). AI 판정에 연결된 뒤(#321) 모두에게 연다(#328). 소리마다 종류를 고르는 설정이라 설정 옆에 두고,
+ * 도움말은 맨 뒤에 남긴다.
+ */
+private const val TAB_CLASSIFY = 2
+private const val TAB_HELP = 3
 
 @Composable
 fun TabButton(title: String, isSelected: Boolean, onClick: () -> Unit) {
     Column(
         // 선택 여부가 색과 밑줄로만 보이면 화면 읽어주기 사용자는 어느 탭을 보고 있는지 알 수 없다.
         // selectable(Role.Tab) 이 "선택됨"과 탭이라는 것을 함께 읽어준다.
-        modifier = Modifier.selectable(
-            selected = isSelected,
-            // 기본 리플이 어두운 배경에서 검은 사각형처럼 번쩍인다. 탭에는 밑줄로 충분하다.
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            role = Role.Tab,
-            onClick = onClick
-        ),
+        modifier = Modifier
+            .selectable(
+                selected = isSelected,
+                // 기본 리플이 어두운 배경에서 검은 사각형처럼 번쩍인다. 탭에는 밑줄로 충분하다.
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                role = Role.Tab,
+                onClick = onClick
+            )
+            // 누르는 자리는 48dp 이상으로 둔다(#312). 글자와 밑줄은 약 35dp 라, 남는 높이는 글자 위에 둔다.
+            .heightIn(min = 48.dp)
+            .widthIn(min = 48.dp),
+        verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

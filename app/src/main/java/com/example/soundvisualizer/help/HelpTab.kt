@@ -40,6 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -111,11 +113,18 @@ fun HelpTab() {
         }
         item {
             SettingsExpander(stringResource(R.string.help_sound_title)) {
+                // 외부 사운드 모드에서는 진동이 울림 사이의 쉼에서만 소리를 보고(#290), 종류마다 방식에 상한이 있다(#354).
+                val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+                val haptic = listOfNotNull(
+                    R.string.help_sound_haptic,
+                    R.string.help_sound_haptic_rule,
+                    R.string.help_sound_haptic_external.takeIf { externalSoundMode }
+                )
                 Paragraphs(
                     R.string.help_sound_kinds,
+                    R.string.help_sound_classify_groups,
                     R.string.help_sound_danger,
-                    R.string.help_sound_haptic,
-                    R.string.help_sound_haptic_rule
+                    *haptic.toIntArray()
                 )
             }
         }
@@ -140,6 +149,7 @@ fun HelpTab() {
             SettingsExpander(stringResource(R.string.help_faq_title)) {
                 // 직접 끄지 않았는데 꺼진 경우를 맨 위에 둔다. 알림을 못 봤으면 여기서 찾게 된다.
                 // 외부 사운드 모드는 화면 녹화 동의를 쓰지 않고, 소리가 안 들어오는 까닭도 다르다(#268).
+                // 진동도 다르다. 화면이 꺼져도 쉬지 않고(#260), 환경음은 진동하지 않으며 다른 종류에는 상한이 있다(#354).
                 val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
                 TitledItem(
                     R.string.help_faq_stopped_q,
@@ -149,7 +159,10 @@ fun HelpTab() {
                     R.string.help_faq_no_graphic_q,
                     if (externalSoundMode) R.string.help_faq_no_graphic_a_external else R.string.help_faq_no_graphic_a
                 )
-                TitledItem(R.string.help_faq_no_vibration_q, R.string.help_faq_no_vibration_answer)
+                TitledItem(
+                    R.string.help_faq_no_vibration_q,
+                    if (externalSoundMode) R.string.help_faq_no_vibration_answer_external else R.string.help_faq_no_vibration_answer
+                )
                 TitledItem(R.string.help_faq_install_q, R.string.help_faq_install_a)
                 TitledItem(
                     R.string.help_faq_battery_q,
@@ -307,7 +320,8 @@ private fun Paragraphs(@StringRes vararg texts: Int) {
 private fun NumberedSteps(@StringRes vararg steps: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         steps.forEachIndexed { index, res ->
-            Row {
+            // 번호와 글을 화면 읽어주기에서 한 번에 읽는다. 따로 두면 "1." 에서 한 번 더 멈춘다(#300).
+            Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
                 Text("${index + 1}.", fontSize = BodySize, lineHeight = BodyLineHeight, fontWeight = FontWeight.Bold, color = AccentColor, modifier = Modifier.width(24.dp))
                 Text(stringResource(res), fontSize = BodySize, lineHeight = BodyLineHeight, color = PrimaryTextColor)
             }
@@ -319,8 +333,9 @@ private fun NumberedSteps(@StringRes vararg steps: Int) {
 private fun Bullets(@StringRes vararg items: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items.forEach { res ->
+            // 점은 모양일 뿐이라 읽지 않는다. 두면 화면 읽어주기가 줄마다 "•" 에서 한 번 더 멈춘다(#300).
             Row {
-                Text("•", fontSize = BodySize, lineHeight = BodyLineHeight, color = SecondaryTextColor, modifier = Modifier.width(16.dp))
+                Text("•", fontSize = BodySize, lineHeight = BodyLineHeight, color = SecondaryTextColor, modifier = Modifier.width(16.dp).clearAndSetSemantics { })
                 Text(stringResource(res), fontSize = BodySize, lineHeight = BodyLineHeight, color = PrimaryTextColor)
             }
         }

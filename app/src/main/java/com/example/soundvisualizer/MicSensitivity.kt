@@ -14,8 +14,18 @@ import kotlin.math.abs
  */
 object MicSensitivity {
 
-    /** 슬라이더의 칸(%). 한 칸마다 약 3dB(√2 배). */
-    val STEPS = intArrayOf(50, 70, 100, 140, 200, 280, 400, 560, 800)
+    /**
+     * 슬라이더의 칸(%). 16칸이고 한 칸마다 2^(5/12) 배(약 2.5dB)로 고르게 커진다. 기본(100%)은 왼쪽에서 네 번째 칸,
+     * 맨 오른쪽은 ×32 다(#306).
+     *
+     * ×32 가 진짜 최대인 까닭: 감도는 잰 크기에만 곱하고 네이티브가 1 에서 자르므로 더 올릴 수는 있지만, 그 위로는
+     * 조용한 방의 마이크 잡음(약 -65dBFS)만으로도 오버레이가 깨어나는 기준(0.01)을 넘어 화면이 늘 움직인다.
+     * 그러면 작은 소리를 더 잡는 것이 아니라 잡음을 더 그릴 뿐이다. 마이크 하드웨어의 증폭은 앱이 바꿀 수 없다.
+     *
+     * 화면에는 숫자 없이 칸만 보인다. 저장은 이 퍼센트로 하므로, 칸을 바꿔도 저장된 값은 가장 가까운 칸으로 읽힌다
+     * (예전 최대 800% 는 755%, 열한 번째 칸).
+     */
+    val STEPS = intArrayOf(42, 56, 75, 100, 133, 178, 238, 317, 424, 566, 755, 1008, 1345, 1796, 2397, 3200)
 
     /** 기본값. 감도를 조절하기 전과 똑같다. */
     const val DEFAULT = 100
@@ -25,6 +35,9 @@ object MicSensitivity {
 
     /** [percent] 에 가장 가까운 칸의 번호. 저장된 값이 칸에 없어도(손으로 고친 값 등) 슬라이더에 있는 값이 된다. */
     fun indexOf(percent: Int): Int = STEPS.indices.minByOrNull { abs(STEPS[it] - percent) } ?: STEPS.indexOf(DEFAULT)
+
+    /** 몇 번째 칸인지(1부터). 화면 읽어주기가 "4/16" 처럼 읽는다. 기본(100%)은 네 번째 칸이다. */
+    fun level(percent: Int): Int = indexOf(percent) + 1
 
     /** [percent] 를 가장 가까운 칸의 값으로 맞춘다. */
     fun clamp(percent: Int): Int = STEPS[indexOf(percent)]

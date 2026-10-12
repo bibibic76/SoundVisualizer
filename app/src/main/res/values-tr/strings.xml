@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Telefonunuzda çalan ses yerine mikrofonla çevrenizdeki sesleri dinler. Sesin kendisi hiçbir zaman kaydedilmez veya bir yere gönderilmez.</string>
     <string name="home_external_mode_locked">Çalışırken değiştirilemez. Görselleştirmeyi durdurup değiştirin; değişiklik bir sonraki başlatmada geçerli olur.</string>
     <string name="home_mic_sensitivity">Mikrofon hassasiyeti</string>
-    <string name="home_mic_sensitivity_value">%%%1$d</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">Durum: Hazır</string>
     <string name="home_capture_blocked">Görselleştirmeye hiç ses ulaşmıyor; bu yüzden hiçbir şey çizilemiyor. Video izlediğiniz ya da oyun oynadığınız uygulama, sesinin paylaşılmasına izin vermiyor olabilir (korumalı videolarda durum böyledir) veya o uygulamanın kendi sesi kapalı olabilir.</string>
     <string name="home_ai_unavailable_loud">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor ve yalnızca yüksek sesler, tehlike seslerinin titreşim ayarıyla titreşiyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Sayfa %1$d, toplam %2$d</string>
     <string name="tutorial_pause">Animasyonu duraklat</string>
     <string name="tutorial_play">Animasyonu oynat</string>
+    <string name="tutorial_sound_on">Sesi aç</string>
+    <string name="tutorial_sound_off">Sesi kapat</string>
     <string name="tutorial_sound_title">Sesleri ekranınızda görün</string>
     <string name="tutorial_sound_body">Oyununuzun veya videonuzun sesi ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Yalnızca telefonunuzda çalan ses gösterilir. Uygulama çevrenizdeki sesleri dinlemez.</string>
     <string name="tutorial_sound_body_external">Dış ses modu açık; bu yüzden mikrofonun duyduğu çevrenizdeki sesler ekranın kenarlarında çizilir. Ses ne kadar yüksekse o kadar büyük çizilir. Bu modda telefonunuzda çalan ses gösterilmez.</string>
@@ -133,9 +135,11 @@
     <string name="ai_show_speech">Konuşmayı göster</string>
     <string name="ai_show_danger">Tehlike seslerini göster</string>
     <string name="ai_unavailable">Ses türü algılama çalışmıyor; bu yüzden tüm sesler ortam sesi renginde gösteriliyor. Görselleştirmeyi kapatıp yeniden açmayı deneyin.</string>
-    <string name="classify_title">Her sesin türünü seçin</string>
-    <string name="classify_desc">Yapay zekanın tanıyabildiği tüm sesler ve her birinin hangi tür olarak sayıldığı burada gösterilir. Bir sesin türünü değiştirdiğinizde o sesin rengi ve titreşimi hemen yeni türe göre değişir.</string>
-    <string name="classify_danger_note">Tehlike sesleri arasından çıkardığınız bir ses için artık tehlike sesi rengi ve titreşimi kullanılmaz. Benzer sesler ayrı satırlardadır (sirenler beş satırdadır); hepsini çıkarmak için her satırı değiştirin.</string>
+    <string name="classify_title">Ses türlerini seçin</string>
+    <string name="classify_desc_groups">Yapay zekanın tanıdığı sesler benzer seslerle gruplanır ve varsayılan olarak sayıldıkları türe göre gösterilir. Bir grubun türünü değiştirdiğinizde o gruptaki seslerin rengi ve titreşimi hemen yeni türe göre değişir.</string>
+    <string name="classify_sibling_note">Yapay zeka tek bir sesi çoğu zaman aynı anda birkaç adla tanır. Örneğin siren “Alarm” olarak da tanınır ve “Alarm” başka bir gruptadır. Bir ses değişiklikten sonra hâlâ eski türüyle görünüyorsa ilgili grupları veya sesleri de değiştirin.</string>
+    <string name="classify_advanced">Gelişmiş mod</string>
+    <string name="classify_advanced_desc">Tüm sesleri gruplarıyla birlikte gösterir; böylece her sesi ayrı olarak değiştirebilirsiniz.</string>
     <string name="classify_search_hint">Seslerde ara</string>
     <string name="cd_classify_clear_search">Aramayı temizle</string>
     <string name="classify_filter_all">Tümü</string>
@@ -145,7 +149,7 @@
     <string name="sound_type_danger">Tehlike sesi</string>
     <string name="classify_type_default">%1$s (varsayılan)</string>
     <string name="classify_changed_from">Varsayılan: %1$s</string>
-    <string name="classify_changed_count">Değiştirilen: %1$d</string>
+    <string name="classify_changed_count">Değiştirilen sesler: %1$d</string>
     <string name="classify_reset_all">Tümünü sıfırla</string>
     <string name="classify_reset_title">Tüm sesler sıfırlansın mı?</string>
     <string name="classify_reset_message">Değiştirdiğiniz tüm sesler varsayılan türlerine döner.</string>
@@ -154,6 +158,35 @@
     <string name="classify_empty">Eşleşen ses yok.</string>
     <string name="cd_classify_sound">%1$s, tür: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, tür: %2$s, varsayılan: %3$s</string>
+    <string name="classify_type_mixed">Karışık</string>
+    <string name="classify_group_mixed_note">Bazı sesler ayrı olarak değiştirildi</string>
+    <string name="classify_group_changed_line">Şu an: %1$s · Varsayılan: %2$s</string>
+    <string name="classify_group_overwrite_title">Grubun tamamı değiştirilsin mi?</string>
+    <string name="classify_group_overwrite_message">“%1$s” grubundaki %2$d ses “%3$s” türüne geçecek. Ayrı olarak değiştirdiğiniz seslerin de üzerine yazılacak.</string>
+    <string name="classify_group_overwrite_confirm">Değiştir</string>
+    <string name="classify_group_overwrite_cancel">İptal</string>
+    <string name="classify_basic_warning_title">Temel moda geçilsin mi?</string>
+    <string name="classify_basic_warning_message">Bazı gruplarda ayrı olarak değiştirdiğiniz sesler var. Temel modda bu gruplardan biri için tür seçerseniz gruptaki tüm sesler o türü alır ve o grupta ayrı olarak yaptığınız değişikliklerin üzerine yazılır. Siz seçene kadar hiçbir şey değişmez.</string>
+    <string name="classify_basic_warning_confirm">Temel moda geç</string>
+    <string name="classify_basic_warning_cancel">Gelişmiş modda kal</string>
+    <string name="cd_classify_group">%1$s grubu, tür: %2$s, ses sayısı: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">%1$s grubu, tür: %2$s, varsayılan: %3$s, ses sayısı: %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">%1$s grubu, ses sayısı: %2$d</string>
+    <string name="sound_group_horns">Kornalar ve araba alarmları</string>
+    <string name="sound_group_vehicle_warnings">Araç uyarı sesleri</string>
+    <string name="sound_group_breaking">Cam kırılması ve parçalanma</string>
+    <string name="sound_group_distress">Bağırma, çığlık ve ağlama</string>
+    <string name="sound_group_talking">Sohbet ve fısıltı</string>
+    <string name="sound_group_signals">Çalar saatler, bip sesleri ve düdükler</string>
+    <string name="sound_group_voices">Alkış, mırıldanma ve ıslık</string>
+    <string name="sound_group_water">Musluklar ve akan su</string>
+    <string name="sound_group_kitchen">Mutfak ve yemek pişirme</string>
+    <string name="sound_group_appliances">Ev aletleri ve saatler</string>
+    <string name="sound_group_tools">Aletler ve makineler</string>
+    <string name="sound_group_nature">Doğa ve hava durumu</string>
+    <string name="sound_group_body">Öksürük, nefes ve vücut sesleri</string>
+    <string name="sound_group_objects">Eşyalar ve kısa sesler</string>
+    <string name="sound_group_background">TV, radyo ve arka plan sesi</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Titreşim</string>
@@ -172,6 +205,8 @@
     <string name="haptic_mode_continuous">Sürekli</string>
     <string name="haptic_preview_hint">Titreşimi 2 saniye boyunca denemek için bir moda dokunun veya yoğunluğu değiştirin.</string>
     <string name="haptic_preview_hint_running">Görselleştirme çalışırken önizleme titreşimi çalınmaz; böylece gerçek titreşimle karışmaz.</string>
+    <string name="haptic_cap_external">Dış ses modunda %1$s için en fazla %2$s seçebilirsiniz. Böylece telefon kendi titreşimini ses sanmaz. Daha hızlı bir mod seçiliyse %2$s gibi titreşir. Dış ses modunu kapattığınızda yeniden ayarladığınız gibi titreşir.</string>
+    <string name="haptic_off_external">Dış ses modunda ortam sesleri için titreşim olmaz, çünkü çevrenizde her zaman bir ses vardır ve titreşim hiç durmazdı. Dış ses modunu kapattığınızda ortam sesleri yeniden ayarladığınız gibi titreşir.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Renk seçin</string>
@@ -218,6 +253,11 @@
     <string name="stopped_text_overlay_failed">Grafikler diğer uygulamaların üzerinde gösterilemedi, bu yüzden görselleştirme kapandı. “Diğer uygulamaların üzerinde göster” izninin verili olduğundan emin olun.</string>
     <string name="stopped_turn_on">Yeniden aç</string>
     <string name="stopped_toast">Ses görselleştirme kapandı. Grafikler ve titreşim uyarıları kapalı.</string>
+    <string name="danger_alert_channel_name">Tehlike sesi uyarıları</string>
+    <string name="danger_alert_channel_desc">Telefon kilitliyken veya ekran kapalıyken bir tehlike sesi duyulursa kilit ekranında bir uyarı gösterilir ve ekran kısa bir süre açılır. Ekran kapalıyken bu uyarı yalnızca Dış ses modunda veya “Ekran kapalıyken duraklat” ayarı kapalıysa çalışır. Ses çıkarmaz.</string>
+    <string name="danger_alert_title">Tehlike sesi duyuldu</string>
+    <string name="danger_alert_text_named">Duyulan: %1$s. Çevrenizi kontrol edin.</string>
+    <string name="danger_alert_text">Çevrenizi kontrol edin.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Ses görselleştirme</string>
@@ -259,9 +299,11 @@
 
     <string name="help_sound_title">Ses türleri ve titreşim</string>
     <string name="help_sound_kinds">Yapay zeka, duyduğunuz sesleri ortam sesleri, konuşma ve tehlike sesleri olarak ayırır. Varsayılan olarak ortam sesleri beyaz, konuşma sarı, tehlike sesleri ise kırmızı renkte gösterilir. Her türün rengini ve gösterilip gösterilmeyeceğini “Ayarlar” sekmesinden değiştirebilirsiniz.</string>
+    <string name="help_sound_classify_groups">“Sesler” sekmesinde benzer sesler gruplanır ve her grubun hangi türden sayılacağını siz seçersiniz. Örneğin “Kapı zili” grubunu tehlike sesi yaparsanız yapay zeka bir kapı zili veya kapıya vurma sesi tanıdığında bu ses tehlike sesi rengini ve titreşimini alır. Ancak yeni tehlike sesi yaptığınız bir ses, yalnızca yapay zekanın türü belirlemek için yaptığı oylamaya katılır; bu yüzden her kapı zilinin tehlike sesi olarak gösterileceği anlamına gelmez. Her sesi ayrı olarak değiştirmek için gelişmiş modu açın.</string>
     <string name="help_sound_danger">Bir tehlike sesi (ör. silah sesi) algılandığında renk yavaşça geçiş yapmak yerine anında değişir.</string>
     <string name="help_sound_haptic">Titreşim, ekrana bakmıyorken bile sizi uyarır. Başlangıçta yalnızca tehlike sesleri için titreşim açıktır. Her tür için bir mod (Kapalı, Yavaş, Orta, Hızlı, Sürekli) ve yoğunluk seçebilirsiniz.</string>
     <string name="help_sound_haptic_rule">Titreşim yalnızca ekranda gösterilen türler için çalışır. Telefon, o türden bir ses sürdüğü sürece titreşir ve ses durunca durur. Orta her yarım saniyede bir atar, Yavaş bunun yarı hızında, Hızlı ise iki katı hızında atar; Sürekli ise ara vermeden titreşir. Her modda titreşim seçtiğiniz yoğunlukta kalır.</string>
+    <string name="help_sound_haptic_external">Dış ses modunda telefon, kendi titreşimini ses sanmamak için bir sesin sürüp sürmediğini yalnızca atımlar arasındaki aralarda kontrol eder. Bu yüzden titreşim, ses durduktan sonra kısa bir süre daha devam edebilir; bu süre genellikle bir saniyeden kısadır. Bu aralar yeterince uzun olsun diye bu modda konuşma için en fazla Yavaş, tehlike sesleri için en fazla Orta seçebilirsiniz; ortam sesleri için ise titreşim olmaz, çünkü çevrenizde her zaman bir ses vardır. Daha hızlı bir mod seçili türler, seçilebilen en hızlı modla titreşir. Dış ses modunu kapattığınızda bu türler yeniden ayarladığınız gibi titreşir.</string>
 
     <string name="help_notes_title">Bilmeniz gerekenler</string>
     <string name="help_note_direction">Uygulama sağı ve solu ayırt edebilir, ancak önü ve arkayı ayırt edemez. Ekranın üst ve alt kısmındaki grafikler, her iki tarafta eşit duyulan sesleri ve uzamsal etkiyi gösterir.</string>
@@ -270,7 +312,7 @@
     <string name="help_note_sources">Yalnızca medya ve oyun sesleri yakalanır. Telefon görüşmeleri, bildirim sesleri ve alarmlar yakalanmaz. Ses yakalamayı engelleyen uygulamalar (bazı video uygulamaları gibi) görselleştirilemez. Ses çaldığı hâlde yaklaşık 15 saniye boyunca hiçbir şey çizilmezse “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir. Ancak uygulamanın kendi sesini kapatmış olması da tıpatıp aynı görünür; bu yüzden ikisinden hangisinin geçerli olduğunu size söyleyemeyiz.</string>
     <string name="help_note_sources_external">Dış ses modu, mikrofonun duyduğu çevrenizdeki tüm sesleri alır; alarmlar, kapı zilleri ve telefonunuzun kendi sesi de buna dahildir. Bir görüşme sırasında, başka bir uygulama mikrofonu kullanırken veya mikrofon Hızlı Ayarlar\'dan engellenmişse hiçbir ses gelmez; “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir.</string>
     <string name="help_note_volume">Telefonunuzda çalan ses, medya ses düzeyinin belirlediği seviyede yakalanır. Ses düzeyini çok kısarsanız grafik ve titreşim tepki vermeyebilir; ses düzeyi sıfırken hiçbir şey yakalanmaz. Tepki zayıfsa ses düzeyini biraz açın. Dış ses modu ses düzeyinden etkilenmez.</string>
-    <string name="help_note_mic_sensitivity">Dış ses modunda mikrofon hassasiyeti, yalnızca seslerin grafik ve titreşime ne kadar yüksek geldiğini değiştirir. Kısık sesler pek görünmüyorsa artırın, gürültülü bir yerde arka plan gürültüsü de görünüyorsa azaltın. Yapay zekanın ses türünü ayırt etmek için kullandığı sesi değiştirmez.</string>
+    <string name="help_note_mic_sensitivity">Dış ses modunda mikrofon hassasiyeti, yalnızca seslerin grafik, titreşim ve kilit ekranındaki tehlike sesi uyarısına ne kadar yüksek geldiğini değiştirir. Kısık sesler pek görünmüyorsa artırın, gürültülü bir yerde arka plan gürültüsü de görünüyorsa azaltın. Hassasiyeti varsayılan kademenin (soldan 4.) altına indirirseniz kısık seslerde titreşim veya tehlike sesi uyarısı gelmeyebilir. Hassasiyet, yapay zekanın ses türünü ayırt etmek için kullandığı sesi değiştirmez. Bu yüzden yapay zekanın duyamayacağı kadar kısık seslerde, hassasiyeti artırdığınızda sesler grafikte görünse bile titreşim veya tehlike sesi uyarısı gelmez. Böyle durumlarda telefonu sesin geldiği yere yakın tutun ve mikrofonun üzerini kapatmayın.</string>
     <string name="help_note_stopped">Ekran kaydı, ekran paylaşımı veya yayın başlatmak görselleştirmeyi kapatır; çünkü görselleştirme de aynı ekran kaydı onayını kullanır ve Android bunu aynı anda yalnızca tek bir uygulamaya verir. Başka bir uygulama kayıt, paylaşım ya da yayın yapıyorsa yeniden açtığınızda o işlem sona erer. Siz durdurmadığınız hâlde kapandığında telefon çoğu durumda art arda üç uzun titreşim verir ve “Yeniden aç” düğmesi bulunan bir bildirim gösterir. Ses yakalamayı telefonunuzun ekran paylaşımı bildiriminden durdurduğunuzda da aynı uyarı görünür; zorla durdurma veya çökme durumunda ise hiçbir bilgi verilemez. Bildirimler kapalıysa yalnızca titreşim haber verir; uygulamayı açtığınızda “Ana sayfa” sekmesinde neyin kapandığını görürsünüz.</string>
     <string name="help_note_stopped_external">Dış ses modu, ekran kaydı, ekran paylaşımı veya yayından bağımsız olarak açık kalır. Siz durdurmadığınız hâlde kapandığında telefon çoğu durumda art arda üç uzun titreşim verir ve “Yeniden aç” düğmesi bulunan bir bildirim gösterir. Zorla durdurma veya çökme durumunda ise hiçbir bilgi verilemez. Bildirimler kapalıysa yalnızca titreşim haber verir; uygulamayı açtığınızda “Ana sayfa” sekmesinde neyin kapandığını görürsünüz.</string>
     <string name="help_note_screen_off">Ekran kapalıyken pilden tasarruf etmek için duraklar, ekranı açtığınızda kaldığı yerden devam eder. Bunu “Ayarlar” sekmesindeki “Pil” bölümünden değiştirebilirsiniz. Dış ses modu, ekran kapalıyken de dinlemeye devam eder.</string>
@@ -285,13 +327,14 @@
     <string name="help_faq_no_graphic_a_external">Mikrofonun engellenmediğinden emin olun. Bir görüşme sırasında, başka bir uygulama mikrofonu kullanırken veya mikrofon Hızlı Ayarlar\'dan engellenmişse hiçbir ses gelmez; “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir. Kısık sesler pek görünmüyorsa “Ana sayfa” sekmesinden mikrofon hassasiyetini artırın. Ayrıca “Ayarlar” sekmesinde “Opaklık” değerinin çok düşük olmadığından ve o an çalan ses türünün gösteriminin kapalı olmadığından emin olun.</string>
     <string name="help_faq_no_vibration_q">Telefon titreşmiyor.</string>
     <string name="help_faq_no_vibration_answer">Ayarlar’daki “Ses türleri (yapay zeka)” bölümünde, ilgili tür için hem gösterme ayarının hem de “Titreşim” ayarının açık olduğundan emin olun. Ekran kapalıyken uygulama varsayılan olarak duraklar; bu sırada da titreşim uyarısı almak için Ayarlar’daki “Pil” bölümünden “Ekran kapalıyken duraklat” ayarını kapatın. Ses türü algılama çalışmadığı sürece yalnızca yüksek sesler, tehlike seslerinin ayarıyla titreşir. Telefonunuzun ayarlarında titreşim kapatılmışsa telefon titreşmeyebilir. Telefonunuzdaki sesi görselleştirirken medya ses düzeyi çok düşükse biraz açın.</string>
+    <string name="help_faq_no_vibration_answer_external">Ayarlar’daki “Ses türleri (yapay zeka)” bölümünde, ilgili tür için hem gösterme ayarının hem de “Titreşim” ayarının açık olduğundan emin olun. Dış ses modunda kapı zili gibi ortam sesleri için titreşim olmaz. Böyle bir ses için titreşim almak istiyorsanız “Sesler” sekmesinde o sesi tehlike sesi veya konuşma yapın. Konuşma en fazla Yavaş modda, tehlike sesleri en fazla Orta modda titreşir. Bir görüşme sırasında, başka bir uygulama mikrofonu kullanırken veya mikrofon Hızlı Ayarlar\'dan engellenmişse hiçbir ses gelmez; “Ana sayfa” sekmesi ve çalışırken gösterilen bildirim bunu size haber verir. “Ana sayfa” sekmesindeki mikrofon hassasiyetini varsayılan kademenin (soldan 4.) altına indirdiyseniz yeniden yükseltin. Yapay zekanın duyamayacağı kadar kısık seslerde, hassasiyeti daha da artırdığınızda sesler grafikte görünse bile titreşim olmaz. Böyle durumlarda telefonu sesin geldiği yere yakın tutun ve mikrofonun üzerini kapatmayın. Ses türü algılama çalışmadığı sürece yalnızca yüksek sesler, tehlike seslerinin ayarıyla ve en fazla Orta modda titreşir. Bu durumda neyin yüksek ses sayılacağını mikrofon hassasiyeti belirler. Telefonunuzun ayarlarında titreşim kapatılmışsa telefon titreşmeyebilir.</string>
     <string name="help_faq_install_q">Yeni sürüm yüklenmiyor.</string>
     <string name="help_faq_install_a">Başka bir yerde derlenen APK farklı bir imzaya sahip olduğundan mevcut uygulamanın üzerine yüklenemez. Önce mevcut uygulamayı kaldırın, ardından yeni sürümü yükleyin. Bu işlem ayarlarınızı sıfırlar.</string>
     <string name="help_faq_battery_q">Çok pil harcıyor mu?</string>
     <string name="help_faq_battery_a">Yalnızca ses varken çizim yapar, ses olmadığında bekleme moduna geçer. Yine de sesi sürekli yakaladığı için kullanmadığınızda kapatmanızı öneririz.</string>
     <string name="help_faq_battery_less_drawing">Ses varken pilin en çok harcandığı iş grafikleri çizmektir. “Ayarlar” sekmesindeki “Pil” bölümünde yer alan “Grafikleri daha seyrek çiz” seçeneğini açarsanız daha az pil harcanır, ancak hareket daha az akıcı olur.</string>
     <string name="help_faq_language_q">Uygulama dilini nasıl değiştiririm?</string>
-    <string name="help_faq_language_a">“Ayarlar” sekmesinin en üstündeki “Dil” seçeneğine dokunup bir dil seçin. “Sistem varsayılanı” telefonunuzun dilini kullanır. Android 13 ve sonraki sürümlerde telefonunuzun ayarlarındaki “Uygulama dilleri” bölümünden de değiştirebilirsiniz.</string>
+    <string name="help_faq_language_a">“Ana sayfa” sekmesinin sağ altındaki dünya simgesi düğmesine dokunup bir dil seçin. “Sistem varsayılanı” telefonunuzun dilini kullanır. Android 13 ve sonraki sürümlerde telefonunuzun ayarlarındaki “Uygulama dilleri” bölümünden de değiştirebilirsiniz.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Sorun bildir</string>
@@ -308,7 +351,7 @@
     <string name="help_about_title">Hakkında</string>
     <string name="help_about_version">Sürüm %1$s</string>
     <string name="help_about_team">SOVIS ekibi tarafından geliştirildi</string>
-    <string name="help_about_license">Bu uygulama Apache License 2.0 kapsamında dağıtılmaktadır.</string>
+    <string name="help_about_license">Bu uygulama Apache License 2.0 kapsamında dağıtılmaktadır. “Sesler” sekmesindeki ses adları ve ses grupları AudioSet ontolojisine dayanır ve CC BY-SA 4.0 kapsamında dağıtılır (ayrıntılar için aşağıdaki “Açık kaynak lisansları” düğmesine dokunun).</string>
     <string name="help_licenses_button">Açık kaynak lisansları</string>
     <string name="help_licenses_title">Açık kaynak lisansları</string>
     <string name="help_close">Kapat</string>

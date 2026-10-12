@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory
  *
  * - 영어(values)가 기본이고, 한국어(values-ko)는 번역할 문구를 모두 가져야 한다.
  * - 다른 언어는 빠진 문구가 있어도 된다(영어로 보이고 Lint 가 경고한다). 대신 없는 키나 틀린 서식은 막는다.
+ *   분류 탭의 문구만은 모든 언어에 있어야 하고, 그것은 SoundGroupStringsTest 가 본다(#349).
  * - 번역 폴더와 [AppLanguages] 목록이 서로 어긋나지 않아야 한다.
  *
  * 유닛 테스트는 app 모듈 폴더에서 돈다.

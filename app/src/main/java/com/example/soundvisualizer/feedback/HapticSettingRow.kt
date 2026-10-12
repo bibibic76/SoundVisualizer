@@ -1,19 +1,16 @@
 package com.example.soundvisualizer.feedback
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -42,13 +39,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AccentColor
+import com.example.soundvisualizer.AccentFillColor
 import com.example.soundvisualizer.AiClassification
+import com.example.soundvisualizer.CaptureSource
 import com.example.soundvisualizer.DependentSettings
+import com.example.soundvisualizer.EqualChoiceRows
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
 import com.example.soundvisualizer.WarningColor
+import com.example.soundvisualizer.choicesPerRow
 import com.example.soundvisualizer.wrappingLabelStyle
 import kotlin.math.roundToInt
 
@@ -60,6 +61,10 @@ import kotlin.math.roundToInt
  * 세기는 꺼짐이 아닐 때만 펼쳐서 카드가 길어지지 않게 한다. 방식을 누르거나 세기를 바꾸면 그대로 미리 울려 본다.
  * 시각화가 실행 중이면 미리보기가 실제 진동과 섞여 무엇이 울린 것인지 헷갈리므로 울리지 않는다(#244).
  *
+ * 외부 사운드 모드에서는 그 종류의 상한([HapticSettings.externalCap])까지만 고를 수 있고, 상한보다 빠르게 저장된 종류는
+ * 상한으로 보이고 울린다([HapticModeChoice], #354). 상한이 꺼짐인 환경음은 표시와 상관없이 진동하지 않는다고 적는다.
+ * 외부 사운드 모드는 다음 실행의 소스다. 실행 중에는 홈의 스위치가 잠겨 실행 중인 소스와 같다.
+ *
  * @param label [com.example.soundvisualizer.AiClassification] 의 라벨
  * @param shown 이 종류의 화면 표시가 켜져 있는지
  */
@@ -70,6 +75,9 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     val settings by SettingsManager.hapticSettings(label).collectAsState()
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
     val running by SettingsManager.isServiceRunning.collectAsState()
+    val externalSoundMode by SettingsManager.externalSoundMode.collectAsState()
+    val external = CaptureSource.of(externalSoundMode).hearsOwnVibration
+    val shownSettings = HapticModeChoice.shown(settings, label, external)
 
     val rowEnabled = shown && player.hasVibrator
 
@@ -95,17 +103,26 @@ fun HapticSettingRow(label: String, shown: Boolean) {
     // 고른 방식은 그대로라 종류별 진동을 믿게 되므로, 켜 둔 진동 바로 아래에 알린다. 위협음 줄은 이 설정으로
     // 큰 소리가 울린다고, 다른 줄은 이 종류로는 울리지 않는다고 적는다. 위협음의 표시나 진동을 꺼 두었으면 큰 소리도
     // 울리지 않으므로 다른 줄은 진동하지 않는다고만 적는다(#232). 설정값은 다음 실행을 위해 바꾸지 않는다.
+    // 켜 둔 진동인지는 실제로 울릴 방식으로 본다. 외부 사운드 모드의 환경음은 꺼짐으로만 울리므로(#354) 아래의 상한
+    // 안내만 붙인다. 위협음의 상한은 꺼짐이 아니라서, 큰 소리가 울리는지는 저장된 위협음 설정으로 봐도 같다.
     val dangerShown by SettingsManager.showDanger.collectAsState()
     val dangerHaptic by SettingsManager.hapticSettings(AiClassification.DANGER).collectAsState()
     val loudAlerts = AiUnavailableNotice.loudAlerts(dangerShown, dangerHaptic.enabled, player.hasVibrator)
-    val aiNote = !aiAvailable && rowEnabled && settings.enabled
+    val aiNote = !aiAvailable && rowEnabled && shownSettings.enabled
+    // 외부 사운드 모드의 환경음은 표시를 켜도 진동하지 않으므로(#354) 표시를 끈 줄이어도 표시를 켜라고 하지 않는다.
+    // 진동하지 않는 까닭은 아래의 상한 안내가 적는다([HapticModeChoice.requiresDisplayNote]).
     val noteRes = when {
         !player.hasVibrator -> R.string.haptic_unsupported
-        !shown -> R.string.haptic_requires_display
+        HapticModeChoice.requiresDisplayNote(label, shown, external) -> R.string.haptic_requires_display
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
         aiNote -> AiUnavailableNotice.otherRow(loudAlerts)
         else -> null
     }
+
+    // 종류마다 같은 "진동"·"세기" 줄이 셋 있어서, 화면 읽어주기에는 어느 종류의 것인지 함께 읽힌다(#312).
+    // 눈으로는 바로 위의 종류 줄로 알 수 있지만, 손으로 더듬으면 "세기, 50%" 만 들린다.
+    val typeName = stringResource(soundTypeName(label))
+    val vibrateLabel = stringResource(R.string.haptic_vibrate)
 
     Column(
         modifier = Modifier
@@ -113,10 +130,11 @@ fun HapticSettingRow(label: String, shown: Boolean) {
             .padding(start = 16.dp, bottom = 20.dp)
     ) {
         Text(
-            stringResource(R.string.haptic_vibrate),
+            vibrateLabel,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = if (rowEnabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f)
+            color = if (rowEnabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f),
+            modifier = Modifier.semantics { contentDescription = "$typeName, $vibrateLabel" }
         )
 
         if (noteRes != null) {
@@ -127,27 +145,47 @@ fun HapticSettingRow(label: String, shown: Boolean) {
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
+        // 외부 사운드 모드에서는 그 종류의 상한까지만 고를 수 있고, 더 빠르게 정해 둔 방식은 상한으로 울린다. 저장된 방식은
+        // 그대로라 모드를 끄면 돌아온다(#354). 상한이 꺼짐인 환경음은 고를 것이 꺼짐뿐이라 진동하지 않는다고 적고, 표시를
+        // 켜도 진동하지 않으므로 표시를 끈 줄에도 적는다([HapticModeChoice.showsNote]).
+        // 그 안내는 환경음을 이름으로 들어 진동하지 않는다고 말하므로 환경음 줄이고 상한이 꺼짐일 때만 쓴다. 상한만 보고
+        // 고르면 다른 종류의 상한을 꺼짐으로 바꿨을 때 그 줄에 환경음 안내가 붙는다.
+        if (player.hasVibrator && HapticModeChoice.showsNote(label, shown, external)) {
+            val cap = HapticSettings.externalCap(label)
+            Text(
+                if (label == AiClassification.AMBIENT && cap == HapticMode.Off) stringResource(R.string.haptic_off_external)
+                else stringResource(R.string.haptic_cap_external, typeName, stringResource(cap.labelRes)),
+                fontSize = 13.sp,
+                color = SecondaryTextColor,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         HapticChoiceRow(
             options = HapticMode.values().toList(),
-            selected = settings.mode,
+            selected = shownSettings.mode,
             labelOf = { stringResource(it.labelRes) },
             enabled = rowEnabled,
+            optionEnabled = { HapticModeChoice.selectable(it, label, external) },
             onSelect = { mode ->
-                val next = settings.copy(mode = mode)
-                SettingsManager.updateHaptic(label, next)
-                preview(next)
+                val next = HapticModeChoice.toStore(settings, mode, label, external)
+                if (next != null) SettingsManager.updateHaptic(label, next)
+                preview(HapticModeChoice.shown(next ?: settings, label, external))
             }
         )
 
-        DependentSettings(rowEnabled && settings.enabled) {
+        // 세기는 실제로 울릴 방식이 꺼짐이 아닐 때만 펼친다. 외부 사운드 모드의 환경음은 꺼짐으로만 울리므로(#354) 꺼짐
+        // 줄처럼 접는다. 펼쳐 두면 바꿔도 느낄 수 없는 세기를 고르게 된다(미리보기도 꺼짐이라 울리지 않는다). 저장된 방식과
+        // 세기는 그대로라 외부 사운드 모드를 끄면 정해 둔 대로 보인다.
+        DependentSettings(rowEnabled && shownSettings.enabled) {
             LevelSlider(
+                typeName = typeName,
                 level = settings.level,
                 enabled = player.hasAmplitudeControl,
                 onFinished = { level ->
                     val next = settings.copy(level = level)
                     SettingsManager.updateHaptic(label, next)
-                    preview(next)
+                    preview(HapticModeChoice.shown(next, label, external))
                 }
             )
             if (!player.hasAmplitudeControl) {
@@ -174,7 +212,7 @@ fun HapticSettingRow(label: String, shown: Boolean) {
  * 끊겨 어느 세기인지 느낄 수 없다.
  */
 @Composable
-private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit) {
+private fun LevelSlider(typeName: String, level: Int, enabled: Boolean, onFinished: (Int) -> Unit) {
     var dragging by remember { mutableStateOf<Float?>(null) }
     val value = dragging ?: level.toFloat()
     val name = stringResource(R.string.haptic_strength)
@@ -211,59 +249,72 @@ private fun LevelSlider(level: Int, enabled: Boolean, onFinished: (Int) -> Unit)
             enabled = enabled,
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,
-                activeTrackColor = AccentColor,
+                activeTrackColor = AccentFillColor,
                 inactiveTrackColor = Color(0xFF333A44),
                 disabledThumbColor = Color(0xFF6B7684),
                 disabledActiveTrackColor = Color(0xFF3A4351),
                 disabledInactiveTrackColor = Color(0xFF2A3038)
             ),
-            // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다.
-            // 값도 화면과 같은 글자로 읽힌다. 두지 않으면 슬라이더가 범위 안의 위치로 읽어 50% 가 "44퍼센트" 가 된다(범위가 10부터라).
+            // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다. 종류 이름까지 붙여
+            // "위협음, 세기" 로 읽힌다(#312). 값도 화면과 같은 글자로 읽힌다. 두지 않으면 슬라이더가 범위 안의 위치로 읽어
+            // 50% 가 "44퍼센트" 가 된다(범위가 10부터라).
             modifier = Modifier.fillMaxWidth().semantics {
-                contentDescription = name
+                contentDescription = "$typeName, $name"
                 stateDescription = percent
             }
         )
     }
 }
 
-/** 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄. */
+/** 소리 종류의 이름(분류 탭과 같은 "환경음"·"대화음"·"위협음"). */
+private fun soundTypeName(label: String): Int = when (label) {
+    AiClassification.DANGER -> R.string.sound_type_danger
+    AiClassification.SPEECH -> R.string.sound_type_speech
+    else -> R.string.sound_type_ambient
+}
+
+/**
+ * 설정 화면의 모드 선택 버튼과 같은 모양의 선택지 줄.
+ * @param optionEnabled 칸마다 고를 수 있는지. 고를 수 없는 칸은 줄 전체가 꺼졌을 때와 같은 색으로 흐리게 둔다.
+ */
 @Composable
 private fun <T> HapticChoiceRow(
     options: List<T>,
     selected: T,
     labelOf: @Composable (T) -> String,
     enabled: Boolean,
+    optionEnabled: (T) -> Boolean = { true },
     onSelect: (T) -> Unit
 ) {
     // 번역된 선택지가 칸보다 길면 가운데 정렬로 줄을 바꾸고, 칸 높이를 함께 맞춘다.
     // 다섯 칸이 한 줄에 들어가야 해서 칸 사이와 안쪽 여백을 설정 화면의 다른 선택지보다 좁게 둔다. 넓히면 영어의
     // Medium 같은 짧은 단어도 칸에 들어가지 않아 글자 중간에서 끊긴다.
+    // 글꼴을 키워 그래도 단어가 칸에 들어가지 않으면 한 줄의 칸 수를 줄인다(3+2, [choicesPerRow], #304).
     // 고른 칸은 색으로만 보이므로, 화면 읽어주기에는 selectableGroup 과 selectable 로 알린다.
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier
-            .padding(top = 10.dp)
-            .height(IntrinsicSize.Min)
-            .selectableGroup()
-    ) {
-        options.forEach { option ->
+    val labels = options.map { labelOf(it) }
+    val labelStyle = wrappingLabelStyle().copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+    BoxWithConstraints(modifier = Modifier.padding(top = 10.dp)) {
+        val perRow = choicesPerRow(
+            labels, maxPerRow = options.size, rowWidth = maxWidth, gap = 4.dp, cellPadding = 2.dp, style = labelStyle
+        )
+        EqualChoiceRows(options, perRow, gap = 4.dp) { option, cellModifier ->
             val isSelected = option == selected
+            val optionOn = enabled && optionEnabled(option)
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                // 칸 높이는 48dp 이상으로 둔다(#312, 글자와 안쪽 여백만으로는 약 44dp).
+                modifier = cellModifier
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(
                         when {
-                            !enabled -> Color(0xFF2A3038)
-                            isSelected -> AccentColor
+                            !optionOn -> Color(0xFF2A3038)
+                            isSelected -> AccentFillColor
                             else -> Color(0xFF333A44)
                         }
                     )
                     .selectable(
                         selected = isSelected,
-                        enabled = enabled,
+                        enabled = optionOn,
                         role = Role.RadioButton
                     ) { onSelect(option) }
                     .padding(horizontal = 2.dp, vertical = 10.dp),
@@ -276,7 +327,7 @@ private fun <T> HapticChoiceRow(
                     textAlign = TextAlign.Center,
                     style = wrappingLabelStyle(),
                     color = when {
-                        !enabled -> PrimaryTextColor.copy(alpha = 0.35f)
+                        !optionOn -> PrimaryTextColor.copy(alpha = 0.35f)
                         isSelected -> Color.White
                         else -> PrimaryTextColor
                     }

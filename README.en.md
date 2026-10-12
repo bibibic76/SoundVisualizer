@@ -41,9 +41,10 @@ You can see the same sound in four shapes and switch between them any time in Se
 ### 🧠 Sound types (AI)
 
 - Sorts what you hear into **ambient, speech and danger** sounds.
-- Sirens and alarms count as danger sounds when they clearly show up among the AI's top candidates, even if they aren't its first pick.
+- Sounds set aside as danger cues, such as sirens, alarms, explosions, fireworks, horns and breaking glass, count as danger sounds when they are among the AI's top 5 candidates with a probability of at least 5%, even if they aren't its first pick. This holds even when a gunshot is also among the candidates. It doesn't happen, though, when speech is louder so the sound would count as speech under the default types, when the first pick is something like speech or silence, or when the first pick's probability is very low (under 12%).
 - **Pick a color for each type.** Choose any color in the color picker, or tap a common color.
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
+- **You can pick the type of sounds yourself.** The Sounds tab shows the sounds the AI recognizes in groups of similar sounds, and you choose whether each group counts as ambient, speech or danger. Turn on **Advanced mode** to change sounds one by one. Change the "Doorbell" group to Danger, for example, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI's vote on the type, though, so this doesn't mean every doorbell will be shown as danger. One sound can be heard under several names at once (a siren is also heard as Alarm), so if a sound still shows its old type after a change, change the related groups or sounds too.
 - When a danger sound is detected, the color changes instantly instead of fading, so it stands out right away.
 - Even with only danger sounds shown, short danger sounds like gunshots that end before the AI decides are still drawn at their real size.
 - In the rare case the AI model can't be loaded, Home and Settings show that **sound type detection isn't working**. Every sound is then shown in the ambient color, and only loud sounds vibrate, using the danger sound vibration setting. The model is only loaded when it starts, so turning it off and on again gives it another try.
@@ -54,21 +55,27 @@ Vibration lets you know a sound happened even when you're not looking at the scr
 
 - **Pick a vibration mode for each sound type: Off, Slow, Medium, Fast or Continuous.** At first only danger sounds vibrate, on Medium.
   - Medium pulses every half second, Slow at half that pace and Fast at twice that pace. Continuous vibrates without a break.
+  - In External sound mode, each type has a fastest mode you can pick: Slow for speech and Medium for danger sounds, and ambient sounds don't vibrate (see External sound mode below). Types set faster vibrate at that mode, and when you turn External sound mode off, they vibrate as you set them.
 - **Set the strength for each type with a slider (10–100%).** Every mode vibrates at the strength you picked. Give each type a different mode and you can tell sounds apart by touch alone.
 - **It keeps vibrating while a sound of that type lasts and stops when the sound does.** Pauses shorter than 0.4 seconds, like the gaps between words, count as the same sound.
 - Tap a mode or change the strength in Settings to feel it for 2 seconds. While the visualizer is running, previews don't play, so they aren't mixed up with real alerts.
 - **Only types shown on screen vibrate.**
 - While the phone keeps vibrating, keyboard and touch vibration may pause (Android 14 and later), and on a hard table the phone may rattle.
+- **Danger sound alerts on the lock screen**: while the phone is locked or the screen is off, the graphics are hidden behind the lock screen. If a danger sound is heard then, a "Danger sound heard" alert appears on the lock screen and a dark screen turns on briefly. The alert names the sound the AI judged to be a danger sound, or gives no name when it can't pick one clearly. With the screen off, this works only in External sound mode or with **Pause while the screen is off** in the Battery settings turned off, because sound playing on your phone isn't captured while the screen is off by default. The alert is silent; vibration follows the danger sound vibration setting. One continuing danger sound alerts once (at least 30 seconds between alerts), and the alert goes away when you unlock. Nothing is shown if danger sounds are hidden. On Samsung phones set to show lock screen notifications as icons only, change that in the phone's settings to see the text.
 
 ### 🎤 External sound mode
 
-Turn on **External sound mode** on Home and start, and it listens to **the sounds around you through the microphone** instead of sound playing on your phone, showing them with the same graphics and vibration. You can notice sounds outside the phone, like a doorbell, a fire alarm or someone calling you.
+Turn on **External sound mode** on Home and start, and it listens to **the sounds around you through the microphone** instead of sound playing on your phone, showing them with the same graphics and vibration. You can notice sounds outside the phone, like a fire alarm, a siren or someone calling you.
 
 - It's off by default. When it's on, it starts without screen recording consent, and on Android 12 and later a microphone indicator shows in the status bar while it listens. The running notification title and the Home status also say **Surrounding sound**.
 - What it hears is only used to measure loudness and tell the type of sound. **The audio itself is never saved to a file or sent anywhere.** If you turn on result recording in developer mode, the names of the sounds the AI heard and their times are written to a CSV file in the app folder.
 - It can't be changed while running. Stop the visualizer, change it, and it applies the next time you start.
-- **It keeps listening while the screen is off.** The mode is meant to tell you about a doorbell or a fire alarm while your phone is lying there with the screen off, so it listens regardless of **Pause while the screen is off** in the Battery settings. It uses more battery as a result.
-- **Microphone sensitivity** appears under the switch when the mode is on (50–800%, 100% by default). Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It takes effect right away, even while running. It only changes the loudness the graphics and vibration see; the AI that tells sound types apart hears the same sound.
+- **It keeps listening while the screen is off.** The mode is meant to tell you by vibration about danger sounds like a fire alarm or a siren, or someone calling you (speech, once its vibration is on), while your phone is lying there with the screen off, so it listens regardless of **Pause while the screen is off** in the Battery settings. It uses more battery as a result. A doorbell counts as an ambient sound by default, so it doesn't vibrate in this mode. To feel it, first change Doorbell and Ding-dong to Danger or Speech in the Sounds tab. Even then, it may not catch every ring.
+- **Microphone sensitivity** appears under the switch when the mode is on (16 notches without numbers, up to ×32 at the far right, the 4th notch from the left by default). Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It takes effect right away, even while running. It only changes how loud sounds seem to the graphics, the vibration and the danger sound alert on the lock screen. With the sensitivity below the default notch, quiet sounds may not vibrate or set off the danger sound alert. The AI that tells sound types apart still hears the sound as it is. So sounds too quiet for the AI don't vibrate or set off the danger sound alert, even at high sensitivity (see below). In that case, keep the phone near where the sound comes from and don't cover the microphone.
+- **Vibration checks whether a sound is still going only in the pauses between pulses.** This keeps the phone from mistaking its own vibration for sound and never stopping. So vibration can go on for a moment after the sound stops, usually under a second. The graphics may also show the phone's short pulses.
+- **The app's own vibration is taken out of what the AI that tells sound types apart hears.** While the phone vibrates, the AI keeps hearing the sound from just before the pulse instead. This keeps the app's vibration from changing the sound type (the color and the vibration) or keeping a speech vibration going by itself, and keeps it from setting off a danger sound alert on the lock screen. Other apps' vibration isn't taken out, and on some phones a little of the vibration can still get through (when the phone can't tell exactly when sound came in, or the motor stops late). Loud sounds such as an explosion still reach the AI during a pulse, along with the vibration. A quiet sound that keeps going through a pulse is heard in the next pause, but a quiet sound that starts and ends within a pulse isn't heard.
+- **When it gets quiet and the AI goes idle, vibration also stops after about a second.** With high microphone sensitivity, vibration can respond to faint sounds in a quiet room, and this keeps it from going on with the last type the AI heard. So sounds too quiet for the AI don't vibrate even at high sensitivity (the graphics still show them), and after a quiet spell the first vibration can come about 0.3 seconds later.
+- **To keep those pauses long enough, each type has a limit on how fast it vibrates.** Speech goes up to Slow and danger sounds up to Medium, and ambient sounds don't vibrate, because there is always some sound around you and the vibration would never stop. Types set faster vibrate at their limit, and when you turn External sound mode off, they vibrate as you set them. Loud sounds that vibrate while sound type detection isn't working follow the danger sound setting, so they also go up to Medium.
 - For now it always draws sound in the center. The phone's two microphones sit apart along its long side, so it can't tell left from right when you hold it upright, only when you hold it sideways. Showing left and right in landscape comes later.
 - If you're on a call, another app is using the microphone, or microphone access is turned off in Quick Settings, no sound comes in. Home and the running notification tell you when that happens.
 
@@ -95,7 +102,7 @@ The app follows your phone's language and is available in the languages below. O
 
 English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español · Português (Brasil) · Français · Deutsch · Русский · Italiano · Tiếng Việt · ไทย · Bahasa Indonesia · Türkçe · Polski · हिन्दी · العربية
 
-To use a different language from your phone, tap **Language** at the top of the **Settings** tab. **System default** follows your phone's language again. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
+To use a different language from your phone, tap the globe button at the bottom right of the **Home** tab. **System default** follows your phone's language again. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
 
 ### 🔋 Lightweight
 
@@ -122,7 +129,7 @@ To use a different language from your phone, tap **Language** at the top of the 
 
 You can also find how to use it, why permissions are needed and the FAQ in the app's **Help** tab.
 
-The first time you open the app, a **tutorial** shows up first. In five pages it shows what the app does (drawing sound along the edges of the screen, telling left from right, a color for each type of sound, vibration for danger sounds) and how to turn it on and off. Its pictures move exactly the way the app draws. Once you skip it or reach the end, it won't open by itself again; tap **View tutorial** at the bottom of the Home tab to see it any time.
+The first time you open the app, a **tutorial** shows up first. In five pages it shows what the app does (drawing sound along the edges of the screen, telling left from right, a color for each type of sound, vibration for danger sounds) and how to turn it on and off. Its pictures move exactly the way the app draws, and on the vibration page your phone really vibrates whenever the phone in the picture shakes. Tap the sound button at the bottom to hear what the pictures draw as real recordings, such as birdsong, people talking and a car horn (it starts off). Once you skip it or reach the end, it won't open by itself again; tap **View tutorial** at the bottom of the Home tab to see it any time.
 
 1. Open the app and tap **Start**.
 2. Allow the permissions below. Some are asked only once, and some are asked every time you turn it on because of Android's rules.
@@ -174,7 +181,7 @@ It turns off when screen recording, screen sharing or casting starts, or when so
 Check whether the app you're playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure **Opacity** isn't too low in Settings, and that showing the current sound type isn't turned off. In External sound mode, also check that the microphone isn't blocked (a call, another app using the microphone, or the microphone block in Quick Settings) and check **Microphone sensitivity** on Home. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
 
 **It doesn't vibrate.**
-In Settings, under Sound types, make sure **Show** is on and **Vibrate** isn't set to **Off** for that sound type. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. External sound mode keeps listening while the screen is off. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
+In Settings, under Sound types, make sure **Show** is on and **Vibrate** isn't set to **Off** for that sound type. In External sound mode, ambient sounds don't vibrate. While the screen is off it pauses by default, so turn off **Pause while the screen is off** under **Battery** in Settings to keep getting vibration alerts then. External sound mode keeps listening while the screen is off. While sound type detection isn't working, only loud sounds vibrate, using the danger sound setting. If vibration or touch vibration is turned off in your phone's settings, it may not vibrate. In power saving mode, some phones (Android 13 and 14) may block this vibration. If you're visualizing sound from your phone and the media volume is very low, turn it up a little.
 
 **A new version won't install.**
 An APK built on a different computer has a different signature and can't be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.
@@ -183,7 +190,7 @@ An APK built on a different computer has a different signature and can't be inst
 It only draws while there's sound and goes idle when it's quiet. While the screen is off, by default it also stops capturing sound and running the AI (External sound mode keeps listening). Because it keeps capturing sound while the screen is on, it does use some battery while running. We recommend turning it off when you're not using it.
 
 **How do I change the app language?**
-Tap **Language** at the top of the **Settings** tab and pick one. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
+Tap the globe button at the bottom right of the **Home** tab and pick a language. **System default** follows your phone's language. On Android 13 and later, you can also change it under **App languages** in your phone's settings.
 
 **A sound is shown as the wrong type. / I found a bug.**
 Tell us from **Report a problem** in the **Help** tab. The app version, Android version, device model and app language are filled in for you.
@@ -205,5 +212,7 @@ Build, test, CI and code structure docs are in Korean: see the "개발자용" (F
 ## 📄 License
 
 This project is distributed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
+
+The exception is the Sounds tab's sound groups (`app/src/main/assets/sound_groups.tsv`) and sound names (`app/src/main/res/values*/sound_names.xml`). They are adapted from the AudioSet Ontology and are licensed under **CC BY-SA 4.0** instead (section 7 of [NOTICE](NOTICE)).
 
 Copyright and license notices for bundled third-party components (ONNX Runtime, the YAMNet model, AndroidX and more) are in the [NOTICE](NOTICE) file.

@@ -18,7 +18,9 @@ class AiPostProcessor(
         /** Top-5에 critical danger keyword 존재 (threshold 완화용). */
         val hasCriticalDangerCue: Boolean = false,
         /** FormatTop5 요약 문자열 — IsCriticalDangerEvent용 (optional). */
-        val topKSummary: String = ""
+        val topKSummary: String = "",
+        /** Pipeline supplies a mapping-filtered decision; null preserves legacy callers. */
+        val criticalDangerEvent: Boolean? = null
     )
 
     data class FrameResult(
@@ -102,7 +104,7 @@ class AiPostProcessor(
         val rDisplay = frame.display
         val rConf = frame.confidence
         val rMeets = meets
-        val rCritical = isCriticalDangerEvent(frame.display, frame.topKSummary)
+        val rCritical = frame.criticalDangerEvent ?: isCriticalDangerEvent(frame.display, frame.topKSummary)
 
         applyCoarseHysteresis(
             meetsThreshold = rMeets,

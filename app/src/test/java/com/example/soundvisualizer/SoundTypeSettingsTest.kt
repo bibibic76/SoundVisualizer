@@ -1,6 +1,12 @@
 package com.example.soundvisualizer
 
+import android.content.SharedPreferences
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
+import com.example.soundvisualizer.ai.YamnetMappingPolicy
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -11,7 +17,7 @@ import org.junit.Test
 /**
  * 분류 탭에서 바꾼 소리 종류의 저장·복원과, AI 가 읽어 갈 창구([SettingsManager.soundTypeOverride]).
  *
- * AI 판정에 연결하는 일은 #291 이 맡는다. 그 전까지는 사용자가 무엇을 바꿔도 AI 의 매핑이 그대로여야 한다(#283).
+ * 기본 mapper는 불변이고, 추론별 정책 스냅샷에만 사용자 설정을 반영한다 (#291).
  * SettingsManager 는 싱글턴이라 테스트마다 빈 프리퍼런스로 다시 읽어 되돌린다.
  */
 class SoundTypeSettingsTest {
@@ -58,8 +64,7 @@ class SoundTypeSettingsTest {
     }
 
     @Test
-    fun `AI 의 매핑은 사용자가 바꿔도 그대로다`() {
-        // #291 전까지 분류 탭은 화면과 저장만 한다. 매핑이 따라 바뀌면 #117 기준 결과와 실기기 기록이 섞인다.
+    fun `기본 매핑은 불변이고 사용자 선택은 정책 스냅샷에 반영된다`() {
         val names = listOf("Siren", "Doorbell", "Speech", "Rain", "Gunshot, gunfire")
         val before = names.associateWith { YamnetThreeClassMapper.mapDisplayNameToCoarse(it) }
         SettingsManager.load(MemoryPrefs())
@@ -70,6 +75,12 @@ class SoundTypeSettingsTest {
         SettingsManager.setSoundType("Rain", AiClassification.SPEECH)
 
         assertEquals(before, names.associateWith { YamnetThreeClassMapper.mapDisplayNameToCoarse(it) })
+        val policy = YamnetMappingPolicy.from(SettingsManager.soundTypes.value, names)
+        assertEquals("ambient", policy.coarse("Siren"))
+        assertEquals("danger", policy.coarse("Doorbell"))
+        assertEquals("ambient", policy.coarse("Speech"))
+        assertEquals("speech", policy.coarse("Rain"))
+        assertEquals(before.getValue("Gunshot, gunfire"), policy.coarse("Gunshot, gunfire"))
     }
 
     @Test
@@ -77,6 +88,22 @@ class SoundTypeSettingsTest {
         for (name in listOf("Siren", "Doorbell", "Speech", "Walk, footsteps", "Thunder")) {
             assertEquals(name, YamnetThreeClassMapper.mapDisplayNameToCoarse(name), SettingsManager.defaultSoundType(name))
         }
+    }
+
+    @Test
+    fun `지금 종류는 바꾼 종류가 있으면 그것이고 없으면 기본 종류다`() {
+        SettingsManager.load(MemoryPrefs())
+        assertEquals(AiClassification.DANGER, SettingsManager.soundType("Siren"))
+        SettingsManager.setSoundType("Siren", AiClassification.AMBIENT)
+        SettingsManager.setSoundType("Doorbell", AiClassification.DANGER)
+
+        assertEquals(AiClassification.AMBIENT, SettingsManager.soundType("Siren"))
+        assertEquals(AiClassification.DANGER, SettingsManager.soundType("Doorbell"))
+        assertEquals(SettingsManager.defaultSoundType("Speech"), SettingsManager.soundType("Speech"))
+        // AI 가 추론마다 쓰는 정책과 같은 규칙이다(#321). 둘이 어긋나면 알림이 AI 판정과 다른 소리 이름을 적는다(#325).
+        val names = listOf("Siren", "Doorbell", "Speech", "Rain")
+        val policy = YamnetMappingPolicy.from(SettingsManager.soundTypes.value, names)
+        for (name in names) assertEquals(name, policy.coarse(name), SettingsManager.soundType(name))
     }
 
     @Test
@@ -169,5 +196,110 @@ class SoundTypeSettingsTest {
 
         SettingsManager.resetSoundTypes()
         assertEquals("되돌리기는 그 키만 지운다", before, prefs.all.keys.toSet())
+    }
+
+    @Test
+    fun `여러 소리를 한 번에 바꾸면 흐름에 한 번 싣고 한 번 저장한다`() {
+        // 분류 탭이 묶음째 고를 때(#349). AI 가 반쯤 바뀐 맵을 읽지 않게 한 번에 바꾼다.
+        val prefs = CountingPrefs()
+        SettingsManager.load(prefs)
+        prefs.edits = 0
+
+        val emissions = emissionsDuring { SettingsManager.setSoundTypes(SIRENS, AiClassification.AMBIENT) }
+
+        assertEquals("흐름에 실은 횟수", 1, emissions)
+        assertEquals("저장한 횟수", 1, prefs.edits)
+        val expected = SIRENS.associateWith { AiClassification.AMBIENT }
+        assertEquals(expected, SettingsManager.soundTypes.value)
+        assertEquals("앱을 다시 켜도 남아야 한다", expected, SettingsManager.loadSoundTypes(prefs))
+    }
+
+    @Test
+    fun `묶음에서 기본 종류를 고르면 그 소리들의 바꾼 것을 지우고 다른 소리는 그대로 둔다`() {
+        val prefs = MemoryPrefs()
+        SettingsManager.load(prefs)
+        SettingsManager.setSoundType("Doorbell", AiClassification.DANGER)
+        SettingsManager.setSoundTypes(SIRENS, AiClassification.AMBIENT)
+        SettingsManager.setSoundType("Civil defense siren", AiClassification.SPEECH)
+
+        SettingsManager.setSoundTypes(SIRENS, SettingsManager.defaultSoundType("Siren"))
+
+        val expected = mapOf("Doorbell" to AiClassification.DANGER)
+        assertEquals(expected, SettingsManager.soundTypes.value)
+        assertEquals(expected, SettingsManager.loadSoundTypes(prefs))
+        assertNull(SettingsManager.soundTypeOverride("Civil defense siren"))
+    }
+
+    @Test
+    fun `세 종류가 아닌 값이나 바뀌는 것이 없는 호출은 흐름도 저장도 건드리지 않는다`() {
+        val prefs = CountingPrefs()
+        SettingsManager.load(prefs)
+        SettingsManager.setSoundTypes(SIRENS, AiClassification.AMBIENT)
+        prefs.edits = 0
+
+        val emissions = emissionsDuring {
+            SettingsManager.setSoundTypes(SIRENS, "loud")
+            SettingsManager.setSoundTypes(SIRENS, AiClassification.AMBIENT)
+            SettingsManager.setSoundTypes(emptyList(), AiClassification.DANGER)
+            SettingsManager.setSoundTypes(listOf("Rain", "Wind"), SettingsManager.defaultSoundType("Rain"))
+        }
+
+        assertEquals(0, emissions)
+        assertEquals(0, prefs.edits)
+        assertEquals(SIRENS.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+    }
+
+    @Test
+    fun `한 번에 바꾼 것은 하나씩 바꾼 것과 같고 AI 의 정책 스냅샷도 모두 본다`() {
+        val names = listOf("Doorbell", "Ding-dong", "Knock", "Tap")
+        SettingsManager.load(MemoryPrefs())
+        names.forEach { SettingsManager.setSoundType(it, AiClassification.DANGER) }
+        val oneByOne = SettingsManager.soundTypes.value
+
+        SettingsManager.load(MemoryPrefs())
+        SettingsManager.setSoundTypes(names, AiClassification.DANGER)
+
+        assertEquals(oneByOne, SettingsManager.soundTypes.value)
+        val policy = YamnetMappingPolicy.from(SettingsManager.soundTypes.value, names)
+        for (name in names) assertEquals(name, AiClassification.DANGER, policy.coarse(name))
+    }
+
+    @Test
+    fun `여러 소리를 한 번에 바꿔도 키는 소리 종류 하나만 더한다`() {
+        val prefs = MemoryPrefs()
+        SettingsManager.load(prefs)
+        SettingsManager.setDeveloperMode(true)
+        val before = prefs.all.toMap()
+
+        SettingsManager.setSoundTypes(SIRENS + "Doorbell", AiClassification.SPEECH)
+
+        assertEquals(setOf("sound_types"), prefs.all.keys - before.keys)
+        assertEquals("다른 키의 값은 그대로다", before, prefs.all.filterKeys { it != "sound_types" })
+    }
+
+    /**
+     * [block] 이 [SettingsManager.soundTypes] 에 새 값을 실은 횟수. 처음 값은 세지 않는다.
+     * 막히지 않는 디스패처로 모아서, 값이 바뀌는 그 자리에서 센다. 흐름은 같은 값을 다시 싣지 않는다.
+     */
+    private fun emissionsDuring(block: () -> Unit): Int = runBlocking {
+        var count = 0
+        val job = launch(Dispatchers.Unconfined) { SettingsManager.soundTypes.drop(1).collect { count++ } }
+        block()
+        job.cancel()
+        count
+    }
+
+    private companion object {
+        val SIRENS = listOf("Siren", "Ambulance (siren)", "Fire engine, fire truck (siren)", "Police car (siren)", "Civil defense siren")
+    }
+}
+
+/** 저장한 횟수를 세는 프리퍼런스. 값은 [MemoryPrefs] 에 맡기고 에디터를 연 횟수(`edit { }` 한 번이 한 번)만 센다. */
+private class CountingPrefs(private val memory: MemoryPrefs = MemoryPrefs()) : SharedPreferences by memory {
+    var edits = 0
+
+    override fun edit(): SharedPreferences.Editor {
+        edits++
+        return memory.edit()
     }
 }

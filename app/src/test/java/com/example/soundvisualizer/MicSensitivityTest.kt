@@ -26,40 +26,51 @@ class MicSensitivityTest {
     }
 
     @Test
-    fun `칸은 올라가고 한 칸마다 약 3dB 다`() {
+    fun `칸은 올라가고 한 칸마다 약 2_5dB 로 고르다`() {
         val steps = MicSensitivity.STEPS
         for (i in 1 until steps.size) {
             val ratio = steps[i].toFloat() / steps[i - 1]
-            assertTrue("${steps[i - 1]} → ${steps[i]}", ratio in 1.35f..1.5f)
+            assertTrue("${steps[i - 1]} → ${steps[i]}", ratio in 1.32f..1.35f)
         }
         assertTrue("내릴 칸도 있어야 시끄러운 곳에서 잡음을 덜 그린다", steps.first() < MicSensitivity.DEFAULT)
     }
 
     @Test
+    fun `열여섯 칸이고 맨 오른쪽이 32배다`() {
+        assertEquals(16, MicSensitivity.STEPS.size)
+        assertEquals((1..16).toList(), MicSensitivity.STEPS.map { MicSensitivity.level(it) })
+        assertEquals("최대는 ×32", 32f, MicSensitivity.gain(MicSensitivity.STEPS.last()), 0f)
+        assertEquals("기본은 왼쪽에서 네 번째 칸", 4, MicSensitivity.level(MicSensitivity.DEFAULT))
+        val oldMax = MemoryPrefs().apply { edit().putInt("mic_sensitivity", 800).apply() }
+        assertEquals("예전 최대(800%)는 가장 가까운 열한 번째 칸(755%)으로 읽힌다", 755, SettingsManager.loadMicSensitivity(oldMax))
+        assertEquals(11, MicSensitivity.level(SettingsManager.loadMicSensitivity(oldMax)))
+    }
+
+    @Test
     fun `칸에 없는 값은 가장 가까운 칸으로 맞춘다`() {
-        assertEquals(50, MicSensitivity.clamp(0))
-        assertEquals(140, MicSensitivity.clamp(130))
-        assertEquals(800, MicSensitivity.clamp(10_000))
+        assertEquals(42, MicSensitivity.clamp(0))
+        assertEquals(133, MicSensitivity.clamp(130))
+        assertEquals(3200, MicSensitivity.clamp(10_000))
         for (p in MicSensitivity.STEPS) assertEquals(p, MicSensitivity.clamp(p))
     }
 
     @Test
     fun `저장한 감도를 읽고 칸에 없는 값은 맞춘다`() {
         val prefs = MemoryPrefs()
-        prefs.edit().putInt("mic_sensitivity", 400).apply()
-        assertEquals(400, SettingsManager.loadMicSensitivity(prefs))
+        prefs.edit().putInt("mic_sensitivity", 424).apply()
+        assertEquals(424, SettingsManager.loadMicSensitivity(prefs))
         prefs.edit().putInt("mic_sensitivity", 123).apply()
-        assertEquals(140, SettingsManager.loadMicSensitivity(prefs))
+        assertEquals(133, SettingsManager.loadMicSensitivity(prefs))
     }
 
     @Test
     fun `바꾼 감도는 저장되고 다시 읽힌다`() {
         val prefs = MemoryPrefs()
         SettingsManager.load(prefs)
-        SettingsManager.setMicSensitivity(280)
-        assertEquals(280, SettingsManager.micSensitivity.value)
+        SettingsManager.setMicSensitivity(317)
+        assertEquals(317, SettingsManager.micSensitivity.value)
         SettingsManager.load(prefs)
-        assertEquals(280, SettingsManager.micSensitivity.value)
+        assertEquals(317, SettingsManager.micSensitivity.value)
     }
 
     @Test

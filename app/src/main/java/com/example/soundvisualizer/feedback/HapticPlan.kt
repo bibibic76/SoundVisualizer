@@ -46,6 +46,15 @@ class HapticPlan(
         return out.toLongArray()
     }
 
+    /**
+     * 끝에 세기 0 칸(쉼)을 붙여 길이를 [minMs] 이상으로 늘린 계획. 이미 그만큼 길면 이 계획을 그대로 돌려준다.
+     * 울리는 부분은 바뀌지 않는다. Android 10 이 짧은 진동을 터치 진동으로 보지 않게 할 때 쓴다([HapticPlayer]).
+     */
+    fun withSilentTail(minMs: Long): HapticPlan {
+        if (durationMs >= minMs) return this
+        return HapticPlan(timings + (minMs - durationMs), amplitudes + 0, binary)
+    }
+
     /** 로그 한 줄. 예: `plan t=1234 dur=200 steps=1 max=255` */
     fun summary(atMs: Long): String =
         "plan t=$atMs dur=$durationMs steps=${timings.size} max=${amplitudes.maxOrNull()}"

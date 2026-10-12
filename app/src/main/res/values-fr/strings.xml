@@ -14,7 +14,7 @@
     <string name="home_external_mode_desc">Écoute les sons autour de vous avec le micro au lieu du son diffusé sur votre téléphone. Le son lui-même n\'est jamais enregistré ni envoyé où que ce soit.</string>
     <string name="home_external_mode_locked">Impossible de le modifier pendant la visualisation. Arrêtez-la, modifiez ce réglage et il s\'appliquera au prochain démarrage.</string>
     <string name="home_mic_sensitivity">Sensibilité du micro</string>
-    <string name="home_mic_sensitivity_value">%1$d %%</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_status_idle">État : prêt</string>
     <string name="home_capture_blocked">Aucun son ne parvient au visualiseur : rien ne peut donc être dessiné. Il se peut que l\'application qui diffuse le son n\'autorise pas son partage (c\'est le cas des vidéos protégées), ou que le son y soit coupé.</string>
     <string name="home_ai_unavailable_loud">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance et seuls les sons forts font vibrer, avec le réglage de vibration des sons de danger. Essayez de désactiver puis de réactiver la visualisation.</string>
@@ -38,6 +38,8 @@
     <string name="tutorial_page_status">Page %1$d sur %2$d</string>
     <string name="tutorial_pause">Mettre l\'animation en pause</string>
     <string name="tutorial_play">Lire l\'animation</string>
+    <string name="tutorial_sound_on">Activer le son</string>
+    <string name="tutorial_sound_off">Couper le son</string>
     <string name="tutorial_sound_title">Voir le son sur votre écran</string>
     <string name="tutorial_sound_body">Le son de votre jeu ou de votre vidéo est dessiné le long des bords de l\'écran. Plus le son est fort, plus le dessin est grand. Seul le son diffusé sur votre téléphone est affiché. Les sons autour de vous ne sont pas captés.</string>
     <string name="tutorial_sound_body_external">Le mode son externe est activé : les sons autour de vous, captés par le micro, sont dessinés le long des bords de l\'écran. Plus un son est fort, plus le dessin est grand. Dans ce mode, le son diffusé sur votre téléphone n\'est pas affiché.</string>
@@ -133,9 +135,11 @@
     <string name="ai_show_speech">Afficher les voix</string>
     <string name="ai_show_danger">Afficher les dangers</string>
     <string name="ai_unavailable">La détection du type de son ne fonctionne pas : tous les sons s\'affichent dans la couleur de l\'ambiance. Essayez de désactiver puis de réactiver la visualisation.</string>
-    <string name="classify_title">Choisir le type de chaque son</string>
-    <string name="classify_desc">Voici tous les sons que l\'IA peut reconnaître, avec le type dans lequel chacun est classé. Si vous changez le type d\'un son, il prend aussitôt la couleur et la vibration de son nouveau type.</string>
-    <string name="classify_danger_note">Un son que vous retirez du type danger n\'a plus la couleur ni la vibration des sons de danger. Les sons similaires sont sur des lignes distinctes (cinq pour les sirènes) : modifiez chacune d\'elles pour tous les retirer.</string>
+    <string name="classify_title">Choisir les types de sons</string>
+    <string name="classify_desc_groups">Les sons que l\'IA reconnaît sont regroupés avec des sons proches, selon le type auquel chacun appartient par défaut. Si vous changez le type d\'un groupe, la couleur et la vibration de ses sons suivent aussitôt le nouveau type.</string>
+    <string name="classify_sibling_note">L\'IA reconnaît souvent un même son sous plusieurs noms à la fois. Une sirène, par exemple, est aussi reconnue comme « Alarme », qui se trouve dans un autre groupe. Si un son s\'affiche encore avec son ancien type après une modification, modifiez aussi les groupes ou les sons liés.</string>
+    <string name="classify_advanced">Mode avancé</string>
+    <string name="classify_advanced_desc">Affiche chaque son dans son groupe pour que vous puissiez modifier les sons un par un.</string>
     <string name="classify_search_hint">Rechercher un son</string>
     <string name="cd_classify_clear_search">Effacer la recherche</string>
     <string name="classify_filter_all">Tous</string>
@@ -154,6 +158,35 @@
     <string name="classify_empty">Aucun son ne correspond.</string>
     <string name="cd_classify_sound">%1$s, type : %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, type : %2$s, par défaut : %3$s</string>
+    <string name="classify_type_mixed">Mixte</string>
+    <string name="classify_group_mixed_note">Certains sons modifiés un par un</string>
+    <string name="classify_group_changed_line">Actuel : %1$s · Par défaut : %2$s</string>
+    <string name="classify_group_overwrite_title">Modifier tout le groupe ?</string>
+    <string name="classify_group_overwrite_message">Sons du groupe « %1$s » qui passeront en %3$s : %2$d. Les sons modifiés un par un seront eux aussi remplacés.</string>
+    <string name="classify_group_overwrite_confirm">Modifier</string>
+    <string name="classify_group_overwrite_cancel">Annuler</string>
+    <string name="classify_basic_warning_title">Passer au mode simple ?</string>
+    <string name="classify_basic_warning_message">Certains groupes contiennent des sons que vous avez modifiés un par un. En mode simple, si vous choisissez un type pour l\'un de ces groupes, tous ses sons prennent ce type et vos modifications individuelles dans ce groupe sont remplacées. Rien ne change tant que vous ne choisissez pas.</string>
+    <string name="classify_basic_warning_confirm">Passer au mode simple</string>
+    <string name="classify_basic_warning_cancel">Rester en mode avancé</string>
+    <string name="cd_classify_group">Groupe %1$s, type : %2$s, sons : %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">Groupe %1$s, type : %2$s, par défaut : %3$s, sons : %4$d (%5$s)</string>
+    <string name="cd_classify_group_header">Groupe %1$s, sons : %2$d</string>
+    <string name="sound_group_horns">Klaxons et alarmes de voiture</string>
+    <string name="sound_group_vehicle_warnings">Signaux d\'alerte des véhicules</string>
+    <string name="sound_group_breaking">Bris de verre et fracas</string>
+    <string name="sound_group_distress">Cris et pleurs</string>
+    <string name="sound_group_talking">Parole et chuchotements</string>
+    <string name="sound_group_signals">Réveils, bips et sifflets</string>
+    <string name="sound_group_voices">Applaudissements, fredonnements et sifflements</string>
+    <string name="sound_group_water">Robinets et eau qui coule</string>
+    <string name="sound_group_kitchen">Cuisine et cuisson</string>
+    <string name="sound_group_appliances">Électroménager et horloges</string>
+    <string name="sound_group_tools">Outils et machines</string>
+    <string name="sound_group_nature">Nature et météo</string>
+    <string name="sound_group_body">Toux, respiration et bruits du corps</string>
+    <string name="sound_group_objects">Objets et sons brefs</string>
+    <string name="sound_group_background">Télé, radio et fond sonore</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibration</string>
@@ -172,6 +205,8 @@
     <string name="haptic_mode_continuous">Continue</string>
     <string name="haptic_preview_hint">Appuyez sur un mode ou modifiez l\'intensité pour ressentir la vibration pendant 2 secondes.</string>
     <string name="haptic_preview_hint_running">Pendant la visualisation, l\'aperçu ne vibre pas, pour ne pas être confondu avec les vraies alertes.</string>
+    <string name="haptic_cap_external">En mode son externe, vous pouvez choisir jusqu\'à %2$s pour le type %1$s, pour que le téléphone ne prenne pas sa propre vibration pour un son. Si un mode plus rapide est réglé, ce type vibre comme %2$s, et quand vous désactivez le mode son externe, il vibre de nouveau comme vous l\'avez réglé.</string>
+    <string name="haptic_off_external">En mode son externe, les sons d\'ambiance ne font pas vibrer, car il y a toujours un son autour de vous et la vibration ne s\'arrêterait jamais. Quand vous désactivez le mode son externe, ils font de nouveau vibrer comme vous l\'avez réglé.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Choisir une couleur</string>
@@ -218,6 +253,11 @@
     <string name="stopped_text_overlay_failed">Les graphismes n\'ont pas pu être affichés par-dessus les autres applications, la visualisation s\'est donc désactivée. Vérifiez que « Superposition sur d\'autres applis » est autorisée.</string>
     <string name="stopped_turn_on">Réactiver</string>
     <string name="stopped_toast">Visualiseur audio désactivé. Les graphismes et les alertes par vibration sont coupés.</string>
+    <string name="danger_alert_channel_name">Alertes de sons de danger</string>
+    <string name="danger_alert_channel_desc">Si un son de danger est entendu pendant que le téléphone est verrouillé ou l\'écran éteint, une alerte s\'affiche sur l\'écran de verrouillage et l\'écran s\'allume brièvement. Quand l\'écran est éteint, l\'alerte ne fonctionne qu\'en mode son externe ou si vous avez désactivé « Pause quand l\'écran est éteint ». Aucun son n\'est émis.</string>
+    <string name="danger_alert_title">Son de danger entendu</string>
+    <string name="danger_alert_text_named">Son entendu : %1$s. Vérifiez ce qui se passe autour de vous.</string>
+    <string name="danger_alert_text">Vérifiez ce qui se passe autour de vous.</string>
 
     <!-- Quick Settings tile -->
     <string name="tile_label">Visualiseur audio</string>
@@ -259,9 +299,11 @@
 
     <string name="help_sound_title">Types de sons et vibration</string>
     <string name="help_sound_kinds">L\'IA classe les sons entendus en trois types : ambiance, voix et danger. Par défaut, l\'ambiance s\'affiche en blanc, les voix en jaune et les dangers en rouge. Dans l\'onglet Paramètres, vous pouvez changer la couleur de chaque type et choisir de l\'afficher ou non.</string>
+    <string name="help_sound_classify_groups">Dans l\'onglet Sons, les sons proches sont regroupés et vous choisissez à quel type correspond chaque groupe. Par exemple, si vous passez le groupe « Sonnette » en Danger, quand l\'IA reconnaît une sonnette ou des coups à la porte, le son prend la couleur et la vibration des sons de danger. Toutefois, un son que vous passez vous-même en Danger ne participe qu\'au vote de l\'IA sur le type, donc chaque sonnette ne sera pas forcément affichée comme un danger. Activez le mode avancé pour modifier les sons un par un.</string>
     <string name="help_sound_danger">Lorsqu\'un son de danger (comme un coup de feu) est détecté, la couleur change instantanément, sans transition progressive.</string>
     <string name="help_sound_haptic">La vibration vous alerte même si vous ne regardez pas l\'écran. Par défaut, seuls les sons de danger font vibrer. Pour chaque type, vous pouvez choisir un mode (Désactivée, Lente, Moyenne, Rapide, Continue) et une intensité.</string>
     <string name="help_sound_haptic_rule">Seuls les types affichés à l\'écran déclenchent une vibration. Le téléphone vibre tant qu\'un son de ce type dure et s\'arrête avec lui. Moyenne pulse toutes les demi-secondes, Lente deux fois moins vite et Rapide deux fois plus vite, tandis que Continue vibre sans interruption. Dans tous les modes, la vibration garde l\'intensité choisie.</string>
+    <string name="help_sound_haptic_external">En mode son externe, le téléphone vérifie uniquement pendant les pauses entre les pulsations si un son dure encore, pour ne pas prendre sa propre vibration pour un son. La vibration peut donc se prolonger brièvement après la fin du son, le plus souvent moins d\'une seconde. Pour que ces pauses restent assez longues, vous pouvez choisir dans ce mode jusqu\'à Lente pour les voix et jusqu\'à Moyenne pour les sons de danger, et les sons d\'ambiance ne font pas vibrer, car il y a toujours un son autour de vous. Les types réglés sur un mode plus rapide vibrent au mode le plus rapide autorisé, et quand vous désactivez le mode son externe, ils vibrent de nouveau comme vous les avez réglés.</string>
 
     <string name="help_notes_title">Bon à savoir</string>
     <string name="help_note_direction">L\'application distingue la gauche de la droite, mais pas l\'avant de l\'arrière. Les graphismes en haut et en bas de l\'écran représentent les sons entendus de façon similaire des deux côtés, ainsi que la sensation d\'espace.</string>
@@ -270,7 +312,7 @@
     <string name="help_note_sources">Seuls les sons des médias et des jeux sont capturés. Les appels, les sons de notification et les alarmes ne le sont pas, et le son des applications qui bloquent la capture audio (comme certaines applications vidéo) ne peut pas être visualisé. Si du son est diffusé mais qu\'aucun graphisme ne s\'affiche pendant environ 15 secondes, l\'onglet Accueil et la notification persistante vous préviennent. Une application qui s\'est mise elle-même en sourdine donne exactement le même résultat : nous ne pouvons donc pas vous dire lequel des deux est en cause.</string>
     <string name="help_note_sources_external">Le mode son externe capte tous les sons autour de vous que le micro entend, y compris les alarmes, les sonnettes et le son de votre propre téléphone. Pendant un appel, quand une autre application utilise le micro ou si le micro est bloqué dans les Réglages rapides, aucun son n\'arrive, et l\'onglet Accueil et la notification persistante vous le signalent.</string>
     <string name="help_note_volume">Le son diffusé sur votre téléphone est capturé au niveau fixé par le volume multimédia. Si vous baissez beaucoup le volume, les graphismes et la vibration risquent de ne pas réagir, et à zéro, rien n\'est capturé. Si la réaction est faible, montez un peu le volume. Le mode son externe ne dépend pas du volume.</string>
-    <string name="help_note_mic_sensitivity">En mode son externe, la sensibilité du micro change seulement le volume des sons tel que le perçoivent les graphismes et la vibration. Augmentez-la si les sons faibles apparaissent à peine, et baissez-la si le bruit de fond apparaît dans un endroit bruyant. Elle ne change pas le son que l\'IA utilise pour reconnaître les types de sons.</string>
+    <string name="help_note_mic_sensitivity">En mode son externe, la sensibilité du micro change seulement le volume des sons tel que le perçoivent les graphismes, la vibration et l\'alerte de sons de danger sur l\'écran de verrouillage. Augmentez-la si les sons faibles apparaissent à peine, et baissez-la si le bruit de fond apparaît dans un endroit bruyant. Si vous réglez la sensibilité en dessous de la position par défaut (la 4e en partant de la gauche), il se peut que les sons faibles ne fassent pas vibrer et ne déclenchent pas l\'alerte de sons de danger. La sensibilité ne change pas le son que l\'IA utilise pour reconnaître les types de sons. Les sons trop faibles pour que l\'IA les entende ne font donc pas vibrer et ne déclenchent pas l\'alerte de sons de danger, même si vous augmentez la sensibilité et que les graphismes les affichent. Dans ce cas, placez le téléphone près de l\'endroit d\'où vient le son et ne couvrez pas le micro.</string>
     <string name="help_note_stopped">Démarrer un enregistrement d\'écran, un partage d\'écran ou une diffusion désactive la visualisation : elle utilise le même accord d\'enregistrement d\'écran, et Android ne l\'accorde qu\'à une seule application à la fois. Si une autre application enregistre, partage ou diffuse, la réactiver y mettra fin. Le plus souvent, quand la visualisation se désactive sans que vous l\'ayez arrêtée, votre téléphone vibre trois fois longuement et affiche une notification avec un bouton « Réactiver ». Mettre fin à la capture du son depuis les commandes de partage d\'écran de votre téléphone déclenche le même avertissement ; en cas d\'arrêt forcé ou de plantage, aucun avertissement n\'est possible. Si les notifications sont désactivées, seule la vibration vous prévient, et l\'onglet Accueil indique ce qui s\'est désactivé lorsque vous ouvrez l\'application.</string>
     <string name="help_note_stopped_external">Le mode son externe reste actif, que l\'écran soit enregistré, partagé ou diffusé. Le plus souvent, quand il se désactive sans que vous l\'ayez arrêté, votre téléphone vibre trois fois longuement et affiche une notification avec un bouton « Réactiver ». En cas d\'arrêt forcé ou de plantage, aucun avertissement n\'est possible. Si les notifications sont désactivées, seule la vibration vous prévient, et l\'onglet Accueil indique ce qui s\'est désactivé lorsque vous ouvrez l\'application.</string>
     <string name="help_note_screen_off">Quand l\'écran est éteint, l\'application se met en pause pour économiser la batterie et reprend dès que vous rallumez l\'écran. Vous pouvez modifier ce comportement sous « Batterie », dans l\'onglet Paramètres. Le mode son externe continue d\'écouter même quand l\'écran est éteint.</string>
@@ -285,13 +327,14 @@
     <string name="help_faq_no_graphic_a_external">Vérifiez que le micro n\'est pas bloqué. Pendant un appel, quand une autre application utilise le micro ou si le micro est bloqué dans les Réglages rapides, aucun son n\'arrive, et l\'onglet Accueil et la notification persistante vous le signalent. Si les sons faibles apparaissent à peine, augmentez la sensibilité du micro dans l\'onglet Accueil. Dans l\'onglet Paramètres, vérifiez aussi que le réglage « Opacité » n\'est pas trop faible et que l\'affichage du type de son entendu n\'est pas désactivé.</string>
     <string name="help_faq_no_vibration_q">Le téléphone ne vibre pas.</string>
     <string name="help_faq_no_vibration_answer">Dans Paramètres, sous « Types de sons (IA) », vérifiez que « Afficher » et « Vibration » sont tous deux activés pour ce type. Quand l\'écran est éteint, l\'application se met en pause par défaut : pour continuer à recevoir les alertes par vibration, désactivez « Pause quand l\'écran est éteint » sous Batterie dans les Paramètres. Tant que la détection du type de son ne fonctionne pas, seuls les sons forts font vibrer, avec le réglage des sons de danger. Si la vibration est désactivée dans les paramètres de votre téléphone, il est possible qu\'il ne vibre pas. Si vous visualisez le son de votre téléphone et que le volume multimédia est très bas, montez-le un peu.</string>
+    <string name="help_faq_no_vibration_answer_external">Dans Paramètres, sous « Types de sons (IA) », vérifiez que « Afficher » et « Vibration » sont tous deux activés pour ce type. En mode son externe, les sons d\'ambiance, comme une sonnette, ne font pas vibrer. Pour être averti d\'un tel son par vibration, passez-le en Danger ou en Voix dans l\'onglet Sons. La vibration va jusqu\'à Lente pour les voix et jusqu\'à Moyenne pour les sons de danger. Pendant un appel, quand une autre application utilise le micro ou si le micro est bloqué dans les Réglages rapides, aucun son n\'arrive, et l\'onglet Accueil et la notification persistante vous le signalent. Si vous avez réglé la sensibilité du micro de l\'onglet Accueil en dessous de la position par défaut (la 4e en partant de la gauche), remontez-la. Les sons trop faibles pour que l\'IA les entende ne font pas vibrer, même si vous augmentez encore la sensibilité et que les graphismes les affichent. Dans ce cas, placez le téléphone près de l\'endroit d\'où vient le son et ne couvrez pas le micro. Tant que la détection du type de son ne fonctionne pas, seuls les sons forts font vibrer, avec le réglage des sons de danger, jusqu\'à Moyenne. Ce qui est considéré comme fort dépend alors de la sensibilité du micro. Si la vibration est désactivée dans les paramètres de votre téléphone, il est possible qu\'il ne vibre pas.</string>
     <string name="help_faq_install_q">Une nouvelle version ne s\'installe pas.</string>
     <string name="help_faq_install_a">Un APK compilé ailleurs a une signature différente et ne peut pas être installé par-dessus l\'application existante. Désinstallez d\'abord l\'application existante, puis installez la nouvelle version. Vos paramètres seront alors réinitialisés.</string>
     <string name="help_faq_battery_q">L\'application consomme-t-elle beaucoup de batterie ?</string>
     <string name="help_faq_battery_a">Elle ne dessine que lorsqu\'il y a du son et se met en veille quand tout est silencieux. Comme elle capture le son en continu, nous vous recommandons toutefois de la désactiver quand vous ne l\'utilisez pas.</string>
     <string name="help_faq_battery_less_drawing">Quand du son est diffusé, c\'est le dessin des graphismes qui consomme le plus d\'énergie. Si vous activez « Dessiner les graphismes moins souvent » sous « Batterie », dans l\'onglet Paramètres, l\'application consomme moins, mais les mouvements sont moins fluides.</string>
     <string name="help_faq_language_q">Comment changer la langue de l\'application ?</string>
-    <string name="help_faq_language_a">Appuyez sur « Langue » en haut de l\'onglet Paramètres, puis choisissez une langue. Avec « Langue du système », l\'application suit la langue de votre téléphone. Sous Android 13 ou version ultérieure, vous pouvez aussi changer la langue de l\'application depuis « Langues des applis », dans les paramètres de votre téléphone.</string>
+    <string name="help_faq_language_a">Appuyez sur le bouton en forme de globe en bas à droite de l\'onglet Accueil, puis choisissez une langue. Avec « Langue du système », l\'application suit la langue de votre téléphone. Sous Android 13 ou version ultérieure, vous pouvez aussi changer la langue de l\'application depuis « Langues des applis », dans les paramètres de votre téléphone.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Signaler un problème</string>
@@ -308,7 +351,7 @@
     <string name="help_about_title">À propos</string>
     <string name="help_about_version">Version %1$s</string>
     <string name="help_about_team">Créé par l\'équipe SOVIS</string>
-    <string name="help_about_license">Cette application est distribuée sous l\'Apache License 2.0.</string>
+    <string name="help_about_license">Cette application est distribuée sous l\'Apache License 2.0. Les noms et les groupes de sons de l\'onglet Sons sont basés sur l\'ontologie AudioSet et distribués sous la licence CC BY-SA 4.0 (voir « Licences open source » ci-dessous).</string>
     <string name="help_licenses_button">Licences open source</string>
     <string name="help_licenses_title">Licences open source</string>
     <string name="help_close">Fermer</string>

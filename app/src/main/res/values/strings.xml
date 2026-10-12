@@ -20,7 +20,7 @@
     <string name="home_external_mode_desc">Listens to the sounds around you through the microphone instead of sound playing on your phone. The audio itself is never saved or sent anywhere.</string>
     <string name="home_external_mode_locked">Can\'t be changed while running. Stop the visualizer and change it, and it applies the next time you start.</string>
     <string name="home_mic_sensitivity">Microphone sensitivity</string>
-    <string name="home_mic_sensitivity_value">%1$d%%</string>
+    <string name="home_mic_sensitivity_value">%1$d/%2$d</string>
     <string name="home_ai_unavailable_loud">Sound type detection isn\'t working, so every sound is shown in the ambient color and only loud sounds vibrate, using the danger sound vibration setting. Try turning the visualizer off and on again.</string>
     <string name="home_ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color and vibration alerts are off. Try turning the visualizer off and on again.</string>
     <string name="home_stopped_dismiss">Dismiss notice</string>
@@ -47,6 +47,8 @@
     <!-- Screen reader labels of the button that stops and restarts the moving pictures -->
     <string name="tutorial_pause">Pause animation</string>
     <string name="tutorial_play">Play animation</string>
+    <string name="tutorial_sound_on">Turn on sound</string>
+    <string name="tutorial_sound_off">Turn off sound</string>
     <string name="tutorial_sound_title">See sound on your screen</string>
     <string name="tutorial_sound_body">Sound from your game or video is drawn along the edges of the screen. The louder it is, the bigger it is drawn. Only sound playing on your phone is shown. Sounds around you are not picked up.</string>
     <string name="tutorial_sound_body_external">External sound mode is on, so the sounds around you that the microphone hears are drawn along the edges of the screen. The louder a sound is, the bigger it is drawn. Sound playing on your phone isn\'t shown in this mode.</string>
@@ -154,10 +156,12 @@
     <string name="ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color. Try turning the visualizer off and on again.</string>
 
     <!-- Sounds tab: which type each sound counts as -->
-    <string name="classify_title">Pick a type for each sound</string>
-    <string name="classify_preview_note" tools:ignore="MissingTranslation">Developer preview: the AI does not use these types yet. What you change here is saved, but colors and vibration still follow the default types.</string>
-    <string name="classify_desc">Here is every sound the AI can recognize and the type it counts as. Change a sound\'s type, and its color and vibration follow the new type right away.</string>
-    <string name="classify_danger_note">A sound you move out of Danger no longer gets danger colors or vibration. Similar sounds are separate rows (sirens have five), so change them all to move them all.</string>
+    <string name="classify_title">Choose sound types</string>
+    <string name="classify_desc_groups">Sounds the AI recognizes are grouped with similar sounds, under the type each counts as by default. Change a group’s type, and the color and vibration of its sounds follow right away.</string>
+    <!-- Quote this language's own names of the sounds “Siren” and “Alarm”, so people can search for them. -->
+    <string name="classify_sibling_note">The AI often hears one sound under several names at once. A siren, for example, is also heard as “Alarm”, which is in another group. If a sound still shows its old type after a change, change the related groups or sounds too.</string>
+    <string name="classify_advanced">Advanced mode</string>
+    <string name="classify_advanced_desc">Shows every sound in its group, so you can change sounds one by one.</string>
     <string name="classify_search_hint">Search sounds</string>
     <string name="cd_classify_clear_search">Clear search</string>
     <string name="classify_filter_all">All</string>
@@ -167,7 +171,7 @@
     <string name="sound_type_danger">Danger</string>
     <string name="classify_type_default">%1$s (default)</string>
     <string name="classify_changed_from">Default: %1$s</string>
-    <string name="classify_changed_count">Changed: %1$d</string>
+    <string name="classify_changed_count">Sounds changed: %1$d</string>
     <string name="classify_reset_all">Reset all</string>
     <string name="classify_reset_title">Reset all sounds?</string>
     <string name="classify_reset_message">Every sound you changed goes back to its default type.</string>
@@ -176,6 +180,43 @@
     <string name="classify_empty">No matching sounds.</string>
     <string name="cd_classify_sound">%1$s, type: %2$s</string>
     <string name="cd_classify_sound_changed">%1$s, type: %2$s, default: %3$s</string>
+    <!-- Type chip of a group whose sounds were changed one by one, so they are not all the same type -->
+    <string name="classify_type_mixed">Mixed</string>
+    <string name="classify_group_mixed_note">Some sounds changed one by one</string>
+    <!-- Under the name of a group changed as a whole. %1$s is its type now, %2$s its default type. -->
+    <string name="classify_group_changed_line">Now: %1$s · Default: %2$s</string>
+    <!-- How many more sounds a group has than its preview shows. A number only, so it is not translated. -->
+    <string name="classify_group_more" translatable="false">+%1$d</string>
+    <string name="classify_group_overwrite_title">Change the whole group?</string>
+    <!-- %1$s is the group name, %2$d how many of its sounds change (1 or more), %3$s the type picked. The number comes after a label, so the sentence reads the same for 1 and for more, without plurals. -->
+    <string name="classify_group_overwrite_message">Sounds in the “%1$s” group that will change to %3$s: %2$d. Sounds you changed one by one are overwritten too.</string>
+    <string name="classify_group_overwrite_confirm">Change</string>
+    <string name="classify_group_overwrite_cancel">Cancel</string>
+    <string name="classify_basic_warning_title">Switch to basic mode?</string>
+    <string name="classify_basic_warning_message">Some groups have sounds you changed one by one. In basic mode, choosing a type for one of these groups gives every sound in it that type, and your one-by-one changes in that group are overwritten. Nothing changes until you choose.</string>
+    <string name="classify_basic_warning_confirm">Switch to basic</string>
+    <string name="classify_basic_warning_cancel">Stay in advanced</string>
+    <!-- Screen reader text of a group card. %4$s / %5$s lists a few of its sounds, separated by commas. -->
+    <string name="cd_classify_group">%1$s group, type: %2$s, sounds: %3$d (%4$s)</string>
+    <string name="cd_classify_group_changed">%1$s group, type: %2$s, default: %3$s, sounds: %4$d (%5$s)</string>
+    <!-- Screen reader text of a group heading in Advanced mode -->
+    <string name="cd_classify_group_header">%1$s group, sounds: %2$d</string>
+    <!-- 새로 지은 묶음 이름(#349). 소리 이름이 곧 묶음 이름인 묶음(사이렌 등)은 sound_names 를 그대로 쓴다. -->
+    <string name="sound_group_horns">Car horns and car alarms</string>
+    <string name="sound_group_vehicle_warnings">Vehicle warnings</string>
+    <string name="sound_group_breaking">Breaking glass and crashes</string>
+    <string name="sound_group_distress">Shouting, screaming and crying</string>
+    <string name="sound_group_talking">Talking and whispering</string>
+    <string name="sound_group_signals">Alarm clocks, beeps and whistles</string>
+    <string name="sound_group_voices">Clapping, humming and whistling</string>
+    <string name="sound_group_water">Taps and running water</string>
+    <string name="sound_group_kitchen">Kitchen and cooking</string>
+    <string name="sound_group_appliances">Home appliances and clocks</string>
+    <string name="sound_group_tools">Tools and machines</string>
+    <string name="sound_group_nature">Nature and weather</string>
+    <string name="sound_group_body">Coughs, breathing and body sounds</string>
+    <string name="sound_group_objects">Objects and short sounds</string>
+    <string name="sound_group_background">TV, radio and background sound</string>
 
     <!-- Vibration -->
     <string name="haptic_vibrate">Vibrate</string>
@@ -194,6 +235,9 @@
     <string name="haptic_mode_continuous">Continuous</string>
     <string name="haptic_preview_hint">Tap a mode or change the strength to feel it for 2 seconds.</string>
     <string name="haptic_preview_hint_running">While the visualizer is running, previews don\'t play, so they aren\'t mixed up with real alerts.</string>
+    <!-- %1$s is the sound type name (Speech or Danger), %2$s the fastest vibration mode that type can use in External sound mode (Slow or Medium). Ambient uses haptic_off_external instead. -->
+    <string name="haptic_cap_external">In External sound mode, the fastest mode you can pick for %1$s is %2$s, so that the phone doesn\'t mistake its own vibration for sound. If you set a faster one, it vibrates as %2$s, and when you turn External sound mode off, it vibrates as you set it.</string>
+    <string name="haptic_off_external">In External sound mode, ambient sounds don\'t vibrate, because there is always some sound around you and the vibration would never stop. When you turn External sound mode off, they vibrate as you set them.</string>
 
     <!-- Color picker -->
     <string name="color_picker_title">Pick a color</string>
@@ -246,6 +290,13 @@
     <string name="stopped_turn_on">Turn on again</string>
     <string name="stopped_toast">Sound visualizer turned off. Graphics and vibration alerts are off.</string>
 
+    <!-- 잠금 화면의 위협음 알림(#310) -->
+    <string name="danger_alert_channel_name">Danger sound alerts</string>
+    <string name="danger_alert_channel_desc">When a danger sound is heard while your phone is locked or the screen is off, shows it on the lock screen and turns the screen on briefly. With the screen off, this works only in External sound mode or with “Pause while the screen is off” turned off. It makes no sound.</string>
+    <string name="danger_alert_title">Danger sound heard</string>
+    <string name="danger_alert_text_named">Heard: %1$s. Check your surroundings.</string>
+    <string name="danger_alert_text">Check your surroundings.</string>
+
     <!-- Quick Settings tile -->
     <string name="tile_label">Sound visualizer</string>
     <string name="tile_state_on">On</string>
@@ -286,9 +337,11 @@
 
     <string name="help_sound_title">Sound types and vibration</string>
     <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
+    <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI\'s vote on the type, though, so this doesn\'t mean every doorbell will be shown as danger. Turn on Advanced mode to change sounds one by one.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>
+    <string name="help_sound_haptic_external">In External sound mode, the phone checks whether a sound is still going only in the pauses between pulses, so it doesn\'t mistake its own vibration for sound. Vibration can therefore go on for a moment after the sound stops, usually under a second. To keep those pauses long enough, the fastest you can pick in this mode is Slow for speech and Medium for danger sounds, and ambient sounds don\'t vibrate, because there is always some sound around you. Types set faster vibrate at that limit, and when you turn External sound mode off, they vibrate as you set them.</string>
 
     <string name="help_notes_title">Good to know</string>
     <string name="help_note_direction">It can tell left from right, but not front from back. Graphics at the top and bottom of the screen show sounds heard equally on both sides and a sense of space.</string>
@@ -297,7 +350,7 @@
     <string name="help_note_sources">Only media and game sounds are captured. Phone calls, notification sounds and alarms are not, and apps that block audio capture (such as some video apps) can\'t be visualized. If sound is playing but nothing is drawn for about 15 seconds, Home and the running notification tell you. An app that has muted itself looks exactly the same, so we can\'t tell you which of the two it is.</string>
     <string name="help_note_sources_external">External sound mode takes in every sound around you that the microphone hears, including alarms, doorbells and sound from your own phone. During a call, while another app is using the microphone, or if the microphone is blocked in Quick Settings, no sound comes in, and Home and the running notification tell you.</string>
     <string name="help_note_volume">Sound playing on your phone is captured at the level set by the media volume. If you turn the volume very low, the graphics and vibration may not respond, and at zero nothing is captured. If it isn\'t responding well, turn the volume up a little. External sound mode isn\'t affected by the volume.</string>
-    <string name="help_note_mic_sensitivity">In External sound mode, Microphone sensitivity only changes how loud sounds seem to the graphics and vibration. Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. It doesn\'t change the sound the AI uses to tell sound types apart.</string>
+    <string name="help_note_mic_sensitivity">In External sound mode, Microphone sensitivity only changes how loud sounds seem to the graphics, the vibration and the danger sound alert on the lock screen. Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. If you set the sensitivity below the default notch (the 4th from the left), quiet sounds may not vibrate or set off the danger sound alert. The sensitivity doesn\'t change the sound the AI uses to tell sound types apart. So sounds too quiet for the AI to hear don\'t vibrate or set off the danger sound alert, even if you raise the sensitivity and the graphics show them. In that case, keep the phone near where the sound comes from and don\'t cover the microphone.</string>
     <string name="help_note_stopped">Starting screen recording, screen sharing or casting turns the visualizer off, because it uses the same screen recording consent and Android lets only one app use it at a time. If another app is recording, sharing or casting, turning it on again ends it. In most cases, when it turns off without you stopping it, your phone vibrates three long times and shows a notification with a “Turn on again” button. Stopping sound capture from your phone\'s screen-sharing controls shows the same alert, and a force stop or a crash can\'t tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
     <string name="help_note_stopped_external">External sound mode stays on regardless of screen recording, screen sharing or casting. In most cases, when it turns off without you stopping it, your phone vibrates three long times and shows a notification with a “Turn on again” button. A force stop or a crash can\'t tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
     <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in the Settings tab. External sound mode keeps listening while the screen is off.</string>
@@ -312,13 +365,14 @@
     <string name="help_faq_no_graphic_a_external">Check that the microphone isn\'t blocked. During a call, while another app is using the microphone, or if the microphone is blocked in Quick Settings, no sound comes in, and Home and the running notification tell you. If quiet sounds barely show, raise Microphone sensitivity on Home. Also make sure opacity isn\'t too low in Settings, and that showing the current sound type isn\'t turned off.</string>
     <string name="help_faq_no_vibration_q">It doesn\'t vibrate.</string>
     <string name="help_faq_no_vibration_answer">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. While the screen is off it pauses by default, so turn off “Pause while the screen is off” under Battery in Settings to keep getting vibration alerts then. While sound type detection isn\'t working, only loud sounds vibrate, using the danger sound setting. If vibration is turned off in your phone\'s settings, it may not vibrate. If you\'re visualizing sound from your phone and the media volume is very low, turn it up a little.</string>
+    <string name="help_faq_no_vibration_answer_external">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. In External sound mode, ambient sounds such as a doorbell don\'t vibrate. To feel one, change it to Danger or Speech in the Sounds tab. Speech vibrates up to Slow and danger sounds up to Medium. During a call, while another app is using the microphone, or if the microphone is blocked in Quick Settings, no sound comes in, and Home and the running notification tell you. If you set Microphone sensitivity on Home below the default notch (the 4th from the left), move it back up. Sounds too quiet for the AI to hear don\'t vibrate, even if you raise the sensitivity further and the graphics show them. In that case, keep the phone near where the sound comes from and don\'t cover the microphone. While sound type detection isn\'t working, only loud sounds vibrate, using the danger sound setting, up to Medium. Microphone sensitivity then changes what counts as loud. If vibration is turned off in your phone\'s settings, it may not vibrate.</string>
     <string name="help_faq_install_q">A new version won\'t install.</string>
     <string name="help_faq_install_a">An APK built elsewhere has a different signature and can\'t be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.</string>
     <string name="help_faq_battery_q">Does it use a lot of battery?</string>
     <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. While the screen is off it stops capturing sound by default. Because it keeps capturing while the screen is on, though, we recommend turning it off when you\'re not using it.</string>
     <string name="help_faq_battery_less_drawing">While sound is playing, drawing the graphic uses the most power. Turning on “Draw the graphic less often” under Battery in Settings uses less, though the movement is less smooth.</string>
     <string name="help_faq_language_q">How do I change the app language?</string>
-    <string name="help_faq_language_a">Tap “Language” at the top of the Settings tab and pick one. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
+    <string name="help_faq_language_a">Tap the globe button at the bottom right of the Home tab and pick a language. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
 
     <!-- Help: report -->
     <string name="help_report_title">Report a problem</string>
@@ -337,7 +391,7 @@
     <string name="help_about_title">About</string>
     <string name="help_about_version">Version %1$s</string>
     <string name="help_about_team">Made by team SOVIS</string>
-    <string name="help_about_license">This app is distributed under the Apache License 2.0.</string>
+    <string name="help_about_license">This app is distributed under the Apache License 2.0. The sound names and sound groups in the Sounds tab are based on the AudioSet Ontology and are licensed under CC BY-SA 4.0 (see “Open source licenses” below).</string>
     <string name="help_licenses_button">Open source licenses</string>
     <string name="help_licenses_title">Open source licenses</string>
     <string name="help_close">Close</string>

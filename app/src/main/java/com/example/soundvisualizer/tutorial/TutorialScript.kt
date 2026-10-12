@@ -4,9 +4,12 @@ import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.ModeSettings
 import com.example.soundvisualizer.VisualMode
 import com.example.soundvisualizer.VisualizerInputs
+import com.example.soundvisualizer.feedback.HapticPlan
 import com.example.soundvisualizer.feedback.HapticSettings
+import com.example.soundvisualizer.feedback.HapticShapes
 import com.example.soundvisualizer.feedback.HapticTuning
 import kotlin.math.PI
+import kotlin.math.ceil
 import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
@@ -32,6 +35,28 @@ enum class TutorialScene(val cycleSec: Float, val stillAtSec: Float) {
     /** 진동. 조용한 환경음 뒤에 위협음이 터지고, 그때 폰이 떤다. */
     Vibration(cycleSec = 4.2f, stillAtSec = 1.75f)
 }
+
+/**
+ * 튜토리얼 소리 조각(#327). 모두 실제 녹음이다. 원본과 라이선스, 자른 위치는 저장소의 NOTICE('튜토리얼 소리')에 있다.
+ *
+ * @param label 그림이 이 소리를 어느 종류로 그리는지([AiClassification] 의 라벨)
+ */
+enum class TutorialClip(val label: String) {
+    /** 새 울음 한 토막(0.45초). 첫 쪽과 방향 쪽의 박자마다 낸다. */
+    Chirp(AiClassification.AMBIENT),
+
+    /** 새소리(2.2초). 종류 쪽의 환경음. */
+    Birds(AiClassification.AMBIENT),
+
+    /** 영어 인사말 대화(2.2초). 종류 쪽의 대화음. */
+    Talk(AiClassification.SPEECH),
+
+    /** 자동차 경적 한 번(0.5초). 종류 쪽과 진동 쪽의 위협음. */
+    Honk(AiClassification.DANGER)
+}
+
+/** 한 바퀴 안의 [atSec] 초에 [clip] 을 왼쪽 [left]·오른쪽 [right] 크기(0~1)로 낸다. */
+data class TutorialCue(val atSec: Float, val clip: TutorialClip, val left: Float, val right: Float)
 
 /**
  * 쪽마다 엔진에 흘려 줄 소리. 캡처 서비스가 오버레이 엔진에 주는 것과 같은 모양(좌우 피크 0~1, AI 라벨)이라
@@ -62,17 +87,17 @@ object TutorialScript {
                 val index = floor(s).toInt()
                 val level = 0.06f + 0.72f * thump(s - index, hold = 0.45f, release = 0.12f)
                 if (index % 2 == 0) {
-                    l = level; r = level * 0.72f
+                    l = level; r = level * SOUND_LEAN
                 } else {
-                    l = level * 0.72f; r = level
+                    l = level * SOUND_LEAN; r = level
                 }
             }
             TutorialScene.Direction -> {
                 val side = directionSide(s)
                 val level = directionLevel(s)
                 // 반대쪽에도 조금 들리게 둔다. 한쪽만 있는 소리는 실제로 드물다.
-                l = if (side < 0) level else level * 0.15f
-                r = if (side > 0) level else level * 0.15f
+                l = if (side < 0) level else level * DIRECTION_FAR
+                r = if (side > 0) level else level * DIRECTION_FAR
             }
             TutorialScene.Types -> {
                 when {
@@ -86,19 +111,19 @@ object TutorialScript {
                         val u = s - TYPE_SEGMENT_SEC
                         val syllable = max(0f, sin(2f * PI.toFloat() * 2.2f * u))
                         val level = 0.3f + 0.35f * syllable * syllable
-                        l = level; r = level * 0.95f
+                        l = level; r = level * TYPE_SPEECH_LEAN
                     }
                     else -> {
-                        // 위협음: 총소리 세 발. 오른쪽에서 난다.
+                        // 위협음: 자동차 경적 세 번. 오른쪽에서 난다.
                         val level = 0.2f + 0.7f * hits(s - 2 * TYPE_SEGMENT_SEC, TYPE_DANGER_HITS)
-                        l = level * 0.65f; r = level
+                        l = level * TYPE_DANGER_LEAN; r = level
                     }
                 }
             }
             TutorialScene.Vibration -> {
                 if (s >= VIBRATION_DANGER_START && s < VIBRATION_DANGER_END) {
                     val level = 0.15f + 0.75f * hits(s - VIBRATION_DANGER_START, VIBRATION_DANGER_HITS)
-                    l = level; r = level * 0.85f
+                    l = level; r = level * VIBRATION_DANGER_LEAN
                 } else {
                     // 조용한 환경음
                     val level = 0.12f + 0.04f * sin(2f * PI.toFloat() * 0.8f * s)
@@ -146,21 +171,71 @@ object TutorialScript {
     }
 
     /**
-     * 그 시각에 폰이 떨고 있는지. 기본 위협음 진동(중간)처럼 위협음이 나는 동안 0.5초마다 0.2초씩 떤다.
-     * 튜토리얼은 진동을 실제로 울리지 않고 그림으로만 보여 준다. 실제 진동은 소리가 끝나고 0.4초 더 이어질 수 있지만
-     * (HapticPolicy), 그림은 위협음이 보이는 동안만 떨어 무엇에 떠는지 헷갈리지 않게 한다.
+     * 그 시각에 폰이 떨고 있는지. 처음 설정의 위협음 진동(중간)처럼 위협음이 나는 동안 0.5초마다 0.2초씩 떤다.
+     * 실제 진동은 소리가 끝나고 0.4초 더 이어질 수 있지만(HapticPolicy), 그림은 위협음이 보이는 동안만 떨어
+     * 무엇에 떠는지 헷갈리지 않게 한다.
      */
-    fun vibrating(scene: TutorialScene, t: Float): Boolean {
-        if (scene != TutorialScene.Vibration) return false
-        val s = loopTime(scene, t)
-        if (s < VIBRATION_DANGER_START || s >= VIBRATION_DANGER_END) return false
-        val mode = HapticSettings.defaultFor(AiClassification.DANGER).mode
-        val period = HapticTuning.periodMs(mode) / 1000f
-        val on = HapticTuning.onMs(mode) / 1000f
-        return (s - VIBRATION_DANGER_START) % period < on
+    fun vibrating(scene: TutorialScene, t: Float): Boolean =
+        scene == TutorialScene.Vibration && pulseInCycle(loopTime(scene, t)) >= 0
+
+    /**
+     * 그 시각에 떨고 있는 울림의 번호. 대본을 처음 틀 때(0초)부터 0, 1, 2… 로 세고, 떨지 않으면 -1 이다.
+     * [vibrating] 이 참인 동안에만 0 이상이다. 튜토리얼이 그림이 떠는 순간마다 진짜 진동을 한 번씩 울릴 때 쓴다(#323).
+     */
+    fun vibrationPulse(scene: TutorialScene, t: Float): Int {
+        if (scene != TutorialScene.Vibration || t < 0f) return -1
+        val inCycle = pulseInCycle(loopTime(scene, t))
+        if (inCycle < 0) return -1
+        // 울림은 한 바퀴의 가운데에만 있어, 바퀴의 경계에서 나눗셈과 나머지가 서로 다른 바퀴를 가리킬 일이 없다.
+        return floor(t / scene.cycleSec).toInt() * VIBRATION_PULSES_PER_CYCLE + inCycle
+    }
+
+    /**
+     * 진짜 진동 한 번(#323). 처음 설정의 위협음 진동이 한 박자에 한 번 보내는 것([HapticTuning.onMs] 동안 한결같이)과 같다.
+     * 그림처럼 사용자의 지금 설정이 아니라 처음 설정을 보여 준다.
+     */
+    fun vibrationPulsePlan(amplitudeControl: Boolean): HapticPlan =
+        HapticShapes.steady(DEMO_HAPTIC.level, HapticTuning.onMs(DEMO_HAPTIC.mode), amplitudeControl)
+
+    /**
+     * 소리를 켰을 때 그 쪽이 한 바퀴 동안 내는 소리(#327). 대본의 박자·구간과 같은 순간에, 그림이 그 순간 그리는 종류의
+     * 소리를, 그림이 기우는 쪽으로 낸다. 대본의 상수에서 만들므로 대본을 고치면 소리도 따라간다.
+     *
+     * - 첫 쪽: 1초마다 쿵 할 때 새 울음. 그림처럼 왼쪽·오른쪽으로 번갈아 조금 기운다.
+     * - 방향 쪽: 박자마다 새 울음. 왼쪽 네 번, 쉬고 오른쪽 네 번. 반대쪽은 그림처럼 작게 들린다.
+     * - 종류 쪽: 새소리 → 대화 → 경적 세 번.
+     * - 진동 쪽: 위협음이 터지는 순간 경적 두 번. 조용한 환경음 동안은 소리를 내지 않는다.
+     */
+    fun cues(scene: TutorialScene): List<TutorialCue> = when (scene) {
+        TutorialScene.Sound -> List(scene.cycleSec.toInt()) { beat ->
+            if (beat % 2 == 0) TutorialCue(beat.toFloat(), TutorialClip.Chirp, 1f, SOUND_LEAN)
+            else TutorialCue(beat.toFloat(), TutorialClip.Chirp, SOUND_LEAN, 1f)
+        }
+        TutorialScene.Direction ->
+            beats(0f, DIRECTION_LEFT_END).map { TutorialCue(it, TutorialClip.Chirp, 1f, DIRECTION_FAR) } +
+                beats(DIRECTION_RIGHT_START, DIRECTION_RIGHT_END).map { TutorialCue(it, TutorialClip.Chirp, DIRECTION_FAR, 1f) }
+        TutorialScene.Types -> listOf(
+            TutorialCue(0f, TutorialClip.Birds, 1f, 1f),
+            TutorialCue(TYPE_SEGMENT_SEC, TutorialClip.Talk, 1f, TYPE_SPEECH_LEAN)
+        ) + TYPE_DANGER_HITS.map { TutorialCue(2 * TYPE_SEGMENT_SEC + it, TutorialClip.Honk, TYPE_DANGER_LEAN, 1f) }
+        TutorialScene.Vibration ->
+            VIBRATION_DANGER_HITS.map { TutorialCue(VIBRATION_DANGER_START + it, TutorialClip.Honk, 1f, VIBRATION_DANGER_LEAN) }
     }
 
     // ---------------- 대본의 조각 ----------------
+
+    /** 첫 쪽: 쿵이 기운 쪽의 반대편 크기. */
+    private const val SOUND_LEAN = 0.72f
+
+    /** 방향 쪽: 소리가 나는 반대편에 들리는 크기. 한쪽만 있는 소리는 실제로 드물다. */
+    private const val DIRECTION_FAR = 0.15f
+
+    /** 종류 쪽: 대화음의 오른쪽, 위협음의 왼쪽 크기. */
+    private const val TYPE_SPEECH_LEAN = 0.95f
+    private const val TYPE_DANGER_LEAN = 0.65f
+
+    /** 진동 쪽: 위협음의 오른쪽 크기. */
+    private const val VIBRATION_DANGER_LEAN = 0.85f
 
     private const val TYPE_SEGMENT_SEC = 2.2f
     private val TYPE_DANGER_HITS = floatArrayOf(0.1f, 0.8f, 1.5f)
@@ -173,6 +248,26 @@ object TutorialScript {
     private const val VIBRATION_DANGER_START = 1.5f
     private const val VIBRATION_DANGER_END = 2.9f
     private val VIBRATION_DANGER_HITS = floatArrayOf(0f, 0.7f)
+
+    /** 진동 쪽이 보여 주는 진동: 처음 설정의 위협음 진동. */
+    private val DEMO_HAPTIC = HapticSettings.defaultFor(AiClassification.DANGER)
+    private val DEMO_PERIOD_SEC = HapticTuning.periodMs(DEMO_HAPTIC.mode) / 1000f
+    private val DEMO_ON_SEC = HapticTuning.onMs(DEMO_HAPTIC.mode) / 1000f
+
+    /** 한 바퀴의 울림 수. 위협음이 나는 동안 박자마다 하나다. */
+    private val VIBRATION_PULSES_PER_CYCLE =
+        ceil((VIBRATION_DANGER_END - VIBRATION_DANGER_START) / DEMO_PERIOD_SEC).toInt()
+
+    /** 한 바퀴 안의 시각 [s] 에 떨고 있는 울림이 그 바퀴의 몇 번째인지. 떨지 않으면 -1. */
+    private fun pulseInCycle(s: Float): Int {
+        if (s < VIBRATION_DANGER_START || s >= VIBRATION_DANGER_END) return -1
+        val u = s - VIBRATION_DANGER_START
+        return if (u % DEMO_PERIOD_SEC < DEMO_ON_SEC) floor(u / DEMO_PERIOD_SEC).toInt() else -1
+    }
+
+    /** [start] 부터 [end] 앞까지 방향 쪽의 박자마다의 시각. */
+    private fun beats(start: Float, end: Float): List<Float> =
+        generateSequence(start) { it + DIRECTION_BEAT_SEC }.takeWhile { it < end }.toList()
 
     private fun directionSide(s: Float): Int = when {
         s < DIRECTION_LEFT_END -> -1

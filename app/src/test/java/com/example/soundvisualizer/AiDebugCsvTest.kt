@@ -160,6 +160,17 @@ class AiDebugCsvTest {
         assertEquals("InternalPlayback", playback[index])
     }
 
+    @Test
+    fun `매핑 설정은 추론 결과 스냅샷으로 기록한다`() {
+        val mapped = result().copy(mappingOverrideCount = 1, mappingSignature = "Siren=ambient")
+        val parsed = cells(AiDebugCsv.row(mapped, 1_500L, CaptureSource.InternalPlayback, .4f, true))
+        assertEquals("1", parsed[AiDebugCsv.COLUMNS.indexOf("mapping_override_count")])
+        assertEquals("Siren=ambient", parsed[AiDebugCsv.COLUMNS.indexOf("mapping_signature")])
+        val baseline = cells(AiDebugCsv.row(result(), 1_500L, CaptureSource.InternalPlayback, .4f, true))
+        assertEquals("0", baseline[AiDebugCsv.COLUMNS.indexOf("mapping_override_count")])
+        assertEquals("default", baseline[AiDebugCsv.COLUMNS.indexOf("mapping_signature")])
+    }
+
     @After
     fun restoreLocale() {
         Locale.setDefault(defaultLocale)

@@ -27,13 +27,14 @@ object YamnetSafetyCueDecision {
 
     fun decide(
         classNames: List<String>,
-        pre: YamnetCoarseClassifier.Result
+        pre: YamnetCoarseClassifier.Result,
+        mapping: YamnetMappingPolicy = YamnetMappingPolicy.DEFAULT
     ): Result {
         val topIndices = IntArray(5) { -1 }
         val topProbabilities = FloatArray(5) { -1f }
         for (i in pre.top5.indices) {
             if (i >= 5) break
-            topIndices[i] = pre.top5[i].index
+            topIndices[i] = if (mapping.allowsSafetyCue(pre.top5[i].name)) pre.top5[i].index else -1
             topProbabilities[i] = pre.top5[i].probability
         }
 
@@ -45,12 +46,16 @@ object YamnetSafetyCueDecision {
             topProbabilities
         )
         val blockPromotion =
-            pre.coarse == "speech" ||
+            // A user-assigned Speech label must not block another independent cue.
+            // Keep actual default Speech protection; cue exclusions still use mapping.
+            pre.defaultCoarse == "speech" ||
                 isSpeechLikeDisplay(pre.displayName) ||
                 isSilenceLikeDisplay(pre.displayName) ||
                 pre.confidence < 0.12f
         val (cueIndex, _) = tryPickBestStrongDangerDisplay(topIndices, topProbabilities, classNames)
-        val promote = !blockPromotion && hasStrongDangerCue && !hasGunshotCue && cueIndex >= 0
+        // A firearm candidate no longer vetoes a separate, sufficiently strong
+        // non-firearm cue. Firearm labels themselves are still never promoted here.
+        val promote = !blockPromotion && hasStrongDangerCue && cueIndex >= 0
 
         return Result(
             preCoarse = pre.coarse,
@@ -132,7 +137,10 @@ object YamnetSafetyCueDecision {
         for (position in 0 until minOf(5, topIndices.size)) {
             val index = topIndices[position]
             if (index < 0 || isGunshotKeyword(classNames[index])) continue
-            if (isStrongDangerKeyword(classNames[index]) && topProbabilities[position] > bestProbability) {
+            if (topProbabilities[position] >= STRONG_DANGER_CUE_MIN_PROBABILITY &&
+                isStrongDangerKeyword(classNames[index]) &&
+                topProbabilities[position] > bestProbability
+            ) {
                 bestIndex = index
                 bestProbability = topProbabilities[position]
             }

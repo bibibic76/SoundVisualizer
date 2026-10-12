@@ -1,20 +1,39 @@
 package com.example.soundvisualizer
 
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isPopup
+import androidx.compose.ui.test.isSelectable
+import androidx.compose.ui.test.isSelected
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -25,20 +44,24 @@ import org.junit.runner.RunWith
 /**
  * 분류 탭을 실제 화면에서 조작한다. 기기 언어와 상관없이 돌도록 기대하는 글자는 모두 리소스에서 만든다.
  *
- * AI 판정에 연결되기 전(#291)이라 탭은 개발자 모드에서만 보인다. 앱의 실제 설정을 쓰므로, 시작할 때의 튜토리얼 본 여부·
- * 개발자 모드·저장된 선택을 챙겨 두고 바꾼 뒤, 끝나면 그대로 되돌린다.
+ * 탭은 모든 사용자에게 보인다(#328). 그래서 개발자 모드를 꺼 둔 채로 연다. 앱의 실제 설정을 쓰므로, 시작할 때의
+ * 튜토리얼 본 여부·개발자 모드·저장된 선택·고급 모드를 챙겨 두고 바꾼 뒤, 끝나면 그대로 되돌린다.
+ *
+ * 처음에는 묶음째 고르는 기본 모드로 연다(#349). 소리를 하나씩 고르는 테스트는 고급 모드 스위치를 켠 뒤에 한다.
+ * 화면에 보이는 미리보기·소리 수는 묶음 표(assets/sound_groups.tsv)의 사이렌 묶음 순서를 따른다.
  */
 @RunWith(AndroidJUnit4::class)
 class ClassifyTabInstrumentedTest {
 
     /**
      * 액티비티가 뜨기 전에 정해야 하므로 액티비티를 여는 규칙보다 바깥에 둔다. 새로 설치한 테스트 기기에서는 튜토리얼이
-     * 탭 화면 대신 뜨고, 개발자 모드가 꺼져 있으면 분류 탭이 없다.
+     * 탭 화면 대신 뜬다. 개발자 모드는 꺼 둔다(누구에게나 보이는지 본다). 고급 모드도 꺼서 기본 모드로 연다.
      */
     private val settings = object : ExternalResource() {
         private var tutorialBefore = true
         private var developerBefore = false
         private var typesBefore: Map<String, String> = emptyMap()
+        private var advancedBefore = false
 
         override fun before() {
             InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -46,9 +69,11 @@ class ClassifyTabInstrumentedTest {
                 tutorialBefore = SettingsManager.tutorialSeen.value
                 developerBefore = SettingsManager.developerMode.value
                 typesBefore = SettingsManager.soundTypes.value
+                advancedBefore = SettingsManager.classifyAdvanced.value
                 SettingsManager.setTutorialSeen(true)
-                SettingsManager.setDeveloperMode(true)
+                SettingsManager.setDeveloperMode(false)
                 SettingsManager.resetSoundTypes()
+                SettingsManager.setClassifyAdvanced(false)
             }
         }
 
@@ -56,6 +81,7 @@ class ClassifyTabInstrumentedTest {
             InstrumentationRegistry.getInstrumentation().runOnMainSync {
                 SettingsManager.resetSoundTypes()
                 typesBefore.forEach { (name, type) -> SettingsManager.setSoundType(name, type) }
+                SettingsManager.setClassifyAdvanced(advancedBefore)
                 SettingsManager.setDeveloperMode(developerBefore)
                 SettingsManager.setTutorialSeen(tutorialBefore)
             }
@@ -75,8 +101,14 @@ class ClassifyTabInstrumentedTest {
         return entry to rule.activity.resources.getStringArray(R.array.sound_names)[entry.index]
     }
 
+    /**
+     * 탭을 연다. 탭은 소리 목록의 색인을 메인 스레드 밖에서 만들고 다 될 때까지 아무것도 그리지 않는다(#368). Compose 는
+     * 그 일을 기다리지 않아서, 처음 여는 탭은 목록이 그려지기 전에 확인이 시작될 수 있다(만들기를 4초 늦추면 실패했다).
+     * 목록이 그려질 때까지 기다린다. 색인은 프로세스에 남으므로 기다리는 것은 처음 한 번이다.
+     */
     private fun openTab() {
         rule.onNodeWithText(string(R.string.tab_classify)).performClick()
+        rule.waitUntil(timeoutMillis = 15_000) { rule.onAllNodes(classifyList).fetchSemanticsNodes().isNotEmpty() }
         rule.waitForIdle()
     }
 
@@ -88,13 +120,149 @@ class ClassifyTabInstrumentedTest {
         rule.onNode(hasSetTextAction()).performTextClearance()
         rule.onNode(hasSetTextAction()).performTextInput(text)
         rule.onNode(hasSetTextAction()).performImeAction()
+        waitForKeyboardHidden()
+        rule.waitForIdle()
+    }
+
+    /** 찾는 말을 지우고 자판을 내린다. */
+    private fun clearSearch() {
+        rule.onNode(hasSetTextAction()).performTextClearance()
+        rule.onNode(hasSetTextAction()).performImeAction()
+        waitForKeyboardHidden()
+        rule.waitForIdle()
+    }
+
+    /**
+     * 자판이 다 내려갈 때까지 기다린다. 찾는 말을 치면 탭이 찾기 칸을 맨 위로 올리지만, LauncherApp 이 화면 전체에 준
+     * safeDrawingPadding 에는 자판 높이도 들어 있어 자판이 내려가는 동안은 목록이 짧다. waitForIdle 은 자판을 기다리지
+     * 않아서, 작은 화면(CI 320×640)에서는 그 아래 찾은 줄이 아직 만들어지지 않아 바로 누르거나 확인하면 가끔 실패했다.
+     */
+    private fun waitForKeyboardHidden() {
+        rule.waitUntil(timeoutMillis = 5_000) {
+            var shown = true
+            rule.runOnUiThread {
+                shown = ViewCompat.getRootWindowInsets(rule.activity.window.decorView)
+                    ?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            }
+            !shown
+        }
+    }
+
+    private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+
+    /** 분류 탭의 목록. 옆 탭의 목록과 가리려고, 찾기 칸이 붙어 있는 세로 목록으로 고른다. */
+    private val classifyList = hasScrollToNodeAction() and
+        SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange) and
+        hasAnyDescendant(hasSetTextAction())
+
+    /** 목록을 [matcher] 가 보일 때까지 민다. 화면 밖의 칸은 그려지지 않아 찾을 수 없다. */
+    private fun scrollTo(matcher: SemanticsMatcher) {
+        rule.onNode(classifyList).performScrollToNode(matcher)
+        rule.waitForIdle()
+    }
+
+    /** 고급 모드 스위치 줄. 이름·설명·상태가 한 덩어리다. */
+    private val advancedSwitch get() = hasText(string(R.string.classify_advanced)) and isToggleable()
+
+    /** 고급 모드 스위치를 누른다(사용자처럼). 맨 위의 설명 칸에 있어서 먼저 그쪽으로 민다. */
+    private fun toggleAdvanced() {
+        scrollTo(advancedSwitch)
+        rule.onNode(advancedSwitch).performClick()
+        rule.waitForIdle()
+    }
+
+    /** 사이렌 묶음의 소리. 묶음 표의 순서이고, 묶음 이름은 맨 앞 '사이렌' 소리의 이름이다. */
+    private val sirens = listOf(
+        "Siren", "Ambulance (siren)", "Fire engine, fire truck (siren)", "Police car (siren)", "Civil defense siren"
+    )
+
+    /** 사이렌 카드의 이름과, 카드가 읽어 주는 미리보기(이름인 소리를 뺀 앞의 세 개). 찾는 말이 없을 때다. */
+    private fun sirenCard(): Pair<String, String> =
+        sound("Siren").second to sirens.drop(1).take(3).joinToString(", ") { sound(it).second }
+
+    /** 기본 모드의 카드에서 종류를 고른다. 카드 어디를 눌러도 목록이 창으로 뜬다. */
+    private fun pickOnCard(description: String, option: String) {
+        scrollTo(hasContentDescription(description))
+        rule.onNodeWithContentDescription(description).performClick()
+        rule.onNode(hasText(option) and hasAnyAncestor(isPopup())).performClick()
         rule.waitForIdle()
     }
 
     @Test
-    fun previewNoteIsShownAboveTheList() {
+    fun tabOpensInBasicModeWithSectionsAndSiblingNote() {
         openTab()
-        rule.onNodeWithText(string(R.string.classify_preview_note)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_title)).assertExists()
+        // 한 소리가 여러 이름으로 함께 들린다는 안내(#328, #349). 묶음 하나만 바꾸고 안심하지 않게 한다.
+        rule.onNodeWithText(string(R.string.classify_sibling_note)).assertExists()
+        // 처음에는 묶음째 고르는 기본 모드다. 구역은 기본 종류마다 하나씩, 제목으로 읽힌다.
+        rule.onNode(advancedSwitch).assertIsOff()
+        for (type in listOf(R.string.sound_type_danger, R.string.sound_type_speech, R.string.sound_type_ambient)) {
+            scrollTo(hasText(string(type)) and isHeading)
+        }
+        // 묶음 카드는 이름·종류·소리 수·미리보기를 한 번에 읽는다.
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val card = string(R.string.cd_classify_group, title, danger, sirens.size, preview)
+        scrollTo(hasContentDescription(card))
+        // 미리보기 뒤의 "+N" 은 화면에만 그리는 글자라 묶기 전 트리에서 본다. 사이렌 묶음은 이름인 소리와 미리보기 셋 밖에
+        // 하나가 더 있다.
+        rule.onNode(
+            hasText(string(R.string.classify_group_more, sirens.size - 1 - SoundGroups.PREVIEW_SIZE)) and
+                hasAnyAncestor(hasContentDescription(card)),
+            useUnmergedTree = true
+        ).assertExists()
+    }
+
+    @Test
+    fun advancedSwitchSitsOnACard() {
+        // 켜진 스위치의 막대(AccentFillColor)는 이 탭의 배경 위에서 2.7:1 이라, 다른 스위치처럼 카드 위에 둔다
+        // (ColorContrastTest 는 카드 위의 막대를 본다). 스위치 줄을 찍어 가장 많은 색, 곧 줄 뒤의 바탕이 카드 색인지 본다.
+        openTab()
+        scrollTo(advancedSwitch)
+        val pixels = rule.onNode(advancedSwitch).captureToImage().toPixelMap()
+        val counts = HashMap<Int, Int>()
+        for (x in 0 until pixels.width) {
+            for (y in 0 until pixels.height) counts.merge(pixels[x, y].toArgb(), 1, Int::plus)
+        }
+        val background = counts.maxByOrNull { it.value }!!.key
+        assertEquals(
+            "스위치 줄 뒤의 바탕이 카드 색(#%08X)이 아니라 #%08X 이다".format(CardColor.toArgb(), background),
+            CardColor.toArgb(),
+            background
+        )
+    }
+
+    @Test
+    fun pickingATypeOnAGroupChangesAllItsSounds() {
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        openTab()
+
+        // 모두 같은 종류인 묶음은 목록에서 지금 종류 하나만 고른 것으로 읽힌다.
+        val uniform = string(R.string.cd_classify_group, title, danger, sirens.size, preview)
+        scrollTo(hasContentDescription(uniform))
+        rule.onNodeWithContentDescription(uniform).performClick()
+        rule.onAllNodes(isSelected() and hasAnyAncestor(isPopup())).assertCountEquals(1)
+        rule.onNode(isSelected() and hasAnyAncestor(isPopup())).assert(hasText(string(R.string.classify_type_default, danger)))
+
+        // 묻지 않고 바로 바꾼다. 다섯 개가 모두 바뀌고, 다른 묶음의 '경보음' 은 그대로다.
+        rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
+        assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+        assertEquals(AiClassification.DANGER, SettingsManager.soundType("Alarm"))
+
+        // 바꾼 묶음은 위협음 구역에 그대로 있고, 지금 종류를 기본 종류와 함께 보여 준다. "바꾼 소리" 는 소리를 센다.
+        val changed = string(R.string.cd_classify_group_changed, title, ambient, danger, sirens.size, preview)
+        rule.onNodeWithContentDescription(changed).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_changed_line, ambient, danger), useUnmergedTree = true).assertExists()
+        scrollTo(hasText(string(R.string.classify_changed_count, sirens.size)))
+
+        // 기본 종류를 고르면 묶음의 바꾼 것이 모두 지워진다.
+        pickOnCard(changed, string(R.string.classify_type_default, danger))
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
+        rule.onNodeWithContentDescription(string(R.string.cd_classify_group, title, danger, sirens.size, preview)).assertExists()
     }
 
     @Test
@@ -103,10 +271,14 @@ class ClassifyTabInstrumentedTest {
         val danger = string(R.string.sound_type_danger)
         val ambient = string(R.string.sound_type_ambient)
         openTab()
+        // 소리를 하나씩 고르는 것은 고급 모드다(#349). 섞인 묶음이 없으니 켤 때 묻지 않는다.
+        toggleAdvanced()
         search(label)
 
         // 줄 전체가 드롭다운이다. 누르면 종류 목록이 창으로 뜬다.
-        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, label, danger)).performClick()
+        val row = hasContentDescription(string(R.string.cd_classify_sound, label, danger))
+        scrollTo(row)
+        rule.onNode(row).performClick()
         rule.onNode(hasText(string(R.string.classify_type_default, danger)) and hasAnyAncestor(isPopup())).assertExists()
         rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
         rule.waitForIdle()
@@ -136,22 +308,340 @@ class ClassifyTabInstrumentedTest {
     fun typeFilterFollowsTheChosenType() {
         val (doorbell, doorbellLabel) = sound("Doorbell")
         val (rain, rainLabel) = sound("Rain")
+        val (_, whiteNoiseLabel) = sound("White noise")
         rule.runOnUiThread { SettingsManager.setSoundType(doorbell.name, AiClassification.DANGER) }
         val danger = string(R.string.sound_type_danger)
         val ambient = string(R.string.sound_type_ambient)
         openTab()
+        // 소리 줄로 보는 고급 모드에서 거른다(#349). 켤 때는 묻지 않는다.
+        toggleAdvanced()
 
-        // 거르기 칸의 "위협음" 을 누른다. 줄 안의 종류 글자는 줄의 설명으로 묶여 있어 여기 걸리지 않는다.
-        rule.onNodeWithText(danger).performClick()
+        // 거르기 칸의 "위협음" 을 누른다. 줄 안의 종류 글자는 줄의 설명으로 묶여 있어 여기 걸리지 않고, 같은 글자인
+        // 구역 머리는 고를 수 있는 칸이 아니라서 걸리지 않는다.
+        // 작은 화면(CI 기본 에뮬레이터 320×640)에서는 거르기 칸이 위의 안내에 밀려 화면 밖에 있어, 누르기 전에 그 칸까지 민다.
+        // 밀지 않으면 누름이 칸에 닿지 않아 '전체' 로 남고, 아래의 빈 결과 확인이 실패한다.
+        scrollTo(hasText(danger) and isSelectable())
+        rule.onNode(hasText(danger) and isSelectable()).performClick()
 
         search(doorbellLabel)
-        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound_changed, doorbellLabel, danger, ambient)).assertExists()
+        // 찾은 줄은 화면 밖에 있으면 목록이 미리 만들어 두었을 때만 트리에 있다. search() 가 자판을 기다려도 작은 화면에서는
+        // 화면 밖일 수 있어 그 줄까지 민다.
+        val doorbellRow = hasContentDescription(string(R.string.cd_classify_sound_changed, doorbellLabel, danger, ambient))
+        scrollTo(doorbellRow)
+        rule.onNode(doorbellRow).assertExists()
 
         search(rainLabel)
+        // "Rain" also matches "Train horn/whistle", now valid Danger results (#343).
+        // The filter must exclude Rain itself, not every substring match.
+        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, rainLabel, ambient)).assertDoesNotExist()
+
+        // Preserve the empty-result assertion with an unambiguous Ambient query.
+        search(whiteNoiseLabel)
         rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
 
+        search(rainLabel)
         rule.onNodeWithText(string(R.string.classify_filter_all)).performClick()
+        // 묶음 순서로 펴면 '비' 줄은 기차 소리 줄들(위협음·탈것 묶음) 밑이라 화면 아래로 밀려날 수 있다. 그 줄까지 민다.
+        scrollTo(hasContentDescription(string(R.string.cd_classify_sound, rainLabel, ambient)))
         rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, rainLabel, ambient)).assertExists()
         assertEquals(AiClassification.AMBIENT, rain.defaultType)
+    }
+
+    @Test
+    fun turningAdvancedOffWithAMixedGroupWarnsFirst() {
+        val (siren, label) = sound("Civil defense siren")
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        openTab()
+        toggleAdvanced()
+        search(label)
+        val row = hasContentDescription(string(R.string.cd_classify_sound, label, danger))
+        scrollTo(row)
+        rule.onNode(row).performClick()
+        rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
+        assertEquals(mapOf(siren.name to AiClassification.AMBIENT), SettingsManager.soundTypes.value)
+        clearSearch()
+
+        // 사이렌 묶음의 소리 하나만 바꿨으므로, 끄기 전에 기본 모드에서 덮어써질 수 있다고 알린다.
+        // 그대로 두기를 고르면 아무것도 바뀌지 않고 고급 모드 그대로다.
+        toggleAdvanced()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_title)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_cancel)).performClick()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_title)).assertDoesNotExist()
+        assertTrue(SettingsManager.classifyAdvanced.value)
+        rule.onNode(advancedSwitch).assertIsOn()
+
+        // 다시 끄고 확인하면 모드만 저장한다. 바꿔 둔 소리는 그대로다.
+        toggleAdvanced()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_confirm)).performClick()
+        rule.waitForIdle()
+        assertFalse(SettingsManager.classifyAdvanced.value)
+        rule.onNode(advancedSwitch).assertIsOff()
+        assertEquals(mapOf(siren.name to AiClassification.AMBIENT), SettingsManager.soundTypes.value)
+
+        // 기본 모드에서 사이렌 묶음은 '일부 다름' 이고, 목록에서 고른 것이 없다.
+        val mixed = string(
+            R.string.cd_classify_group_changed, title, string(R.string.classify_type_mixed), danger, sirens.size, preview
+        )
+        scrollTo(hasContentDescription(mixed))
+        rule.onNodeWithText(string(R.string.classify_group_mixed_note), useUnmergedTree = true).assertExists()
+        rule.onNodeWithContentDescription(mixed).performClick()
+        rule.onAllNodes(isSelected() and hasAnyAncestor(isPopup())).assertCountEquals(0)
+
+        // 기본 종류를 고르면 먼저 묻고(바뀌는 것은 하나), 확인하면 묶음이 모두 기본 종류가 되어 바꾼 것이 없다.
+        rule.onNode(hasText(string(R.string.classify_type_default, danger)) and hasAnyAncestor(isPopup())).performClick()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_message, title, 1, danger)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_confirm)).performClick()
+        rule.waitForIdle()
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
+    }
+
+    @Test
+    fun pickingOnAMixedGroupAsksOnlyWhenOneByOneChoicesChange() {
+        // 민방위 사이렌 하나만 환경음으로 바꿔 둔 사이렌 묶음. 묻는 것은 그 소리의 종류가 실제로 바뀔 때뿐이다(#374).
+        rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.AMBIENT) }
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val speech = string(R.string.sound_type_speech)
+        val ambient = string(R.string.sound_type_ambient)
+        val mixed = string(
+            R.string.cd_classify_group_changed, title, string(R.string.classify_type_mixed), danger, sirens.size, preview
+        )
+        openTab()
+
+        // 대화음을 고르면 하나씩 바꾼 민방위 사이렌도 바뀌므로, 다섯 개가 모두 바뀐다고 묻는다. 취소하면 아무것도 바뀌지 않는다.
+        pickOnCard(mixed, speech)
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_message, title, sirens.size, speech)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_cancel)).performClick()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
+        assertEquals(mapOf("Civil defense siren" to AiClassification.AMBIENT), SettingsManager.soundTypes.value)
+
+        // 환경음을 고르면 하나씩 바꾼 민방위 사이렌은 그대로라 묻지 않는다. 나머지 네 개가 바뀌어 다섯 개 모두 환경음이 된다.
+        pickOnCard(mixed, ambient)
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
+        assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+
+        // 모두 같은 종류가 된 묶음은 묻지 않는다. 기본 종류를 고르면 바로 원래대로다.
+        pickOnCard(
+            string(R.string.cd_classify_group_changed, title, ambient, danger, sirens.size, preview),
+            string(R.string.classify_type_default, danger)
+        )
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
+    }
+
+    @Test
+    fun changedCardStaysUnderTheFilterUntilTheFilterOrSearchChanges() {
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        val dangerChip = hasText(danger) and isSelectable()
+        openTab()
+
+        // 위협음만 보면서 사이렌을 찾는다. 사이렌 묶음 이름이 맞아 묶음 전체가 남고, 미리보기는 찾지 않을 때와 같다.
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        search(sound("Siren").second)
+
+        // 묶음을 환경음으로 바꾸면 위협음 거르기에서 빠지지만, 누른 카드는 그 자리에 바뀐 종류로 남는다(#374).
+        pickOnCard(string(R.string.cd_classify_group, title, danger, sirens.size, preview), ambient)
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_title)).assertDoesNotExist()
+        assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+        val changed = hasContentDescription(string(R.string.cd_classify_group_changed, title, ambient, danger, sirens.size, preview))
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+
+        // 화면을 다시 만들어도(화면 회전 등) 찾는 말·거르기와 함께 남는다.
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+
+        // 거르기를 바꿨다가 돌아오면 지금 종류로 다시 거른다. 위협음인 사이렌이 없어 빈 결과다.
+        val allChip = hasText(string(R.string.classify_filter_all)) and isSelectable()
+        scrollTo(allChip)
+        rule.onNode(allChip).performClick()
+        rule.waitForIdle()
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        rule.waitForIdle()
+        scrollTo(hasText(string(R.string.classify_empty)))
+        rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
+        rule.onNode(changed).assertDoesNotExist()
+    }
+
+    @Test
+    fun changedRowStaysUnderTheFilterUntilTheSearchChanges() {
+        val (siren, label) = sound("Civil defense siren")
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        val dangerChip = hasText(danger) and isSelectable()
+        rule.runOnUiThread { SettingsManager.setClassifyAdvanced(true) }
+        openTab()
+
+        // 고급 모드에서 위협음만 보면서 소리 하나를 환경음으로 바꾼다. 그 줄은 바뀐 종류로 그 자리에 남는다(#374).
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        search(label)
+        val row = hasContentDescription(string(R.string.cd_classify_sound, label, danger))
+        scrollTo(row)
+        rule.onNode(row).performClick()
+        rule.onNode(hasText(ambient) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
+        assertEquals(mapOf(siren.name to AiClassification.AMBIENT), SettingsManager.soundTypes.value)
+        val changed = hasContentDescription(string(R.string.cd_classify_sound_changed, label, ambient, danger))
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+
+        // 찾는 말을 바꾸면 지금 종류로 다시 거른다. 같은 말을 다시 넣으면 바뀌지 않은 것으로 보일 수 있어 한 글자를 뺀다.
+        search(label.dropLast(1))
+        rule.onNode(changed).assertDoesNotExist()
+        scrollTo(hasText(string(R.string.classify_empty)))
+        rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
+    }
+
+    @Test
+    fun changedCardStaysUnderTheFilterAfterConfirmingTheOverwrite() {
+        // 민방위 사이렌만 대화음으로 바꿔 둔 사이렌 묶음. 위협음만 보면서 환경음을 고르면 그 소리가 바뀌므로 먼저 묻고,
+        // 확인해도 누른 카드가 그 자리에 남는다(#374).
+        rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.SPEECH) }
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val ambient = string(R.string.sound_type_ambient)
+        val dangerChip = hasText(danger) and isSelectable()
+        openTab()
+        scrollTo(dangerChip)
+        rule.onNode(dangerChip).performClick()
+        rule.waitForIdle()
+
+        // 위협음에 맞는 네 개만 보여도 미리보기는 찾지 않을 때와 같다. 묻는 수는 위협음 넷과 대화음 하나다.
+        val mixed = string(
+            R.string.cd_classify_group_changed, title, string(R.string.classify_type_mixed), danger, sirens.size, preview
+        )
+        pickOnCard(mixed, ambient)
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_message, title, sirens.size, ambient)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_confirm)).performClick()
+        rule.waitForIdle()
+        assertEquals(sirens.associateWith { AiClassification.AMBIENT }, SettingsManager.soundTypes.value)
+
+        val changed = hasContentDescription(string(R.string.cd_classify_group_changed, title, ambient, danger, sirens.size, preview))
+        scrollTo(changed)
+        rule.onNode(changed).assertExists()
+    }
+
+    @Test
+    fun resetAllDropsTheKeptRows() {
+        // "바꾼 소리" 만 보면서 초인종을 위협음에서 대화음으로 바꾸면 그 줄이 남겨진다. 모두 되돌리면 바꾼 소리가 없으니
+        // 남겨 두던 줄도 사라지고 빈 결과다(#374).
+        val (_, label) = sound("Doorbell")
+        val danger = string(R.string.sound_type_danger)
+        val speech = string(R.string.sound_type_speech)
+        val ambient = string(R.string.sound_type_ambient)
+        rule.runOnUiThread {
+            SettingsManager.setSoundType("Doorbell", AiClassification.DANGER)
+            SettingsManager.setClassifyAdvanced(true)
+        }
+        openTab()
+        val changedChip = hasText(string(R.string.classify_filter_changed)) and isSelectable()
+        scrollTo(changedChip)
+        rule.onNode(changedChip).performClick()
+        rule.waitForIdle()
+
+        val row = hasContentDescription(string(R.string.cd_classify_sound_changed, label, danger, ambient))
+        scrollTo(row)
+        rule.onNode(row).performClick()
+        rule.onNode(hasText(speech) and hasAnyAncestor(isPopup())).performClick()
+        rule.waitForIdle()
+        assertEquals(mapOf("Doorbell" to AiClassification.SPEECH), SettingsManager.soundTypes.value)
+
+        scrollTo(hasText(string(R.string.classify_reset_all)))
+        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        rule.onNodeWithText(string(R.string.classify_reset_confirm)).performClick()
+        rule.waitForIdle()
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
+        scrollTo(hasText(string(R.string.classify_empty)))
+        rule.onNodeWithText(string(R.string.classify_empty)).assertExists()
+        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound, label, ambient)).assertDoesNotExist()
+    }
+
+    @Test
+    fun turningAdvancedOffWithoutMixedGroupsDoesNotAsk() {
+        // 소리 하나뿐인 묶음(전기톱)을 바꾸거나 사이렌 다섯 개를 모두 같은 종류로 바꿔 두면 섞인 묶음이 없다.
+        rule.runOnUiThread {
+            SettingsManager.setSoundType("Chainsaw", AiClassification.AMBIENT)
+            SettingsManager.setSoundTypes(sirens, AiClassification.AMBIENT)
+            SettingsManager.setClassifyAdvanced(true)
+        }
+        openTab()
+        rule.onNode(advancedSwitch).assertIsOn()
+
+        toggleAdvanced()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_title)).assertDoesNotExist()
+        assertFalse(SettingsManager.classifyAdvanced.value)
+        rule.onNode(advancedSwitch).assertIsOff()
+        assertEquals(sirens.size + 1, SettingsManager.soundTypes.value.size)
+    }
+
+    @Test
+    fun modeAndWarningSurviveRecreate() {
+        rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.AMBIENT) }
+        val (title, _) = sirenCard()
+        openTab()
+        toggleAdvanced()
+
+        // 고급 모드는 저장값이라 액티비티를 다시 만들어도(화면 회전 등) 그대로다. 묶음 머리가 보인다.
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        rule.onNode(advancedSwitch).assertIsOn()
+        scrollTo(hasContentDescription(string(R.string.cd_classify_group_header, title, sirens.size)) and isHeading)
+
+        // 끌 때 뜬 알림도 다시 만든 뒤에 그대로 떠 있다. 그대로 두기를 고르면 고급 모드다.
+        toggleAdvanced()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_title)).assertExists()
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_title)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_basic_warning_cancel)).performClick()
+        rule.waitForIdle()
+        assertTrue(SettingsManager.classifyAdvanced.value)
+    }
+
+    @Test
+    fun overwriteAndResetDialogsSurviveRecreate() {
+        rule.runOnUiThread { SettingsManager.setSoundType("Civil defense siren", AiClassification.AMBIENT) }
+        val (title, preview) = sirenCard()
+        val danger = string(R.string.sound_type_danger)
+        val speech = string(R.string.sound_type_speech)
+        val mixed = string(
+            R.string.cd_classify_group_changed, title, string(R.string.classify_type_mixed), danger, sirens.size, preview
+        )
+        openTab()
+
+        // 묶음 전체를 바꿀지 묻는 창은 확인하면 하나씩 바꿔 둔 소리까지 덮어쓴다. 고른 것(카드, 종류)을 저장해 두어
+        // 액티비티를 다시 만든 뒤(화면 회전 등)에도 같은 수로 묻고, 확인하면 그 카드의 소리를 모두 바꾼다.
+        pickOnCard(mixed, speech)
+        val message = string(R.string.classify_group_overwrite_message, title, sirens.size, speech)
+        rule.onNodeWithText(message).assertExists()
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        rule.onNodeWithText(message).assertExists()
+        rule.onNodeWithText(string(R.string.classify_group_overwrite_confirm)).performClick()
+        rule.waitForIdle()
+        assertEquals(sirens.associateWith { AiClassification.SPEECH }, SettingsManager.soundTypes.value)
+
+        // 모두 되돌리기 창도 다시 만든 뒤에 그대로 떠 있고, 확인하면 바꾼 것을 모두 지운다.
+        scrollTo(hasText(string(R.string.classify_reset_all)))
+        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        rule.onNodeWithText(string(R.string.classify_reset_title)).assertExists()
+        rule.activityRule.scenario.recreate()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_reset_title)).assertExists()
+        rule.onNodeWithText(string(R.string.classify_reset_confirm)).performClick()
+        rule.waitForIdle()
+        assertTrue(SettingsManager.soundTypes.value.isEmpty())
     }
 }

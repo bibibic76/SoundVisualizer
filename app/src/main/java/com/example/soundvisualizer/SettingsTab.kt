@@ -9,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,13 +22,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
-import com.example.soundvisualizer.language.LanguageSettingCard
 
 /** @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다. */
 @Composable
@@ -64,11 +63,8 @@ fun SettingsTab(onAddTile: () -> Unit) {
 
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
         item {
-            // 읽지 못하는 언어로 바뀌어도 찾을 수 있게 맨 위에 둔다.
-            LanguageSettingCard()
-            QuickTileCard(onAddTile)
-
-            Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+            // 언어는 홈 오른쪽 아래로 옮겼다(#308). 앱을 열면 처음 보이는 곳이라 읽지 못하는 언어로 바뀌어도 찾기 쉽다.
+            Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -79,19 +75,21 @@ fun SettingsTab(onAddTile: () -> Unit) {
                     Text(stringResource(R.string.settings_mode_picker_desc), fontSize = 13.sp, color = SecondaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
 
                     // 번역된 이름이 칸보다 길면 가운데 정렬로 줄을 바꾸고, 네 칸 높이를 함께 맞춘다.
+                    // 글꼴을 키워 단어가 칸에 들어가지 않으면 두 칸씩 두 줄로 둔다([choicesPerRow], #304).
                     // 고른 칸은 색으로만 보이므로, 화면 읽어주기에는 selectableGroup 과 selectable 로 알린다.
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.height(IntrinsicSize.Min).selectableGroup()
-                    ) {
-                        VisualMode.values().forEach { mode ->
+                    val modes = VisualMode.values().toList()
+                    val modeLabels = modes.map { stringResource(it.labelRes) }
+                    val modeLabelStyle = wrappingLabelStyle().copy(fontWeight = FontWeight.SemiBold)
+                    BoxWithConstraints {
+                        val perRow = choicesPerRow(
+                            modeLabels, maxPerRow = modes.size, rowWidth = maxWidth, gap = 8.dp, cellPadding = 4.dp, style = modeLabelStyle
+                        )
+                        EqualChoiceRows(modes, perRow, gap = 8.dp) { mode, cellModifier ->
                             val selected = currentMode == mode
                             Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
+                                modifier = cellModifier
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(if (selected) AccentColor else Color(0xFF333A44))
+                                    .background(if (selected) AccentFillColor else Color(0xFF333A44))
                                     .selectable(selected = selected, role = Role.RadioButton) {
                                         SettingsManager.setVisualMode(mode)
                                     }
@@ -111,7 +109,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
                 }
             }
 
-            Text(stringResource(R.string.settings_section_mode_detail), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp))
+            Text(stringResource(R.string.settings_section_mode_detail), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
         }
 
         // 동적으로 선택된 모드를 제일 위에 오도록 정렬
@@ -150,7 +148,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
         }
 
         item {
-            Text(stringResource(R.string.settings_section_ai), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            Text(stringResource(R.string.settings_section_ai), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -191,7 +189,10 @@ fun SettingsTab(onAddTile: () -> Unit) {
                 }
             }
 
-            Text(stringResource(R.string.settings_section_battery), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.padding(bottom = 16.dp, top = 24.dp))
+            // 알림창에서 켜고 끄기(빠른 설정 타일)는 소리 분류와 배터리 사이에 둔다(#308).
+            QuickTileCard(onAddTile)
+
+            Text(stringResource(R.string.settings_section_battery), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
                 shape = RoundedCornerShape(20.dp),
@@ -226,7 +227,7 @@ fun SettingsTab(onAddTile: () -> Unit) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = SecondaryTextColor,
-                modifier = Modifier.padding(bottom = 16.dp, top = 24.dp)
+                modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp)
             )
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -385,6 +386,8 @@ fun ColorSettingRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .weight(1f)
+                // 스위치(32dp)만큼만 높으면 누르는 자리가 작다. 줄 전체를 48dp 이상으로 둔다(#312).
+                .heightIn(min = 48.dp)
                 .toggleable(
                     value = checked,
                     // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 스위치가 움직이는 것으로 충분하다.
@@ -401,7 +404,7 @@ fun ColorSettingRow(
                 onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = AccentColor,
+                    checkedTrackColor = AccentFillColor,
                     uncheckedThumbColor = SecondaryTextColor,
                     uncheckedTrackColor = Color(0xFF333A44)
                 )
@@ -444,7 +447,7 @@ private fun QuickTileCard(onAddTile: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
     ) {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
             Text(stringResource(R.string.settings_tile_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor)

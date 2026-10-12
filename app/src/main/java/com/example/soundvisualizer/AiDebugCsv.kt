@@ -39,6 +39,8 @@ object AiDebugCsv {
         add("preprocess_ms")
         add("yamnet_ms")
         add("total_ms")
+        add("mapping_override_count")
+        add("mapping_signature")
     }
 
     /** 머리글 한 줄. 파일을 새로 열 때 한 번만 쓴다. */
@@ -84,6 +86,8 @@ object AiDebugCsv {
         cells += millis(result.preprocessMs)
         cells += millis(result.yamnetMs)
         cells += millis(result.totalMs)
+        cells += result.mappingOverrideCount.toString()
+        cells += result.mappingSignature
         return cells.joinToString(",") { quote(it) }
     }
 

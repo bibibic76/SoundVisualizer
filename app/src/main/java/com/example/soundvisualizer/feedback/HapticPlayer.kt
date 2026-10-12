@@ -10,6 +10,9 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 
+/** Android 10 이 이보다 짧은 진동을 터치 진동으로 본다(AOSP android10 `VibratorService.MAX_HAPTIC_FEEDBACK_DURATION`). */
+internal const val ANDROID_10_TOUCH_FEEDBACK_MS = 5_000L
+
 /**
  * 계획([HapticPlan])을 진동기로 보낸다. 캡처 중 알림과 설정 화면의 미리보기가 모두 이것을 쓴다.
  * Vibrator 는 시스템 서비스라 여러 스레드에서 불러도 된다.
@@ -103,10 +106,11 @@ class HapticPlayer(context: Context) {
 
     /** 계획을 진동 효과로. 잘못된 계획(버그)이면 한 번 로그를 남기고 null. 앱을 죽이지 않는다. */
     internal fun buildEffect(plan: HapticPlan): VibrationEffect? = try {
-        if (hasAmplitudeControl && !plan.binary) {
-            VibrationEffect.createWaveform(plan.timings, plan.amplitudes, NO_REPEAT)
+        val sent = forPlatform(plan)
+        if (hasAmplitudeControl && !sent.binary) {
+            VibrationEffect.createWaveform(sent.timings, sent.amplitudes, NO_REPEAT)
         } else {
-            VibrationEffect.createWaveform(plan.toOnOffTimings(), NO_REPEAT)
+            VibrationEffect.createWaveform(sent.toOnOffTimings(), NO_REPEAT)
         }
     } catch (e: IllegalArgumentException) {
         if (!loggedInvalid) {
@@ -115,6 +119,16 @@ class HapticPlayer(context: Context) {
         }
         null
     }
+
+    /**
+     * Android 10 은 벨소리·알림이 아닌 진동 가운데 5초보다 짧은 것을, 넘긴 용도(접근성·알람)와 상관없이 터치 진동으로
+     * 본다(AOSP android10 `VibratorService.Vibration.isHapticFeedback`). 그러면 폰 설정의 '터치 진동' 세기를 따라,
+     * 그것을 꺼 둔 사람에게는 박자 진동·미리보기·멈춤 알림이 조용히 울리지 않는다(#302). 그래서 끝에 쉼을 붙여 5초를
+     * 넘긴다. 다음 박자가 오면 시스템이 이 진동을 끊고 새로 울리므로 느낌은 같다. Android 11 부터는 용도로 분류해
+     * 길이를 보지 않는다.
+     */
+    private fun forPlatform(plan: HapticPlan): HapticPlan =
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) plan.withSilentTail(ANDROID_10_TOUCH_FEEDBACK_MS) else plan
 
     /** @param alarm 알람 용도로 울릴지. 아니면 접근성 용도다. */
     private fun vibrate(effect: VibrationEffect, alarm: Boolean): Boolean {

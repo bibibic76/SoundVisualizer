@@ -58,7 +58,9 @@ class HapticSettingRowInstrumentedTest {
             if (level == 10) rule.setContent { HapticSettingRow(label, shown = true) }
             rule.waitForIdle()
             val shown = context.getString(R.string.haptic_level_percent, level)
-            rule.onNodeWithContentDescription(context.getString(R.string.haptic_strength))
+            // 종류 이름이 붙는다(#312): "위협음, 세기".
+            val name = context.getString(R.string.sound_type_danger) + ", " + context.getString(R.string.haptic_strength)
+            rule.onNodeWithContentDescription(name)
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, shown))
         }
     }

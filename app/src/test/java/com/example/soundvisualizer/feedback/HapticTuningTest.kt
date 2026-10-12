@@ -1,5 +1,6 @@
 package com.example.soundvisualizer.feedback
 
+import com.example.soundvisualizer.AiClassification
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -55,5 +56,74 @@ class HapticTuningTest {
     @Test
     fun `미리보기는 느림도 두 번은 울린다`() {
         assertTrue(HapticTuning.PREVIEW_MS >= 2 * HapticTuning.periodMs(HapticMode.Slow))
+    }
+
+    @Test
+    fun `외부 사운드 모드의 박자 방식은 울림 꼬리 뒤에도 듣는 쉼이 남는다`() {
+        // 캡처 버퍼 하나는 48kHz 에서 10.7ms 다. 쉼에 버퍼가 세 개는 들어와야 소리가 이어지는지 볼 수 있다(#290).
+        for (mode in listOf(HapticMode.Slow, HapticMode.Medium, HapticMode.Fast)) {
+            val guard = HapticTuning.selfHearingGuardMs(mode)
+            val listen = HapticTuning.periodMs(mode) - HapticTuning.onMs(mode) - guard - HapticTuning.SELF_HEARING_REOPEN_SLACK_MS
+            assertTrue("$mode 의 듣는 쉼 ${listen}ms", listen >= 32)
+            assertTrue("$mode 의 여유가 최대보다 길다", guard <= HapticTuning.SELF_HEARING_GUARD_MAX_MS)
+        }
+        // 빠름은 종류마다의 상한 때문에 외부 사운드 모드에서 울리지 않지만(#354), 상한을 바꿀 때를 위해 관계는 지킨다.
+        assertTrue("빠름도 꼬리를 0.1초 넘게 막는다", HapticTuning.selfHearingGuardMs(HapticMode.Fast) >= 100)
+    }
+
+    @Test
+    fun `외부 사운드 모드에서 울릴 수 있는 방식은 꼬리 뒤에 듣는 쉼이 0_1초 넘게 남는다`() {
+        // 꼬리 여유 뒤에 듣는 쉼이 느림 0.42초, 중간 0.12초, 빠름 0.04초다. 빠름은 꼬리가 조금만 긴 폰에서도 쉼이 사라져
+        // 자기 진동 소리로 이어질 수 있고 연속에는 쉼이 없어, 종류마다의 상한이 둘을 막는다(#354).
+        for (label in listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)) {
+            val cap = HapticSettings.externalCap(label)
+            for (mode in HapticMode.entries.filter { it != HapticMode.Off && it <= cap }) {
+                val listen = HapticTuning.periodMs(mode) - HapticTuning.onMs(mode) - HapticTuning.selfHearingGuardMs(mode)
+                assertTrue("$label 의 $mode 는 듣는 쉼이 ${listen}ms", listen >= 100)
+            }
+        }
+    }
+
+    @Test
+    fun `AI 입력의 꼬리 여유는 느림 180ms 중간 110ms 다`() {
+        // 숫자를 묻는 드문 테스트다. 이 두 값은 설계 시뮬레이션(#352)이 고른 짝이다. 느림(대화음)은 진동 소리를 말소리로 듣는
+        // 고리를 막고, 중간(위협음)은 박자 사이에 AI 가 듣는 소리를 늘려 사이렌 동안 빠지는 박자를 줄인다.
+        assertEquals(180L, HapticTuning.aiFeedGuardMs(HapticMode.Slow))
+        assertEquals(110L, HapticTuning.aiFeedGuardMs(HapticMode.Medium))
+        assertEquals(110L, HapticTuning.aiFeedGuardMs(HapticMode.Fast))
+        assertEquals(180L, HapticTuning.aiFeedGuardMs(HapticMode.Off))
+        assertEquals(180L, HapticTuning.aiFeedGuardMs(HapticMode.Continuous))
+    }
+
+    @Test
+    fun `AI 입력의 꼬리 여유와 상관없이 진동 판단의 꼬리 여유는 그대로다`() {
+        // #352 는 진동 판단(#290·#341)을 바꾸지 않는다. 두 여유는 다른 시계(읽은 시각, 캡처 시각)로 잰다.
+        assertEquals(180L, HapticTuning.selfHearingGuardMs(HapticMode.Slow))
+        assertEquals(180L, HapticTuning.selfHearingGuardMs(HapticMode.Medium))
+        assertEquals(110L, HapticTuning.selfHearingGuardMs(HapticMode.Fast))
+    }
+
+    @Test
+    fun `외부 사운드 모드에서 울리는 방식은 AI 입력의 꼬리 뒤에도 깨끗한 쉼이 남는다`() {
+        // 쉼에서 듣는 소리가 다음 구간의 테이프가 된다. 0.09초보다 짧으면 더 앞의 소리를 이어 붙이게 된다.
+        for (label in listOf(AiClassification.SPEECH, AiClassification.DANGER)) {
+            val cap = HapticSettings.externalCap(label)
+            for (mode in HapticMode.entries.filter { it != HapticMode.Off && it <= cap }) {
+                val gap = HapticTuning.periodMs(mode) - HapticTuning.onMs(mode) - HapticTuning.aiFeedGuardMs(mode) -
+                    HapticTuning.AI_FEED_PRE_MS
+                assertTrue("$label $mode 의 깨끗한 쉼 ${gap}ms", gap >= HapticTuning.AI_FEED_TAPE_MIN_MS)
+            }
+        }
+    }
+
+    @Test
+    fun `외부 사운드 모드의 느림은 이어 준 소리의 여유가 다음 박자보다 넉넉히 먼저 끝난다`() {
+        // 이어 준 크기는 꼬리 끝보다 SELF_HEARING_CREDIT_LEAD_MS 이른 소리로 친다. 거기서 소리가 끝났다고 보는 여유가 다음
+        // 박자에 닿으면, 울림을 보내는 데 조금만 오래 걸려도 소리가 끝난 뒤 한 번 더 울린다(#290 리뷰). 중간·빠름은 다음 박자가
+        // 늘 여유 안이라 박자마다 쉼에서 다시 듣는다.
+        val slow = HapticMode.Slow
+        val credited = HapticTuning.onMs(slow) + HapticTuning.selfHearingGuardMs(slow) - HapticTuning.SELF_HEARING_CREDIT_LEAD_MS
+        val margin = HapticTuning.periodMs(slow) - (credited + HapticPolicy.RELEASE_MS)
+        assertTrue("느림의 여유 ${margin}ms", margin >= 100)
     }
 }

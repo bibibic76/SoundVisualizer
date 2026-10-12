@@ -36,17 +36,27 @@ enum class CaptureSource(
      * 설정의 "화면이 꺼지면 일시정지"([ScreenOffPause])를 따르는지.
      *
      * 그 설정의 이유는 폰 안의 소리에만 맞는다. 화면이 꺼지면 게임과 대부분의 영상이 멈추고 오버레이도 보이지 않는다.
-     * 외부 사운드 모드는 반대로, 폰을 내려놓아 화면이 꺼진 동안 초인종·화재경보·부르는 소리를 알리려는 모드다.
+     * 외부 사운드 모드는 반대로, 폰을 내려놓아 화면이 꺼진 동안 화재경보·사이렌 같은 위협음과 부르는 소리를 알리려는 모드다.
      * 그래서 마이크는 따르지 않고 화면이 꺼져도 듣는다(#260). 그 대신 마이크 권한 안내와 도움말에 그렇다고 적는다.
      */
-    val followsScreenOffPause: Boolean
+    val followsScreenOffPause: Boolean,
+    /**
+     * 앱이 울린 진동을 이 소스가 소리로 다시 듣는지(#290).
+     *
+     * 마이크는 폰의 진동을 그대로 듣는다. 진동은 "그 종류의 소리가 이어지는 동안" 울리므로, 듣고만 있으면 자기 진동 소리가
+     * 진동을 이어 가 멈추지 않을 수 있다. 그래서 진동 판단은 앱이 울린 진동 사이의 빈틈에서만 소리를 보고, 빈틈이 짧거나
+     * 없는 빠른 방식은 종류마다의 상한으로 낮춰 울린다([com.example.soundvisualizer.feedback.HapticSettings.externalCap],
+     * #354). 폰 안의 소리는 진동을 듣지 못하므로 지금까지와 같다.
+     */
+    val hearsOwnVibration: Boolean
 ) {
     /** 폰에서 재생되는 소리(AudioPlaybackCapture). 외부 사운드 모드를 끈, 지금까지의 동작이다. */
     InternalPlayback(
         needsProjectionConsent = true,
         foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION,
         watchesBlockedCapture = true,
-        followsScreenOffPause = true
+        followsScreenOffPause = true,
+        hearsOwnVibration = false
     ),
 
     /** 마이크로 듣는 주변 소리. 외부 사운드 모드를 켜면 쓴다. */
@@ -54,7 +64,8 @@ enum class CaptureSource(
         needsProjectionConsent = false,
         foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE,
         watchesBlockedCapture = false,
-        followsScreenOffPause = false
+        followsScreenOffPause = false,
+        hearsOwnVibration = true
     );
 
     companion object {

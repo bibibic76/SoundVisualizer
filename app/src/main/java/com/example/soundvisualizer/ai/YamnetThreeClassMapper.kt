@@ -3,7 +3,7 @@ package com.example.soundvisualizer.ai
 /**
  * YAMNet 521 클래스 → 3분류 키워드 매핑.
  * 키워드 우선순위: danger > speech > ambient > 기본 ambient.
- * 임시 proxy 매핑은 제한된 라벨에만 적용한다.
+ * Plop/Gargling은 원래 소리 의미대로 Ambient로 둔다 (#319).
  */
 object YamnetThreeClassMapper {
 
@@ -21,14 +21,10 @@ object YamnetThreeClassMapper {
         return "ambient"
     }
 
-    private fun matchesTemporaryGunshotProxyDanger(s: String): Boolean {
-        if ("plop" in s) return true
-        if ("gargling" in s) return true
-        return false
-    }
-
     private fun matchesDanger(s: String): Boolean {
-        if (matchesTemporaryGunshotProxyDanger(s)) return true
+        // Approved attention signals / abrupt events (#343), exact labels only.
+        // This changes normal voting, not the independent safety-cue allowlist.
+        if (s in ATTENTION_LABELS) return true
         // Product policy: footsteps are Ambient; only explicit vehicle-horn
         // YAMNet classes are promoted to Danger (not every generic "horn").
         if (s == "vehicle horn, car horn, honking") return true
@@ -62,6 +58,12 @@ object YamnetThreeClassMapper {
     }
 
     private fun matchesSpeech(s: String): Boolean {
+        // Instrument, not a human vocalization.
+        if (s == "singing bowl") return false
+        // Product policy: Speech is the human-vocalization bucket, not only
+        // intelligible language. Exact labels keep dog Whimper and similarly
+        // named non-human sounds from inheriting this mapping (#345).
+        if (s in HUMAN_VOCALIZATION_LABELS) return true
         if ("speech" in s || "conversation" in s || "narration" in s) return true
         if ("speaking" in s || "babbling" in s) return true
         if ("shout" in s || "whisper" in s || "screaming" in s) return true
@@ -81,4 +83,15 @@ object YamnetThreeClassMapper {
         if ("white noise" in s || "pink noise" in s || "static" in s) return true
         return false
     }
+
+    private val ATTENTION_LABELS = setOf(
+        "reversing beeps", "train horn", "train whistle", "foghorn", "bicycle bell",
+        "emergency vehicle", "skidding", "tire squeal", "slam"
+    )
+
+    private val HUMAN_VOCALIZATION_LABELS = setOf(
+        "bellow", "whoop", "yell", "cheering",
+        "giggle", "snicker", "belly laugh", "chuckle, chortle",
+        "baby cry, infant cry", "whimper", "wail, moan"
+    )
 }

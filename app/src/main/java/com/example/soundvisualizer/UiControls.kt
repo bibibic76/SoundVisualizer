@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,14 +22,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
@@ -40,6 +46,69 @@ import java.util.Locale
  */
 @Composable
 fun wrappingLabelStyle(): TextStyle = LocalTextStyle.current.copy(hyphens = Hyphens.Auto)
+
+/**
+ * 같은 너비의 선택지 칸을 한 줄에 몇 개씩 둘지.
+ *
+ * 보통 글꼴에서는 [maxPerRow] 개를 한 줄에 둔다(예전 모양 그대로, 긴 번역어는 하이픈으로 끊는다). 글꼴을 키우면
+ * 칸은 그대로인데 글자만 커져, "Medium" 이 "Med/ium", "느림" 이 "느/림" 처럼 글자 중간에서 끊긴다(#304).
+ * 그래서 글꼴을 키웠을 때만, 어느 이름의 한 단어라도 칸에 들어가지 않으면 들어갈 때까지 한 줄의 칸 수를 줄인다.
+ * 두 칸으로도 안 들어가는 단어는 두 칸에 두고 지금처럼 하이픈으로 끊는다.
+ *
+ * @param rowWidth 칸들이 차지할 줄 전체 너비
+ * @param cellPadding 칸 안쪽의 좌우 여백 한쪽
+ * @param style 칸 안 글자의 모양(크기·굵기까지 칸과 같게)
+ */
+@Composable
+fun choicesPerRow(
+    labels: List<String>,
+    maxPerRow: Int,
+    rowWidth: Dp,
+    gap: Dp,
+    cellPadding: Dp,
+    style: TextStyle
+): Int {
+    val density = LocalDensity.current
+    if (density.fontScale <= 1f) return maxPerRow
+    val measurer = rememberTextMeasurer()
+    val widestWordPx = remember(labels, style, density) {
+        labels.flatMap { it.split(' ', '\n') }
+            .filter { it.isNotBlank() }
+            .maxOfOrNull { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width } ?: 0
+    }
+    // 마지막 줄에 한 칸만 남는 나눔(다섯 칸의 4+1, 네 칸의 3+1)은 건너뛴다. 다섯 칸은 3+2, 네 칸은 2+2 가 된다.
+    val count = labels.size
+    val candidates = (maxPerRow downTo 2).filter { it == maxPerRow || count % it == 0 || count % it >= it - 1 }
+    for (perRow in candidates) {
+        val cellText = (rowWidth - gap * (perRow - 1)) / perRow - cellPadding * 2
+        if (with(density) { cellText.toPx() } >= widestWordPx) return perRow
+    }
+    return candidates.last()
+}
+
+/**
+ * 같은 너비의 선택지 칸을 [perRow] 개씩 줄지어 둔다. 마지막 줄이 덜 차도 칸 너비는 위 줄과 같다.
+ * 한 줄 안의 칸은 높이를 맞춘다. 화면 읽어주기에는 전체를 한 선택지 묶음(selectableGroup)으로 알린다.
+ *
+ * @param cell 선택지 하나를 그린다. 받은 Modifier(줄 안의 너비와 높이)를 칸의 맨 앞에 붙인다.
+ */
+@Composable
+fun <T> EqualChoiceRows(
+    options: List<T>,
+    perRow: Int,
+    gap: Dp,
+    modifier: Modifier = Modifier,
+    cell: @Composable (option: T, modifier: Modifier) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(gap), modifier = modifier.selectableGroup()) {
+        options.chunked(perRow.coerceAtLeast(1)).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(gap), modifier = Modifier.height(IntrinsicSize.Min)) {
+                row.forEach { option -> cell(option, Modifier.weight(1f).fillMaxHeight()) }
+                repeat(perRow - row.size) { Spacer(modifier = Modifier.weight(1f)) }
+            }
+        }
+    }
+}
 
 /**
  * 스위치를 켜야 쓰이는 세부 설정을 감싼다. 꺼져 있으면 자리를 차지하지 않고, 켜면 위아래로 펼쳐진다.
@@ -77,18 +146,31 @@ fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Compo
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        // 카드 안쪽 여백 24dp 가운데 제목 위아래 12dp 씩을 누르는 자리 안으로 옮긴다. 보이는 자리는 그대로이고,
+        // 제목 줄(약 24dp)만 눌리던 것이 48dp 높이가 된다(#300).
+        Column(
+            modifier = Modifier.padding(
+                start = 24.dp,
+                end = 24.dp,
+                top = 12.dp,
+                bottom = if (expanded) 24.dp else 12.dp
+            )
+        ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically, 
-                // 아래 여백은 누르는 자리 밖에 둔다. 안에 두면 펼친 내용과의 빈 칸까지 눌린다.
+                verticalAlignment = Alignment.CenterVertically,
+                // 펼친 내용과의 빈 칸 가운데 절반만 누르는 자리에 넣는다. 다 넣으면 내용 바로 위까지 눌린다.
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = if (expanded) 24.dp else 0.dp)
+                    .padding(bottom = if (expanded) 12.dp else 0.dp)
+                    // 화면 읽어주기에서 제목 단위로 건너뛸 수 있게 제목으로 표시하고, 누르면 펼쳐지는 버튼으로 읽힌다.
+                    .semantics(mergeDescendants = true) { heading() }
                     .clickable(
                         // 눌림 표시는 두지 않는다. 어두운 카드 위에서 색 상자로 번쩍이고, 화살표가 돌고 내용이 펼쳐지는 것으로 충분하다.
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null
+                        indication = null,
+                        role = Role.Button
                     ) { expanded = !expanded }
+                    .padding(vertical = 12.dp)
             ) {
                 Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.weight(1f))
                 Icon(
@@ -119,6 +201,7 @@ fun ModernSlider(
     val labelColor = if (enabled) PrimaryTextColor else PrimaryTextColor.copy(alpha = 0.35f)
     val descColor = if (enabled) SecondaryTextColor else SecondaryTextColor.copy(alpha = 0.4f)
     val valueColor = if (enabled) AccentColor else AccentColor.copy(alpha = 0.35f)
+    val valueText = String.format(Locale.US, "%.0f", value)
 
     Column(
         modifier = Modifier
@@ -135,7 +218,7 @@ fun ModernSlider(
         ) {
             Text(label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = labelColor, style = wrappingLabelStyle(), modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(String.format(Locale.US, "%.0f", value), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
+            Text(valueText, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = valueColor)
         }
         Slider(
             value = value,
@@ -146,14 +229,19 @@ fun ModernSlider(
             enabled = enabled,
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,
-                activeTrackColor = AccentColor,
+                activeTrackColor = AccentFillColor,
                 inactiveTrackColor = Color(0xFF333A44),
                 disabledThumbColor = Color(0xFF6B7684),
                 disabledActiveTrackColor = Color(0xFF3A4351),
                 disabledInactiveTrackColor = Color(0xFF2A3038)
             ),
             // 이름이 없으면 화면 읽어주기가 "슬라이더, 50%" 로만 읽어 무엇의 값인지 알 수 없다.
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label }
+            // 값도 화면에 보이는 숫자 그대로 읽힌다. 두지 않으면 범위 안의 위치로 읽어, 범위가 10~100 인
+            // 크기에서 화면의 "55" 가 "50퍼센트" 가 된다(#300, 진동 세기 슬라이더와 같은 처리).
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = label
+                stateDescription = valueText
+            }
         )
         Text(desc, fontSize = 13.sp, color = descColor)
     }
@@ -205,7 +293,7 @@ fun ModernSwitch(
                 enabled = enabled,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = AccentColor,
+                    checkedTrackColor = AccentFillColor,
                     uncheckedThumbColor = SecondaryTextColor,
                     uncheckedTrackColor = Color(0xFF333A44),
                     disabledCheckedThumbColor = Color(0xFFB0B8C1),
