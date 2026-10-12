@@ -122,7 +122,7 @@ fun HelpTab() {
                 )
                 Paragraphs(
                     R.string.help_sound_kinds,
-                    R.string.help_sound_classify,
+                    R.string.help_sound_classify_groups,
                     R.string.help_sound_danger,
                     *haptic.toIntArray()
                 )

@@ -115,6 +115,33 @@ app/src/main/res/raw/tutorial_honk.ogg
   https://creativecommons.org/publicdomain/zero/1.0/
 
 ================================================================================
+7. AudioSet 온톨로지 (분류 탭의 소리 묶음·소리 이름 번역)
+================================================================================
+app/src/main/assets/sound_groups.tsv
+app/src/main/res/values*/sound_names.xml
+
+분류 탭의 소리 묶음 표(sound_groups.tsv)와 소리 이름(sound_names.xml)은
+AudioSet 온톨로지를 바탕으로 만든 각색물입니다. 소리 이름은 온톨로지의
+클래스 이름과 그 번역이고, 묶음은 온톨로지의 갈래를 읽고 사람이 정했습니다.
+소리 이름을 그대로 쓴 묶음 이름(사이렌, 초인종 등)도 여기에 해당합니다.
+이 자료는 원본과 같은 CC BY-SA 4.0 으로 배포하며, 표 파일 맨 위에도 같은
+고지를 적어 두었습니다. 앱의 코드와 새로 지은 묶음 이름은 Apache License
+2.0 입니다.
+
+"AudioSet Ontology" by Google Inc.
+https://github.com/audioset/ontology (commit d417d32)
+Licensed under the Creative Commons Attribution-ShareAlike 4.0
+International License (CC BY-SA 4.0).
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Changes: the 521 YAMNet sound names were regrouped into everyday groups by
+SoundVisualizer contributors (sound_groups.tsv), and the class names were
+translated into the app's languages (sound_names.xml).
+
+이 자료는 있는 그대로 제공되며 어떠한 보증도 하지 않습니다. 자세한 내용은
+CC BY-SA 4.0 의 5조(보증의 부인과 책임의 제한)를 따릅니다.
+
+================================================================================
 
 테스트에만 쓰이는 의존성(JUnit, Espresso, org.json 등)은 APK 에 포함되지 않으므로
 위 목록에서 제외했습니다.

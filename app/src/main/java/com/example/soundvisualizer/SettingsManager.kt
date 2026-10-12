@@ -86,6 +86,7 @@ object SettingsManager {
     private const val KEY_TILE_ADDED = "tile_added"
     private const val KEY_TUTORIAL_SEEN = "tutorial_seen"
     private const val KEY_SOUND_TYPES = "sound_types"
+    private const val KEY_CLASSIFY_ADVANCED = "classify_advanced"
 
     /** 분류 탭에서 고를 수 있는 종류. 화면·진동이 알아듣는 라벨과 같다. */
     private val SOUND_TYPE_LABELS = setOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
@@ -135,10 +136,25 @@ object SettingsManager {
      * 값은 [AiClassification] 라벨. 기본 종류와 같은 것은 두지 않으므로, 여기 있으면 바꾼 소리다.
      *
      * AI는 추론마다 [soundTypes] 스냅샷 하나를 읽어 투표와 안전 단서에 함께 반영한다 (#291).
-     * 그 전까지 분류 탭은 개발자 모드에서만 보인다(#283).
+     * 분류 탭은 모든 사용자에게 보이고(#328), 묶음째 고르면 [setSoundTypes] 가 묶음의 소리를 한 번에 바꾼다(#349).
      */
     private val _soundTypes = MutableStateFlow<Map<String, String>>(emptyMap())
     val soundTypes: StateFlow<Map<String, String>> = _soundTypes
+
+    /**
+     * 분류 탭 고급 모드의 기본값(#349). 꺼 두면 비슷한 소리를 묶음째 고르는 기본 모드다.
+     *
+     * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다. 저장된 적이 없을 때 실제로 고르는 값은
+     * [loadClassifyAdvanced] 가 정한다.
+     */
+    internal const val CLASSIFY_ADVANCED_DEFAULT = false
+
+    /**
+     * 분류 탭을 고급 모드(소리를 하나씩 바꾸는 화면)로 볼지(#349). 바꾼 종류([soundTypes])와 따로 저장하는 화면 설정이다.
+     * 사용자가 고른 것이라 기기 전용 값([dropOtherDeviceValues])이 아니고, 모두 되돌리기([resetSoundTypes])도 건드리지 않는다.
+     */
+    private val _classifyAdvanced = MutableStateFlow(CLASSIFY_ADVANCED_DEFAULT)
+    val classifyAdvanced: StateFlow<Boolean> = _classifyAdvanced
 
     // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
     private val hapticFlows: Map<String, MutableStateFlow<HapticSettings>> =
@@ -370,6 +386,11 @@ object SettingsManager {
         _showDanger.value = prefs.getBoolean("show_danger", true)
         _colorDanger.value = prefs.getInt("color_danger", DEFAULT_COLOR_DANGER)
         applySoundTypes(loadSoundTypes(prefs))
+        // 정한 값을 곧바로 저장한다. 저장하지 않으면 기본 모드에서 묶음을 바꾼 사람이 다음에 열 때 바꾼 소리가 있다는
+        // 이유로 고급 모드가 된다. 튜토리얼 판단(맨 위) 뒤라서 새로 설치한 앱을 "쓰던 사람"으로 보게 하지 않는다.
+        val classifyAdvanced = loadClassifyAdvanced(prefs)
+        if (!prefs.contains(KEY_CLASSIFY_ADVANCED)) prefs.edit { putBoolean(KEY_CLASSIFY_ADVANCED, classifyAdvanced) }
+        _classifyAdvanced.value = classifyAdvanced
 
         _tileAdded.value = prefs.getBoolean(KEY_TILE_ADDED, false)
         _pauseWhenScreenOff.value = loadPauseWhenScreenOff(prefs)
@@ -484,6 +505,17 @@ object SettingsManager {
     internal fun putSoundTypes(editor: SharedPreferences.Editor, types: Map<String, String>) {
         if (types.isEmpty()) editor.remove(KEY_SOUND_TYPES) else editor.putString(KEY_SOUND_TYPES, JSONObject(types).toString())
     }
+
+    /**
+     * 분류 탭을 고급 모드로 열지. 저장된 적이 없으면 **이미 소리를 하나씩 바꿔 둔 사람인지**로 정한다(#349).
+     *
+     * 묶음이 생기기 전에는 소리를 하나씩 바꿨다. 그런 사람을 기본 모드로 열면, 묶음째 고를 때 하나씩 바꾼 것이 먼저 알리지
+     * 않고 덮어써질 수 있다. 그래서 처음에는 고급 모드로 열고, 기본 모드로 돌아갈 때 알린다. 바꾼 소리가 없으면 기본값이다.
+     * [load] 는 이렇게 정한 값을 곧바로 저장한다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (ClassifyAdvancedSettingTest).
+     */
+    internal fun loadClassifyAdvanced(source: SharedPreferences): Boolean =
+        if (source.contains(KEY_CLASSIFY_ADVANCED)) source.getBoolean(KEY_CLASSIFY_ADVANCED, CLASSIFY_ADVANCED_DEFAULT)
+        else loadSoundTypes(source).isNotEmpty() || CLASSIFY_ADVANCED_DEFAULT
 
     /**
      * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
@@ -641,10 +673,22 @@ object SettingsManager {
      * [name] 소리를 [label] 종류로 본다. 기본 종류를 고르면 바꾼 것을 지운다. 세 라벨이 아니면 무시한다.
      * 화면(메인 스레드)에서 부른다. 실행 중이면 다음 판정부터 따른다.
      */
-    fun setSoundType(name: String, label: String) {
+    fun setSoundType(name: String, label: String) = setSoundTypes(listOf(name), label)
+
+    /**
+     * [names] 소리를 모두 [label] 종류로 본다(분류 탭의 묶음, #349). 소리마다 기본 종류와 같으면 바꾼 것을 지운다.
+     * 세 라벨이 아니면 무시하고, 바뀌는 것이 없으면 아무것도 하지 않는다. 화면(메인 스레드)에서 부른다.
+     *
+     * 새 맵을 하나 만들어 흐름에 한 번 싣고 한 번 저장한다. AI 는 추론마다 맵을 읽고 바뀌었으면 판정을 새로 시작하는데,
+     * 소리마다 따로 바꾸면 음악 묶음(140개)을 바꾸는 동안 반쯤 바뀐 맵을 읽어 거듭 다시 시작할 수 있고, 저장도 소리 수만큼 한다.
+     */
+    fun setSoundTypes(names: Collection<String>, label: String) {
         if (label !in SOUND_TYPE_LABELS) return
         val current = _soundTypes.value
-        val updated = if (label == defaultSoundType(name)) current - name else current + (name to label)
+        val updated = buildMap {
+            putAll(current)
+            for (name in names) if (label == defaultSoundType(name)) remove(name) else put(name, label)
+        }
         if (updated == current) return
         applySoundTypes(updated)
         prefs.edit { putSoundTypes(this, updated) }
@@ -659,6 +703,12 @@ object SettingsManager {
     /** 화면이 보는 흐름을 바꾼다. 맵은 넣은 뒤 고치지 않는다. */
     private fun applySoundTypes(types: Map<String, String>) {
         _soundTypes.value = types
+    }
+
+    /** 분류 탭의 모드를 바꾼다. 화면만 바뀌고 바꾼 소리 종류는 건드리지 않는다. */
+    fun setClassifyAdvanced(enabled: Boolean) {
+        _classifyAdvanced.value = enabled
+        prefs.edit { putBoolean(KEY_CLASSIFY_ADVANCED, enabled) }
     }
 
     /**
