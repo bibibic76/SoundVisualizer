@@ -253,7 +253,7 @@
     <string name="stopped_turn_on">Réactiver</string>
     <string name="stopped_toast">Visualiseur audio désactivé. Les graphismes et les alertes par vibration sont coupés.</string>
     <string name="danger_alert_channel_name">Alertes de sons de danger</string>
-    <string name="danger_alert_channel_desc">Si un son de danger est entendu pendant que le téléphone est verrouillé ou l\'écran éteint, une alerte s\'affiche sur l\'écran de verrouillage et l\'écran s\'allume brièvement. Aucun son n\'est émis.</string>
+    <string name="danger_alert_channel_desc">Si un son de danger est entendu pendant que le téléphone est verrouillé ou l\'écran éteint, une alerte s\'affiche sur l\'écran de verrouillage et l\'écran s\'allume brièvement. Quand l\'écran est éteint, l\'alerte ne fonctionne qu\'en mode son externe ou si vous avez désactivé « Pause quand l\'écran est éteint ». Aucun son n\'est émis.</string>
     <string name="danger_alert_title">Son de danger entendu</string>
     <string name="danger_alert_text_named">Son entendu : %1$s. Vérifiez ce qui se passe autour de vous.</string>
     <string name="danger_alert_text">Vérifiez ce qui se passe autour de vous.</string>

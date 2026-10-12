@@ -253,7 +253,7 @@
     <string name="stopped_turn_on">เปิดอีกครั้ง</string>
     <string name="stopped_toast">การแสดงภาพเสียงถูกปิด กราฟิกและการแจ้งเตือนด้วยการสั่นถูกปิดอยู่</string>
     <string name="danger_alert_channel_name">การแจ้งเตือนเสียงอันตราย</string>
-    <string name="danger_alert_channel_desc">หากได้ยินเสียงอันตรายขณะที่โทรศัพท์ล็อกอยู่หรือหน้าจอปิดอยู่ จะแจ้งเตือนบนหน้าจอล็อกและเปิดหน้าจอสักครู่ โดยไม่มีเสียง</string>
+    <string name="danger_alert_channel_desc">หากได้ยินเสียงอันตรายขณะที่โทรศัพท์ล็อกอยู่หรือหน้าจอปิดอยู่ จะแจ้งเตือนบนหน้าจอล็อกและเปิดหน้าจอสักครู่ โดยไม่มีเสียง ทั้งนี้ ขณะหน้าจอดับ จะแจ้งเตือนได้เฉพาะในโหมดเสียงภายนอก หรือเมื่อปิด “หยุดชั่วคราวเมื่อหน้าจอดับ” ไว้</string>
     <string name="danger_alert_title">ได้ยินเสียงอันตราย</string>
     <string name="danger_alert_text_named">เสียงที่ได้ยิน: %1$s ตรวจสอบสิ่งรอบตัว</string>
     <string name="danger_alert_text">ตรวจสอบสิ่งรอบตัว</string>

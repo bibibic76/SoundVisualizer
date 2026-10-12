@@ -291,7 +291,7 @@
 
     <!-- 잠금 화면의 위협음 알림(#310) -->
     <string name="danger_alert_channel_name">Danger sound alerts</string>
-    <string name="danger_alert_channel_desc">When a danger sound is heard while your phone is locked or the screen is off, shows it on the lock screen and turns the screen on briefly. It makes no sound.</string>
+    <string name="danger_alert_channel_desc">When a danger sound is heard while your phone is locked or the screen is off, shows it on the lock screen and turns the screen on briefly. With the screen off, this works only in External sound mode or with “Pause while the screen is off” turned off. It makes no sound.</string>
     <string name="danger_alert_title">Danger sound heard</string>
     <string name="danger_alert_text_named">Heard: %1$s. Check your surroundings.</string>
     <string name="danger_alert_text">Check your surroundings.</string>
