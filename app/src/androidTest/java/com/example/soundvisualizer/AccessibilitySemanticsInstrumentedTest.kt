@@ -176,11 +176,14 @@ class AccessibilitySemanticsInstrumentedTest {
         rule.onNode(danger).assertExists()
 
         // 보이는 묶음 카드는 모두 이름·종류·소리 수를 한 덩어리로 읽는 드롭다운 목록이고 48dp 이상이다.
-        val cards = rule.onAllNodes(isDropdown)
-        val count = cards.fetchSemanticsNodes().size
-        assertTrue("묶음 카드가 보이지 않는다", count > 0)
-        for (i in 0 until count) {
-            cards[i].assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)).assertHeightIsAtLeast(48.dp)
+        // 목록은 화면 밖의 카드를 미리 만들어 두기도 하는데, 그런 카드는 아직 놓이지 않아 크기가 없다. 놓인 카드만 잰다.
+        // 작은 화면(CI 기본 에뮬레이터 320×640)에서 그런 카드가 생긴다.
+        val placed = rule.onAllNodes(isDropdown).fetchSemanticsNodes().filter { it.layoutInfo.isPlaced }
+        assertTrue("묶음 카드가 보이지 않는다", placed.isNotEmpty())
+        for (card in placed) {
+            rule.onNode(SemanticsMatcher("SemanticsNode.id == ${card.id}") { it.id == card.id })
+                .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription))
+                .assertHeightIsAtLeast(48.dp)
         }
 
         // 소리 하나뿐인 묶음(문 쾅 닫는 소리)은 소리 한 줄과 같은 글로 읽고, 글이 한 줄뿐인 가장 낮은 카드도 48dp 이상이다.

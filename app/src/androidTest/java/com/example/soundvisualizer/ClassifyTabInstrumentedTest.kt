@@ -290,6 +290,9 @@ class ClassifyTabInstrumentedTest {
 
         // 거르기 칸의 "위협음" 을 누른다. 줄 안의 종류 글자는 줄의 설명으로 묶여 있어 여기 걸리지 않고, 같은 글자인
         // 구역 머리는 고를 수 있는 칸이 아니라서 걸리지 않는다.
+        // 작은 화면(CI 기본 에뮬레이터 320×640)에서는 거르기 칸이 위의 안내에 밀려 화면 밖에 있어, 누르기 전에 그 칸까지 민다.
+        // 밀지 않으면 누름이 칸에 닿지 않아 '전체' 로 남고, 아래의 빈 결과 확인이 실패한다.
+        scrollTo(hasText(danger) and isSelectable())
         rule.onNode(hasText(danger) and isSelectable()).performClick()
 
         search(doorbellLabel)
