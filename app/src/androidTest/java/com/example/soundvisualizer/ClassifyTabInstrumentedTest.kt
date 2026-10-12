@@ -302,7 +302,11 @@ class ClassifyTabInstrumentedTest {
         rule.onNode(hasText(danger) and isSelectable()).performClick()
 
         search(doorbellLabel)
-        rule.onNodeWithContentDescription(string(R.string.cd_classify_sound_changed, doorbellLabel, danger, ambient)).assertExists()
+        // 작은 화면에서는 거르기 칸까지 민 자리에서 결과 줄이 화면 밖에 남을 수 있다. 화면 밖 줄은 목록이 미리 만들어
+        // 두었을 때만 트리에 있어서, 밀지 않으면 이 확인이 가끔 실패했다. 그 줄까지 민다.
+        val doorbellRow = hasContentDescription(string(R.string.cd_classify_sound_changed, doorbellLabel, danger, ambient))
+        scrollTo(doorbellRow)
+        rule.onNode(doorbellRow).assertExists()
 
         search(rainLabel)
         // "Rain" also matches "Train horn/whistle", now valid Danger results (#343).
