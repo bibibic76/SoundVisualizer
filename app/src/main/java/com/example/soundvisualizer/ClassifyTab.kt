@@ -1,8 +1,5 @@
 package com.example.soundvisualizer
 
-import android.content.Context
-import android.content.res.Configuration
-import android.content.res.Resources
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,7 +55,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.withContext
-import java.util.Locale
 import kotlin.math.roundToInt
 
 /** 줄 배경 위에 올리는 칸(종류 버튼, 거르기 칸)의 색. 설정 탭의 고르지 않은 모드 칸과 같다. */
@@ -95,14 +91,22 @@ private const val SPOKEN_SEPARATOR = ", "
 @Composable
 fun ClassifyTab() {
     val context = LocalContext.current
-    // 소리 목록은 파일에서 읽으므로 메인 스레드 밖에서 읽는다. 한 번 읽으면 들고 있어 다시 들어올 때는 바로 그린다.
-    val entries by produceState(SoundCatalog.cachedOrNull()) {
-        if (value == null) value = withContext(Dispatchers.IO) { SoundCatalog.load(context.applicationContext) }
-    }
-    // 화면에 보이는 이름은 앱 언어로 번역된 배열이다. 글자를 칠 때마다 521개를 다시 읽지 않게 붙들어 두고,
-    // 언어가 바뀌어 리소스가 바뀔 때만 다시 읽는다.
+    // 소리 목록, 앱 언어의 이름, 찾기 값, 묶음은 지금 앱 언어로 한 번, 메인 스레드 밖에서 만들어 둔다(SoundCatalog.loadIndex,
+    // #368). 앱 언어 하나의 것만 두어, 언어가 바뀌면 다시 만든다. 이 탭은 페이저의 옆 쪽이라 홈에서 설정으로 넘기기만 해도
+    // 미리 만들어지는데, 예전에는 그때마다 메인 스레드에서 이름 521개를 읽고 정규화를 1,042번 했다. 시각화가 켜져 있으면
+    // 오버레이도 그 메인 스레드를 함께 쓴다. 만들어 둔 것이 있으면 처음부터 그것으로 그린다.
+    //
+    // 이름은 액티비티의 리소스에서 읽는다. Android 12 이하에서는 앱 언어가 액티비티에만 입혀진다(AppLanguage).
+    // 키는 그 리소스의 언어다. produceState 는 키가 바뀌어도 값을 처음 값으로 되돌리지 않으므로, 들고 있는 색인의 언어가
+    // 키와 다르면 새로 만든다. 지금은 언어가 바뀌면 액티비티가 다시 만들어지지만(MainActivity 에 configChanges 가 없다)
+    // 그것에 기대지 않는다.
     val resources = LocalResources.current
-    val labels = remember(resources) { resources.getStringArray(R.array.sound_names) }
+    val locales = resources.configuration.locales.toLanguageTags()
+    val index by produceState(SoundCatalog.cachedIndexOrNull(locales), locales) {
+        if (value?.locales != locales) {
+            value = withContext(Dispatchers.Default) { SoundCatalog.loadIndex(context, resources) }
+        }
+    }
     val overrides by SettingsManager.soundTypes.collectAsState()
     val advanced by SettingsManager.classifyAdvanced.collectAsState()
 
@@ -117,20 +121,30 @@ fun ClassifyTab() {
     // 소리마다 종류가 다른 카드에서 고른 것(카드 id, 종류). 묶음 전체를 바꿀지 묻는 동안만 있다.
     var pendingPick by rememberSaveable { mutableStateOf<Pair<String, String>?>(null) }
 
-    val typeColors = mapOf(
-        AiClassification.AMBIENT to Color(SettingsManager.colorAmbient.collectAsState().value),
-        AiClassification.SPEECH to Color(SettingsManager.colorSpeech.collectAsState().value),
-        AiClassification.DANGER to Color(SettingsManager.colorDanger.collectAsState().value)
-    )
+    // 종류 색은 색이 바뀔 때만 새로 묶는다. 그릴 때마다 새로 묶으면 받는 쪽은 늘 바뀐 값으로 보아서, 찾기 칸의 커서만
+    // 움직여도 색이 그대로인 거르기 칸·구역 머리·목록 줄까지 다시 그렸다.
+    val ambientColor by SettingsManager.colorAmbient.collectAsState()
+    val speechColor by SettingsManager.colorSpeech.collectAsState()
+    val dangerColor by SettingsManager.colorDanger.collectAsState()
+    val typeColors = remember(ambientColor, speechColor, dangerColor) {
+        mapOf(
+            AiClassification.AMBIENT to Color(ambientColor),
+            AiClassification.SPEECH to Color(speechColor),
+            AiClassification.DANGER to Color(dangerColor)
+        )
+    }
 
-    val list = entries
-    val labelOf = { entry: SoundEntry -> labels.getOrElse(entry.index) { entry.name } }
-    val searchKeys = remember(list, labels) { list?.map { SoundCatalog.searchKey(labelOf(it), it.name) }.orEmpty() }
-    // 묶음과 구역은 목록을 읽으면 한 번만 나눈다. 글자를 칠 때마다 다시 하는 것은 아래의 거르기(521개)뿐이다.
-    val sections = remember(list) { list?.let(SoundGroups::sections).orEmpty() }
-    val titleKeys = remember(resources) { groupTitleKeys(context, resources) }
+    val data = index
+    val list = data?.entries
+    val labelOf = { entry: SoundEntry -> data?.labelOf(entry) ?: entry.name }
+    // 찾기 값과 묶음은 색인에 만들어져 있다. 글자를 칠 때마다 다시 하는 것은 아래의 거르기(521개)뿐이다.
+    val searchKeys = data?.searchKeys.orEmpty()
+    val sections = data?.sections.orEmpty()
+    val titleKeys = data?.titleKeys.orEmpty()
+    // 색인이 아직이면 거를 것이 없다. 그래도 거르기를 부르면 빈 결과를 위해 찾는 말을 다듬는데, 앱에서 처음 다듬는 것이면
+    // 유니코드 정규화 준비까지 메인 스레드에서 한다. 색인을 만드는 쪽이 메인 스레드 밖에서 먼저 하게 둔다.
     val shown = remember(sections, searchKeys, titleKeys, overrides, query, filter) {
-        SoundGroups.filter(sections, searchKeys, titleKeys, overrides, query, filter)
+        if (data == null) emptyList() else SoundGroups.filter(sections, searchKeys, titleKeys, overrides, query, filter)
     }
     val advancedItems = remember(shown, advanced) { if (advanced) SoundGroups.advancedItems(shown) else emptyList() }
     // 저장값에는 지금 목록에 없는 이름이 남아 있을 수 있다(모델의 이름이 바뀐 뒤 등). "바꾼 소리" 거르기와 같은 기준으로
@@ -167,8 +181,10 @@ fun ClassifyTab() {
         )
     }
 
-    // 목록을 다 읽기 전에는 그리지 않는다. 머리 몇 줄만으로 먼저 재면, 프로세스가 죽었다 살아날 때 되살린 스크롤
-    // 위치가 그 짧은 목록에 맞춰 잘려 사라진다. 목록은 보통 한 번에 읽혀 있고(cachedOrNull), 처음에도 금방이다.
+    // 색인을 다 만들기 전에는 그리지 않는다. 머리 몇 줄만으로 먼저 재면, 프로세스가 죽었다 살아날 때 되살린 스크롤
+    // 위치가 그 짧은 목록에 맞춰 잘려 사라진다. 색인은 보통 만들어져 있다(cachedIndexOrNull). 프로세스에서 처음 그릴 때와
+    // 언어가 바뀐 뒤 처음 그릴 때는 만드는 동안(에뮬레이터 release 빌드에서 약 0.2초) 비어 있다. 예전에는 소리 목록이
+    // 읽혀 있으면 메인 스레드에서 바로 만들어 그렸다.
     if (list == null) return
 
     if (confirmBasic) {
@@ -347,17 +363,6 @@ private fun advancedContentType(item: AdvancedItem): String = when (item) {
     is AdvancedItem.SectionHeading -> "section"
     is AdvancedItem.GroupHeading -> "group"
     is AdvancedItem.Row -> "row"
-}
-
-/**
- * 새로 지은 묶음 이름의 찾기 값([SoundGroups.titleKeys]). 앱 언어의 이름과 영어 이름 어느 쪽으로도 찾게 한다.
- * 영어 이름은 기본 문구(values)에 있어서, 앱 언어와 상관없이 꺼내려고 영어로 맞춘 리소스를 따로 만든다.
- */
-private fun groupTitleKeys(context: Context, resources: Resources): Map<SoundGroup, String> {
-    val english = context.createConfigurationContext(
-        Configuration(resources.configuration).apply { setLocale(Locale.ENGLISH) }
-    ).resources
-    return SoundGroups.titleKeys(local = { resources.getString(it) }, english = { english.getString(it) })
 }
 
 /** 카드(묶음)의 이름. 새로 지은 이름이 없는 묶음은 이름이 곧 묶음 이름인 소리의 보이는 이름이다. */

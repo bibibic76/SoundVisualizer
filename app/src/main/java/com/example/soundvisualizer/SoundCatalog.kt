@@ -1,6 +1,8 @@
 package com.example.soundvisualizer
 
 import android.content.Context
+import android.content.res.Configuration
+import android.content.res.Resources
 import com.example.soundvisualizer.ai.YamnetCoarseClassifier
 import com.example.soundvisualizer.ai.YamnetThreeClassMapper
 import java.text.Normalizer
@@ -28,6 +30,35 @@ data class SoundEntry(
 /** 분류 탭의 거르기. 종류는 사용자가 바꾼 것까지 반영한 지금 종류로 본다. */
 enum class SoundFilter { ALL, AMBIENT, SPEECH, DANGER, CHANGED }
 
+/**
+ * 분류 탭이 그리는 데 쓰는 것을 앱 언어 하나로 한 번 만들어 둔 것(#368). [SoundCatalog.loadIndex] 가 만든다.
+ *
+ * 탭은 페이저 안에 있어서 홈에서 설정으로 넘기기만 해도 옆 쪽으로 미리 만들어진다. 그때마다 메인 스레드에서 이것을
+ * 다시 만들면 이름 521개를 읽고 정규화를 1,042번 한다. 그래서 지금 앱 언어로 한 번, 메인 스레드 밖에서 만들어 두고 쓴다.
+ * 두는 것은 앱 언어 하나의 것뿐이라, 언어가 바뀌면 새로 만들고 앞의 것은 버린다.
+ *
+ * 문자열만 들고 Context·Resources 는 들고 있지 않는다. 프로세스가 끝날 때까지 남는 값이라, 들고 있으면 언어를 바꿔
+ * 액티비티를 다시 만든 뒤에도 옛 액티비티가 메모리에 남는다.
+ *
+ * @param locales 만든 앱 언어(Configuration.getLocales 의 태그). 캐시의 키다.
+ * @param entries 소리 목록([SoundCatalog.load]).
+ * @param labels 앱 언어의 소리 이름(sound_names). 클래스 번호 순서다.
+ * @param searchKeys 소리마다의 [SoundCatalog.searchKey]. entry.index 자리에 둔다.
+ * @param sections 묶음과 구역([SoundGroups.sections]). 언어와 상관없지만 목록이 같으면 늘 같으므로 함께 만들어 둔다.
+ * @param titleKeys 새로 지은 묶음 이름의 찾기 값([SoundGroups.titleKeys]).
+ */
+class SoundIndex internal constructor(
+    val locales: String,
+    val entries: List<SoundEntry>,
+    private val labels: List<String>,
+    val searchKeys: List<String>,
+    val sections: List<SoundSection>,
+    val titleKeys: Map<SoundGroup, String>
+) {
+    /** 앱 언어의 소리 이름. 배열에 없는 번호면 모델 이름이다. */
+    fun labelOf(entry: SoundEntry): String = labels.getOrElse(entry.index) { entry.name }
+}
+
 object SoundCatalog {
 
     /** 분류기(RealtimeAiPipeline)가 읽는 클래스 목록과 같은 파일이다. */
@@ -42,12 +73,12 @@ object SoundCatalog {
     @Volatile
     private var cached: List<SoundEntry>? = null
 
-    /** 이미 읽어 둔 목록. 아직이면 null. 탭에 다시 들어올 때 빈 화면이 깜빡이지 않게 쓴다. */
+    /** 이미 읽어 둔 목록. 아직이면 null. 잠금 화면 알림이 메인 스레드에서 파일을 읽지 않고 소리 번호를 찾을 때 쓴다(#356). */
     fun cachedOrNull(): List<SoundEntry>? = cached
 
     /**
      * 파일을 읽으므로 메인 스레드에서 부르지 않는다. 한 번 읽으면 프로세스가 끝날 때까지 들고 있는다.
-     * 묶음 표도 여기서 함께 읽는다. 탭은 이 목록 하나만 IO 스레드에서 기다리면 되고, 표를 따로 읽느라 다시 그리지 않는다.
+     * 묶음 표도 여기서 함께 읽는다. 분류 탭은 색인([loadIndex])을 만들 때, 잠금 화면 알림은 AI 를 불러올 때 읽는다.
      */
     fun load(context: Context): List<SoundEntry> =
         cached ?: run {
@@ -55,6 +86,96 @@ object SoundCatalog {
             val groups = context.assets.open(GROUPS_ASSET).use { SoundGroups.parseTable(it) }
             fromNames(names, groups)
         }.also { cached = it }
+
+    /**
+     * 분류 탭의 색인. 앱 언어 하나의 것만 둔다. 언어가 바뀌면 액티비티가 다시 만들어지고, 탭이 새 언어로 다시 만든다.
+     * 앞 언어의 것은 버리므로 그 언어로 돌아가면 다시 만든다.
+     */
+    @Volatile
+    private var cachedIndex: SoundIndex? = null
+
+    /** 색인을 한 번에 하나만 만들게 한다. */
+    private val indexLock = Any()
+
+    /**
+     * [locales] 로 만들어 둔 색인. 아직 없거나 다른 언어로 만든 것이면 null. 파일을 읽지 않으므로 메인 스레드에서 불러도
+     * 된다. 탭에 다시 들어오거나 페이저가 탭을 미리 만들 때 이것으로 바로 그린다.
+     */
+    fun cachedIndexOrNull(locales: String): SoundIndex? = cachedIndex?.takeIf { it.locales == locales }
+
+    /**
+     * 분류 탭의 색인을 [resources] 의 언어로 만든다. 파일을 읽고 이름을 1,042번 다듬으므로 메인 스레드에서 부르지 않는다.
+     * 그 언어로 이미 만들어 두었으면 그것을 돌려준다.
+     *
+     * [resources] 는 액티비티의 것을 넘긴다. Android 12 이하에서는 앱 언어가 액티비티의 컨텍스트에만 입혀지고,
+     * applicationContext 의 리소스는 폰 언어 그대로다(AppLanguage). 거기서 읽으면 폰 언어의 이름이 보인다.
+     *
+     * 키와 이름은 [resources] 의 설정을 한 번 떠 둔 것에서 읽는다. 액티비티의 리소스는 언어가 바뀌면 그 자리에서 바뀔 수
+     * 있어서(Android 13 이상), 키를 읽은 뒤 만드는 사이에 언어가 바뀌면 다른 언어의 이름이 그 키로 캐시에 들어간다.
+     *
+     * 다 만든 색인은 여기서 캐시에 넣는다. 부른 쪽(탭의 코루틴)이 그사이 취소돼도(만드는 중에 탭을 떠남) 만든 것을
+     * 버리지 않아서, 다음에 들어올 때 바로 그린다.
+     */
+    fun loadIndex(context: Context, resources: Resources): SoundIndex {
+        val config = Configuration(resources.configuration)
+        val locales = config.locales.toLanguageTags()
+        return index(locales) {
+            val local = context.createConfigurationContext(config).resources
+            // 새로 지은 묶음 이름은 영어로도 찾는다. 영어는 기본 문구(values)에 있어서, 앱 언어와 상관없이 꺼내려고
+            // 영어로 맞춘 리소스를 따로 만든다.
+            val english = context.createConfigurationContext(
+                Configuration(config).apply { setLocale(Locale.ENGLISH) }
+            ).resources
+            buildIndex(
+                locales,
+                load(context),
+                local.getStringArray(R.array.sound_names).asList(),
+                titleLocal = { local.getString(it) },
+                titleEnglish = { english.getString(it) }
+            )
+        }
+    }
+
+    /**
+     * [locales] 의 색인. 없으면 [build] 로 만들어 캐시에 넣는다. 여럿이 함께 불러도 한 번만 만든다. 페이저가 탭을 미리
+     * 만들었다가 버리고 곧 다시 만들면, 뒤에 부른 쪽은 앞의 것이 끝나기를 기다렸다가 그 색인을 쓴다.
+     *
+     * 리소스를 읽는 일([build])은 밖에서 받는다. 그래서 기기 없이 테스트한다.
+     */
+    internal fun index(locales: String, build: () -> SoundIndex): SoundIndex {
+        cachedIndexOrNull(locales)?.let { return it }
+        return synchronized(indexLock) {
+            cachedIndexOrNull(locales) ?: build().also { cachedIndex = it }
+        }
+    }
+
+    /**
+     * 색인 하나를 만든다. 시간은 거의 찾기 값을 만드는 데(소리마다 두 이름을 [normalize]) 든다.
+     *
+     * 빠르게 하려고 [normalize] 를 손으로 다시 쓰지 않고, 만든 것을 들고 있는 쪽을 택했다. 앱의 정규식은 ICU 를 거치고
+     * JVM 테스트는 JDK 의 정규식을 거쳐서, 다시 쓰면 한쪽에서만 찾는 결과가 달라질 수 있다.
+     *
+     * @param labels 앱 언어의 소리 이름. 클래스 번호 순서다.
+     * @param titleLocal 앱 언어의 문구(새로 지은 묶음 이름).
+     * @param titleEnglish 영어(기본 문구 values)의 문구.
+     */
+    internal fun buildIndex(
+        locales: String,
+        entries: List<SoundEntry>,
+        labels: List<String>,
+        titleLocal: (Int) -> String,
+        titleEnglish: (Int) -> String
+    ): SoundIndex {
+        val labelOf = { entry: SoundEntry -> labels.getOrElse(entry.index) { entry.name } }
+        return SoundIndex(
+            locales = locales,
+            entries = entries,
+            labels = labels,
+            searchKeys = entries.map { searchKey(labelOf(it), it.name) },
+            sections = SoundGroups.sections(entries),
+            titleKeys = SoundGroups.titleKeys(local = titleLocal, english = titleEnglish)
+        )
+    }
 
     /**
      * 모델의 소리 이름(번호 순서)으로 목록을 만든다.

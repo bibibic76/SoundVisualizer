@@ -87,6 +87,11 @@ class AccessibilitySemanticsInstrumentedTest {
     private fun openTab(id: Int) {
         rule.onNodeWithText(string(id)).performClick()
         rule.waitForIdle()
+        // 분류 탭은 소리 목록의 색인을 메인 스레드 밖에서 만들고 다 될 때까지 아무것도 그리지 않는다(#368). Compose 는 그
+        // 일을 기다리지 않으므로, 처음 여는 탭은 목록이 그려질 때까지 기다린다.
+        if (id == R.string.tab_classify) {
+            rule.waitUntil(timeoutMillis = 15_000) { rule.onAllNodes(classifyList).fetchSemanticsNodes().isNotEmpty() }
+        }
     }
 
     @Test
