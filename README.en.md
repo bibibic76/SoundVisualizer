@@ -41,7 +41,7 @@ You can see the same sound in four shapes and switch between them any time in Se
 ### 🧠 Sound types (AI)
 
 - Sorts what you hear into **ambient, speech and danger** sounds.
-- Sirens and alarms count as danger sounds when they clearly show up among the AI's top candidates, even if they aren't its first pick.
+- Sounds set aside as danger cues, such as sirens, alarms, explosions, fireworks, horns and breaking glass, count as danger sounds when they are among the AI's top 5 candidates with a probability of at least 5%, even if they aren't its first pick. This holds even when a gunshot is also among the candidates. It doesn't happen, though, when speech is louder so the sound would count as speech under the default types, when the first pick is something like speech or silence, or when the first pick's probability is very low (under 12%).
 - **Pick a color for each type.** Choose any color in the color picker, or tap a common color.
 - **Show or hide each type.** For example, hide speech and show only danger sounds.
 - **You can pick the type of sounds yourself.** The Sounds tab shows the sounds the AI recognizes in groups of similar sounds, and you choose whether each group counts as ambient, speech or danger. Turn on **Advanced mode** to change sounds one by one. Change the "Doorbell" group to Danger, for example, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI's vote on the type, though, so this doesn't mean every doorbell will be shown as danger. One sound can be heard under several names at once (a siren is also heard as Alarm), so if a sound still shows its old type after a change, change the related groups or sounds too.

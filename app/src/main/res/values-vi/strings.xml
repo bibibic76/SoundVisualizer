@@ -350,7 +350,7 @@
     <string name="help_about_title">Giới thiệu</string>
     <string name="help_about_version">Phiên bản %1$s</string>
     <string name="help_about_team">Phát triển bởi nhóm SOVIS</string>
-    <string name="help_about_license">Ứng dụng này được phân phối theo Apache License 2.0.</string>
+    <string name="help_about_license">Ứng dụng này được phân phối theo Apache License 2.0. Tên và nhóm âm thanh trong thẻ Phân loại dựa trên AudioSet Ontology và được phân phối theo giấy phép CC BY-SA 4.0 (xem “Giấy phép nguồn mở” bên dưới).</string>
     <string name="help_licenses_button">Giấy phép nguồn mở</string>
     <string name="help_licenses_title">Giấy phép nguồn mở</string>
     <string name="help_close">Đóng</string>
