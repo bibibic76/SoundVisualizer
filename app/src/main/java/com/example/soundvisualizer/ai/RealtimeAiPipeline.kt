@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.system.measureNanoTime
 
 /**
- * Realtime AI orchestration: PCM ingest (capture thread) → 250ms background tick
+ * Realtime AI orchestration: PCM ingest (capture thread) → 250ms start-to-start background tick
  * (ring → 16k resample → Qualcomm-source Log-Mel → YAMNet → 3-class → PostProcessor).
  *
  * Does not touch Overlay / AudioEngine / C++ DSP.
@@ -71,6 +71,7 @@ class RealtimeAiPipeline private constructor(
 
     companion object {
         const val AI_PREDICT_INTERVAL_MS = 250L
+        internal const val MIN_TICK_REST_MS = 100L
         private const val TAG = "RealtimeAiPipeline"
         private const val LOG_THROTTLE_MS = 2000L
 
@@ -150,6 +151,7 @@ class RealtimeAiPipeline private constructor(
         silenceSkippedTicks.set(0)
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
+                val tickStartedAtMs = SystemClock.elapsedRealtime()
                 try {
                     // diagnostics = false: 스케줄러는 반환값을 쓰지 않는다.
                     // true 로 두면 프레임마다 배열 3개(약 88KB)를 복사해 그대로 버린다.
@@ -159,7 +161,14 @@ class RealtimeAiPipeline private constructor(
                         Log.w(TAG, "AI tick failed: ${t.message}", t)
                     }
                 }
-                delay(predictIntervalMs)
+                delay(
+                    remainingTickDelayMs(
+                        intervalMs = predictIntervalMs,
+                        tickStartedAtMs = tickStartedAtMs,
+                        tickFinishedAtMs = SystemClock.elapsedRealtime(),
+                        minimumRestMs = MIN_TICK_REST_MS
+                    )
+                )
             }
         }
     }
@@ -475,4 +484,15 @@ class RealtimeAiPipeline private constructor(
         postProcessor.reset()
         lastResult.set(null)
     }
+}
+
+/** Keeps the configured cadence between tick starts instead of adding it after inference. */
+internal fun remainingTickDelayMs(
+    intervalMs: Long,
+    tickStartedAtMs: Long,
+    tickFinishedAtMs: Long,
+    minimumRestMs: Long
+): Long {
+    val tickDurationMs = (tickFinishedAtMs - tickStartedAtMs).coerceAtLeast(0L)
+    return (intervalMs - tickDurationMs).coerceAtLeast(minimumRestMs)
 }
