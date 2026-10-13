@@ -22,7 +22,7 @@ private const val AMBIENT = AiClassification.AMBIENT
  * - **장면**: 2초부터 말소리 대용(넓은 대역 잡음 덩어리, RMS 0.03)이 이어지다가 6.8~8초에는 작아진다(RMS 0.003, 피크 0.01 아래).
  *   대화음 진동은 '빠름'으로 정해 두어 상한 때문에 '느림'으로 울린다. 20초 동안 본다.
  * - **AI 대역**: 쉬는 판단은 실제와 같다(받은 소리가 0.01 을 넘은 지 0.975초 안이면 돌고, 그 뒤 두 번 더 추론하고 쉰다).
- *   도는 동안 280ms 마다 추론한다. 받은 0.975초 창의 170Hz 괴르첼 세기가 진동 소리 하나보다 30dB 아래보다 크거나, 창에
+ *   도는 동안 250ms 마다 추론한다(#379 뒤 시작에서 시작까지의 주기). 받은 0.975초 창의 170Hz 괴르첼 세기가 진동 소리 하나보다 30dB 아래보다 크거나, 창에
  *   말소리 대용(20ms 조각의 차이 RMS 1e-3 초과)이 있으면 대화음, 아니면 환경음이다. 두 번 연달아 같아야 바뀌고, 쉬면 마지막
  *   라벨이 남는다.
  *
@@ -353,7 +353,7 @@ class AiFeedLoopTest {
         const val BUZZ_LAG_MS = 8.0
         const val BUZZ_TAIL_MS = 150.0
 
-        const val AI_TICK_MS = 280.0
+        const val AI_TICK_MS = 250.0
         const val AI_WINDOW_MS = 975.0
         const val AI_WINDOW = 46_800
         const val ACTIVE = 0.01f
