@@ -71,6 +71,7 @@ class RealtimeAiPipeline private constructor(
 
     companion object {
         const val AI_PREDICT_INTERVAL_MS = 250L
+        internal const val MIN_TICK_REST_MS = 100L
         private const val TAG = "RealtimeAiPipeline"
         private const val LOG_THROTTLE_MS = 2000L
 
@@ -164,7 +165,8 @@ class RealtimeAiPipeline private constructor(
                     remainingTickDelayMs(
                         intervalMs = predictIntervalMs,
                         tickStartedAtMs = tickStartedAtMs,
-                        tickFinishedAtMs = SystemClock.elapsedRealtime()
+                        tickFinishedAtMs = SystemClock.elapsedRealtime(),
+                        minimumRestMs = MIN_TICK_REST_MS
                     )
                 )
             }
@@ -488,8 +490,9 @@ class RealtimeAiPipeline private constructor(
 internal fun remainingTickDelayMs(
     intervalMs: Long,
     tickStartedAtMs: Long,
-    tickFinishedAtMs: Long
+    tickFinishedAtMs: Long,
+    minimumRestMs: Long
 ): Long {
     val tickDurationMs = (tickFinishedAtMs - tickStartedAtMs).coerceAtLeast(0L)
-    return (intervalMs - tickDurationMs).coerceAtLeast(0L)
+    return (intervalMs - tickDurationMs).coerceAtLeast(minimumRestMs)
 }

@@ -11,19 +11,21 @@ class RealtimeAiPipelineCadenceTest {
             remainingTickDelayMs(
                 intervalMs = 250L,
                 tickStartedAtMs = 1_000L,
-                tickFinishedAtMs = 1_030L
+                tickFinishedAtMs = 1_030L,
+                minimumRestMs = RealtimeAiPipeline.MIN_TICK_REST_MS
             )
         )
     }
 
     @Test
-    fun overrunDoesNotAddAnotherIntervalOrReturnNegativeDelay() {
+    fun overrunKeepsMinimumRestInsteadOfStartingContinuousInference() {
         assertEquals(
-            0L,
+            100L,
             remainingTickDelayMs(
                 intervalMs = 250L,
                 tickStartedAtMs = 1_000L,
-                tickFinishedAtMs = 1_300L
+                tickFinishedAtMs = 1_300L,
+                minimumRestMs = RealtimeAiPipeline.MIN_TICK_REST_MS
             )
         )
     }
@@ -35,7 +37,8 @@ class RealtimeAiPipelineCadenceTest {
             remainingTickDelayMs(
                 intervalMs = 250L,
                 tickStartedAtMs = 1_001L,
-                tickFinishedAtMs = 1_000L
+                tickFinishedAtMs = 1_000L,
+                minimumRestMs = RealtimeAiPipeline.MIN_TICK_REST_MS
             )
         )
     }
