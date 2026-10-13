@@ -3,6 +3,7 @@ package com.example.soundvisualizer.feedback
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -110,5 +111,18 @@ class SelfVibrationTimelineTest {
         timeline.cutLatest(100)
         timeline.cut(1, 100)
         assertEquals(0, timeline.snapshot().size)
+    }
+
+    @Test
+    fun `앱이 쓰는 공용 목록도 빈 목록으로 시작하고 구간을 열고 지운다`() {
+        // #383: companion 이 shared 를 먼저 만들 때 처음 값의 상수가 아직 null 이라 shared 만 null 배열을 들고 시작했고,
+        // 진동 미리 듣기와 외부 사운드 모드 진동 때 앱이 죽었다. 다른 테스트는 저마다 새 목록을 만들어 이 경로를 보지 못한다.
+        val shared = SelfVibrationTimeline.shared
+        val before: LongArray? = shared.snapshot()
+        assertNotNull("공용 목록이 null 로 시작했다", before)
+        val handle = shared.open(1_000_000, 1_000_585, 1_000_405)
+        assertTrue(windowsOf(shared).any { it[SelfVibrationTimeline.HANDLE] == handle })
+        shared.retract(handle)
+        assertTrue(windowsOf(shared).none { it[SelfVibrationTimeline.HANDLE] == handle })
     }
 }

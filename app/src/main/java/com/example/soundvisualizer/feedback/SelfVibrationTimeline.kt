@@ -16,9 +16,14 @@ package com.example.soundvisualizer.feedback
  */
 class SelfVibrationTimeline {
 
-    /** `[handle, start, end, cmdEnd]` 를 오래된 것부터 이은 배열. 한 번 내보낸 배열은 바꾸지 않는다. */
+    /**
+     * `[handle, start, end, cmdEnd]` 를 오래된 것부터 이은 배열. 한 번 내보낸 배열은 바꾸지 않는다.
+     *
+     * 처음 값은 여기서 바로 만든다. companion 의 상수에 기대면, companion 이 [shared] 를 먼저 만들 때 그 상수가 아직 null 이라
+     * 앱이 쓰는 [shared] 만 null 배열을 들고 시작한다(#383: v1.7.0 에서 진동 미리 듣기와 외부 사운드 모드 진동 때 앱이 죽음).
+     */
     @Volatile
-    private var windows: LongArray = EMPTY
+    private var windows: LongArray = LongArray(0)
 
     /** 다음 구간의 번호. 0 은 "없음" 으로 남겨 둔다. 잠금 안에서만 쓴다. */
     private var nextHandle = 1L
@@ -129,7 +134,5 @@ class SelfVibrationTimeline {
 
         /** 이보다 오래전에 끝난 구간은 새로 열 때 버린다. 캡처 시각은 지금보다 길어야 0.4초쯤 늦다. */
         const val KEEP_MS = 2_000L
-
-        private val EMPTY = LongArray(0)
     }
 }

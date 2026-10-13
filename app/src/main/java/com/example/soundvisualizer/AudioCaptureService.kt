@@ -179,9 +179,14 @@ class AudioCaptureService : Service() {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> onScreenOff()
                 Intent.ACTION_SCREEN_ON -> onScreenOn()
-                // 잠금을 풀면 오버레이가 다시 보이므로 잠금 화면의 위협음 알림은 할 일을 다 했다(#310).
-                Intent.ACTION_USER_PRESENT -> DangerAlert.cancel(this@AudioCaptureService)
             }
+        }
+    }
+
+    /** 잠금을 풀면 오버레이가 다시 보이므로 잠금 화면의 위협음 알림은 할 일을 다 했다(#310). 따로 두는 까닭은 [registerScreenReceiver] 에 적었다. */
+    private val unlockReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_USER_PRESENT) DangerAlert.cancel(this@AudioCaptureService)
         }
     }
 
@@ -1054,21 +1059,24 @@ class AudioCaptureService : Service() {
     // ---------------- 화면 꺼짐 일시정지 ----------------
 
     /**
-     * 화면 켜짐·꺼짐 방송을 받는다. 두 방송은 매니페스트에 적어서는 받을 수 없어 실행 중에만 등록한다.
+     * 화면 켜짐·꺼짐과 잠금 풀림 방송을 실행 중에만 받는다. 화면 켜짐·꺼짐은 매니페스트에 적어서는 받을 수 없다.
      *
-     * 둘 다 시스템만 보낼 수 있는 보호된 방송이라 다른 앱이 흉내 낼 수 없다. 그래도 RECEIVER_NOT_EXPORTED 를 준다.
+     * 화면 켜짐·꺼짐은 시스템만 보낼 수 있는 보호된 방송이라 다른 앱이 흉내 낼 수 없다. 그래도 RECEIVER_NOT_EXPORTED 를 준다.
      * Android 13(API 33) 부터 동적 수신기는 내보냄 여부를 밝히게 됐고(targetSdk 34 부터는 보호되지 않은 방송에서 필수),
      * 이 수신기는 앱 밖에서 보낼 이유가 없다. ContextCompat 은 13 이상에서는 플래그를 그대로 넘기고,
-     * 그 아래에서는 앱 서명 권한을 요구하는 방식으로 같은 효과를 낸다. 시스템이 보낸 방송은 그 검사를 통과한다.
+     * 그 아래에서는 앱 서명 권한을 요구하는 방식으로 같은 효과를 낸다. 두 방송은 시스템 서버가 보내서 그 검사를 통과한다.
+     *
+     * 잠금 풀림(USER_PRESENT)은 시스템 서버가 아니라 시스템 UI 앱이 보낸다. 그래서 내보내지 않은 수신기에는 오지 않는다
+     * (13 이상은 내보내지 않아서, 그 아래는 서명 권한이 없어서). 수신기를 따로 두고 RECEIVER_EXPORTED 로 받는다(#385).
+     * 이것도 보호된 방송이라 일반 앱은 보낼 수 없어, 내보내도 다른 앱이 이 수신기를 부를 수 없다.
      */
     private fun registerScreenReceiver() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_SCREEN_ON)
-            // 잠금을 풀면 잠금 화면의 위협음 알림을 치운다(#310). 이것도 시스템만 보내는 보호된 방송이다.
-            addAction(Intent.ACTION_USER_PRESENT)
         }
         ContextCompat.registerReceiver(this, screenReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(this, unlockReceiver, IntentFilter(Intent.ACTION_USER_PRESENT), ContextCompat.RECEIVER_EXPORTED)
         screenReceiverRegistered = true
         // 등록 전에 이미 꺼졌다면 꺼짐 방송은 다시 오지 않는다. (동의 직후 바로 전원 버튼을 누른 경우)
         if (getSystemService(PowerManager::class.java)?.isInteractive == false) onScreenOff()
@@ -1236,6 +1244,7 @@ class AudioCaptureService : Service() {
 
         if (screenReceiverRegistered) {
             unregisterReceiver(screenReceiver)
+            unregisterReceiver(unlockReceiver)
             screenReceiverRegistered = false
         }
 
