@@ -1,187 +1,151 @@
 <div align="center">
 
-**한국어** | [English](README.en.md)
+[English](README.md) | [한국어](README.ko.md)
 
 <br/>
 
 # SoundVisualizer
 
-<img src="app/src/main/res/mipmap-xxxhdpi/adaptive_icon_foreground.png" width="160" alt="SoundVisualizer 아이콘" />
+<img width="1024" alt="SoundVisualizer" src="docs/images/readme_banner.png" />
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Android](https://img.shields.io/badge/Android_10+-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
 [![ONNX](https://img.shields.io/badge/ONNX-005CED?style=for-the-badge&logo=onnx&logoColor=white)](https://onnxruntime.ai/)
 
-**실시간 소리 시각화와 AI 소리 분류를 담은 안드로이드 오버레이**
+**Real-Time Audio Visualization & AI Sound Analysis Overlay for Android**
 
 </div>
 
 <br/>
 
-> **SoundVisualizer**는 휴대폰에서 재생되는 소리를 실시간으로 받아 방향·크기·종류를 화면 가장자리의 그래픽과 진동으로 바꿔 주는 안드로이드 앱입니다.
-단순한 파형 표시를 넘어, **YAMNet**과 **ONNX Runtime** 기반의 AI 소리 분류기로 지금 나는 소리가 환경음·대화음·위협음 가운데 무엇인지 알아보고 색과 진동으로 알려 줍니다.
+> **SoundVisualizer** is an Android application that captures the audio playing on your phone in real time and translates its direction, intensity, and meaning into a graphical overlay and vibration. 
+Going beyond simple waveform rendering, it integrates an AI sound classifier powered by **YAMNet** and **ONNX Runtime** to instantly identify the type of sound playing (ambient, speech, danger) and provide adaptive visual and haptic feedback.
 
 ---
 
-## 📖 목차
-- [프로젝트 배경 및 목적](#-프로젝트-배경-및-목적)
-- [주요 기능](#-주요-기능)
-- [시스템 및 AI 아키텍처](#-시스템-및-ai-아키텍처)
-- [설치 및 실행 방법](#-설치-및-실행-방법)
-- [권한과 개인정보](#-권한과-개인정보)
-- [알아두세요](#-알아두세요)
-- [빌드 가이드 (개발자용)](#-빌드-가이드-개발자용)
-- [라이선스](#-라이선스)
+## 📖 Table of Contents
+- [Background & Objectives](#-background--objectives)
+- [Key Features](#-key-features)
+- [System & AI Architecture](#-system--ai-architecture)
+- [Installation & Quick Start](#-installation--quick-start)
+- [Build Guide (For Developers)](#-build-guide-for-developers)
+- [License](#-license)
 
 ---
 
-## 🎯 프로젝트 배경 및 목적
+## 🎯 Background & Objectives
 
-### 청각장애인의 모바일 미디어 접근성 향상
-휴대폰으로 즐기는 게임, 영상, 음악은 입체적인 소리로 몰입감을 높이지만, 청각장애인과 난청인에게는 오히려 넘기 어려운 벽이 됩니다. 자막은 대사만 전할 뿐, **소리가 나는 방향이나 발소리, 총소리 같은 위급한 효과음**은 알려 주지 못합니다.
-SoundVisualizer는 **보이지 않는 소리의 방향·크기·종류를 화면과 진동으로 전해** 이런 정보의 불균형을 줄이고, 누구나 같은 경험을 할 수 있는 환경을 만드는 것을 목표로 합니다.
+### Enhancing Media Accessibility for the Deaf and Hard of Hearing
+Modern media content, including YouTube, OTT, and mobile games, relies heavily on spatial audio to maximize immersion. However, this creates a severe barrier for the deaf and hard of hearing. Traditional subtitle systems only deliver dialogue, completely omitting crucial acoustic information such as **sound direction, footsteps, or urgent sound effects (e.g., gunshots).**
+SoundVisualizer was created to break down these barriers by **visualizing the intensity, classification, and spatial direction of invisible sounds** right on the phone in your hand. Our primary goal is to resolve this information asymmetry and guarantee an equal, fully accessible media consumption environment for everyone.
 
-### 모두를 위한 활용성 확장
-모바일 게이머에게는 발소리와 총소리의 방향을 알려 주는 보조 지표가 되고, 대중교통이나 도서관, 늦은 밤처럼 소리를 켤 수 없는 상황에서는 소리 없이도 흐름을 따라가게 해 줍니다.
-
----
-
-## ✨ 주요 기능
-
-### 1. 네 가지 표현 모드
-같은 소리를 네 가지 모양으로 보여 줍니다. 그래픽은 다른 앱 위에 투명하게 떠 있고, 터치는 그대로 아래로 통과합니다.
-- **파도**: 화면 테두리 전체가 소리 세기만큼 안쪽으로 밀려들고, 소리가 나는 쪽이 더 깊게 밀려옵니다.
-- **패드**: 화면 가장자리 8곳에 막대가 떠올라 방향을 가장 또렷하게 보여 줍니다.
-- **외곽선**: 파도의 윤곽선만 가늘게 그려 화면을 최대한 가리지 않습니다.
-- **원형**: 화면 가운데의 고리가 소리 나는 쪽으로 부풀어 오릅니다.
-- 크기, 진하기, 민감도, 속도, 크기 고정, 광원 같은 설정은 **모드마다 따로 저장**됩니다.
-
-### 2. AI 실시간 소리 분류 (ONNX & YAMNet)
-- **3가지 종류**: 들리는 소리를 `환경음`, `대화음`, `위협음`으로 나누고, 종류마다 색과 표시 여부를 따로 정합니다.
-- **위협 단서**: 사이렌, 경보음, 폭발음, 폭죽, 경적, 깨지는 소리처럼 정해 둔 위협 단서는 AI 가 1순위로 꼽지 않아도 상위 5개 후보 안에 5% 이상이면 `위협음`으로 봅니다. 말소리가 더 크게 들리는 때처럼 오경보가 나기 쉬운 몇 가지 경우는 제외합니다.
-- **바로 보이는 위협음**: 위협음은 색이 서서히 물들지 않고 즉시 바뀌고, 판정이 나오기 전에 끝나 버리는 짧은 위협음도 그 소리 크기대로 그립니다.
-- AI 모델을 불러오지 못하면 홈과 설정에 안내하고, 모든 소리를 환경음 색으로 보여 줍니다.
-
-### 3. 소리마다 종류 정하기 (분류 탭)
-- AI 가 알아듣는 소리를 비슷한 것끼리 묶어 보여 주고, 묶음마다 `환경음`, `대화음`, `위협음` 가운데 무엇으로 볼지 선택합니다. **고급 모드**에서는 소리를 하나씩 바꿉니다.
-- 이름으로 찾고, 종류나 바꾼 소리로 거르고, 한 번에 모두 되돌릴 수 있습니다. 바꾼 것은 AI 판정에 바로 반영됩니다.
-
-### 4. 진동 알림
-- 소리 종류마다 **꺼짐·느림·중간·빠름·연속** 가운데 진동 방식을, **10~100%** 로 세기를 정합니다. 처음에는 위협음만 ‘중간’으로 켜져 있습니다.
-- 그 종류의 소리가 이어지는 동안 울리고, 소리가 멈추면 함께 멈춥니다. 화면 표시가 켜진 종류만 진동합니다.
-- **잠금 화면 위협음 알림**: 폰이 잠겨 있는 동안 위협음이 들리면 잠금 화면에 알림을 띄웁니다. 화면이 꺼진 동안에는 소리를 계속 받도록 설정했을 때 꺼진 화면을 잠깐 켜고 알립니다.
-
-### 5. 외부 사운드 모드
-- 홈에서 켜면 폰 안의 소리 대신 **마이크로 주변 소리**를 듣고 같은 그래픽과 진동으로 알려 줍니다. 화재경보, 사이렌, 누가 부르는 소리처럼 폰 밖의 소리를 알 수 있습니다.
-- 들은 소리는 크기를 재고 종류를 구분하는 데만 쓰며, **소리 자체는 파일로 남기거나 밖으로 보내지 않습니다.**
-- 마이크 감도를 16단계로 조절할 수 있고, 폰이 자기 진동을 소리로 착각하지 않도록 진동하는 동안의 소리는 따로 다룹니다.
-
-### 6. 손쉬운 조작
-- **알림창**: 실행 중 알림에서 바로 끄거나 표현 모드를 바꿉니다.
-- **빠른 설정 타일**: 앱으로 나가지 않고 알림창에서 켜고 끕니다.
-- **튜토리얼**: 처음 열면 앱이 하는 일과 켜고 끄는 방법을 실제 그림과 진동으로 보여 줍니다.
-- **도움말과 제보**: 사용법, 자주 묻는 질문, GitHub 이슈나 메일로 보내는 제보, 오픈소스 라이선스를 앱 안에서 봅니다.
-
-### 7. 18개 언어
-- 한국어, 영어, 일본어, 중국어(간체·번체), 베트남어, 태국어, 인도네시아어, 스페인어, 포르투갈어(브라질), 프랑스어, 이탈리아어, 독일어, 러시아어, 폴란드어, 터키어, 힌디어, 아랍어를 지원합니다.
-- 기본은 폰 언어를 따르고, 홈 탭 오른쪽 아래의 지구본 버튼에서 바꿀 수 있습니다.
-
-### 8. 가볍게 동작
-- 120Hz 화면에서도 초당 60프레임으로 제한하고, **그래픽 덜 자주 그리기**를 켜면 초당 30번만 그립니다.
-- 소리가 나지 않으면 그리기를 멈추고 대기 상태로 내려가며, 기본 설정에서는 **화면이 꺼지면 쉽니다.**
-
-### 9. 개발자 모드
-- 오버레이 왼쪽 위에 AI 가 들은 소리(상위 5개, 확신도, 걸린 시간)를 띄우고, 모든 결과를 CSV 파일로 기록할 수 있습니다.
+### Expanding Utility for All Users
+This overlay technology is also highly beneficial for mobile gamers, providing a **tactical visual indicator (situational awareness)** in competitive environments. Additionally, it serves as a perfect alternative for users consuming media in public or silent environments where audio output is restricted, such as on public transport or late at night.
 
 ---
 
-## 🧩 시스템 및 AI 아키텍처
+## ✨ Key Features
 
-* **오디오 캡처**: 포그라운드 서비스가 `MediaProjection` 과 `AudioPlaybackCapture` 로 폰 안에서 재생되는 소리를 받고, 외부 사운드 모드에서는 `AudioRecord` 로 마이크 소리를 받습니다.
-* **채널별 크기 측정**: 좌우 채널의 최고 크기를 C++(NDK)로 재어 렌더러에 넘깁니다.
-* **ONNX 추론 파이프라인**: 0.25초마다 최근 0.975초의 소리를 모노로 섞고, 앨리어싱 방지 필터를 거쳐 16kHz 로 바꾼 뒤, 모델이 만들어질 때와 같은 방식의 Log-mel 스펙트로그램으로 바꿔 ONNX Runtime 의 YAMNet 으로 분류합니다. 모델 파일은 불러올 때 정해 둔 크기와 SHA-256 으로 확인하고, 각 단계는 기준 출력과 비교하는 테스트로 검증합니다.
-* **오버레이 렌더링**: 터치가 통과하는 오버레이 창에 Jetpack Compose 캔버스로 그립니다. 스무딩은 60fps 기준으로 시간을 맞춰 화면 주사율과 상관없이 같은 느낌을 내고, 프레임마다 메모리를 새로 잡지 않습니다.
-* **진동**: 소리 종류와 설정에 따라 울릴지 정하고, 정해 둔 박자대로 진동합니다.
+### 1. Diverse Spatial and Intensity Visualizer Modes
+We provide 4 unique rendering modes that intuitively map sound intensity and direction (left and right):
+- **Wave Mode**: Renders dynamic audio waves along the screen edges that fluctuate based on intensity.
+- **Circle Mode**: Swells a ring in the center of the screen toward the side the sound comes from.
+- **Pad Mode**: Displays glowing pads anchored to 8 spots around the screen edges.
+- **Outline Mode**: A minimalist variation of Wave mode, showing only the thin borders of the wave to minimize screen occlusion.
+- The graphics float transparently over other apps and let touches pass straight through. Size, opacity, sensitivity, speed, and glow are saved separately for each mode.
 
-데이터 흐름, 스레드 구성, 단계별 동작은 [아키텍처 문서](docs/ARCHITECTURE.md)에 정리되어 있습니다.
+### 2. Control Without Leaving Your Game
+Change what you see without switching away from the game or video you are watching.
+- **Running notification**: Stop the visualizer or switch the visual mode straight from the notification.
+- **Quick Settings tile**: Turn the visualizer on and off from the notification shade without opening the app.
+
+### 3. Stereo Direction Detection
+- Compares the left and right channels of the audio playing on the phone to show which side a sound comes from and how loud it is.
+- Phone audio has two channels, so it tells left from right but not front from back. Graphics at the top and bottom of the screen show sound heard equally on both sides and a sense of space.
+
+### 4. Real-Time AI Sound Classification (ONNX & YAMNet)
+- **3-Class Detection**: Analyzes all incoming audio into `Ambient`, `Speech`, and `Danger` categories. Each category triggers independent, customizable UI colors and can be shown or hidden on its own.
+- **Warning cues**: Sirens, alarms, explosions, fireworks, horns, breaking glass and similar warning sounds count as `Danger` even when they are only among the model's top five candidates (at 5% or more), so music or game audio can't drown them out. A few cases prone to false alarms, such as when speech is louder, are excluded.
+- **Stable colors**: `Danger` appears on the first qualifying result; `Speech` and `Ambient` need two in a row, so the color doesn't flicker. The AI pauses while it's quiet and resumes as soon as sound returns.
+- **Late danger**: Even a short `Danger` sound that ends before the AI decides is drawn at the size it had.
+
+### 5. Choose How Each Sound Counts (Sounds Tab)
+- Browse the 521 sounds the AI knows, grouped by similarity, and choose whether each group (or, in advanced mode, each sound) counts as `Ambient`, `Speech`, or `Danger`.
+- Search by name, filter by type or by the sounds you changed, and reset everything in one step. The AI follows your changes immediately.
+
+### 6. Vibration Alerts
+- **Patterns per type**: Choose Off, Slow, Medium, Fast, or Continuous and a strength from 10 to 100% for each sound type, so you can tell sounds apart by touch. At first only `Danger` vibrates, at Medium.
+- **Follows the sound**: It vibrates while that type of sound continues and stops when the sound stops, so you notice sounds even when you are not looking at the screen.
+- **Lock screen alerts**: When a `Danger` sound is heard while the phone is locked, an alert appears on the lock screen.
+
+### 7. External Sound Mode
+- Listens to the sounds around you through the microphone instead of the audio playing on the phone, with the same graphics and vibration, so you can notice fire alarms, sirens, or someone calling you.
+- What it hears is used only to measure loudness and recognize the sound type. The audio itself is never saved to a file or sent anywhere.
+- Microphone sensitivity has 16 steps, and sound picked up while the phone vibrates is handled separately so the phone doesn't mistake its own vibration for sound.
+
+### 8. Help, Notices, and Tutorial
+- **Help tab**: Getting started, permissions, visual modes, sound types, FAQ, a report button that opens a prefilled GitHub issue or email, and the open source licenses.
+- **Notices**: Home and the running notification tell you when no sound is reaching the visualizer, when sound type detection is unavailable, or why the visualizer stopped.
+- **Tutorial**: The first time you open the app, a short tutorial shows how sound, direction, sound types, and vibration work, using the real renderer and real vibration. You can open it again from the Home tab.
+- **Developer mode**: Shows what the AI heard (its top five sounds, how sure it was, and how long it took) at the top left of the overlay, and can record every result to a CSV file in the app folder.
+
+### 9. Comprehensive Localization
+- Supports 18 languages: Korean, English, Japanese, Chinese (Simplified and Traditional), Vietnamese, Thai, Indonesian, Spanish, Portuguese (Brazil), French, Italian, German, Russian, Polish, Turkish, Hindi, and Arabic (right-to-left). By default it follows the phone's language, and you can change it with the globe button on the Home tab.
 
 ---
 
-## 🚀 설치 및 실행 방법
+## ⚙️ System & AI Architecture
 
-**요구 사항**: Android 10 이상
+The project is rigorously engineered for high-performance, real-time background processing with minimal battery and system overhead.
 
-1. **[GitHub Releases](https://github.com/bibibic76/SoundVisualizer/releases)** 에서 최신 `SoundVisualizer-vX.Y.Z.apk` 를 폰으로 받습니다.
-2. 받은 APK 를 열고, "알 수 없는 앱 설치" 허용을 묻는 창이 뜨면 허용한 뒤 설치합니다.
-3. 앱을 열면 **튜토리얼**이 먼저 뜹니다. 건너뛰어도 홈 탭의 **튜토리얼 보기**로 다시 볼 수 있습니다.
-4. 홈에서 **실행**을 누르고 권한을 허용합니다. 게임이나 영상을 켜면 화면 가장자리에 소리가 그려집니다.
-5. 끌 때는 앱의 **실행 종료**나 알림의 **중지**를 누릅니다.
-
-자세한 사용법과 자주 묻는 질문은 앱의 **도움말** 탭에서 볼 수 있습니다.
+* **AudioPlaybackCapture**: A foreground service captures the audio other apps play through `MediaProjection`, or the microphone through `AudioRecord` in External sound mode.
+* **Native Channel Levels**: The left and right peak levels are measured in C++ (NDK) for every buffer and handed to the renderer.
+* **Zero-Allocation Rendering**: The Jetpack Compose canvas renderer allocates no memory per frame, preventing GC pauses and frame drops.
+* **Frame-Rate Independent and Idle-Aware**: Smoothing is normalized to a 60 FPS reference and capped at 60 FPS even on 120 Hz screens (30 FPS with **Draw the graphic less often**). When nothing is visible, the overlay stops redrawing and wakes as soon as sound arrives, and by default it pauses while the screen is off.
+* **ONNX Inference Pipeline**: Every 250 ms, the last 0.975 seconds of audio is downmixed to mono, resampled to 16 kHz through an anti-aliasing filter, turned into the log-mel spectrogram the model was exported with, and classified by YAMNet via ONNX Runtime. The model files are checked against a pinned size and SHA-256 at load. Each step is unit-tested against reference outputs.
 
 ---
 
-## 🔐 권한과 개인정보
+## 🚀 Installation & Quick Start
 
-| 권한 | 쓰는 곳 |
-|---|---|
-| **다른 앱 위에 표시** | 게임과 영상 위에 그래픽을 띄웁니다. |
-| **오디오 녹음 (마이크)** | 폰 안에서 재생되는 소리를 받는 데 필요합니다. 외부 사운드 모드를 켜지 않으면 **주변 소리를 듣지 않습니다.** |
-| **화면 녹화 / 전송** | 안드로이드는 폰 안의 소리를 이 권한으로만 받게 합니다. **화면 자체는 캡처하지 않습니다.** 외부 사운드 모드에서는 묻지 않습니다. |
-| **알림** (Android 13 이상) | 실행 중 알림과 중지 버튼, 직접 끄지 않았는데 꺼졌을 때의 안내에 씁니다. 거부해도 앱은 동작합니다. |
+SoundVisualizer is provided as an open-source APK for Android 10 or later.
 
-소리는 기기 안에서만 처리하고, 파일로 남기거나 밖으로 보내지 않습니다.
+1. Go to the **[GitHub Releases](https://github.com/bibibic76/SoundVisualizer/releases)** page.
+2. Download the latest `SoundVisualizer-vX.Y.Z.apk` file to your phone and open it. Allow installing unknown apps if asked, then install.
+3. Open the app. The tutorial appears first, and you can open it again from the Home tab.
+4. Tap **Start** on Home and allow the permissions to activate the overlay: display over other apps, audio recording, and screen recording or casting, which Android requires to share the phone's own sound. The screen itself is never captured.
 
----
-
-## 📌 알아두세요
-
-- **좌우는 구분하지만 앞뒤는 구분하지 못합니다.** 폰의 소리는 두 채널이라, 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감을 나타냅니다.
-- **미디어와 게임 소리만 받습니다.** 통화, 알림음, 알람은 받지 않고, 소리 캡처를 막아 둔 앱(저작권 보호 영상 등)은 그려지지 않습니다. 이때는 홈과 실행 중 알림에 소리를 받지 못하고 있다고 알려 줍니다.
-- **폰 안의 소리는 미디어 볼륨을 따릅니다.** 볼륨을 아주 낮추면 그래픽과 진동이 잘 반응하지 않습니다.
-- **화면 녹화·공유·전송을 시작하면 꺼집니다.** 안드로이드는 이 기능을 한 번에 한 앱만 쓰게 합니다. 직접 끄지 않았는데 꺼지면 진동과 알림으로 알려 줍니다.
-- **AI 분류는 틀릴 수 있습니다.** 안전이 걸린 상황에서 이 앱을 유일한 수단으로 쓰지 마세요.
+The sound is processed only on your phone and is never saved to a file or sent anywhere.
 
 ---
 
-## 🛠 빌드 가이드 (개발자용)
+## 🛠 Build Guide (For Developers)
 
-1. **요구 사항**: 최신 Android Studio, JDK 17, Android SDK(compileSdk 37). NDK 와 CMake 는 빌드할 때 맞는 버전을 받습니다.
-2. **리포지토리 클론**:
+To build from source to modify the code or contribute to the project:
+
+1. **Prerequisites**: The latest Android Studio, JDK 17, and the Android SDK (compileSdk 37). The matching NDK and CMake are downloaded during the build.
+2. **Clone the repository**:
    ```bash
    git clone https://github.com/bibibic76/SoundVisualizer.git
    ```
-3. **빌드와 테스트**:
+3. Build and test from the repository folder:
    ```bash
-   ./gradlew assembleDebug        # app/build/outputs/apk/debug/ 에 폰용(arm64-v8a)과 에뮬레이터용(x86_64) APK
-   ./gradlew testDebugUnitTest    # 유닛 테스트 (기기 불필요)
-   ./gradlew lintDebug            # Lint
+   ./gradlew assembleDebug
+   ./gradlew testDebugUnitTest
    ```
-   계측 테스트(`connectedDebugAndroidTest`)는 끝날 때 앱을 지워 설정이 사라지므로, 개인 폰이 아닌 에뮬레이터에서 돌립니다.
+   Or open the project in Android Studio, build it, and run it on a phone or an emulator.
 
-**CI**: push 마다 GitHub Actions 가 빌드·유닛 테스트·Lint 를 돌리고 폰용 APK 를 **Artifacts** 에 올립니다. `develop`·`main` 으로 가는 PR 에서는 에뮬레이터 계측 테스트도 돕니다. `main` 에 `v1.0.0` 같은 버전 태그를 push 하면 릴리스 APK 를 만들어 Releases 에 붙입니다.
-
-| 위치 | 역할 |
-|---|---|
-| `AudioCaptureService` | 소리를 받는 포그라운드 서비스 (폰 안의 소리, 외부 사운드 모드의 마이크) |
-| `AudioEngine`, `cpp/native-lib.cpp` | 좌우 채널 크기 측정 |
-| `ai/` | 전처리 → YAMNet → 위협 단서·후처리 |
-| `OverlayService`, `VisualizerEngine` | 오버레이 창과 네 가지 모드 렌더링 |
-| `feedback/` | 진동 알림 |
-| `ClassifyTab`, `SoundCatalog`, `SoundGroups` | 분류 탭 |
-| `HomeTab`, `SettingsTab`, `help/`, `tutorial/`, `language/`, `tile/` | 앱 화면, 도움말, 튜토리얼, 언어, 빠른 설정 타일 |
-
-기여 방법은 [CONTRIBUTING.md](CONTRIBUTING.md), 자세한 구조는 [아키텍처 문서](docs/ARCHITECTURE.md)를 확인하세요.
+The app module contains the capture service (`AudioCaptureService`), the native level meter (`cpp/native-lib.cpp`), the AI pipeline (`ai/`), the overlay renderer (`VisualizerEngine`), and the vibration alerts (`feedback/`). See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute and the [architecture document](docs/ARCHITECTURE.md) for the data flow and threads.
 
 ---
 
-## 📄 라이선스
+## 📄 License
 
-이 프로젝트는 **Apache License 2.0** 으로 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 확인하세요.
+SoundVisualizer is distributed under the **Apache License 2.0**. Anyone is welcome to use, modify, and share the code. See the [LICENSE](LICENSE) file for more information.
 
-분류 탭의 소리 묶음 표(`app/src/main/assets/sound_groups.tsv`)와 소리 이름(`app/src/main/res/values*/sound_names.xml`)은 AudioSet 온톨로지(CC BY-SA 4.0)를 바탕으로 만든 각색물이라 **CC BY-SA 4.0** 으로 배포합니다. 사용된 서드파티 구성요소(ONNX Runtime, YAMNet 모델, AndroidX 등)의 저작권과 라이선스는 [NOTICE](NOTICE) 파일에 정리되어 있습니다.
+The sound groups and sound names in the Sounds tab are adaptations of the AudioSet ontology and are distributed under **CC BY-SA 4.0**. For licensing and copyright information regarding third-party libraries (ONNX Runtime, AndroidX, etc.) and the AI model used in this project, please refer to the [NOTICE](NOTICE) file.
 
 <br/>
 <div align="center">
