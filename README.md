@@ -6,7 +6,9 @@
 
 # SoundVisualizer
 
-<img width="1024" alt="SoundVisualizer" src="docs/images/readme_banner.png" />
+<img width="1024" height="818" alt="SoundVisualizer" src="docs/images/readme_logo.png" />
+
+<img width="1024" alt="SoundVisualizer on a phone: ambient, speech, danger, sound from the left, and sound from the right" src="docs/images/readme_banner.png" />
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
