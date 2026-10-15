@@ -1,310 +1,153 @@
-# 🎧 SoundVisualizer
+<div align="center">
 
-**한국어** | [English](README.en.md)
+[English](README.md) | [한국어](README.ko.md)
 
-**휴대폰에서 나는 소리를 눈으로 보여주는 안드로이드 앱입니다.**
+<br/>
 
-게임·영상·음악처럼 폰에서 재생되는 소리가 **어느 쪽에서, 얼마나 크게, 어떤 종류로** 나는지를 화면 테두리에 실시간으로 그려줍니다. 그래픽은 다른 앱 위에 투명하게 떠 있고 터치는 그대로 아래로 통과하므로, 게임이나 영상을 평소처럼 쓰면서 소리를 볼 수 있습니다.
+# SoundVisualizer
 
----
+<img width="1024" alt="SoundVisualizer" src="docs/images/readme_banner.png" />
 
-## 🙋 이런 분들을 위해 만들었습니다
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
+[![ONNX](https://img.shields.io/badge/ONNX-005CED?style=for-the-badge&logo=onnx&logoColor=white)](https://onnxruntime.ai/)
 
-- **청각장애인·난청인** — 영상과 게임 속 효과음, 대화, 총소리 같은 위협음을 시각으로 알아챌 수 있습니다.
-- **모바일 게이머** — 발소리나 총소리가 어느 쪽에서 나는지 보조 지표로 확인할 수 있습니다.
-- **소리를 켤 수 없는 상황** — 대중교통, 도서관, 늦은 밤처럼 소리를 꺼둬야 할 때도 소리의 흐름을 따라갈 수 있습니다.
+**Real-Time Audio Visualization & AI Sound Analysis Overlay for Android**
 
----
+</div>
 
-## 🔍 어떻게 동작하나요
+<br/>
 
-1. **폰 안에서 재생되는 소리를 받아옵니다.** 마이크로 주변 소리를 듣는 것이 아니라, 앱과 게임이 내보내는 소리 자체를 받습니다. 홈에서 **외부 사운드 모드**를 켜면 대신 마이크로 주변 소리를 듣습니다(아래).
-2. **왼쪽과 오른쪽 소리의 크기를 비교해** 방향과 세기를 계산합니다.
-3. **AI가 0.25초마다 소리의 종류를 판단합니다** — 환경음, 대화음, 위협음 중 하나로 분류합니다.
-4. **결과를 화면 가장자리에 그립니다.** 소리가 나는 쪽이 더 크게 반응하고, 소리 종류에 따라 색이 바뀝니다.
-
----
-
-## ✨ 주요 기능
-
-### 🎨 네 가지 표현 모드
-
-같은 소리를 네 가지 모양으로 볼 수 있습니다. 설정에서 언제든 바꿀 수 있습니다.
-
-| 모드 | 모양 | 이럴 때 좋아요 |
-|---|---|---|
-| 🌊 **파도** | 화면 테두리 전체가 소리 세기만큼 안쪽으로 밀려듭니다. 소리가 나는 쪽이 더 깊게 밀려옵니다. | 방향과 크기를 한눈에 보고 싶을 때 |
-| 🎯 **패드** | 화면 가장자리 8곳에 막대가 떠오릅니다. | 방향을 가장 또렷하게 읽고 싶을 때 |
-| 🚨 **외곽선** | 파도의 윤곽선만 가늘게 그립니다. | 게임 화면을 최대한 가리고 싶지 않을 때 |
-| ⭕ **원형** | 화면 가운데의 고리가 소리 나는 쪽으로 부풀어 오릅니다. | 화면 중앙에 시선을 두는 콘텐츠를 볼 때 |
-
-### 🧠 소리 종류 구분 (AI)
-
-- 들리는 소리를 **환경음 / 대화음 / 위협음** 세 가지로 구분합니다.
-- 사이렌·경보음·폭발음·폭죽·경적·깨지는 소리처럼 위협 단서로 정해 둔 소리는 AI가 1순위로 꼽지 않더라도, 상위 5개 후보 안에 5% 이상의 확률로 들어 있으면 위협음으로 봅니다. 총소리가 함께 후보에 있어도 그렇습니다. 다만 말소리가 더 크게 들려 기본 종류로는 대화음이 될 때, 1순위가 말소리나 무음 같은 소리일 때, 1순위의 확률이 아주 낮을 때(12% 미만)는 그러지 않습니다.
-- **종류마다 색을 따로 정할 수 있습니다.** 색상 선택기에서 원하는 색을 고르거나 자주 쓰는 색을 바로 집을 수 있습니다.
-- **종류마다 표시를 켜고 끌 수 있습니다.** 예를 들어 대화음은 끄고 위협음만 보이게 할 수 있습니다.
-- **소리의 종류를 직접 고를 수 있습니다.** 분류 탭은 AI 가 알아듣는 소리를 비슷한 것끼리 묶어 보여 주고, 묶음마다 환경음·대화음·위협음 가운데 어느 것으로 볼지 고릅니다. 소리를 하나씩 바꾸려면 **고급 모드**를 켭니다. 예를 들어 ‘초인종’ 묶음을 위협음으로 바꾸면 AI 가 초인종이나 노크 소리로 알아들을 때 위협음 색과 진동이 나옵니다. 다만 새로 위협음으로 정한 소리는 AI 가 종류를 가리는 투표에만 들어가므로, 초인종이 울릴 때마다 위협음으로 알린다는 뜻은 아닙니다. 한 소리가 여러 이름으로 함께 들릴 수 있어(사이렌은 ‘경보음’으로도 들립니다), 바꾼 뒤에도 예전 종류로 보이면 관련된 묶음이나 소리도 함께 바꿉니다.
-- 위협음이 감지되면 색이 서서히 물들지 않고 즉시 바뀌어 바로 눈에 띕니다.
-- 위협음만 보이게 해 두어도, AI 판정이 나오기 전에 끝나 버리는 총소리 같은 짧은 위협음을 그 소리 크기대로 보여줍니다.
-- 드물게 AI 모델을 불러오지 못하면 홈 화면과 설정에 **소리 종류를 구분하지 못한다**는 안내가 뜹니다. 이때는 모든 소리가 환경음 색으로 보이고, 진동은 종류와 상관없이 큰 소리에만 위협음 진동 설정으로 울립니다. 모델은 켤 때만 불러오므로, 껐다가 다시 켜면 다시 시도합니다.
-
-### 📳 진동 알림
-
-화면을 보고 있지 않아도 소리가 난 걸 알 수 있도록 진동으로도 알려줍니다.
-
-- **소리 종류마다 진동 방식을 고릅니다: 꺼짐·느림·중간·빠름·연속.** 처음에는 위협음만 ‘중간’으로 켜져 있습니다.
-  - ‘중간’은 0.5초마다 한 번씩 울리고, ‘느림’은 그 절반 빠르기, ‘빠름’은 두 배 빠르기입니다. ‘연속’은 끊기지 않고 이어집니다.
-  - 외부 사운드 모드에서는 종류마다 고를 수 있는 가장 빠른 방식이 정해져 있습니다. 대화음은 ‘느림’까지, 위협음은 ‘중간’까지이고, 환경음은 진동하지 않습니다(아래 외부 사운드 모드). 더 빠르게 정해 둔 종류는 고를 수 있는 가장 빠른 방식으로 울리고, 외부 사운드 모드를 끄면 정해 둔 대로 울립니다.
-- **세기는 종류마다 슬라이더로 정합니다(10~100%).** 어느 방식이든 고른 세기 그대로 울립니다. 종류별로 방식을 다르게 해 두면 화면을 보지 않고도 어떤 소리인지 촉감으로 구분할 수 있습니다.
-- **그 종류의 소리가 이어지는 동안 계속 울리고, 소리가 멈추면 함께 멈춥니다.** 말 사이처럼 0.4초 안의 쉼은 이어진 소리로 봅니다.
-- 설정에서 방식을 누르거나 세기를 바꾸면 2초 동안 바로 느껴볼 수 있습니다. 시각화가 실행 중일 때는 실제 진동과 헷갈리지 않도록 울리지 않습니다.
-- **화면 표시가 켜진 종류만 진동합니다.**
-- 진동이 이어지는 동안에는 키보드·터치 진동이 잠시 울리지 않을 수 있고(Android 14 이상), 딱딱한 책상 위에서는 떨리는 소리가 날 수 있습니다.
-- **잠금 화면 위협음 알림**: 폰이 잠겨 있거나 화면이 꺼진 동안에는 그래픽이 잠금 화면에 가려 보이지 않습니다. 그때 위협음이 들리면 잠금 화면에 "위협음이 들렸습니다" 알림을 띄우고, 꺼진 화면은 잠깐 켭니다. 알림에는 AI 가 위협음으로 판단한 소리의 이름을 적고, 이름을 뚜렷하게 고를 수 없으면 이름 없이 알립니다. 화면이 꺼져 있을 때는 외부 사운드 모드이거나 배터리 설정의 **화면이 꺼지면 일시정지**를 끈 경우에만 알립니다. 폰 안의 소리는 기본 설정에서 화면이 꺼지면 받지 않기 때문입니다. 알림은 소리 없이 뜨고, 진동은 위협음 진동 설정을 따릅니다. 한 번 이어지는 위협음에 한 번만 알리고(다음 알림까지 30초 이상), 잠금을 풀면 사라집니다. 위협음 표시를 꺼 두면 알리지 않습니다. 삼성 폰에서 잠금 화면 알림을 "아이콘만"으로 두었다면 폰 설정에서 내용을 보이게 바꿔야 글이 보입니다.
-
-### 🎤 외부 사운드 모드
-
-홈의 **외부 사운드 모드**를 켜고 실행하면, 폰 안의 소리 대신 **마이크로 주변 소리**를 듣고 같은 그래픽과 진동으로 알려 줍니다. 화재경보, 사이렌, 누가 부르는 소리처럼 폰 밖의 소리를 알 수 있습니다.
-
-- 기본은 꺼져 있습니다. 켜면 화면 녹화 동의 없이 바로 켜지고, 안드로이드 12 이상에서는 듣는 동안 상태 표시줄에 마이크 표시가 뜹니다. 실행 중 알림 제목과 홈 상태에도 **주변 소리**라고 나옵니다.
-- 들은 소리는 크기를 재고 종류를 구분하는 데만 씁니다. **소리 자체는 파일로 남기거나 밖으로 보내지 않습니다.** 개발자 모드의 결과 기록을 켜 두면 AI 가 들은 소리의 이름과 시각이 앱 폴더의 CSV 파일에 남습니다.
-- 실행 중에는 바꿀 수 없습니다. 실행을 끈 뒤 바꾸면 다음 실행부터 적용됩니다.
-- **화면이 꺼져도 계속 듣습니다.** 폰을 내려놓아 화면이 꺼진 동안 화재경보나 사이렌 같은 위협음, 누가 부르는 소리(대화음, 진동을 켰을 때)를 진동으로 알리려는 모드라서, 배터리 설정의 **화면이 꺼지면 일시정지**와 상관없이 듣습니다. 그만큼 배터리를 더 씁니다. 초인종은 기본으로 환경음이라 이 모드에서 진동하지 않습니다. 진동으로 받으려면 먼저 분류 탭에서 ‘초인종’과 ‘딩동’을 위협음이나 대화음으로 바꿔 두세요. 바꿔도 모든 초인종 소리를 알리지는 못할 수 있습니다.
-- **마이크 감도**는 모드를 켜면 스위치 아래에 나옵니다(숫자 없이 16칸, 맨 오른쪽이 최대 ×32, 기본은 왼쪽에서 네 번째 칸). 작은 소리가 잘 그려지지 않으면 올리고, 시끄러운 곳에서 잡음까지 그려지면 내립니다. 실행 중에도 바로 바뀝니다. 그래픽과 진동, 잠금 화면 위협음 알림이 보는 소리 크기에만 걸립니다. 감도를 기본 칸보다 내리면 작은 소리에 진동이나 위협음 알림이 오지 않을 수 있습니다. 소리 종류를 구분하는 AI 가 듣는 소리는 그대로입니다. 그래서 AI 가 듣지 못할 만큼 작은 소리는 감도를 올려도 진동이나 위협음 알림이 오지 않습니다(아래 참고). 그럴 때는 폰을 소리 나는 곳 가까이에 두고 마이크를 가리지 않게 합니다.
-- **진동은 울림 사이의 쉬는 틈에서만 소리가 이어지는지 봅니다.** 폰이 자기 진동을 소리로 착각해 멈추지 않는 일을 막기 위해서입니다. 그래서 소리가 멈춘 뒤에도 잠시(보통 1초 안) 더 울릴 수 있습니다. 화면 그래픽에는 폰의 짧은 진동이 함께 그려질 수 있습니다.
-- **앱이 울린 진동은 소리 종류를 구분하는 AI 가 듣는 소리에서 뺍니다.** 진동하는 동안 AI 에는 그 직전의 주변 소리를 이어 들려줍니다. 그래서 앱의 진동이 소리 종류(화면 색과 진동)를 바꾸거나 대화음 진동을 스스로 이어 가지 않게 하고, 그 진동 때문에 잠금 화면 위협음 알림이 뜨지 않게 합니다. 다른 앱의 진동은 빼지 못하고, 폰에 따라(소리가 들어온 시각을 정확히 알 수 없거나 진동이 늦게 멎으면) 진동 소리가 조금 남을 수 있습니다. 폭발음처럼 큰 소리는 진동하는 동안에도 진동 소리와 함께 그대로 듣습니다. 진동하는 동안 이어지는 작은 소리는 다음 쉬는 틈에 듣고, 진동하는 동안에만 났다 끝난 작은 소리는 듣지 못합니다.
-- **주변이 조용해져 AI 가 쉬면 진동도 1초쯤 뒤에 멈춥니다.** 마이크 감도를 올려 두면 조용한 방의 작은 소리에도 진동이 반응할 수 있는데, 그때 AI 가 마지막으로 들은 종류로 계속 울리지 않게 하려는 것입니다. 그래서 AI 가 듣지 못할 만큼 작은 소리에는 감도를 올려도 진동하지 않고(그래픽에는 그려집니다), 조용하던 끝에 다시 소리가 나면 첫 진동이 0.3초쯤 늦을 수 있습니다.
-- **쉬는 틈이 넉넉하도록 종류마다 진동 방식에 상한이 있습니다.** 대화음은 ‘느림’까지, 위협음은 ‘중간’까지만 고를 수 있고, 환경음은 주변에서 늘 들려 진동이 그치지 않으므로 진동하지 않습니다. 더 빠르게 정해 둔 종류는 상한으로 울리고, 외부 사운드 모드를 끄면 정해 둔 대로 울립니다. 소리 종류를 구분하지 못할 때 큰 소리에 울리는 진동도 위협음 설정을 따르므로 ‘중간’까지입니다.
-- 방향은 아직 가운데로만 그립니다. 폰의 마이크 두 개는 긴 쪽으로 떨어져 있어, 세로로 들면 왼쪽·오른쪽을 가릴 수 없고 가로로 들 때만 가릴 수 있습니다. 가로에서 왼쪽·오른쪽을 그리는 것은 다음에 더합니다.
-- 통화 중이거나 다른 앱이 마이크를 쓰거나 빠른 설정에서 마이크를 막아 두면 아무 소리도 들어오지 않습니다. 그때는 홈과 실행 중 알림에 알려 줍니다.
-
-### ⚙️ 모드별 세부 설정
-
-모든 설정은 **모드마다 따로 저장됩니다.** 파도 모드는 크게, 외곽선 모드는 옅게처럼 모드별로 다르게 맞춰둘 수 있습니다.
-
-| 설정 | 하는 일 |
-|---|---|
-| **크기** | 같은 소리를 그래픽으로 얼마나 크게 그릴지 정합니다. 100이면 화면 중앙 가까이까지 닿습니다. 작은 소리를 더 잘 잡는 설정은 아닙니다. |
-| **진하기** | 값이 클수록 진하고, 작을수록 옅고 투명해집니다. |
-| **민감도** | 소리 크기가 바뀔 때 그래픽이 얼마나 빨리 커지고 작아지는지 정합니다. 높으면 박자에 맞춰 떨리고, 낮으면 부드럽게 바뀝니다. 작은 소리를 더 잘 잡는 설정은 아닙니다. |
-| **속도** | 소리의 방향이 바뀔 때 그래픽이 새 위치로 얼마나 빠르게 옮겨갈지 정합니다. |
-| **크기 고정** | 그래픽 크기를 고정하고, 소리 세기를 진하기로만 표현합니다. 켜면 **고정 크기**와 **최대 진하기**를 쓸 수 있습니다. |
-| **반지름** | (원형 모드 전용) 가운데 고리의 크기를 정합니다. |
-| **광원** | 그래픽 주변에 부드러운 빛 번짐 효과를 더합니다. 켜면 **광원 강도**를 조절할 수 있습니다. |
-| **공간 리플 효과** | 소리가 앞에서 뒤로 퍼져나가는 듯한 지연 효과를 줍니다. |
-
-지금 모드에서 쓰이지 않는 설정은 흐리게 비활성화되어 헷갈리지 않습니다.
-
-### 🌐 여러 언어
-
-앱은 폰 언어를 따라 아래 언어로 표시됩니다. 목록에 없는 언어를 쓰는 폰에서는 영어로 표시됩니다.
-
-English · 한국어 · 日本語 · 简体中文 · 繁體中文 · Español · Português (Brasil) · Français · Deutsch · Русский · Italiano · Tiếng Việt · ไทย · Bahasa Indonesia · Türkçe · Polski · हिन्दी · العربية
-
-폰과 다른 언어로 쓰고 싶으면 **홈** 탭 오른쪽 아래의 지구본 버튼에서 고릅니다. **시스템 기본값**을 고르면 다시 폰 언어를 따릅니다. Android 13 이상에서는 폰 설정의 **앱 언어**에서도 바꿀 수 있습니다.
-
-### 🔋 가볍게 동작합니다
-
-- 게임 위에서도 끊기지 않도록 설계했습니다. 120Hz 화면에서도 초당 60프레임으로 제한해 배터리와 발열을 줄입니다.
-- **더 아끼고 싶으면** 설정 탭 **배터리**의 **그래픽 덜 자주 그리기**를 켭니다. 초당 30번만 그려 오래 켜 둘 때 배터리를 아낍니다. 움직임은 덜 부드러워지지만 소리를 받는 간격은 그대로입니다.
-- 소리가 나지 않으면 그리기를 멈추고 대기 상태로 내려갑니다.
-- **화면이 꺼지면 쉽니다.** 화면이 꺼져 있는 동안 소리 받기·AI·진동을 멈추고, 화면을 켜면 다시 이어서 합니다. 화면이 꺼져 있어도 진동 알림을 받고 싶으면 설정 탭 **배터리**의 **화면이 꺼지면 일시정지**를 끕니다. 외부 사운드 모드는 이 설정과 상관없이 화면이 꺼져도 계속 듣습니다.
-- 실행 중에는 알림이 표시되고, 알림의 **중지** 버튼으로 바로 끌 수 있습니다. 알림을 펼치면 **표현 모드**도 바로 바꿀 수 있습니다.
+> **SoundVisualizer** is an Android application that captures the audio playing on your phone in real time and translates its direction, intensity, and meaning into a graphical overlay and vibration. 
+Going beyond simple waveform rendering, it integrates an AI sound classifier powered by **YAMNet** and **ONNX Runtime** to instantly identify the type of sound playing (ambient, speech, danger) and provide adaptive visual and haptic feedback.
 
 ---
 
-## 📲 설치하기
-
-**요구 사항**: Android 10 이상
-
-1. [Releases](https://github.com/bibibic76/SoundVisualizer/releases)에서 원하는 버전의 `SoundVisualizer-버전.apk`를 폰으로 받습니다. APK 파일을 직접 전달받았다면 그 파일을 씁니다.
-2. 받은 APK 파일을 폰에서 엽니다.
-3. "알 수 없는 앱 설치" 허용을 묻는 창이 뜨면 허용합니다.
-4. 설치를 누릅니다.
-
----
-
-## ▶️ 사용법
-
-사용법, 권한이 필요한 이유, 자주 묻는 질문은 앱의 **도움말** 탭에서도 볼 수 있습니다.
-
-앱을 처음 열면 **튜토리얼**이 먼저 뜹니다. 앱이 하는 일(소리를 화면 테두리에 그리기, 왼쪽·오른쪽 구분, 소리 종류별 색, 위협음 진동)과 켜고 끄는 방법을 다섯 쪽으로 보여 줍니다. 그림은 앱이 실제로 그리는 모양 그대로 움직이고, 진동 쪽에서는 그림 속 폰이 떨 때 폰도 실제로 진동합니다. 아래의 소리 버튼을 누르면 그림이 그리는 소리를 새소리·대화·자동차 경적 같은 실제 녹음으로 함께 들려줍니다(처음에는 꺼져 있습니다). 건너뛰거나 끝까지 넘기면 다시 저절로 뜨지 않고, 홈 탭 맨 아래의 **튜토리얼 보기**로 언제든 다시 볼 수 있습니다.
-
-1. 앱을 열고 **실행**을 누릅니다.
-2. 아래 권한을 허용합니다. 처음 한 번만 묻는 권한도 있고, 안드로이드 정책상 실행할 때마다 묻는 권한도 있습니다.
-
-   | 권한 | 필요한 이유 |
-   |---|---|
-   | **다른 앱 위에 표시** | 게임과 영상 위에 그래픽을 띄우기 위해 필요합니다. |
-   | **오디오 녹음 (마이크)** | 폰 안에서 재생되는 소리를 받기 위해 필요합니다. 권한 이름은 마이크지만, 외부 사운드 모드를 켜지 않으면 **주변 소리를 듣지 않습니다.** 켜면 이 권한으로 주변 소리를 듣고, 소리 자체는 파일로 남기거나 밖으로 보내지 않습니다. |
-   | **화면 녹화 / 전송** | 안드로이드는 내부 소리를 이 권한을 통해서만 받을 수 있게 합니다. **화면 자체는 캡처하지 않습니다.** 외부 사운드 모드에서는 묻지 않습니다. |
-   | **알림** (Android 13 이상) | 실행 중 알림과 중지 버튼, 그리고 직접 끄지 않았는데 꺼졌을 때의 알림을 보여주기 위해 필요합니다. 거부해도 앱은 동작합니다. 이때 꺼지면 진동으로만 알리고, 앱을 열면 홈 화면에서 무엇이 꺼졌는지 보여줍니다. |
-
-   **다른 앱 위에 표시** 권한이 없으면 앱이 무엇을 해야 하는지 먼저 알려준 뒤 설정 화면을 엽니다. 그 화면에 앱 목록이 뜨면 **SoundVisualizer**를 찾아 스위치를 켜고 돌아오세요. 돌아오면 눌렀던 실행이 이어서 진행됩니다.
-
-   마이크 권한은 묻기 전에 앱이 이유를 먼저 설명합니다. 여러 번 거부해서 안드로이드가 더 이상 묻지 않으면, 앱이 안내하는 **설정 열기**를 눌러 앱 정보의 권한에서 마이크를 허용하면 됩니다.
-
-3. 홈 화면으로 나가서 게임이나 영상을 실행합니다. 화면 테두리에 소리가 그려집니다.
-4. 보던 화면에서 모드를 바꾸고 싶으면 알림창을 내려 실행 중 알림을 펼치고 원하는 모드를 누릅니다. 접힌 알림에도 지금 모드 이름이 보입니다.
-5. 끌 때는 앱의 **실행 종료** 버튼이나 알림의 **중지** 버튼을 누릅니다.
-
-### 알림창에서 바로 켜고 끄기
-
-앱으로 나가지 않고 알림창의 빠른 설정 버튼으로 켜고 끌 수 있습니다.
-
-1. 앱 설정 탭 맨 위의 **빠른 설정에 추가**를 누르고 추가를 허용합니다. 추가 창에서 추가하지 않았으면 직접 추가하는 방법을 알려줍니다. (Android 12 이하는 알림창을 내려 편집(연필) 버튼에서 **소리 시각화**를 끌어다 놓습니다.)
-2. 게임이나 영상을 보다가 알림창을 내려 **소리 시각화**를 누르면 켜집니다. 화면 녹화 동의 창은 안드로이드 정책상 켤 때마다 뜹니다.
-3. 켜져 있을 때 다시 누르면 꺼집니다. 길게 누르면 앱의 설정 화면이 열립니다.
-
-처음 켤 때 마이크·알림 권한은 그 자리에서 묻고, **다른 앱 위에 표시** 권한이 없으면 앱이 열려 안내합니다.
+## 📖 Table of Contents
+- [Background & Objectives](#-background--objectives)
+- [Key Features](#-key-features)
+- [System & AI Architecture](#-system--ai-architecture)
+- [Installation & Quick Start](#-installation--quick-start)
+- [Build Guide (For Developers)](#-build-guide-for-developers)
+- [License](#-license)
 
 ---
 
-## ⚠️ 알아두세요
+## 🎯 Background & Objectives
 
-- **좌우는 구분하지만 앞뒤는 구분하지 못합니다.** 폰의 소리는 왼쪽·오른쪽 두 채널이라 두 채널의 차이로 방향을 판단합니다. 화면 위·아래쪽 그래픽은 양쪽에서 비슷하게 들리는 소리와 공간감 효과를 나타낸 것이며, 실제로 뒤에서 나는 소리를 가려내는 것은 아닙니다.
-- **좌우가 똑같은 소리(모노)는 방향이 나오지 않습니다.** 이런 소리는 정면 쪽으로만 표시됩니다.
-- **모든 소리를 받지는 않습니다.** 미디어와 게임 소리만 받으며, 전화 통화, 알림음, 알람은 대상이 아닙니다. 일부 앱(저작권 보호가 걸린 영상 앱 등)은 소리 캡처 자체를 막아두어 시각화되지 않습니다. 이때는 **소리가 나는데도 화면에 아무것도 그려지지 않으므로**, 그 상태가 15초쯤 이어지면 홈 화면과 실행 중 알림에 **소리를 받지 못하고 있다**고 알려 드립니다. 다만 앱이 스스로 음소거한 경우(소리를 끈 채 자동 재생되는 영상, 게임 안에서 음악을 꺼 둔 경우)도 똑같이 보여서, 둘 중 어느 쪽인지까지는 알려 드리지 못합니다. 소리가 다시 들어오면 안내는 사라집니다. 볼륨이 0이거나 통화 중일 때는 조용한 이유를 알 수 없으므로 안내하지 않습니다. 이어폰·블루투스를 쓰는 중에도 똑같이 안내합니다.
-- **폰 안의 소리는 미디어 볼륨을 따릅니다.** 받는 소리에 미디어 볼륨이 적용되어 있어서, 볼륨을 아주 낮추면 그래픽과 진동이 반응하지 않을 수 있고 0이면 아무것도 받지 못합니다. 잘 반응하지 않으면 볼륨을 조금 올려 주세요. 외부 사운드 모드는 볼륨과 상관없습니다.
-- **화면 녹화·화면 공유·전송을 시작하면 꺼집니다.** 이 앱은 화면 녹화 동의로 소리를 받는데, 안드로이드는 한 번에 한 앱만 쓸 수 있게 합니다. 같은 이유로, 다른 앱이 녹화·공유·전송 중이면, 다시 켤 때 그쪽이 끝납니다. 직접 끄지 않았는데 꺼지면 대개 폰이 **세 번 길게 진동**하고 **다시 켜기** 버튼이 있는 알림을 띄웁니다. 폰의 화면 공유 알림에서 소리 받기를 끝내도 같은 알림이 뜨고, 앱을 강제 종료하거나 앱이 죽으면 알리지 못합니다. 알림을 꺼 두었으면 진동으로만 알리고, 앱을 열면 홈 화면에서 무엇이 꺼졌는지 보여줍니다.
-- **AI 분류는 참고용입니다.** 소리 종류를 잘못 판단할 수 있습니다. 안전이 걸린 상황에서 이 앱을 유일한 수단으로 쓰지 마세요.
+### Enhancing Media Accessibility for the Deaf and Hard of Hearing
+Modern media content, including YouTube, OTT, and mobile games, relies heavily on spatial audio to maximize immersion. However, this creates a severe barrier for the deaf and hard of hearing. Traditional subtitle systems only deliver dialogue, completely omitting crucial acoustic information such as **sound direction, footsteps, or urgent sound effects (e.g., gunshots).**
+SoundVisualizer was created to break down these barriers by **visualizing the intensity, classification, and spatial direction of invisible sounds** right on the phone in your hand. Our primary goal is to resolve this information asymmetry and guarantee an equal, fully accessible media consumption environment for everyone.
 
----
-
-## ❓ 자주 묻는 질문
-
-**직접 끄지 않았는데 꺼졌어요.**
-화면 녹화·화면 공유·전송을 시작했거나, 오류로 소리 받기가 끊기면 꺼집니다. 알림의 **다시 켜기**를 누르거나 앱·빠른 설정에서 다시 켭니다. 화면 녹화 동의는 켤 때마다 다시 묻고, 다른 앱이 녹화·공유·전송 중이면, 다시 켤 때 그쪽이 끝납니다. 외부 사운드 모드는 화면 녹화 동의를 쓰지 않아, 다른 앱의 화면 녹화·공유·전송과 상관없이 켜져 있습니다.
-
-**그래픽이 보이지 않아요.**
-재생 중인 앱이 소리 캡처를 막는 앱인지, 그 앱 안에서 소리가 꺼져 있지는 않은지 확인해 주세요. 소리를 받지 못하는 상태가 이어지면 홈 화면과 실행 중 알림에 그렇게 알려 드립니다. 설정에서 **진하기**가 너무 낮지 않은지, 지금 나는 소리 종류의 **표시**가 꺼져 있지 않은지도 확인해 주세요. 외부 사운드 모드라면 마이크가 막혀 있지 않은지(통화 중, 다른 앱이 마이크를 쓰는 중, 빠른 설정의 마이크 차단)와 홈의 **마이크 감도**도 확인해 주세요. 폰 안의 소리를 볼 때 미디어 볼륨을 아주 낮춰 두었다면 조금 올려 보세요.
-
-**진동이 오지 않아요.**
-설정의 소리 분류 카드에서 해당 소리 종류의 **표시**가 켜져 있고 **진동**이 ‘꺼짐’이 아닌지 확인해 주세요. 외부 사운드 모드에서는 환경음이 진동하지 않습니다. 화면이 꺼져 있는 동안에는 기본적으로 쉬므로, 그때도 진동을 받으려면 설정 탭 **배터리**의 **화면이 꺼지면 일시정지**를 끕니다. 외부 사운드 모드는 화면이 꺼져도 계속 듣습니다. 소리 종류를 구분하지 못하는 동안에는 큰 소리에만 위협음 진동 설정으로 울립니다. 폰 설정에서 진동이나 터치 진동을 꺼두었다면 울리지 않을 수 있습니다. 절전 모드에서는 일부 폰(Android 13·14)이 이 진동을 막을 수 있습니다. 폰 안의 소리를 볼 때 미디어 볼륨을 아주 낮춰 두었다면 조금 올려 보세요.
-
-**새 버전이 설치되지 않아요.**
-다른 컴퓨터에서 빌드한 APK는 서명이 달라 기존 앱 위에 덮어쓸 수 없습니다. 기존 앱을 삭제한 뒤 설치해 주세요. 이 경우 설정이 초기화됩니다.
-
-**배터리를 많이 쓰나요?**
-소리가 날 때만 화면을 그리고, 조용하면 대기 상태로 내려갑니다. 화면이 꺼져 있는 동안에는 기본적으로 소리 받기와 AI 분류도 멈춥니다(외부 사운드 모드는 화면이 꺼져도 듣습니다). 다만 화면이 켜져 있으면 소리를 계속 받기 때문에 실행 중에는 어느 정도 배터리를 씁니다. 쓰지 않을 때는 꺼두는 것을 권장합니다.
-
-**앱 언어는 어떻게 바꾸나요?**
-**홈** 탭 오른쪽 아래의 지구본 버튼을 눌러 고릅니다. **시스템 기본값**을 고르면 폰의 언어를 따릅니다. Android 13 이상에서는 폰 설정의 **앱 언어**에서도 바꿀 수 있습니다.
-
-**소리가 엉뚱한 종류로 표시돼요. / 버그를 찾았어요.**
-**도움말** 탭의 **제보하기**에서 알려 주세요. 앱 버전·Android 버전·기기 모델·화면 언어가 미리 채워집니다.
-
-- **GitHub에 제보하기**: 브라우저에 새 이슈 화면이 열립니다. GitHub 계정이 필요합니다.
-- **메일로 제보하기**: 같은 내용이 채워진 메일이 열립니다. 계정 없이 보낼 수 있습니다.
-- **기기 정보 복사**: 같은 내용을 복사해 원하는 방법으로 보낼 수 있습니다.
-
-소리는 보내지 않습니다.
+### Expanding Utility for All Users
+This overlay technology is also highly beneficial for mobile gamers, providing a **tactical visual indicator (situational awareness)** in competitive environments. Additionally, it serves as a perfect alternative for users consuming media in public or silent environments where audio output is restricted, such as on public transport or late at night.
 
 ---
 
-## 🛠️ 개발자용
+## ✨ Key Features
 
-### 빌드
+### 1. Diverse Spatial and Intensity Visualizer Modes
+We provide 4 unique rendering modes that intuitively map sound intensity and direction (left and right):
+- **Wave Mode**: Renders dynamic audio waves along the screen edges that fluctuate based on intensity.
+- **Circle Mode**: Swells a ring in the center of the screen toward the side the sound comes from.
+- **Pad Mode**: Displays glowing pads anchored to 8 spots around the screen edges.
+- **Outline Mode**: A minimalist variation of Wave mode, showing only the thin borders of the wave to minimize screen occlusion.
+- The graphics float transparently over other apps and let touches pass straight through. Size, opacity, sensitivity, speed, and glow are saved separately for each mode.
 
-- Android Studio, JDK 17, Android SDK / NDK / CMake가 필요합니다.
-  - Android Gradle Plugin 9.4 · Gradle 9.7 · Kotlin 2.4 를 씁니다. 오래된 Android Studio 는 이 프로젝트를 동기화하지 못하므로 최신 버전으로 엽니다.
-  - SDK 는 compileSdk 37 이 필요합니다. NDK 는 빌드할 때 AGP 가 고른 버전(지금은 28.2)을 자동으로 받습니다.
-- 디버그 APK 만들기:
+### 2. Control Without Leaving Your Game
+Change what you see without switching away from the game or video you are watching.
+- **Running notification**: Stop the visualizer or switch the visual mode straight from the notification.
+- **Quick Settings tile**: Turn the visualizer on and off from the notification shade without opening the app.
 
-  ```bash
-  ./gradlew assembleDebug
-  # → app/build/outputs/apk/debug/app-arm64-v8a-debug.apk  (폰 설치용)
-  # → app/build/outputs/apk/debug/app-x86_64-debug.apk     (에뮬레이터용)
-  ```
+### 3. Stereo Direction Detection
+- Compares the left and right channels of the audio playing on the phone to show which side a sound comes from and how loud it is.
+- Phone audio has two channels, so it tells left from right but not front from back. Graphics at the top and bottom of the screen show sound heard equally on both sides and a sense of space.
 
-### 테스트
+### 4. Real-Time AI Sound Classification (ONNX & YAMNet)
+- **3-Class Detection**: Analyzes all incoming audio into `Ambient`, `Speech`, and `Danger` categories. Each category triggers independent, customizable UI colors and can be shown or hidden on its own.
+- **Warning cues**: Sirens, alarms, explosions, fireworks, horns, breaking glass and similar warning sounds count as `Danger` even when they are only among the model's top five candidates (at 5% or more), so music or game audio can't drown them out. A few cases prone to false alarms, such as when speech is louder, are excluded.
+- **Stable colors**: `Danger` appears on the first qualifying result; `Speech` and `Ambient` need two in a row, so the color doesn't flicker. The AI pauses while it's quiet and resumes as soon as sound returns.
+- **Late danger**: Even a short `Danger` sound that ends before the AI decides is drawn at the size it had.
 
-```bash
-./gradlew testDebugUnitTest            # 유닛 테스트 (기기 불필요)
-./gradlew connectedDebugAndroidTest    # 계측 테스트 (기기 필요, AI 모델 골든 비교·알림 버튼·화면 여백)
-```
+### 5. Choose How Each Sound Counts (Sounds Tab)
+- Browse the 521 sounds the AI knows, grouped by similarity, and choose whether each group (or, in advanced mode, each sound) counts as `Ambient`, `Speech`, or `Danger`.
+- Search by name, filter by type or by the sounds you changed, and reset everything in one step. The AI follows your changes immediately.
 
-### 자동 빌드 (CI)
+### 6. Vibration Alerts
+- **Patterns per type**: Choose Off, Slow, Medium, Fast, or Continuous and a strength from 10 to 100% for each sound type, so you can tell sounds apart by touch. At first only `Danger` vibrates, at Medium.
+- **Follows the sound**: It vibrates while that type of sound continues and stops when the sound stops, so you notice sounds even when you are not looking at the screen.
+- **Lock screen alerts**: When a `Danger` sound is heard while the phone is locked, an alert appears on the lock screen.
 
-어느 브랜치든 push 하면 GitHub Actions 가 빌드하고 유닛 테스트와 Lint 를 돌립니다. 결과는 저장소의 **Actions** 탭에서 확인합니다.
+### 7. External Sound Mode
+- Listens to the sounds around you through the microphone instead of the audio playing on the phone, with the same graphics and vibration, so you can notice fire alarms, sirens, or someone calling you.
+- What it hears is used only to measure loudness and recognize the sound type. The audio itself is never saved to a file or sent anywhere.
+- Microphone sensitivity has 16 steps, and sound picked up while the phone vibrates is handled separately so the phone doesn't mistake its own vibration for sound.
 
-- **APK 받기**: 실행 결과 화면 아래 **Artifacts** 의 `SoundVisualizer-arm64-run번호` 를 받아 압축을 풀면 폰용 APK 가 있습니다. 14일간 보관됩니다.
-- **Lint**: 구버전 안드로이드에 없는 API 호출, 권한 확인 누락 같은 문제를 기기 없이 찾습니다.
-  - 새로 생긴 **오류**가 있으면 CI 가 실패하고, **경고**는 개수와 위치만 표시합니다. PR 의 파일 화면에도 해당 줄에 표시됩니다.
-  - 기준선(`lint-baseline.xml`)은 쓰지 않습니다. 미뤄둔 문제를 덮어 두면 상황이 나빠져도 같은 메시지로 계속 덮이기 때문입니다(#154). 일부러 그렇게 둔 것은 그 자리에 `//noinspection` 과 이유를 적습니다.
-  - 지금은 경고가 0개입니다. 새 안드로이드가 나와 `targetSdk` 가 뒤처지면 경고가 다시 떠서 알려 줍니다(#155 에서 37 로 올렸습니다).
-  - 전체 리포트는 **Artifacts** 의 `lint-report-run번호` 에 있습니다. 로컬에서는 `./gradlew lintDebug` 로 같은 검사를 돌립니다.
-- **릴리스 APK**: `main` 에 `v1.0.0` 같은 버전 태그를 push 하면 그 코드로 폰용 APK 를 빌드해 [Releases](https://github.com/bibibic76/SoundVisualizer/releases) 에 붙입니다. 이 워크플로가 생기기 전 커밋에 단 태그는 **Actions → 릴리스 APK → Run workflow** 에서 태그 이름을 넣어 돌립니다.
-- **계측 테스트**: `develop`·`main` 으로 가는 PR 과 `develop` push 마다 **계측 테스트** 워크플로가 GitHub 러너에서 에뮬레이터(API 36)를 띄워 `connectedDebugAndroidTest` 를 돌립니다(#234). 에뮬레이터를 띄우는 시간 때문에 모든 브랜치 push 에는 돌지 않습니다.
-  - 아직 머지를 막는 필수 체크는 아닙니다. 러너 속도에 흔들리지 않는지 본 뒤에 필수로 올립니다.
-  - 실패하면 **Artifacts** 의 `instrumented-test-reports` 에 결과가 있습니다.
-  - 사람의 폰에서는 `connectedDebugAndroidTest` 를 쓰지 마세요. 끝날 때 앱을 지워 설정이 사라집니다. 폰에서는 APK 두 개를 설치하고 `adb shell am instrument` 로 돌립니다.
-  - 화면 여백 테스트(`LauncherInsetsInstrumentedTest`)는 Compose 테스트 도구를 씁니다. Espresso 3.6.1 은 API 37 기기에서 돌지 못했는데, 3.7.0 으로 올린 뒤(#141) Android 10·16 과 API 37 에서 모두 돕니다.
+### 8. Help, Notices, and Tutorial
+- **Help tab**: Getting started, permissions, visual modes, sound types, FAQ, a report button that opens a prefilled GitHub issue or email, and the open source licenses.
+- **Notices**: Home and the running notification tell you when no sound is reaching the visualizer, when sound type detection is unavailable, or why the visualizer stopped.
+- **Tutorial**: The first time you open the app, a short tutorial shows how sound, direction, sound types, and vibration work, using the real renderer and real vibration. You can open it again from the Home tab.
+- **Developer mode**: Shows what the AI heard (its top five sounds, how sure it was, and how long it took) at the top left of the overlay, and can record every result to a CSV file in the app folder.
 
-#### 같은 서명으로 빌드하기 (저장소 관리자가 한 번 설정)
+### 9. Comprehensive Localization
+- Supports 18 languages: Korean, English, Japanese, Chinese (Simplified and Traditional), Vietnamese, Thai, Indonesian, Spanish, Portuguese (Brazil), French, Italian, German, Russian, Polish, Turkish, Hindi, and Arabic (right-to-left). By default it follows the phone's language, and you can change it with the globe button on the Home tab.
 
-Secret 이 없으면 실행마다 임시 키로 서명되어, 받은 APK 를 설치하려면 기존 앱을 지워야 합니다. 지금까지 팀에 APK 를 빌드해 준 PC 의 디버그 키를 넣으면, 그 PC 에서 만든 앱 위에 CI 가 만든 APK 를 그대로 덮어 설치할 수 있습니다.
+---
 
-1. 그 PC 에서 디버그 키를 base64 로 바꿉니다.
+## ⚙️ System & AI Architecture
 
-   ```powershell
-   # Windows (PowerShell)
-   [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.android\debug.keystore")) | Set-Clipboard
-   ```
+The project is rigorously engineered for high-performance, real-time background processing with minimal battery and system overhead.
 
+* **AudioPlaybackCapture**: A foreground service captures the audio other apps play through `MediaProjection`, or the microphone through `AudioRecord` in External sound mode.
+* **Native Channel Levels**: The left and right peak levels are measured in C++ (NDK) for every buffer and handed to the renderer.
+* **Zero-Allocation Rendering**: The Jetpack Compose canvas renderer allocates no memory per frame, preventing GC pauses and frame drops.
+* **Frame-Rate Independent and Idle-Aware**: Smoothing is normalized to a 60 FPS reference and capped at 60 FPS even on 120 Hz screens (30 FPS with **Draw the graphic less often**). When nothing is visible, the overlay stops redrawing and wakes as soon as sound arrives, and by default it pauses while the screen is off.
+* **ONNX Inference Pipeline**: Every 250 ms, the last 0.975 seconds of audio is downmixed to mono, resampled to 16 kHz through an anti-aliasing filter, turned into the log-mel spectrogram the model was exported with, and classified by YAMNet via ONNX Runtime. The model files are checked against a pinned size and SHA-256 at load. Each step is unit-tested against reference outputs.
+
+---
+
+## 🚀 Installation & Quick Start
+
+SoundVisualizer is provided as an open-source APK for Android 10 or later.
+
+1. Go to the **[GitHub Releases](https://github.com/bibibic76/SoundVisualizer/releases)** page.
+2. Download the latest `SoundVisualizer-vX.Y.Z.apk` file to your phone and open it. Allow installing unknown apps if asked, then install.
+3. Open the app. The tutorial appears first, and you can open it again from the Home tab.
+4. Tap **Start** on Home and allow the permissions to activate the overlay: display over other apps, audio recording, and screen recording or casting, which Android requires to share the phone's own sound. The screen itself is never captured.
+
+The sound is processed only on your phone and is never saved to a file or sent anywhere.
+
+---
+
+## 🛠 Build Guide (For Developers)
+
+To build from source to modify the code or contribute to the project:
+
+1. **Prerequisites**: The latest Android Studio, JDK 17, and the Android SDK (compileSdk 37). The matching NDK and CMake are downloaded during the build.
+2. **Clone the repository**:
    ```bash
-   # macOS / Linux
-   base64 < ~/.android/debug.keystore | tr -d '\n'
+   git clone https://github.com/bibibic76/SoundVisualizer.git
    ```
+3. Build and test from the repository folder:
+   ```bash
+   ./gradlew assembleDebug
+   ./gradlew testDebugUnitTest
+   ```
+   Or open the project in Android Studio, build it, and run it on a phone or an emulator.
 
-2. 저장소 **Settings → Secrets and variables → Actions → New repository secret** 에서 이름을 `DEBUG_KEYSTORE_BASE64` 로, 값에 위 결과를 넣습니다.
-
-디버그 키는 출시용 서명 키가 아니지만, 이 키로 서명한 앱은 팀원 폰의 앱을 덮어쓸 수 있으니 Secret 으로만 공유하세요.
-
-### 구조
-
-| 위치 | 역할 |
-|---|---|
-| `AudioCaptureService` | 폰 내부 소리(외부 사운드 모드에서는 마이크)를 받는 포그라운드 서비스 (어디서 받을지: `CaptureSource`, 화면이 꺼지면 쉬기: `ScreenOffPause`, 마이크가 막혔다는 안내: `MicSilenceNotice`, 실행 중 알림의 모드 칩. 알림 버튼은 `NotificationActionReceiver` 가 받음) |
-| `StopReason` / `StopAlert` | 사용자가 끄지 않았는데 꺼졌을 때 진동·알림·홈 화면 안내로 알리기 |
-| `AudioEngine` / `cpp/native-lib.cpp` | 좌우 채널 최대 진폭 측정 (C++) |
-| `OverlayService` | 화면 가장자리 오버레이 창을 띄우는 서비스 |
-| `VisualizerOverlay` / `VisualizerEngine` | 프레임 렌더 루프와 네 가지 모드(`VisualMode`) 렌더링 |
-| `SoundWakeSignal` | 쉬는 오버레이를 캡처 스레드가 소리 난 순간 깨우는 신호 |
-| `ai/` | 소리 분류 파이프라인 (Qualcomm-source 전처리 → YAMNet → 안전 신호·후처리) |
-| `AiClassification` | 분류기와 렌더러를 잇는 연결 지점 |
-| `AiDebugOverlay` / `AiDebugText` | 개발자 모드 (설정 맨 아래): 오버레이에 AI 분류 결과를 그대로 띄워 팀이 정확도를 확인 |
-| `AiDebugCsv` / `AiDebugLogWriter` / `AiDebugRecorder` | 개발자 모드의 결과 기록: AI 판정을 CSV 로 남겨 무슨 소리로 들었는지 나중에 되짚어 보기 |
-| `feedback/` | 진동 알림 (울릴지 판단 → 박자대로 재생, 종류별 진동 설정 화면) |
-| `SettingsManager` | 모드별 설정 저장 |
-| `MainActivity` | 앱 화면의 액티비티 (권한을 켜고 돌아오면 이어서 켜기: `PendingStart`) |
-| `LauncherApp` / `HomeTab` / `SettingsTab` | 탭 틀, 홈 화면, 설정 화면 |
-| `ClassifyTab` / `SoundCatalog` / `SoundGroups` | 분류 탭: 비슷한 소리를 묶음째 고르는 기본 모드와 소리를 하나씩 바꾸는 고급 모드, 그 소리 목록과 묶음 (이름은 `res/values…/sound_names.xml`, 묶음 표는 `assets/sound_groups.tsv`). 고른 종류는 AI 판정에 반영됩니다(#321, #349) |
-| `ColorPickerDialog` / `UiControls` / `UiColors` / `UiFonts` | 색 고르기 창, 공용 컨트롤(스위치·슬라이더·펼침 줄), 화면 색 상수, 앱에 넣은 고정폭 글꼴 |
-| `help/` | 도움말 탭, 앱 안 제보(`ReportLink`: GitHub 이슈·메일 주소와 기기 정보 네 줄), 앱에 넣은 오픈소스 고지(`assets/licenses`, 저장소의 `NOTICE`·`LICENSE` 복사본) |
-| `tutorial/` | 처음 열 때 뜨는 튜토리얼(홈의 **튜토리얼 보기**로 다시 열기). 그림은 실제 오버레이 엔진(`VisualizerEngine`)에 정해 둔 소리 대본(`TutorialScript`)을 흘려 그림 |
-| `language/` | 앱 언어 (지원 언어 목록, 안드로이드 버전별 언어 적용, 홈 오른쪽 아래의 언어 버튼). 문구는 `res/values`(영어, 기본)와 `res/values-xx` |
-| `VisualizerController` | 시각화 켜기·끄기 공용 코드 (앱 버튼과 빠른 설정 타일이 함께 씀) |
-| `tile/` | 빠른 설정 타일과, 타일에서 켤 때 권한·동의만 받는 투명 화면 |
-| `tools/ai_reference/` | AI 전처리·추론의 기준 구현(Python)과 골든 데이터 생성 스크립트 |
-
-데이터 흐름, 스레드 구성, 단계별 동작은 [아키텍처 문서](docs/ARCHITECTURE.md)에 정리되어 있습니다.
-
-### 기술 스택
-
-- **언어**: Kotlin, C++17
-- **UI**: Jetpack Compose (Material 3)
-- **오디오 캡처**: MediaProjection, `AudioPlaybackCapture`, `AudioRecord`
-- **AI 추론**: ONNX Runtime (YAMNet)
-- **빌드**: Gradle (Kotlin DSL), CMake
+The app module contains the capture service (`AudioCaptureService`), the native level meter (`cpp/native-lib.cpp`), the AI pipeline (`ai/`), the overlay renderer (`VisualizerEngine`), and the vibration alerts (`feedback/`). See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute and the [architecture document](docs/ARCHITECTURE.md) for the data flow and threads.
 
 ---
 
-## 📄 라이선스
+## 📄 License
 
-이 프로젝트는 **Apache License 2.0** 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 확인하세요.
+SoundVisualizer is distributed under the **Apache License 2.0**. Anyone is welcome to use, modify, and share the code. See the [LICENSE](LICENSE) file for more information.
 
-단, 분류 탭의 소리 묶음 표(`app/src/main/assets/sound_groups.tsv`)와 소리 이름(`app/src/main/res/values*/sound_names.xml`)은 AudioSet 온톨로지(CC BY-SA 4.0)를 바탕으로 만든 각색물이라 **CC BY-SA 4.0** 으로 배포합니다([NOTICE](NOTICE) 7절).
+The sound groups and sound names in the Sounds tab are adaptations of the AudioSet ontology and are distributed under **CC BY-SA 4.0**. For licensing and copyright information regarding third-party libraries (ONNX Runtime, AndroidX, etc.) and the AI model used in this project, please refer to the [NOTICE](NOTICE) file.
 
-포함된 서드파티 구성요소(ONNX Runtime, YAMNet 모델, AndroidX 등)의 저작권 및 라이선스 고지는 [NOTICE](NOTICE) 파일에 정리되어 있습니다.
+<br/>
+<div align="center">
+  <b>Built for Accessibility.</b>
+</div>
