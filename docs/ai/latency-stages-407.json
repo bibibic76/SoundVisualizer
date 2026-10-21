@@ -1,0 +1,66 @@
+{
+  "manifest_sha256": "9699b4048d18e3e55170c818253b9aca2346402f004a64b449855088c7358684",
+  "model_sha256": {
+    "yamnet.onnx": "290369c40886a4ae948f77671fff901023eec81484ac393465dfb1b342b1ca85",
+    "yamnet.data": "aa05b5b196bdfd74fb59ae4cbba22578c5ab25b9e792e52867678844bcecc839",
+    "yamnet_class_map.csv": "cdf24d193e196d9e95912a2667051ae203e92a2ba09449218ccb40ef787c6df2"
+  },
+  "phase_ms": [
+    0,
+    100,
+    200
+  ],
+  "inference_ms": 25,
+  "limitations": "Repeated diagnostic corpus, native rates, silence-to-file only; first component mixes model evidence and sampling phase, not pure model latency. Component percentiles must not be added. No Android/render/CPU contention measurement.",
+  "groups": {
+    "speech": {
+      "conditions": 189,
+      "detected": 189,
+      "missed": 0,
+      "components_median_p95_ms": {
+        "onset_to_first_eligible_snapshot": [
+          214.0,
+          336.0
+        ],
+        "first_compute_assumption": [
+          25.0,
+          25.0
+        ],
+        "first_eligible_completion_to_confirmation": [
+          250.0,
+          250.0
+        ]
+      },
+      "confirmation_wait_at_least_250ms": 189,
+      "total_median_p95_ms": [
+        489.0,
+        611.0
+      ]
+    },
+    "danger": {
+      "conditions": 18,
+      "detected": 15,
+      "missed": 3,
+      "components_median_p95_ms": {
+        "onset_to_first_eligible_snapshot": [
+          897.8231292517007,
+          1550.6870748299307
+        ],
+        "first_compute_assumption": [
+          25.0,
+          25.0
+        ],
+        "first_eligible_completion_to_confirmation": [
+          0.0,
+          0.0
+        ]
+      },
+      "confirmation_wait_at_least_250ms": 0,
+      "total_median_p95_ms": [
+        922.8231292517007,
+        1575.6870748299307
+      ]
+    }
+  },
+  "source_report_sha256": "0ad4cc4ab51d3ddea8753b58d334290d10ad0034d60f76f13b6dea8dd9d6f5b5"
+}

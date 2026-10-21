@@ -32,7 +32,7 @@ def captures(interleaved, rate, channels):
     return output
 
 
-def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, expected, duration_ms, adaptive, confirmation=False, fallback=False, source_onset=None, consistent=False, activity=False, runtime_profile=None):
+def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, expected, duration_ms, adaptive, confirmation=False, fallback=False, source_onset=None, consistent=False, activity=False, runtime_profile=None, diagnostic_events=None):
     gate = SilenceGate()
     detector = ChangeDetector()
     classifier.reset_state()
@@ -91,6 +91,12 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                 early_accepted += 1
             classifier._apply_coarse_hysteresis(result)
             ui = classifier._confirmed_coarse
+            if diagnostic_events is not None:
+                diagnostic_events.append({
+                    "snapshot_ms": snapshot_ms, "complete_ms": now,
+                    "raw": result.coarse_class, "meets_threshold": result.meets_threshold,
+                    "ui": ui, "candidate_streak": classifier._candidate_streak,
+                })
             timeline.append((now, ui))
             if (onset is not None and first_correct is None and snapshot_ms >= onset and
                     ui == expected and result.coarse_class == expected and result.meets_threshold):
@@ -224,7 +230,8 @@ def main():
     parser.add_argument("--background", type=Path, help="Optional 0dB RMS diagnostic mix; source files remain unchanged")
     parser.add_argument("--sample-rate", type=int, help="Explicitly restrict diagnostic subset to one native sample rate")
     parser.add_argument("--expected", nargs="+", choices=["ambient", "speech", "danger"])
-    parser.add_argument("--arms", nargs="+", default=["advance50", "advance100", "rephase50", "confirm100", "confirm_safe100", "confirm_consistent", "confirm_active", "onset_confirm50"])
+    parser.add_argument("--diagnostic-events", action="store_true", help="Record baseline raw/confirmed timing; no policy changes")
+    parser.add_argument("--arms", nargs="*", default=["advance50", "advance100", "rephase50", "confirm100", "confirm_safe100", "confirm_consistent", "confirm_active", "onset_confirm50"])
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output already exists")
@@ -297,13 +304,17 @@ def main():
                 "onset_confirm50": (BorrowedSlots(delay_ms=50, followup=False), True, True, False),
             }
             for name in ["baseline", *args.arms]:
+                events = [] if args.diagnostic_events and name == "baseline" else None
                 scheduler, adaptive, confirmation, fallback = configurations[name]
                 profile = RuntimeProfile(args.runtime_profile, args.inference_ms) if args.runtime_profile else None
                 if profile:
                     scheduler = ProductionSlots(profile=profile, followup=False)
                 row[name] = replay(mono, chunks, rate, scheduler, classifier, cache,
                                    prefix, stop, item["expected"], args.inference_ms, adaptive, confirmation, fallback, source_onset,
-                                   name in ("confirm_consistent", "confirm_active"), name == "confirm_active", profile)
+                                   name in ("confirm_consistent", "confirm_active"), name == "confirm_active", profile,
+                                   diagnostic_events=events)
+                if events is not None:
+                    row["baseline_events"] = events
             rows.append(row)
         if index % 20 == 0:
             print(f"responsive: {index}/{len(manifest)} files", flush=True)

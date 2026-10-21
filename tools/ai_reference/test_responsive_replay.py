@@ -33,7 +33,7 @@ class ScriptedClassifier(ReferenceClassifier):
 
 
 class ResponsiveReplayTest(unittest.TestCase):
-    def evaluate(self, adaptive, reject_early=False, early_danger=False, cost=25, profile=None):
+    def evaluate(self, adaptive, reject_early=False, early_danger=False, cost=25, profile=None, events=None):
         rate = 16_000
         mono = np.zeros(64_000, dtype=np.float32)
         mono[24_000:48_000] = np.arange(24_000, 48_000, dtype=np.float32) / rate / 10
@@ -43,7 +43,17 @@ class ResponsiveReplayTest(unittest.TestCase):
             ScriptedClassifier(reject_early, early_danger), {}, 1500, 3000,
             "danger" if early_danger else "speech", cost, False, adaptive, adaptive,
             consistent=bool(profile), activity=bool(profile), runtime_profile=profile,
+            diagnostic_events=events,
         )
+
+    def test_diagnostic_observation_does_not_change_results(self):
+        events = []
+        self.assertEqual(self.evaluate(False), self.evaluate(False, events=events))
+        first = next(e for e in events if e["raw"] == "speech")
+        confirmed = next(e for e in events if e["ui"] == "speech")
+        self.assertEqual("ambient", first["ui"])
+        self.assertEqual(250, confirmed["complete_ms"] - first["complete_ms"])
+        self.assertEqual(25, first["complete_ms"] - first["snapshot_ms"])
 
     def test_unchanged_two_confirmations_can_finish_125ms_earlier(self):
         baseline = self.evaluate(False)
