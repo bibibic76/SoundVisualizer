@@ -21,8 +21,10 @@ class RealtimeAiPipelineInstrumentedTest {
         var overrides = names.associateWith { "speech" }
         // Opposite-phase capture opens the original-channel gate while downmixing to a stable silence tensor.
         val mono = FloatArray(31_200) { i -> if (i % 2 == 0) .1f else -.1f }
-        RealtimeAiPipeline.create(app, 16_000, 2, { overrides }, responsiveConfirmation = true).use { pipeline ->
-            pipeline.ingestInterleavedForTest(mono, mono.size)
+        RealtimeAiPipeline.create(
+            app, 16_000, 2, { overrides }, responsiveConfirmation = true, elapsedRealtimeMs = { 1000L }
+        ).use { pipeline ->
+            feedSustainedCapture(pipeline, mono)
             val first = requireNotNull(pipeline.runTickForTest())
             val request = requireNotNull(first.result.pendingSpeechConfirmation)
             assertEquals("ambient", first.uiCoarse)
@@ -32,7 +34,7 @@ class RealtimeAiPipelineInstrumentedTest {
             assertEquals(1L, pipeline.inferenceStatsForTest().confirmationAccepted)
 
             pipeline.resetState()
-            pipeline.ingestInterleavedForTest(mono, mono.size)
+            feedSustainedCapture(pipeline, mono)
             val pending = requireNotNull(pipeline.runTickForTest()).result.pendingSpeechConfirmation!!
             val before = pipeline.inferenceStatsForTest().executed
             overrides = emptyMap()
@@ -48,8 +50,10 @@ class RealtimeAiPipelineInstrumentedTest {
         val names = app.assets.open("ai/yamnet_class_map.csv").use { YamnetCoarseClassifier.loadClassNames(it) }
         val overrides = names.associateWith { "speech" }
         val mono = FloatArray(31_200) { i -> if (i % 2 == 0) .1f else -.1f }
-        RealtimeAiPipeline.create(app, 16_000, 2, { overrides }, responsiveConfirmation = true).use { pipeline ->
-            pipeline.ingestInterleavedForTest(mono, mono.size)
+        RealtimeAiPipeline.create(
+            app, 16_000, 2, { overrides }, responsiveConfirmation = true, elapsedRealtimeMs = { 1000L }
+        ).use { pipeline ->
+            feedSustainedCapture(pipeline, mono)
             val first = requireNotNull(pipeline.runTickForTest()).result
             val request = requireNotNull(first.pendingSpeechConfirmation).copy(confidence = 1.1f)
             assertNull(pipeline.runConfirmationForTest(request))
@@ -58,6 +62,14 @@ class RealtimeAiPipelineInstrumentedTest {
             assertEquals(1L, pipeline.inferenceStatsForTest().confirmationAttempts)
             assertEquals(0L, pipeline.inferenceStatsForTest().confirmationAccepted)
         }
+    }
+
+    private fun feedSustainedCapture(pipeline: RealtimeAiPipeline, pcm: FloatArray) {
+        val now = 1000L
+        // Three recent capture publications, without quiet or a >100ms gap.
+        pipeline.ingestInterleavedAtForTest(pcm, pcm.size, now - 100)
+        pipeline.ingestInterleavedAtForTest(pcm, pcm.size, now - 50)
+        pipeline.ingestInterleavedAtForTest(pcm, pcm.size, now)
     }
 
     @Test

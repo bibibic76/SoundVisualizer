@@ -9,7 +9,8 @@ package com.example.soundvisualizer.ai
  * the small state transitions are synchronized as one unit.
  */
 class AiSilenceGate(
-    private val activeThreshold: Float = ACTIVE_THRESHOLD
+    private val activeThreshold: Float = ACTIVE_THRESHOLD,
+    private val trackContinuousActivity: Boolean = false
 ) {
     companion object {
         /** Matches HapticPolicy.LEVEL_THRESHOLD and VisualizerEngine.WAKE_THRESHOLD. */
@@ -39,15 +40,34 @@ class AiSilenceGate(
     private var lastActiveInputMs = NO_TIMESTAMP
     private var silentInferenceCompletions = 0
     private var firstConsecutiveFailureMs = NO_TIMESTAMP
+    private var continuousActiveSinceMs = NO_TIMESTAMP
+    private var lastCaptureMs = NO_TIMESTAMP
 
     fun onInterleavedPcm(interleaved: FloatArray, floatCount: Int, nowMs: Long) {
-        if (CaptureAudioMath.maxAbsoluteInterleavedPeak(interleaved, floatCount) > activeThreshold) {
+        val active = CaptureAudioMath.maxAbsoluteInterleavedPeak(interleaved, floatCount) > activeThreshold
+        if (active || trackContinuousActivity) {
             synchronized(stateLock) {
-                lastActiveInputMs = nowMs
-                silentInferenceCompletions = 0
-                firstConsecutiveFailureMs = NO_TIMESTAMP
+                if (trackContinuousActivity) {
+                    if (!active) {
+                        continuousActiveSinceMs = NO_TIMESTAMP
+                    } else if (continuousActiveSinceMs == NO_TIMESTAMP || nowMs - lastCaptureMs > 100L) {
+                        continuousActiveSinceMs = nowMs
+                    }
+                    lastCaptureMs = nowMs
+                }
+                if (active) {
+                    lastActiveInputMs = nowMs
+                    silentInferenceCompletions = 0
+                    firstConsecutiveFailureMs = NO_TIMESTAMP
+                }
             }
         }
+    }
+
+    /** Recent PCM must support sustained activity; a cue left in the 0.975s model window is insufficient. */
+    internal fun isContinuouslyActive(nowMs: Long): Boolean = synchronized(stateLock) {
+        trackContinuousActivity && continuousActiveSinceMs != NO_TIMESTAMP &&
+            nowMs - continuousActiveSinceMs >= 100L && nowMs - lastCaptureMs in 0L..100L
     }
 
     fun isOpen(nowMs: Long): Boolean = synchronized(stateLock) {
@@ -88,6 +108,8 @@ class AiSilenceGate(
             lastActiveInputMs = NO_TIMESTAMP
             silentInferenceCompletions = 0
             firstConsecutiveFailureMs = NO_TIMESTAMP
+            continuousActiveSinceMs = NO_TIMESTAMP
+            lastCaptureMs = NO_TIMESTAMP
         }
     }
 }

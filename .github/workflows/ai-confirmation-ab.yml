@@ -8,6 +8,9 @@ on:
       - '.github/workflows/ai-confirmation-ab.yml'
       - 'app/src/main/java/com/example/soundvisualizer/ai/AiSpeechConfirmation.kt'
       - 'app/src/main/java/com/example/soundvisualizer/ai/RealtimeAiPipeline.kt'
+      - 'app/src/main/java/com/example/soundvisualizer/ai/AiPostProcessor.kt'
+      - 'app/src/main/java/com/example/soundvisualizer/ai/AiSilenceGate.kt'
+      - 'app/src/main/java/com/example/soundvisualizer/ai/AiCaptureInferenceGate.kt'
       - 'app/src/test/java/com/example/soundvisualizer/ai/AiSpeechConfirmationTest.kt'
 
 concurrency:

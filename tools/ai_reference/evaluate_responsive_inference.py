@@ -32,7 +32,7 @@ def captures(interleaved, rate, channels):
     return output
 
 
-def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, expected, duration_ms, adaptive, confirmation=False, fallback=False, source_onset=None, consistent=False):
+def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, expected, duration_ms, adaptive, confirmation=False, fallback=False, source_onset=None, consistent=False, activity=False):
     gate = SilenceGate()
     detector = ChangeDetector()
     classifier.reset_state()
@@ -44,6 +44,11 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
     predictions = 0
     first_correct = None
     confirmation_source = None
+    active_since = None
+    last_capture = -math.inf
+
+    def sustained(now):
+        return active_since is not None and now - active_since >= 100 and now - last_capture <= 100
     onset = source_onset if source_onset is not None else next((time for time, _, peak, _ in chunks if time >= start_ms and peak > .01), None)
     cutoff = chunks[-1][0]
     while True:
@@ -54,6 +59,11 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
             break
         if kind == 0:
             time, captured, peak, power = chunks[capture_index]
+            last_capture = time
+            if peak <= .01:
+                active_since = None
+            elif active_since is None:
+                active_since = time
             gate.capture(time, peak)
             change = detector.update(time, peak, power)
             if adaptive and change and captured >= need:
@@ -64,6 +74,7 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
             rejected = (speculative_target is not None and (
                 not result.meets_threshold or result.coarse_class != speculative_target[0] or
                 (consistent and (result.yamnet_display_name != speculative_target[1] or result.confidence < speculative_target[2]))
+                or (activity and not sustained(now))
             ))
             if fallback and rejected:
                 scheduler.regular = max(old_regular, scheduler.last_finished + 100.0)
@@ -89,6 +100,10 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                 if scheduler.early is not None:
                     confirmation_source = result
         else:
+            if activity and scheduler.early is not None and not sustained(now):
+                scheduler.early = None
+                scheduler.borrowed = False
+                continue
             run = captured >= need and gate.is_open(now)
             if run:
                 if pending is not None:
@@ -185,7 +200,7 @@ def main():
     parser.add_argument("--background", type=Path, help="Optional 0dB RMS diagnostic mix; source files remain unchanged")
     parser.add_argument("--sample-rate", type=int, help="Explicitly restrict diagnostic subset to one native sample rate")
     parser.add_argument("--expected", nargs="+", choices=["ambient", "speech", "danger"])
-    parser.add_argument("--arms", nargs="+", default=["advance50", "advance100", "rephase50", "confirm100", "confirm_safe100", "confirm_consistent", "onset_confirm50"])
+    parser.add_argument("--arms", nargs="+", default=["advance50", "advance100", "rephase50", "confirm100", "confirm_safe100", "confirm_consistent", "confirm_active", "onset_confirm50"])
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output already exists")
@@ -252,13 +267,14 @@ def main():
                 "confirm100": (BorrowedSlots(delay_ms=0, followup=False), False, True, False),
                 "confirm_safe100": (BorrowedSlots(delay_ms=0, followup=False), False, True, True),
                 "confirm_consistent": (BorrowedSlots(delay_ms=0, followup=False), False, True, True),
+                "confirm_active": (BorrowedSlots(delay_ms=0, followup=False), False, True, True),
                 "onset_confirm50": (BorrowedSlots(delay_ms=50, followup=False), True, True, False),
             }
             for name in ["baseline", *args.arms]:
                 scheduler, adaptive, confirmation, fallback = configurations[name]
                 row[name] = replay(mono, chunks, rate, scheduler, classifier, cache,
                                    prefix, stop, item["expected"], args.inference_ms, adaptive, confirmation, fallback, source_onset,
-                                   name == "confirm_consistent")
+                                   name in ("confirm_consistent", "confirm_active"), name == "confirm_active")
             rows.append(row)
         if index % 20 == 0:
             print(f"responsive: {index}/{len(manifest)} files", flush=True)

@@ -4,7 +4,7 @@
 
 ## 현재 결론
 
-**기본 배포 동작에는 적용하지 않는다.** 말소리의 두 번째 확인을 앞당기면 약 100~125ms의 개선 여지가 있었지만, 전체 비교에서 환경음 → 말소리 회귀 3개 조건이 남았다. 추가 추론도 있었다. 따라서 사용자 목표인 “성능 저하 없이”를 달성했다고 선언할 수 없다. 기본 빌드의 `aiSpeechConfirmationExperiment`는 false이며, true 비교 APK와 재현 도구만 제공한다. 실기기 체감·발열·전력 검증도 미완료다.
+**기본 배포 동작에는 적용하지 않는다.** 말소리의 두 번째 확인을 앞당기면 약 100~125ms의 개선 여지가 있었다. 최근 입력 활성 조건을 추가해 환경음 → 말소리 회귀를 3개에서 1개 조건으로 줄였지만 완전히 없애지는 못했고, 추가 추론도 있었다. 따라서 사용자 목표인 “성능 저하 없이”를 달성했다고 선언할 수 없다. 기본 빌드의 `aiSpeechConfirmationExperiment`는 false이며, true 비교 APK와 재현 도구만 제공한다. 실기기 체감·발열·전력 검증도 미완료다.
 
 ## 비교 방법
 
@@ -28,6 +28,7 @@
 1. 현재 확정 상태 Ambient, 유효한 Speech 후보 1회일 때만 시도한다. Danger 진입·해제, 다른 coarse 후보는 당기지 않는다.
 2. 직전 tick이 25ms 이하이고, 종료 후 100ms 휴식 및 정규 tick으로 돌아갈 예상 여유가 있을 때만 시도한다. 깨어난 뒤에도 여유를 재확인한다. 예측보다 실제 추론이 길어지면 정규 tick이 늦어질 수 있으므로 실기기 검증이 필요하다.
 3. 새 관측의 정확한 세부 라벨이 같고 confidence가 떨어지지 않았으며 기존 threshold를 통과해야 기존 2회 확인으로 확정한다. 확인 횟수나 threshold를 낮추지 않는다.
+   - 추론 전과 확정 직전에 모두 최근 100ms의 캡처 덩어리가 계속 활성(기존 peak > 0.01 기준)이고 마지막 입력도 100ms 이내여야 한다. 0.975초 창에 남은 짧은 단서만으로 조기 확정하지 않기 위한 조건이다. 현재 입력이 조용하면 추론 전부터 생략한다.
 4. 실패·다른 종류·다른 라벨·낮아진 confidence는 UI와 기존 후보를 갱신하지 않고 원래 정규 tick을 유지한다. 성공했을 때만 해당 정규 슬롯을 소비한다.
 5. 매핑 변경 시 이전 요청을 버린다. 같은 코루틴·기존 inference lock으로 실행하며 캡처 스레드에서는 추론하지 않는다. stop/cancel 시 대기 중 요청도 종료된다.
 
@@ -45,20 +46,20 @@
 | Danger paired 지연 | 기준 | 모든 paired 조건에서 동일 |
 | Ambient에서 한 번 이상 Danger / 744 | 177 | 177 (새 노출 조건 0) |
 | Ambient Danger 노출 합계 (tail 포함) | 206.000초 | 206.000초 |
-| 주 평가 시간 다수결 정답 / 1,935 | 1,375 | 1,374 |
-| 주 평가 macro F1 | 0.738332 | 0.737926 |
-| Ambient → Speech 다수결 / 744 | 12 | 15 |
-| 총 추론 횟수 / 전체 조건 | 47,299 | 47,609 (+0.655%) |
+| 주 평가 시간 다수결 정답 / 1,935 | 1,375 | 1,376 |
+| 주 평가 macro F1 | 0.738332 | 0.743297 |
+| Ambient → Speech 다수결 / 744 | 12 | 13 |
+| 총 추론 횟수 / 전체 조건 | 47,299 | 47,449 (+0.317%) |
 
-기준에서 맞았으나 실험에서 Speech가 된 Ambient 조건은 모두 위상 100ms였다.
+현재 입력 활성 조건을 넣기 전에는 아래 세 Ambient 파일의 위상 100ms에서 기준은 맞고 조기 확인은 Speech가 되는 회귀가 있었다. 조건 추가 뒤 남은 것은 ESC-50 한 조건이다.
 
-- `ambient_딸꾹질_youtube_02.wav`
-- ESC-50 `2-25293-A-22.wav`
-- DESRA `89_HmnCoughChld.wav`
+- `ambient_딸꾹질_youtube_02.wav`: 회귀 해소
+- ESC-50 `2-25293-A-22.wav`: **회귀 남음**
+- DESRA `89_HmnCoughChld.wav`: 회귀 해소
 
-라벨을 바꾸거나 이 세 소리만 예외 처리해 결과를 개선하지 않는다. 전체 평균이 작게 바뀌었다는 이유로 회귀를 숨기지 않는다. 추가 추론 0.655%도 CPU·배터리 증가율이 아니다. 불안정한 입력에서는 실패한 시도가 더 잦을 수 있다. 기본 활성화하지 않는 이유다.
+라벨을 바꾸거나 이 소리들만 예외 처리해 결과를 개선하지 않는다. 전체 평균이 좋아졌다는 이유로 남은 회귀를 숨기지 않는다. 추가 추론 0.317%도 CPU·배터리 증가율이 아니다. 불안정한 입력에서는 실패한 시도가 더 잦을 수 있다. 기본 활성화하지 않는 이유다.
 
-별도 music + Speech 0dB whole-file RMS 혼합 진단도 수행했다. 음악 1개를 `.08` RMS로 맞추고 15개 Speech를 같은 RMS로 메모리상 섞었다. 기본 검출이 45조건 중 5개에 그칠 만큼 음악 masking이 컸다. 혼합 신호에 독립 시간 정답이 없어 정확도 결론으로 합산하지 않는다. 일반 fallback 후보는 baseline에서 검출한 5조건을 유지했지만, 최종 동일 라벨 조건과는 다른 arm이므로 최종 후보의 실증으로 사용하지 않는다.
+별도 0dB whole-file RMS 혼합 진단도 수행했다. 배경을 `.08` RMS로 맞추고 목표 소리를 같은 RMS로 메모리상 섞었다. 음악 1개 + Speech 15개는 45조건 중 기준 5개만 검출할 만큼 masking이 컸다. 입력 활성 조건을 넣기 전 동일 라벨 arm에서는 기존 5개를 유지하고 6개를 추가로 검출했다. Speech 배경 + 44.1kHz Danger 20개/60조건에서는 기준/후보 모두 36개를 검출했고 paired 지연이 같았다. native rate가 다른 5개 Danger 파일은 명시적으로 제외했다. 혼합 신호에 독립 시간 정답이 없고 마지막 입력 활성 조건도 별도로 추가됐으므로, 이 진단을 최종 후보의 일반 정확도 실증으로 합산하지 않는다.
 
 ## 앱과 A/B APK
 
@@ -78,10 +79,10 @@ CSV 끝에 `responsive_confirmation`, `early_confirmation`, `confirmation_attemp
 ```bash
 OPENBLAS_NUM_THREADS=1 python tools/ai_reference/evaluate_responsive_inference.py \
   --manifest /tmp/sovis-351-manifest.json --model-dir app/src/main/assets/ai \
-  --arms confirm_consistent --output /tmp/responsive-consistent.json
+  --arms confirm_active --output /tmp/responsive-active.json
 OPENBLAS_NUM_THREADS=1 python -m unittest discover -s tools/ai_reference -p 'test_*.py'
 ```
 
-원본 manifest SHA-256: `68b138da5083a75199514cf37c50761588155a6d9e885e0adfd2d00a6e207f82`. 모델은 저장소의 동일한 `yamnet.onnx`/`yamnet.data`를 사용했다. 보고서의 모델 해시와 실행 commit을 함께 확인한다. `--arms advance50 advance100 rephase50 confirm100 confirm_safe100 confirm_consistent onset_confirm50`으로 진단 arm들을 재실행할 수 있다. `--inference-ms 50` 등은 가정한 계산 시간의 민감도 검사이며 실제 폰 측정이 아니다.
+원본 manifest SHA-256: `68b138da5083a75199514cf37c50761588155a6d9e885e0adfd2d00a6e207f82`. 모델은 저장소의 동일한 `yamnet.onnx`/`yamnet.data`를 사용했다. 보고서의 모델 해시와 실행 commit을 함께 확인한다. `--arms advance50 advance100 rephase50 confirm100 confirm_safe100 confirm_consistent confirm_active onset_confirm50`으로 진단 arm들을 재실행할 수 있다. `--inference-ms 50` 등은 가정한 계산 시간의 민감도 검사이며 실제 폰 측정이 아니다.
 
 실기기가 현재 없다는 사용자 확인에 따라 이번에는 오프라인 검증·실험 경로·CI·A/B APK까지 진행한다. **일반 사용자 적용, 실제 지연·발열·전력 검증, “성능 저하 없이”라는 목표 달성은 보류**한다.

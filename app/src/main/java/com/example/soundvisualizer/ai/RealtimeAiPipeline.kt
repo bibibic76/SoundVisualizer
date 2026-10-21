@@ -33,6 +33,7 @@ class RealtimeAiPipeline private constructor(
     private val postProcessor: AiPostProcessor,
     private val mappingOverrides: () -> Map<String, String>,
     private val responsiveConfirmation: Boolean = false,
+    private val elapsedRealtimeMs: () -> Long = SystemClock::elapsedRealtime,
     private val predictIntervalMs: Long = AI_PREDICT_INTERVAL_MS
 ) : AutoCloseable {
 
@@ -87,6 +88,7 @@ class RealtimeAiPipeline private constructor(
             channels: Int = 2,
             mappingOverrides: () -> Map<String, String> = { emptyMap() },
             responsiveConfirmation: Boolean = false,
+            elapsedRealtimeMs: () -> Long = SystemClock::elapsedRealtime,
         ): RealtimeAiPipeline {
             val names = context.assets.open("ai/yamnet_class_map.csv").use {
                 YamnetCoarseClassifier.loadClassNames(it)
@@ -104,7 +106,8 @@ class RealtimeAiPipeline private constructor(
                     classNames = names,
                     postProcessor = postProcessor,
                     mappingOverrides = mappingOverrides,
-                    responsiveConfirmation = responsiveConfirmation
+                    responsiveConfirmation = responsiveConfirmation,
+                    elapsedRealtimeMs = elapsedRealtimeMs
                 )
             }
         }
@@ -117,7 +120,9 @@ class RealtimeAiPipeline private constructor(
     private val running = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
     private val lastResult = AtomicReference<AiClassificationResult?>(null)
-    private val captureInferenceGate = AiCaptureInferenceGate(audioBuffer)
+    private val captureInferenceGate = AiCaptureInferenceGate(
+        audioBuffer, AiSilenceGate(trackContinuousActivity = responsiveConfirmation)
+    )
     private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
     private val inferenceCompletions = java.util.concurrent.atomic.AtomicLong(0)
     private val silenceSkippedTicks = java.util.concurrent.atomic.AtomicLong(0)
@@ -162,7 +167,7 @@ class RealtimeAiPipeline private constructor(
         confirmationAccepted.set(0)
         schedulerJob = scope.launch {
             while (isActive && running.get()) {
-                val tickStartedAtMs = SystemClock.elapsedRealtime()
+                val tickStartedAtMs = elapsedRealtimeMs()
                 val previousResult = lastResult.get()
                 try {
                     // diagnostics = false: 스케줄러는 반환값을 쓰지 않는다.
@@ -173,7 +178,7 @@ class RealtimeAiPipeline private constructor(
                         Log.w(TAG, "AI tick failed: ${t.message}", t)
                     }
                 }
-                val tickFinishedAtMs = SystemClock.elapsedRealtime()
+                val tickFinishedAtMs = elapsedRealtimeMs()
                 var regularDeadlineMs = tickFinishedAtMs + remainingTickDelayMs(
                         intervalMs = predictIntervalMs,
                         tickStartedAtMs = tickStartedAtMs,
@@ -186,10 +191,10 @@ class RealtimeAiPipeline private constructor(
                     tickStartedAtMs, tickFinishedAtMs, regularDeadlineMs
                 ) else null
                 if (earlyDeadline != null) {
-                    delay((earlyDeadline - SystemClock.elapsedRealtime()).coerceAtLeast(0L))
+                    delay((earlyDeadline - elapsedRealtimeMs()).coerceAtLeast(0L))
                     if (!isActive || !running.get()) break
                     val estimatedCost = (tickFinishedAtMs - tickStartedAtMs).coerceAtLeast(0L)
-                    if (SystemClock.elapsedRealtime() + estimatedCost + MIN_TICK_REST_MS <= regularDeadlineMs) {
+                    if (elapsedRealtimeMs() + estimatedCost + MIN_TICK_REST_MS <= regularDeadlineMs) {
                         val beforeEarly = lastResult.get()
                         try {
                             runTickInternal(log = true, diagnostics = false, confirmation = request)
@@ -202,11 +207,11 @@ class RealtimeAiPipeline private constructor(
                             regularDeadlineMs += predictIntervalMs
                         }
                         regularDeadlineMs = maxOf(
-                            regularDeadlineMs, SystemClock.elapsedRealtime() + MIN_TICK_REST_MS
+                            regularDeadlineMs, elapsedRealtimeMs() + MIN_TICK_REST_MS
                         )
                     }
                 }
-                delay((regularDeadlineMs - SystemClock.elapsedRealtime()).coerceAtLeast(0L))
+                delay((regularDeadlineMs - elapsedRealtimeMs()).coerceAtLeast(0L))
             }
         }
     }
@@ -229,6 +234,10 @@ class RealtimeAiPipeline private constructor(
     /** Test helper — ingest without requiring [start]. */
     fun ingestInterleavedForTest(pcm: FloatArray, floatCount: Int) {
         ingestInterleaved(pcm, floatCount)
+    }
+
+    internal fun ingestInterleavedAtForTest(pcm: FloatArray, floatCount: Int, nowMs: Long) {
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, nowMs)
     }
 
     fun ingestMonoForTest(mono: FloatArray, length: Int = mono.size) {
@@ -260,7 +269,7 @@ class RealtimeAiPipeline private constructor(
     private fun ingestInterleaved(pcm: FloatArray, floatCount: Int) {
         // Evaluate the original channels before downmixing, then always retain the
         // samples in the ring so an input that reopens the gate has full context.
-        captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime())
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, elapsedRealtimeMs())
     }
 
     /**
@@ -294,13 +303,14 @@ class RealtimeAiPipeline private constructor(
             }
             if (confirmation != null && (
                 !responsiveConfirmation || confirmation.mappingSignature != mapping.signature ||
-                    !postProcessor.hasPendingSpeechConfirmation()
+                    !postProcessor.hasPendingSpeechConfirmation() ||
+                    !captureInferenceGate.isContinuouslyActive(elapsedRealtimeMs())
                 )) return null
-            if (!captureInferenceGate.isInferenceOpen(SystemClock.elapsedRealtime())) {
+            if (!captureInferenceGate.isInferenceOpen(elapsedRealtimeMs())) {
                 silenceSkippedTicks.incrementAndGet()
                 return null
             }
-            val snapshotTimeMs = SystemClock.elapsedRealtime()
+            val snapshotTimeMs = elapsedRealtimeMs()
             val result = try {
                 doInference(log, diagnostics, confirmation)
             } catch (t: Throwable) {
@@ -361,6 +371,7 @@ class RealtimeAiPipeline private constructor(
             criticalDangerEvent = hasCritical
         )
         val post = if (confirmation == null) postProcessor.process(frame) else {
+            if (!captureInferenceGate.isContinuouslyActive(elapsedRealtimeMs())) return null
             postProcessor.confirmSpeechIfConsistent(frame, confirmation) ?: return null
         }
         if (confirmation != null) confirmationAccepted.incrementAndGet()
