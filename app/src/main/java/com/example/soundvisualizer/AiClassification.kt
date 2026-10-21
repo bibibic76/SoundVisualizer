@@ -1,6 +1,9 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * 분류기(AudioCaptureService 소유)와 오버레이 렌더러를 잇는 지점.
@@ -23,9 +26,17 @@ object AiClassification {
     @Volatile
     private var source: (() -> AiClassificationResult?)? = null
 
+    // Wake-up only: observers always call latest(), so a queued event cannot revive an old result.
+    private val changed = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    internal val changes = changed.asSharedFlow()
+
+    /** Non-suspending; never execute HUD work on the inference thread. */
+    fun notifyResultChanged() { changed.tryEmit(Unit) }
+
     /** 캡처 서비스가 분류기를 시작한 뒤(마지막 결과를 비운 뒤) 호출한다. */
     fun attach(source: () -> AiClassificationResult?) {
         this.source = source
+        notifyResultChanged()
     }
 
     /**
@@ -35,6 +46,7 @@ object AiClassification {
      */
     fun detach() {
         source = null
+        notifyResultChanged()
     }
 
     /**

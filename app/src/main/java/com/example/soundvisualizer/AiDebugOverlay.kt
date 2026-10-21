@@ -26,11 +26,6 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-
-/** 개발자 모드 HUD 를 얼마나 자주 다시 읽는지. 추론이 250ms 주기라 그보다 촘촘해야 한다. */
-private const val DEBUG_POLL_MS = 100L
 
 /** 창 알파(약 0.8)가 곱해지므로 판은 완전히 불투명하게 둔다. 반투명을 쓰면 두 번 곱해져 흐려진다. */
 private val PlateColor = Color(0xFF101216)
@@ -71,19 +66,13 @@ fun AiDebugOverlay() {
         onDispose { AiDebugRecorder.stop() }
     }
 
-    // 추론 결과는 250ms 주기로만 바뀐다. produceState 의 상태는 구조적 동등성을 쓰고
-    // AiClassificationResult 는 data class 이므로, 같은 결과가 계속 돌아오는 동안 대입이 no-op 이라
-    // 리컴포지션이 일어나지 않는다. 대기 중에 저절로 조용해지는 셈이다.
+    // New classifications wake only this HUD. The heartbeat still refreshes level/age/settings.
+    // Conflation bounds pending work, and cancellation removes the subscription when HUD is off.
     val lines by produceState(
         initialValue = AiDebugText.format(null, 0L, 0f, shown = false, aiAvailable = true),
         aiAvailable
     ) {
-        val capturePaused = SettingsManager.isCapturePaused
-        while (true) {
-            // 화면이 꺼져 캡처를 쉬는 동안에는 폴링도 멈춘다. 주머니 속에서 100ms 타이머로
-            // CPU 를 깨울 이유가 없다 (렌더 루프가 멈추는 것과 같은 이유).
-            if (capturePaused.value) capturePaused.first { !it }
-
+        aiHudRefreshes(AiClassification.changes, SettingsManager.isCapturePaused).collect {
             val result = AiClassification.latest()
             val nowMs = System.currentTimeMillis()
             val level = AudioEngine.currentLevel()
@@ -103,7 +92,6 @@ fun AiDebugOverlay() {
                 shown = shown,
                 aiAvailable = aiAvailable
             )
-            delay(DEBUG_POLL_MS)
         }
     }
 

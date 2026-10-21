@@ -32,6 +32,7 @@ class RealtimeAiPipeline private constructor(
     private val classNames: List<String>,
     private val postProcessor: AiPostProcessor,
     private val mappingOverrides: () -> Map<String, String>,
+    private val onClassificationChanged: () -> Unit,
     private val predictIntervalMs: Long = AI_PREDICT_INTERVAL_MS
 ) : AutoCloseable {
 
@@ -83,6 +84,7 @@ class RealtimeAiPipeline private constructor(
             captureSampleRate: Int = AiAudioBuffer.DEFAULT_CAPTURE_SAMPLE_RATE,
             channels: Int = 2,
             mappingOverrides: () -> Map<String, String> = { emptyMap() },
+            onClassificationChanged: () -> Unit = {},
         ): RealtimeAiPipeline {
             val names = context.assets.open("ai/yamnet_class_map.csv").use {
                 YamnetCoarseClassifier.loadClassNames(it)
@@ -99,7 +101,8 @@ class RealtimeAiPipeline private constructor(
                     coarseClassifier = coarseClassifier,
                     classNames = names,
                     postProcessor = postProcessor,
-                    mappingOverrides = mappingOverrides
+                    mappingOverrides = mappingOverrides,
+                    onClassificationChanged = onClassificationChanged
                 )
             }
         }
@@ -145,7 +148,7 @@ class RealtimeAiPipeline private constructor(
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
-        lastResult.set(null)
+        publishResult(null)
         inferenceExecutions.set(0)
         inferenceCompletions.set(0)
         silenceSkippedTicks.set(0)
@@ -208,7 +211,7 @@ class RealtimeAiPipeline private constructor(
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
-        lastResult.set(null)
+        publishResult(null)
         inferenceExecutions.set(0)
         inferenceCompletions.set(0)
         silenceSkippedTicks.set(0)
@@ -240,7 +243,7 @@ class RealtimeAiPipeline private constructor(
                 val next = YamnetMappingPolicy.from(overrides, classNames)
                 if (next.signature != mapping.signature) {
                     postProcessor.reset()
-                    lastResult.set(null)
+                    publishResult(null)
                 }
                 previousOverrides = overrides.toMap()
                 mapping = next
@@ -323,7 +326,7 @@ class RealtimeAiPipeline private constructor(
             mappingSignature = mapping.signature,
             mappingInputs = previousOverrides
         )
-        lastResult.set(result)
+        publishResult(result)
 
         if (log && debuggable) {
             maybeLog(
@@ -482,7 +485,12 @@ class RealtimeAiPipeline private constructor(
 
         audioBuffer.reset()
         postProcessor.reset()
-        lastResult.set(null)
+        publishResult(null)
+    }
+
+    private fun publishResult(result: AiClassificationResult?) {
+        lastResult.set(result)
+        onClassificationChanged()
     }
 }
 
