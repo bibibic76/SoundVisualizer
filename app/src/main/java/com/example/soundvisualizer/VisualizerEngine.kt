@@ -621,6 +621,31 @@ class VisualizerEngine(
         // 보관한 피크는 비우지 않는다. 대기로 내려간 뒤에 위협음 판정이 와도 쓸 수 있어야 한다.
     }
 
+    /**
+     * 지금 바로 쉰다. 오버레이 창이 가려진 동안(화면 꺼짐·잠금 화면, [OverlayVisibility]) 부른다([VisualizerOverlay]).
+     *
+     * 외부 사운드 모드처럼 화면이 꺼져도 소리를 받는 동안에는 엔진이 쉬지 않는다. 그동안 새 프레임을 요청하면, 화면이 꺼진
+     * 동안에도 프레임 신호를 보내는 버전(Android 10)에서는 보이지 않는 그림을 초당 60번 계산했고(#400), Galaxy S25+(Android 17)
+     * 에서는 잠금 화면이 숨긴 창의 요청이 잠금을 풀어도 끝나지 않아 오버레이가 멈춘 채 남았다(#401).
+     *
+     * 그리던 것은 지운다. 다시 보일 때 가려지기 전 모양이 남지 않고, 깨어나면 평소처럼 0 에서 자란다.
+     * 보관한 피크도 비운다. 가려지기 전 소리를 다시 보인 뒤의 위협음 판정으로 꺼내 그리면 지난 소리가 번쩍인다.
+     * @return 그리던 것이 남아 있어 한 번 다시 그려 비워야 하면 true
+     */
+    fun sleepNow(): Boolean {
+        val drawn = visible || wasVisible
+        visible = false
+        wasVisible = false
+        alpha = 0f
+        baseDepth = 0f
+        depths.fill(0f)
+        // 다시 보이면 소리 신호를 기다리지 않고 한 번은 확인한다. 가려진 동안 들어온 소리를 그때 본다.
+        quietAtLastPoll = false
+        clearHold()
+        if (!isIdle) enterIdle()
+        return drawn
+    }
+
     // ---------------- 피크 보관 ----------------
 
     /**
@@ -658,6 +683,16 @@ class VisualizerEngine(
         }
     }
 
+    /** 보관한 피크를 모두 비운다. 링이 전부 0 이 되므로 다음에 덮어쓸 칸([holdIndex])은 그대로 두어도 된다. */
+    private fun clearHold() {
+        holdL.fill(0f)
+        holdR.fill(0f)
+        holdCurL = 0f
+        holdCurR = 0f
+        holdFrames = 0f
+        holdLiveSlots = 0
+    }
+
     /**
      * 보관한 소리로 전체 크기와 방향을 바로 잡고 보관을 비운다.
      * 판정이 늦게 온 소리를 민감도 스무딩으로 0 에서 키우면 이미 끝난 뒤라 거의 보이지 않으므로 미리 키워 두고,
@@ -691,12 +726,7 @@ class VisualizerEngine(
                 r = sr
             }
         }
-        holdL.fill(0f)
-        holdR.fill(0f)
-        holdCurL = 0f
-        holdCurR = 0f
-        holdFrames = 0f
-        holdLiveSlots = 0
+        clearHold()
 
         val full = upmixTotal(l, r) // 이 소리가 계속 날 때 다다르는 크기. targets 에 방향이 남는다.
         if (full <= 0f) return true
