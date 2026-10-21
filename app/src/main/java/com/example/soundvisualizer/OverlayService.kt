@@ -1,8 +1,10 @@
 package com.example.soundvisualizer
 
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.hardware.input.InputManager
 import android.os.Build
@@ -12,6 +14,7 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -33,6 +36,15 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
     private lateinit var windowManager: WindowManager
     private var composeView: ComposeView? = null
+    private var overlayParams: WindowManager.LayoutParams? = null
+    private var unlockReceiverRegistered = false
+
+    /** 잠금이 풀리면 잠금 화면이 숨긴 오버레이 창을 다시 보이게 한다([showAgainAfterUnlock], #401). */
+    private val unlockReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_USER_PRESENT) showAgainAfterUnlock()
+        }
+    }
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val store = ViewModelStore()
@@ -113,8 +125,30 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         }
 
         composeView = view
+        overlayParams = params
+        // 잠금 풀림(USER_PRESENT)은 시스템 서버가 아니라 시스템 UI 앱이 보내서, 내보내지 않은 수신기에는 오지 않는다(#385).
+        // 보호된 방송이라 일반 앱은 보낼 수 없으므로 내보내도 다른 앱이 이 수신기를 부를 수 없다.
+        ContextCompat.registerReceiver(this, unlockReceiver, IntentFilter(Intent.ACTION_USER_PRESENT), ContextCompat.RECEIVER_EXPORTED)
+        unlockReceiverRegistered = true
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    }
+
+    /**
+     * 잠금 화면이 숨긴 오버레이 창을 다시 보이게 한다(#401).
+     *
+     * 잠금 화면이 뜨면 안드로이드는 다른 앱의 오버레이 창을 숨긴다. Galaxy S25+(Android 17)는 잠금을 풀어도 다시
+     * 보이게 하지 않아(`dumpsys window` 의 `mPolicyVisibility=false`), 우리 앱 화면을 열기 전까지 오버레이가 보이지
+     * 않고 프레임도 오지 않았다. 창의 배치를 다시 요청하면 WindowManager 가 잠금 화면 정책을 다시 따진다.
+     */
+    private fun showAgainAfterUnlock() {
+        val view = composeView ?: return
+        val params = overlayParams ?: return
+        try {
+            windowManager.updateViewLayout(view, params)
+        } catch (e: IllegalArgumentException) {
+            // 창이 이미 떨어졌다. 서비스가 내려가는 중이다.
+        }
     }
 
     /**
@@ -132,6 +166,10 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_NOT_STICKY
 
     override fun onDestroy() {
+        if (unlockReceiverRegistered) {
+            unregisterReceiver(unlockReceiver)
+            unlockReceiverRegistered = false
+        }
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         composeView?.let { view ->
             try {
