@@ -125,6 +125,9 @@ class RealtimeAiPipeline private constructor(
         CaptureAudioMath.captureSamplesForOneYamnetWindow(audioBuffer.sampleRate)
     private val captureScratch = FloatArray(captureNeed)
     private val mono16kScratch = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
+    private val pcmTrace = AiPcmTrace()
+    private var traceSessionId = AiLatencyTrace.nextId()
+    private var traceStartedNs = 0L
 
     private val debuggable: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
@@ -142,6 +145,9 @@ class RealtimeAiPipeline private constructor(
     fun start() {
         if (closed.get()) return
         if (!running.compareAndSet(false, true)) return
+        traceSessionId = AiLatencyTrace.nextId()
+        traceStartedNs = SystemClock.elapsedRealtimeNanos()
+        AiLatencyTrace.mark("pipeline_start", traceStartedNs, traceSessionId)
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
@@ -174,6 +180,8 @@ class RealtimeAiPipeline private constructor(
     }
 
     fun stop() {
+        if (AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.mark("pipeline_stop", SystemClock.elapsedRealtimeNanos(), traceSessionId)
         running.set(false)
         schedulerJob?.cancel()
         schedulerJob = null
@@ -183,9 +191,12 @@ class RealtimeAiPipeline private constructor(
      * Capture-thread safe: copies PCM into AI ring immediately.
      * Never runs inference.
      */
-    fun ingestInterleavedPcm(pcm: FloatArray, floatCount: Int) {
+    fun ingestInterleavedPcm(pcm: FloatArray, floatCount: Int,
+                             captureSessionId: Long = 0, endFrameExclusive: Long = 0,
+                             readCompletedNs: Long = 0, inputMayBeFiltered: Boolean = false) {
         if (!running.get() || closed.get()) return
-        ingestInterleaved(pcm, floatCount)
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime(),
+            captureSessionId, endFrameExclusive, readCompletedNs, inputMayBeFiltered)
     }
 
     /** Test helper — ingest without requiring [start]. */
@@ -268,10 +279,15 @@ class RealtimeAiPipeline private constructor(
 
     private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         inferenceExecutions.incrementAndGet()
+        val traceRecordingId = AiLatencyTrace.recordingId
+        val snapshotBeginNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
+        var snapshotEndNs = 0L
         val t0 = System.nanoTime()
         var logMel: FloatArray
         val preprocessNs = measureNanoTime {
-            audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
+            audioBuffer.copyTailRightPadded(captureScratch, captureNeed,
+                if (traceRecordingId != 0L) pcmTrace else null)
+            if (traceRecordingId != 0L) snapshotEndNs = SystemClock.elapsedRealtimeNanos()
             CaptureAudioMath.resampleMonoFloatTo16kCustom(
                 source = captureScratch,
                 sourceLength = captureNeed,
@@ -280,12 +296,14 @@ class RealtimeAiPipeline private constructor(
             )
             logMel = frontend.computeLogMelSpectrogram(mono16kScratch)
         }
+        val preprocessedNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
         val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
 
         var yamnetResult: YamnetInference.Result
         val yamnetNs = measureNanoTime {
             yamnetResult = yamnet.inferFromLogMelFlat(logMel)
         }
+        val inferredNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
 
         val pre = coarseClassifier.classify(yamnetResult.probabilities, mapping)
 
@@ -308,6 +326,24 @@ class RealtimeAiPipeline private constructor(
         )
 
         val totalMs = (System.nanoTime() - t0) / 1e6
+        val latency = if (traceRecordingId != 0L) AiLatencyStamp(
+            recordingId = traceRecordingId, pipelineSessionId = traceSessionId,
+            resultId = AiLatencyTrace.nextId(), pipelineStartedNs = traceStartedNs,
+            captureSessionId = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.captureSessionId else 0,
+            firstFrame = if (pcmTrace.recordingId == traceRecordingId && pcmTrace.captureSessionId != 0L)
+                (pcmTrace.endFrameExclusive - captureNeed).coerceAtLeast(0) else 0,
+            endFrameExclusive = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.endFrameExclusive else 0,
+            sampleRate = audioBuffer.sampleRate,
+            readCompletedNs = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.readCompletedNs else 0,
+            inputMayBeFiltered = pcmTrace.inputMayBeFiltered,
+            snapshotBeginNs = snapshotBeginNs, snapshotEndNs = snapshotEndNs,
+            preprocessedNs = preprocessedNs, inferredNs = inferredNs,
+            confirmedNs = SystemClock.elapsedRealtimeNanos(), rawCoarse = decision.postCoarse,
+            meetsThreshold = post.meetsThreshold, candidateStreak = post.candidateStreak,
+            confirmedCoarse = post.uiCoarse, mappingSignature = mapping.signature,
+            rawConfidence = decision.postConfidence, effectiveThreshold = post.effectiveThreshold,
+            candidateCoarse = post.candidateCoarse
+        ) else null
         val result = AiClassificationResult(
             coarse = post.uiCoarse,
             display = post.uiDisplay,
@@ -321,9 +357,13 @@ class RealtimeAiPipeline private constructor(
             totalMs = totalMs,
             mappingOverrideCount = mapping.overrideCount,
             mappingSignature = mapping.signature,
-            mappingInputs = previousOverrides
+            mappingInputs = previousOverrides,
+            latency = latency
         )
+        // Immediately before the atomic store: observers may run before its post-store timestamp.
+        val publicationNs = if (latency != null) SystemClock.elapsedRealtimeNanos() else 0L
         lastResult.set(result)
+        if (latency != null) AiLatencyTrace.result(latency, publicationNs)
 
         if (log && debuggable) {
             maybeLog(

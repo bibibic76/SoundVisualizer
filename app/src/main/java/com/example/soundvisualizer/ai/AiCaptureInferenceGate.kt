@@ -10,10 +10,13 @@ internal class AiCaptureInferenceGate(
     private val audioBuffer: AiAudioBuffer,
     private val silenceGate: AiSilenceGate = AiSilenceGate()
 ) {
-    fun ingestInterleaved(pcm: FloatArray, floatCount: Int, nowMs: Long) {
+    fun ingestInterleaved(pcm: FloatArray, floatCount: Int, nowMs: Long,
+                          captureSessionId: Long = 0, endFrameExclusive: Long = 0,
+                          readCompletedNs: Long = 0, inputMayBeFiltered: Boolean = false) {
         // Publish PCM before opening inference so a newly observed open gate always
         // has the triggering capture data available in the ring.
-        audioBuffer.ingestInterleaved(pcm, floatCount)
+        audioBuffer.ingestInterleaved(pcm, floatCount, captureSessionId, endFrameExclusive,
+            readCompletedNs, inputMayBeFiltered)
         silenceGate.onInterleavedPcm(pcm, floatCount, nowMs)
     }
 

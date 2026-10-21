@@ -14,6 +14,8 @@ interface VisualizerInputs {
     fun settingsFor(mode: VisualMode): ModeSettings
     /** [AiClassification] 의 라벨 중 하나. */
     fun coarseLabel(): String
+    /** The same result just read by coarseLabel; diagnostics only, no second source read. */
+    fun latencyStamp(): com.example.soundvisualizer.ai.AiLatencyStamp? = null
     fun colorFor(label: String): Int
     fun isShown(label: String): Boolean
 
@@ -39,7 +41,13 @@ object LiveVisualizerInputs : VisualizerInputs {
         VisualMode.Outline -> SettingsManager.outlineMode.value
     }
 
-    override fun coarseLabel(): String = AiClassification.coarse()
+    private var lastLatency: com.example.soundvisualizer.ai.AiLatencyStamp? = null
+    override fun coarseLabel(): String {
+        val result = AiClassification.latest()
+        lastLatency = result?.latency
+        return result?.coarse ?: AiClassification.AMBIENT
+    }
+    override fun latencyStamp() = lastLatency
 
     override fun colorFor(label: String): Int = when (label) {
         AiClassification.DANGER -> SettingsManager.colorDanger.value

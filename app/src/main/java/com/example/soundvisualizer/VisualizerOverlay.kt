@@ -55,7 +55,7 @@ fun VisualizerOverlay(covered: StateFlow<Boolean>) {
         }
         // 개발자 모드 표시. 상태 읽기를 저 안에 가둬 두었으므로 이 함수는 여전히 리컴포지션되지 않는다.
         // 여기서 설정이나 분류 결과를 읽으면 그 성질이 깨진다.
-        AiDebugOverlay()
+        AiDebugOverlay(covered)
     }
 }
 

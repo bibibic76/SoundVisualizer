@@ -211,6 +211,21 @@ class AiDebugRecorderInstrumentedTest {
         logDir.deleteRecursively()
     }
 
+    @Test
+    fun latencyFileIsSeparateBoundedSessionAndDrainsOnStop() {
+        AiDebugRecorder.start(context)
+        com.example.soundvisualizer.ai.AiLatencyTrace.mark("test_capture", android.os.SystemClock.elapsedRealtimeNanos(), 123)
+        AiDebugRecorder.stop()
+        waitFor("latency CSV drained and closed") {
+            files().any { it.name.startsWith("latency-") && text(it).contains("recording_end") }
+        }
+        val latencyFile = files().single { it.name.startsWith("latency-") }
+        assertEquals(AiLatencyCsv.HEADER, text(latencyFile).lineSequence().first())
+        assertTrue(text(latencyFile).contains("test_capture"))
+        assertTrue(text(latencyFile).contains("dropped=0"))
+        assertEquals(0L, com.example.soundvisualizer.ai.AiLatencyTrace.recordingId)
+    }
+
     private fun offer(
         result: AiClassificationResult,
         nowMs: Long,
