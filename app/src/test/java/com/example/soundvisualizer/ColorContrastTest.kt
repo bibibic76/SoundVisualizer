@@ -43,7 +43,14 @@ class ColorContrastTest {
 
     @Test
     fun `스위치·슬라이더 막대는 카드 위에서 그림 요소 기준 3대1 을 넘는다`() {
+        // 설정 탭 맨 위의 쉬운 설정·자세한 설정 두 칸(#408)도 이 대비 때문에 카드 위에 둔다(배경 위에서는 3:1 에 못 미친다).
         assertTrue(contrast(AccentFillColor, CardColor) >= 3f)
+    }
+
+    @Test
+    fun `쉬운 설정의 고르지 않은 칸 글자와 그림은 4_5대1 을 넘는다`() {
+        // 그림과 낱말을 같은 색으로 그린다(#408). 설정 화면의 다른 선택지 칸과 같은 바탕이다. 고른 칸은 흰 글자(위)다.
+        assertReadable("선택지 칸 위 글자", PrimaryTextColor, ChoiceColor)
     }
 
     @Test

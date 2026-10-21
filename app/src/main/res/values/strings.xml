@@ -57,7 +57,7 @@
     <string name="tutorial_direction_body">A sound on the left is drawn bigger on the left, and a sound on the right on the right. It can\'t tell front from back.</string>
     <string name="tutorial_direction_body_external">In External sound mode, the app doesn\'t show where a sound comes from yet and draws every sound in the center. With sound playing on your phone, a sound on the left is drawn bigger on the left.</string>
     <string name="tutorial_types_title">Each type of sound gets its own color</string>
-    <string name="tutorial_types_body">AI sorts sounds into three types and draws each in its own color. You can change the colors in the Settings tab.</string>
+    <string name="tutorial_types_body">AI sorts sounds into three types and draws each in its own color. You can change the colors under “Detailed” in the Settings tab.</string>
     <string name="tutorial_type_ambient">Ambient</string>
     <string name="tutorial_type_ambient_examples">Music, rain and everything else</string>
     <string name="tutorial_type_speech">Speech</string>
@@ -108,6 +108,26 @@
         영어(모델이 말한 raw 라벨)이므로 다른 언어로 옮길 것이 없다. 나머지 언어는 영어로 폴백된다.
     -->
     <string name="settings_section_developer" tools:ignore="MissingTranslation">For the team</string>
+
+    <!--
+        Simple settings (#408): the settings tab opens on a picture-based view.
+        settings_view_easy / settings_view_detailed are the two halves of the switch at the top of the settings tab;
+        help texts quote settings_view_detailed, so keep those quotes identical. They must not equal a tab name.
+        The size and vibration words sit under small pictures: keep them to one short word.
+    -->
+    <string name="settings_view_easy">Simple</string>
+    <string name="settings_view_detailed">Detailed</string>
+    <string name="easy_section_shape">Shape</string>
+    <string name="easy_section_size">Size</string>
+    <string name="easy_section_types">Sound types</string>
+    <string name="easy_size_small">Small</string>
+    <string name="easy_size_medium">Medium</string>
+    <string name="easy_size_large">Large</string>
+    <string name="easy_vibration_off">Off</string>
+    <string name="easy_vibration_low">Weak</string>
+    <string name="easy_vibration_high">Strong</string>
+    <string name="easy_vibration_off_external">Ambient sounds don\'t vibrate in External sound mode.</string>
+    <string name="easy_vibration_preview_running">No preview while running.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Language</string>
@@ -332,14 +352,14 @@
     <string name="help_mode_pad_desc">Bars light up at 8 spots around the edge of the screen. Shows direction most clearly.</string>
     <string name="help_mode_outline_desc">Draws only a thin outline of the wave, so it covers less of your game.</string>
     <string name="help_mode_circle_desc">A ring in the center of the screen swells toward the sound.</string>
-    <string name="help_modes_note">Settings like size and opacity are saved separately for each mode and can be changed in the Settings tab.</string>
+    <string name="help_modes_note">Settings like size and opacity are saved separately for each mode and can be changed under “Detailed” in the Settings tab.</string>
     <string name="help_modes_notification">While it\'s on, you can expand the running notification to switch modes without opening the app.</string>
 
     <string name="help_sound_title">Sound types and vibration</string>
-    <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. You can change the color of each type and whether it\'s shown in the Settings tab.</string>
+    <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. In the Settings tab you can choose whether each type is shown, and change its color under “Detailed”.</string>
     <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI\'s vote on the type, though, so this doesn\'t mean every doorbell will be shown as danger. Turn on Advanced mode to change sounds one by one.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
-    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate, and you can pick a mode (Off, Slow, Medium, Fast, Continuous) and a strength for each type.</string>
+    <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate. For each type, you can choose Off, Weak or Strong in “Simple”, or a mode (Off, Slow, Medium, Fast, Continuous) and a strength in “Detailed”.</string>
     <string name="help_sound_haptic_rule">Only types shown on screen vibrate. The phone keeps vibrating while a sound of that type lasts and stops when it does. Medium pulses every half second, Slow at half that pace and Fast at twice that pace, while Continuous vibrates without a break. Every mode vibrates at the strength you picked, without getting stronger or weaker.</string>
     <string name="help_sound_haptic_external">In External sound mode, the phone checks whether a sound is still going only in the pauses between pulses, so it doesn\'t mistake its own vibration for sound. Vibration can therefore go on for a moment after the sound stops, usually under a second. To keep those pauses long enough, the fastest you can pick in this mode is Slow for speech and Medium for danger sounds, and ambient sounds don\'t vibrate, because there is always some sound around you. Types set faster vibrate at that limit, and when you turn External sound mode off, they vibrate as you set them.</string>
 
@@ -353,7 +373,7 @@
     <string name="help_note_mic_sensitivity">In External sound mode, Microphone sensitivity only changes how loud sounds seem to the graphics, the vibration and the danger sound alert on the lock screen. Raise it if quiet sounds barely show, and lower it if background noise shows in a loud place. If you set the sensitivity below the default notch (the 4th from the left), quiet sounds may not vibrate or set off the danger sound alert. The sensitivity doesn\'t change the sound the AI uses to tell sound types apart. So sounds too quiet for the AI to hear don\'t vibrate or set off the danger sound alert, even if you raise the sensitivity and the graphics show them. In that case, keep the phone near where the sound comes from and don\'t cover the microphone.</string>
     <string name="help_note_stopped">Starting screen recording, screen sharing or casting turns the visualizer off, because it uses the same screen recording consent and Android lets only one app use it at a time. If another app is recording, sharing or casting, turning it on again ends it. In most cases, when it turns off without you stopping it, your phone vibrates three long times and shows a notification with a “Turn on again” button. Stopping sound capture from your phone\'s screen-sharing controls shows the same alert, and a force stop or a crash can\'t tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
     <string name="help_note_stopped_external">External sound mode stays on regardless of screen recording, screen sharing or casting. In most cases, when it turns off without you stopping it, your phone vibrates three long times and shows a notification with a “Turn on again” button. A force stop or a crash can\'t tell you at all. If notifications are off, only the vibration tells you, and Home shows what turned off when you open the app.</string>
-    <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in the Settings tab. External sound mode keeps listening while the screen is off.</string>
+    <string name="help_note_screen_off">While the screen is off, it pauses to save battery and picks up again when you turn the screen on. You can change this under Battery in “Detailed” in the Settings tab. External sound mode keeps listening while the screen is off.</string>
     <string name="help_note_ai">AI classification can be wrong. Don\'t rely on this app as your only safeguard when safety is at stake.</string>
 
     <string name="help_faq_title">FAQ</string>
@@ -361,16 +381,16 @@
     <string name="help_faq_stopped_a">It turns off when screen recording, screen sharing or casting starts, or when sound capture stops because of an error. Tap “Turn on again” in the notification, or turn it on from Home or Quick Settings. Android asks for the screen recording consent every time, and turning it on again ends any recording, sharing or casting that is running.</string>
     <string name="help_faq_stopped_a_external">It turns off when sound capture stops because of an error. Tap “Turn on again” in the notification, or turn it on from Home or Quick Settings. External sound mode doesn\'t ask for screen recording consent and stays on regardless of other apps\' screen recording, sharing or casting.</string>
     <string name="help_faq_no_graphic_q">I don\'t see any graphics.</string>
-    <string name="help_faq_no_graphic_a">Check whether the app you\'re playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure opacity isn\'t too low in Settings, and that showing the current sound type isn\'t turned off. If you\'re visualizing sound from your phone and the media volume is very low, turn it up a little.</string>
-    <string name="help_faq_no_graphic_a_external">Check that the microphone isn\'t blocked. During a call, while another app is using the microphone, or if the microphone is blocked in Quick Settings, no sound comes in, and Home and the running notification tell you. If quiet sounds barely show, raise Microphone sensitivity on Home. Also make sure opacity isn\'t too low in Settings, and that showing the current sound type isn\'t turned off.</string>
+    <string name="help_faq_no_graphic_a">Check whether the app you\'re playing blocks audio capture, and whether its own sound is turned off. If no sound reaches the visualizer for a while, Home and the running notification tell you so. Also make sure showing the current sound type isn\'t turned off in Settings, and that opacity isn\'t too low in “Detailed”. If you\'re visualizing sound from your phone and the media volume is very low, turn it up a little.</string>
+    <string name="help_faq_no_graphic_a_external">Check that the microphone isn\'t blocked. During a call, while another app is using the microphone, or if the microphone is blocked in Quick Settings, no sound comes in, and Home and the running notification tell you. If quiet sounds barely show, raise Microphone sensitivity on Home. Also make sure showing the current sound type isn\'t turned off in Settings, and that opacity isn\'t too low in “Detailed”.</string>
     <string name="help_faq_no_vibration_q">It doesn\'t vibrate.</string>
-    <string name="help_faq_no_vibration_answer">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. While the screen is off it pauses by default, so turn off “Pause while the screen is off” under Battery in Settings to keep getting vibration alerts then. While sound type detection isn\'t working, only loud sounds vibrate, using the danger sound setting. If vibration is turned off in your phone\'s settings, it may not vibrate. If you\'re visualizing sound from your phone and the media volume is very low, turn it up a little.</string>
+    <string name="help_faq_no_vibration_answer">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. While the screen is off it pauses by default, so turn off “Pause while the screen is off” under Battery in “Detailed” in Settings to keep getting vibration alerts then. While sound type detection isn\'t working, only loud sounds vibrate, using the danger sound setting. If vibration is turned off in your phone\'s settings, it may not vibrate. If you\'re visualizing sound from your phone and the media volume is very low, turn it up a little.</string>
     <string name="help_faq_no_vibration_answer_external">In Settings, under Sound types, make sure both Show and Vibrate are on for that type. In External sound mode, ambient sounds such as a doorbell don\'t vibrate. To feel one, change it to Danger or Speech in the Sounds tab. Speech vibrates up to Slow and danger sounds up to Medium. During a call, while another app is using the microphone, or if the microphone is blocked in Quick Settings, no sound comes in, and Home and the running notification tell you. If you set Microphone sensitivity on Home below the default notch (the 4th from the left), move it back up. Sounds too quiet for the AI to hear don\'t vibrate, even if you raise the sensitivity further and the graphics show them. In that case, keep the phone near where the sound comes from and don\'t cover the microphone. While sound type detection isn\'t working, only loud sounds vibrate, using the danger sound setting, up to Medium. Microphone sensitivity then changes what counts as loud. If vibration is turned off in your phone\'s settings, it may not vibrate.</string>
     <string name="help_faq_install_q">A new version won\'t install.</string>
     <string name="help_faq_install_a">An APK built elsewhere has a different signature and can\'t be installed over the existing app. Uninstall the existing app first, then install. This resets your settings.</string>
     <string name="help_faq_battery_q">Does it use a lot of battery?</string>
     <string name="help_faq_battery_a">It only draws while there\'s sound and goes idle when it\'s quiet. While the screen is off it stops capturing sound by default. Because it keeps capturing while the screen is on, though, we recommend turning it off when you\'re not using it.</string>
-    <string name="help_faq_battery_less_drawing">While sound is playing, drawing the graphic uses the most power. Turning on “Draw the graphic less often” under Battery in Settings uses less, though the movement is less smooth.</string>
+    <string name="help_faq_battery_less_drawing">While sound is playing, drawing the graphic uses the most power. Turning on “Draw the graphic less often” under Battery in “Detailed” in Settings uses less, though the movement is less smooth.</string>
     <string name="help_faq_language_q">How do I change the app language?</string>
     <string name="help_faq_language_a">Tap the globe button at the bottom right of the Home tab and pick a language. “System default” follows your phone\'s language. On Android 13 and later, you can also change it under “App languages” in your phone\'s settings.</string>
 

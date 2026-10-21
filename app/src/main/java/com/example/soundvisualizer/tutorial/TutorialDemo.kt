@@ -34,10 +34,13 @@ import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,10 +76,12 @@ import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.BgColor
 import com.example.soundvisualizer.CardColor
 import com.example.soundvisualizer.LiveVisualizerInputs
+import com.example.soundvisualizer.ModeSettings
 import com.example.soundvisualizer.PrimaryTextColor
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
 import com.example.soundvisualizer.SettingsManager
+import com.example.soundvisualizer.VisualMode
 import com.example.soundvisualizer.VisualizerEngine
 import kotlin.math.PI
 import kotlin.math.sin
@@ -89,6 +94,9 @@ private val PHONE_MAX_WIDTH = 340.dp
 private val BEZEL = 6.dp
 private val PHONE_CORNER = 22.dp
 private val SCREEN_CORNER = 16.dp
+
+/** 작은 폰 그림([DemoPhone] 의 compactFrame)에서 테두리와 모서리를 이 비율 밑으로는 줄이지 않는다. 테두리가 사라지지 않게 한다. */
+private const val MIN_FRAME_SCALE = 0.35f
 
 /**
  * 폰 그림의 화면을 어떤 폰을 줄여 놓은 것으로 볼지: 짧은 변이 이만한(dp) 폰의 가로 화면.
@@ -172,6 +180,104 @@ internal fun TutorialIllustration(
     }
 }
 
+/**
+ * 쉬운 설정의 모양 카드(#408) 하나의 그림. 튜토리얼과 같은 폰 그림 안에서 실제 오버레이 엔진이 [mode] 를 [settings] 로 그린다.
+ *
+ * - 평소에는 멈춘 그림이다. 대본은 튜토리얼의 종류 쪽([TutorialScene.Types])이고, 멈춘 그림은 오른쪽으로 기운 위협음이다.
+ * - [play] 가 바뀔 때마다(카드를 선택하거나 크기를 바꾸거나 설정 탭에 들어올 때) 대본의 처음부터 [PREVIEW_PLAY_SEC] 동안
+ *   움직인다. 환경음 → 대화음 → 위협음 순서로 세 종류의 색이 나오고, 멈춘 그림과 같은 위협음에 닿을 때 멈춘다.
+ *   저절로 5초 넘게 움직이지 않으므로 멈춤 단추를 따로 두지 않는다(WCAG 2.2.2). 오래 도는 그림이 없어 설정 탭을 보는
+ *   동안 덜 일한다.
+ * - [canPlay] 가 거짓이면(설정 탭이 보이지 않거나, 선택하지 않은 카드이거나, 시스템에서 애니메이션을 껐을 때) 움직이지 않고,
+ *   움직이던 중이면 멈춘 그림으로 돌아간다.
+ * - 그림은 옆의 모드 이름이 말하는 것을 보여 주기만 하므로 화면 읽어주기에서는 건너뛴다.
+ *
+ * @param settings 사용자의 그 모드 설정. 그대로 그리면 작은 그림에서 흐리므로 [previewSettings] 로 진하기와 반응만 올린다.
+ * @param play 움직임을 새로 시작하라는 번호. 0 이면 움직이지 않는다.
+ * @param width 폰 그림의 너비. 부르는 쪽이 카드 너비에서 정해 넘긴다. 카드들이 높이를 맞추려고 크기를 미리 물어보는데,
+ *   여기서 [BoxWithConstraints] 로 크기를 재면 그 물음에 답하지 못해 앱이 멈춘다.
+ * @param frames 그림이 움직이는 프레임마다 불린다. 시험이 움직임을 셀 때만 넘긴다.
+ */
+@Composable
+internal fun ModePreviewPhone(
+    mode: VisualMode,
+    settings: ModeSettings,
+    play: Int,
+    canPlay: Boolean,
+    width: Dp,
+    modifier: Modifier = Modifier,
+    frames: TutorialFrameFollower? = null
+) {
+    val scene = TutorialScene.Types
+    val time = remember { mutableFloatStateOf(scene.stillAtSec) }
+    val shown = remember(settings) { previewSettings(settings) }
+    // 움직이는 중인지와, 멈춘 그림을 새로 만들 때마다 올리는 번호. 번호가 바뀌면 엔진을 멈춘 장면까지 다시 미리 돌린다.
+    // 그 자리에서 멈추면(튜토리얼, #331) 쉬는 박자의 빈 화면에서 설 수 있다. 카드는 늘 같은 대표 장면을 보여 준다.
+    var playing by remember { mutableStateOf(false) }
+    var still by remember { mutableIntStateOf(0) }
+    LaunchedEffect(play, canPlay) {
+        if (canPlay && play > 0) {
+            playing = true
+        } else if (playing) {
+            playing = false
+            still++
+        }
+    }
+    val phoneWidth = min(width, PHONE_MAX_WIDTH)
+    Box(modifier = modifier.clearAndSetSemantics { }, contentAlignment = Alignment.Center) {
+        if (phoneWidth > 0.dp) {
+            // 폰 그림의 왼쪽·오른쪽은 실제 방향이다. 오른쪽에서 쓰는 언어에서도 뒤집지 않는다(튜토리얼과 같다).
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                DemoPhone(
+                    scene, time, playing, phoneWidth, phoneWidth / PHONE_ASPECT, haptics = null, sounds = frames,
+                    mode = mode, settings = shown, referenceShortSideDp = PREVIEW_REFERENCE_SHORT_SIDE_DP,
+                    minRedrawNs = PREVIEW_MIN_REDRAW_NS, compactFrame = true, stillKey = still, playKey = play,
+                    startAtSec = 0f, stopAfterSec = PREVIEW_PLAY_SEC,
+                    onStopped = {
+                        playing = false
+                        still++
+                    }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 모양 카드는 튜토리얼 그림보다 작다. 실제 폰을 이만한(dp) 짧은 변으로 줄여 놓은 것으로 보아, 테두리 띠와 선이 작은 카드에서도
+ * 보일 만큼 굵게 그린다. 모양과 크기 단계의 차이는 그대로다.
+ */
+private const val PREVIEW_REFERENCE_SHORT_SIDE_DP = 240f
+
+/** 모양 카드는 1초에 30번쯤만 다시 그린다. 작은 그림이라 차이가 거의 보이지 않고, 설정 탭을 보는 동안 덜 일한다. */
+private const val PREVIEW_MIN_REDRAW_NS = 33_000_000L
+
+/**
+ * 모양 카드가 한 번 움직이는 시간(초). 대본의 처음부터 환경음·대화음을 지나 첫 위협음이 울린 직후까지라, 멈춘 그림(위협음)과
+ * 이어진다. 5초를 넘지 않아야 멈춤 단추 없이 둘 수 있다(WCAG 2.2.2).
+ */
+internal const val PREVIEW_PLAY_SEC = 4.9f
+
+/**
+ * 모양 카드가 그릴 설정: 사용자의 그 모드 설정이되 진하기와 크기 반응은 튜토리얼 그림만큼은 올린다. 작은 그림에서 기본값
+ * 그대로면 어두운 장면 위의 색이 흐리고 박자가 잘 읽히지 않는다(튜토리얼 그림과 같은 까닭, [TutorialDemoInputs.demoSettings]).
+ * 크기는 그대로라 크기 단계를 바꾸면 그림도 바뀐다. 사용자 설정과 섞이지 않게 새로 만든다.
+ */
+internal fun previewSettings(user: ModeSettings): ModeSettings {
+    val demo = TutorialDemoInputs.demoSettings()
+    return user.copy(opacity = maxOf(user.opacity, demo.opacity), sensitivity = maxOf(user.sensitivity, demo.sensitivity))
+}
+
+/**
+ * 폰 그림 하나. 튜토리얼 쪽과 쉬운 설정의 모양 카드가 함께 쓴다. 뒤의 인자는 모양 카드만 바꾼다(기본값은 튜토리얼 그대로).
+ *
+ * @param compactFrame 작은 그림이면 폰의 테두리와 모서리를 너비에 맞춰 줄인다. 줄이지 않으면 작은 폰이 알약 모양이 되고
+ *   화면 네 귀퉁이의 그림이 잘린다.
+ * @param stillKey 바뀌면 엔진을 멈춘 장면까지 다시 미리 돌린다.
+ * @param playKey 움직이는 중에 바뀌면 [startAtSec] 부터 다시 움직인다.
+ * @param startAtSec 움직이기 시작할 때의 대본 시각. null 이면 멈춘 시각에서 이어 간다(튜토리얼, #331).
+ * @param stopAfterSec 이만큼 움직이면 스스로 멈추고 [onStopped] 를 부른다.
+ */
 @Composable
 private fun DemoPhone(
     scene: TutorialScene,
@@ -180,14 +286,31 @@ private fun DemoPhone(
     phoneWidth: Dp,
     phoneHeight: Dp,
     haptics: TutorialFrameFollower?,
-    sounds: TutorialFrameFollower?
+    sounds: TutorialFrameFollower?,
+    mode: VisualMode = VisualMode.Wave,
+    settings: ModeSettings = TutorialDemoInputs.demoSettings(),
+    referenceShortSideDp: Float = REFERENCE_SHORT_SIDE_DP,
+    minRedrawNs: Long = MIN_REDRAW_NS,
+    compactFrame: Boolean = false,
+    stillKey: Int = 0,
+    playKey: Int = 0,
+    startAtSec: Float? = null,
+    stopAfterSec: Float = Float.POSITIVE_INFINITY,
+    onStopped: () -> Unit = {}
 ) {
     val density = LocalDensity.current
-    val screenWidthPx = with(density) { (phoneWidth - BEZEL * 2).toPx() }
-    val screenHeightPx = with(density) { (phoneHeight - BEZEL * 2).toPx() }
-    val engineDensity = screenHeightPx / REFERENCE_SHORT_SIDE_DP
+    val frameScale = if (compactFrame) (phoneWidth / PHONE_MAX_WIDTH).coerceIn(MIN_FRAME_SCALE, 1f) else 1f
+    val bezel = BEZEL * frameScale
+    val phoneCorner = PHONE_CORNER * frameScale
+    val screenCorner = SCREEN_CORNER * frameScale
+    val screenWidthPx = with(density) { (phoneWidth - bezel * 2).toPx() }
+    val screenHeightPx = with(density) { (phoneHeight - bezel * 2).toPx() }
+    val engineDensity = screenHeightPx / referenceShortSideDp
     // 입력은 이 쪽만 쓴다. 넘기는 동안 두 쪽의 엔진이 함께 돌기 때문이다.
-    val inputs = remember(scene) { TutorialDemoInputs(scene, LiveVisualizerInputs::colorFor) }
+    // 모양 카드는 크기 단계를 바꾸거나 움직임이 끝나면 엔진을 새로 만든다(설정, stillKey).
+    val inputs = remember(scene, mode, settings, stillKey) {
+        TutorialDemoInputs(scene, mode, settings, LiveVisualizerInputs::colorFor)
+    }
     // 크기를 먼저 알려야 한다. 모르는 채로 틱을 돌리면 깊이가 거의 0 인 채로 굳는다.
     // 입력은 반드시 넘긴다. 빼면 기본값인 실제 소리가 그려진다.
     fun newEngine(source: TutorialDemoInputs) =
@@ -210,26 +333,30 @@ private fun DemoPhone(
     val frame = remember { mutableIntStateOf(0) }
     // 소리는 움직이는 도중에도 켜고 끈다. 돌고 있는 루프가 지금 것을 읽게 한다.
     val currentSounds by rememberUpdatedState(sounds)
+    val currentOnStopped by rememberUpdatedState(onStopped)
 
-    LaunchedEffect(engine, running) {
+    LaunchedEffect(engine, running, playKey) {
         val live = engine ?: return@LaunchedEffect
         if (!running) {
             frame.intValue++
             return@LaunchedEffect
         }
-        // 멈춘 시각(처음이면 멈춰 둔 장면의 시각)에서 이어 간다.
+        // 멈춘 시각(처음이면 멈춰 둔 장면의 시각)에서 이어 간다. 모양 카드는 대본의 처음부터 움직인다.
+        if (startAtSec != null) time.floatValue = startAtSec
         val base = time.floatValue
         var start = -1L
         var lastDraw = 0L
+        var played = 0f
         try {
-            while (true) {
+            while (played < stopAfterSec) {
                 // 끝없이 도는 애니메이션으로 알린다. UI 테스트처럼 이런 애니메이션을 멈춰 두는 곳에서 화면이 한가해질 수
                 // 있다(무한 전환 rememberInfiniteTransition 과 같은 길). 앱에서는 withFrameNanos 와 똑같다.
                 withInfiniteAnimationFrameNanos { nanos ->
                     if (start < 0L) start = nanos
-                    if (nanos - lastDraw >= MIN_REDRAW_NS) {
+                    if (nanos - lastDraw >= minRedrawNs) {
                         lastDraw = nanos
-                        val t = base + (nanos - start) / 1_000_000_000f
+                        played = (nanos - start) / 1_000_000_000f
+                        val t = base + played
                         inputs.timeSec = t
                         // 조용해서 엔진이 쉬는 중이면 소리가 다시 날 때까지 확인만 한다. 오버레이의 쉬기(rest)와 달리
                         // OverlayWake 는 쓰지 않는다. 그 신호를 기다리는 쪽은 실제 오버레이 하나뿐이어야 한다.
@@ -248,6 +375,8 @@ private fun DemoPhone(
             haptics?.stop()
             currentSounds?.stop()
         }
+        // 여기까지 오면 정해 둔 만큼 다 움직인 것이다(취소되면 위에서 끝난다).
+        currentOnStopped()
     }
 
     val shakePx = with(density) { 2.5.dp.toPx() }
@@ -261,14 +390,14 @@ private fun DemoPhone(
                     sin(t * 2f * PI.toFloat() * 32f) * shakePx
                 } else 0f
             }
-            .background(PhoneBodyColor, RoundedCornerShape(PHONE_CORNER))
-            .border(1.dp, PhoneEdgeColor, RoundedCornerShape(PHONE_CORNER))
-            .padding(BEZEL)
+            .background(PhoneBodyColor, RoundedCornerShape(phoneCorner))
+            .border(1.dp, PhoneEdgeColor, RoundedCornerShape(phoneCorner))
+            .padding(bezel)
     ) {
         Spacer(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(SCREEN_CORNER))
+                .clip(RoundedCornerShape(screenCorner))
                 .drawWithCache {
                     val w = size.width
                     val h = size.height

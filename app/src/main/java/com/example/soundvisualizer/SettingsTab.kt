@@ -30,9 +30,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
 
-/** @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다. */
+/**
+ * 설정 탭. 맨 위의 두 칸으로 쉬운 설정(그림으로 선택하는 화면, #408)과 자세한 설정(모든 설정)을 오간다.
+ *
+ * @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다.
+ * @param active 이 탭이 지금 보고 있는 탭인지. 쉬운 설정의 모양 카드는 이때만 움직인다.
+ */
 @Composable
-fun SettingsTab(onAddTile: () -> Unit) {
+fun SettingsTab(onAddTile: () -> Unit, active: Boolean = true) {
+    val easy by SettingsManager.easySettings.collectAsState()
     val currentMode by SettingsManager.visualMode.collectAsState()
 
     // 색 고르기 창은 목록 **밖**에 둔다. 줄 안에 두면 그 줄이 화면 밖으로 밀릴 때(회전 뒤 스크롤 위치가
@@ -62,6 +68,16 @@ fun SettingsTab(onAddTile: () -> Unit) {
     }
 
     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
+        item(key = "view_switch") { SettingsViewSwitch(easy) }
+
+        if (easy) {
+            item(key = "easy") {
+                EasySettingsContent(active, onAddTile)
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+            return@LazyColumn
+        }
+
         item {
             // 언어는 홈 오른쪽 아래로 옮겼다(#308). 앱을 열면 처음 보이는 곳이라 읽지 못하는 언어로 바뀌어도 찾기 쉽다.
             Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
@@ -440,9 +456,12 @@ fun ColorSettingRow(
  *
  * 추가해 두었으면 버튼 대신 추가되어 있다고만 보여 준다. 설정 탭은 늘 보는 곳이 아니라, 카드를 통째로 감추면 어디서
  * 추가했는지, 지웠을 때 어디서 다시 추가하는지 헷갈린다. 추가 여부는 타일 서비스가 추가·제거될 때 알려 준다.
+ *
+ * @param compact 쉬운 설정(#408)에서는 추가 버튼 위의 설명을 뺀다. 제목과 버튼이 할 일을 말한다. 버튼을 띄울 수 없는
+ *   Android 12 이하의 방법 안내는 그대로 둔다.
  */
 @Composable
-private fun QuickTileCard(onAddTile: () -> Unit) {
+internal fun QuickTileCard(onAddTile: () -> Unit, compact: Boolean = false) {
     val tileAdded by SettingsManager.tileAdded.collectAsState()
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -457,10 +476,14 @@ private fun QuickTileCard(onAddTile: () -> Unit) {
                     fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp)
                 )
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                    Text(
-                        stringResource(R.string.tile_add_desc),
-                        fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                    )
+                    if (compact) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                    } else {
+                        Text(
+                            stringResource(R.string.tile_add_desc),
+                            fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+                        )
+                    }
                     OutlinedButton(
                         onClick = onAddTile,
                         border = BorderStroke(1.dp, AccentColor),
