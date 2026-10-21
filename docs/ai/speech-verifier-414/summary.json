@@ -1,0 +1,869 @@
+{
+  "schema": 1,
+  "model_sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "baseline_sha256": "0ad4cc4ab51d3ddea8753b58d334290d10ad0034d60f76f13b6dea8dd9d6f5b5",
+  "manifest_sha256": "9699b4048d18e3e55170c818253b9aca2346402f004a64b449855088c7358684",
+  "source_count": 124,
+  "audio_seconds_including_silence_and_repeated_phases": 3029.7388027210886,
+  "host": {
+    "platform": "Linux-7.0.0-31-generic-aarch64-with-glibc2.43",
+    "onnxruntime": "1.31.0",
+    "numpy": "2.5.4",
+    "session_load_ms": 11.111539,
+    "ort_call_count": 97425,
+    "ort_call_median_p95_ms": [
+      0.069451,
+      0.077513
+    ]
+  },
+  "limitations": "Reused development audio, no semantic onset labels. Fixed regular clock, independent worker assumed. Not Android, power, thermal, CPU/RSS or display timing.",
+  "full_report_sha256": "ff380d6cb36a9ad599ad8e5f5892a5a0928bb28022ece4bc781642dbc9e4e048",
+  "profiles": {
+    "continuous-p0.9-cost2": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 97,
+      "worsened": 0,
+      "same": 92,
+      "paired_saved_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        95.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        425.0,
+        585.3999999999996
+      ],
+      "ambient_extra_speech_ms": 126.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 0,
+      "reverted_preview_ms": 0,
+      "accepted": 98,
+      "vad_calls": 94506,
+      "late_windows": 3,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.9-cost8": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 97,
+      "worsened": 0,
+      "same": 92,
+      "paired_saved_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        83.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        425.0,
+        585.3999999999996
+      ],
+      "ambient_extra_speech_ms": 120.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 0,
+      "reverted_preview_ms": 0,
+      "accepted": 98,
+      "vad_calls": 94506,
+      "late_windows": 106,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.9-cost32": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 97,
+      "worsened": 0,
+      "same": 92,
+      "paired_saved_median_p95_ms": [
+        35.0,
+        41.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        35.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        35.0,
+        41.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        448.0,
+        596.9999999999998
+      ],
+      "ambient_extra_speech_ms": 94.37414965986409,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 0,
+      "reverted_preview_ms": 0,
+      "accepted": 98,
+      "vad_calls": 94506,
+      "late_windows": 131,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.75-cost2": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 112,
+      "worsened": 0,
+      "same": 77,
+      "paired_saved_median_p95_ms": [
+        95.0,
+        105.27482993197287
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        95.0,
+        95.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        419.0,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 126.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 101.0,
+      "accepted": 113,
+      "vad_calls": 94506,
+      "late_windows": 2,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.75-cost8": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 112,
+      "worsened": 0,
+      "same": 77,
+      "paired_saved_median_p95_ms": [
+        83.0,
+        96.87482993197284
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        83.0,
+        83.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        419.0,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 120.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 89.0,
+      "accepted": 113,
+      "vad_calls": 94506,
+      "late_windows": 91,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.75-cost32": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 112,
+      "worsened": 0,
+      "same": 77,
+      "paired_saved_median_p95_ms": [
+        35.0,
+        57.09251700680273
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        35.0,
+        35.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        35.0,
+        41.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        448.0,
+        576.0
+      ],
+      "ambient_extra_speech_ms": 94.37414965986409,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 41.0,
+      "accepted": 113,
+      "vad_calls": 94506,
+      "late_windows": 116,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.5-cost2": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 122,
+      "worsened": 0,
+      "same": 67,
+      "paired_saved_median_p95_ms": [
+        95.0,
+        105.27482993197287
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        95.0,
+        101.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        396.73922902494314,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 380.08843537414987,
+      "ambient_extra_exposure_conditions": 3,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 101.0,
+      "accepted": 125,
+      "vad_calls": 94506,
+      "late_windows": 2,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.5-cost8": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 122,
+      "worsened": 0,
+      "same": 67,
+      "paired_saved_median_p95_ms": [
+        83.0,
+        96.87482993197284
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        83.0,
+        89.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        402.73922902494314,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 362.08843537414987,
+      "ambient_extra_exposure_conditions": 3,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 89.0,
+      "accepted": 125,
+      "vad_calls": 94506,
+      "late_windows": 80,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "continuous-p0.5-cost32": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 122,
+      "worsened": 0,
+      "same": 67,
+      "paired_saved_median_p95_ms": [
+        35.0,
+        57.09251700680273
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        35.0,
+        41.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        35.0,
+        41.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        448.0,
+        576.0
+      ],
+      "ambient_extra_speech_ms": 283.12244897959226,
+      "ambient_extra_exposure_conditions": 3,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 41.0,
+      "accepted": 125,
+      "vad_calls": 94506,
+      "late_windows": 104,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.9-cost2": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 85,
+      "worsened": 0,
+      "same": 104,
+      "paired_saved_median_p95_ms": [
+        0.0,
+        101.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        95.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        0.0,
+        101.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        443.1791383219952,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 126.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 101.0,
+      "accepted": 86,
+      "vad_calls": 2747,
+      "late_windows": 3,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.9-cost8": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 85,
+      "worsened": 0,
+      "same": 104,
+      "paired_saved_median_p95_ms": [
+        0.0,
+        89.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        83.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        0.0,
+        89.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        449.1791383219952,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 120.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 89.0,
+      "accepted": 86,
+      "vad_calls": 2744,
+      "late_windows": 116,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.9-cost32": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 0,
+      "worsened": 0,
+      "same": 189,
+      "paired_saved_median_p95_ms": [
+        0.0,
+        0.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        0.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        0.0,
+        0.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "ambient_extra_speech_ms": 0,
+      "ambient_extra_exposure_conditions": 0,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 0,
+      "reverted_preview_ms": 0,
+      "accepted": 0,
+      "vad_calls": 1832,
+      "late_windows": 229,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.75-cost2": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 101,
+      "worsened": 0,
+      "same": 88,
+      "paired_saved_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        95.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        425.0,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 126.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 101.0,
+      "accepted": 102,
+      "vad_calls": 2718,
+      "late_windows": 3,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.75-cost8": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 100,
+      "worsened": 0,
+      "same": 89,
+      "paired_saved_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        83.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        425.0,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 120.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 89.0,
+      "accepted": 101,
+      "vad_calls": 2715,
+      "late_windows": 102,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.75-cost32": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 0,
+      "worsened": 0,
+      "same": 189,
+      "paired_saved_median_p95_ms": [
+        0.0,
+        0.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        0.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        0.0,
+        0.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "ambient_extra_speech_ms": 0,
+      "ambient_extra_exposure_conditions": 0,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 0,
+      "reverted_preview_ms": 0,
+      "accepted": 0,
+      "vad_calls": 1832,
+      "late_windows": 229,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.5-cost2": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 117,
+      "worsened": 0,
+      "same": 72,
+      "paired_saved_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        95.0,
+        95.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        95.0,
+        101.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        419.0,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 126.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 101.0,
+      "accepted": 118,
+      "vad_calls": 2683,
+      "late_windows": 2,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.5-cost8": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 117,
+      "worsened": 0,
+      "same": 72,
+      "paired_saved_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        83.0,
+        83.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        83.0,
+        89.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        419.0,
+        547.0
+      ],
+      "ambient_extra_speech_ms": 120.69614512471662,
+      "ambient_extra_exposure_conditions": 1,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 1,
+      "reverted_preview_ms": 89.0,
+      "accepted": 118,
+      "vad_calls": 2681,
+      "late_windows": 86,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    },
+    "triggered160-p0.5-cost32": {
+      "conditions": 372,
+      "speech_conditions": 189,
+      "paired_detected": 189,
+      "baseline_missed": 0,
+      "candidate_missed": 0,
+      "lost": 0,
+      "improved": 0,
+      "worsened": 0,
+      "same": 189,
+      "paired_saved_median_p95_ms": [
+        0.0,
+        0.0
+      ],
+      "paired_saved_median_bootstrap95_ms": [
+        0.0,
+        0.0
+      ],
+      "saved_without_reverted_preview_median_p95_ms": [
+        0.0,
+        0.0
+      ],
+      "baseline_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "candidate_latency_median_p95_ms": [
+        489.0,
+        611.0
+      ],
+      "ambient_extra_speech_ms": 0,
+      "ambient_extra_exposure_conditions": 0,
+      "ambient_new_exposure_conditions": 0,
+      "reversions": 0,
+      "reverted_preview_ms": 0,
+      "accepted": 0,
+      "vad_calls": 1832,
+      "late_windows": 229,
+      "danger_extra_speech_ms": 0,
+      "development_screen_pass": false,
+      "not_a_release_gate": "Danger regular timeline identical by construction; no device contention simulated. Reused data, coarse file labels."
+    }
+  },
+  "primary_exceptions": {
+    "continuous-p0.9-cost2": [
+      {
+        "filename": "3-144692-A-21.wav",
+        "source_sha256": "c7c434ea67b02a56ea63337e9d7a823deca517a038a80a0cf01daed61d18dba5",
+        "dataset": "esc50_new",
+        "category": "sneezing",
+        "expected": "ambient",
+        "phase_ms": 100,
+        "baseline_speech_seen": true,
+        "vad_calls": 253,
+        "late_windows": 0,
+        "previews": [
+          {
+            "start_ms": 3148.3038548752834,
+            "end_ms": 3275.0,
+            "parent_snapshot_ms": 3000.0,
+            "fresh_end_ms": 3136.0,
+            "probability": 0.9690181016921997
+          }
+        ],
+        "baseline_first_ms": null,
+        "candidate_first_ms": null,
+        "saved_ms": null,
+        "saved_without_reverted_preview_ms": null,
+        "accepted": 1,
+        "extra_speech_ms": 126.69614512471662,
+        "reversions": 0,
+        "reverted_preview_ms": 0
+      }
+    ],
+    "triggered160-p0.9-cost2": [
+      {
+        "filename": "3-144692-A-21.wav",
+        "source_sha256": "c7c434ea67b02a56ea63337e9d7a823deca517a038a80a0cf01daed61d18dba5",
+        "dataset": "esc50_new",
+        "category": "sneezing",
+        "expected": "ambient",
+        "phase_ms": 100,
+        "baseline_speech_seen": true,
+        "vad_calls": 33,
+        "late_windows": 0,
+        "previews": [
+          {
+            "start_ms": 3148.3038548752834,
+            "end_ms": 3275.0,
+            "parent_snapshot_ms": 3000.0,
+            "fresh_end_ms": 3136.0,
+            "probability": 0.9643590450286865
+          }
+        ],
+        "baseline_first_ms": null,
+        "candidate_first_ms": null,
+        "saved_ms": null,
+        "saved_without_reverted_preview_ms": null,
+        "accepted": 1,
+        "extra_speech_ms": 126.69614512471662,
+        "reversions": 0,
+        "reverted_preview_ms": 0
+      },
+      {
+        "filename": "5_theo_0.wav",
+        "source_sha256": "a5c0beb43ad7e0236d927481d98b6f6bb1b21fbbd7bc26e7f42fcdf6d5f307d5",
+        "dataset": "fsdd_new",
+        "category": "short_digit",
+        "expected": "speech",
+        "phase_ms": 100,
+        "baseline_speech_seen": true,
+        "vad_calls": 24,
+        "late_windows": 1,
+        "previews": [
+          {
+            "start_ms": 1924.0,
+            "end_ms": 2025.0,
+            "parent_snapshot_ms": 1750.0,
+            "fresh_end_ms": 1888.0,
+            "probability": 0.9154013991355896
+          }
+        ],
+        "baseline_first_ms": 861.0,
+        "candidate_first_ms": 260.0,
+        "saved_ms": 601.0,
+        "saved_without_reverted_preview_ms": 0.0,
+        "accepted": 1,
+        "extra_speech_ms": 101.0,
+        "reversions": 1,
+        "reverted_preview_ms": 101.0
+      }
+    ]
+  }
+}
