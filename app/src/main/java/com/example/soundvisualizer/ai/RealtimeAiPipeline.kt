@@ -280,6 +280,8 @@ class RealtimeAiPipeline private constructor(
     private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         inferenceExecutions.incrementAndGet()
         val traceRecordingId = AiLatencyTrace.recordingId
+        val inferenceSessionId = traceSessionId
+        val pipelineStartedNs = traceStartedNs
         val snapshotBeginNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
         var snapshotEndNs = 0L
         val t0 = System.nanoTime()
@@ -327,8 +329,8 @@ class RealtimeAiPipeline private constructor(
 
         val totalMs = (System.nanoTime() - t0) / 1e6
         val latency = if (traceRecordingId != 0L) AiLatencyStamp(
-            recordingId = traceRecordingId, pipelineSessionId = traceSessionId,
-            resultId = AiLatencyTrace.nextId(), pipelineStartedNs = traceStartedNs,
+            recordingId = traceRecordingId, pipelineSessionId = inferenceSessionId,
+            resultId = AiLatencyTrace.nextId(), pipelineStartedNs = pipelineStartedNs,
             captureSessionId = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.captureSessionId else 0,
             firstFrame = if (pcmTrace.recordingId == traceRecordingId && pcmTrace.captureSessionId != 0L)
                 (pcmTrace.endFrameExclusive - captureNeed).coerceAtLeast(0) else 0,

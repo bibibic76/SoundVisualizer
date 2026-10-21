@@ -25,30 +25,31 @@ object AiLatencyRecorder {
             var writer: java.io.BufferedWriter? = null
             try {
                 val dir = File(app.getExternalFilesDir(null) ?: app.filesDir, AiDebugRecorder.DIR_NAME)
-                    while (mine.active.get() || mine.queue.isNotEmpty()) {
-                        val event = mine.queue.poll(200, TimeUnit.MILLISECONDS) ?: continue
-                        if (writer == null) {
-                            dir.mkdirs()
-                            val file = File.createTempFile("latency-$stamp-${mine.id}-", ".csv", dir)
-                            writer = file.bufferedWriter()
-                            writer!!.appendLine(AiLatencyCsv.HEADER)
-                            writer!!.appendLine(AiLatencyCsv.row(AiLatencyTrace.Event("recording_start", startedNs,
-                                detail = "version=${BuildConfig.VERSION_NAME};sdk=${android.os.Build.VERSION.SDK_INT}")))
-                        }
-                        val out = writer!!
-                        val row = AiLatencyCsv.row(event)
-                        out.appendLine(row)
-                        bytes += row.toByteArray(Charsets.UTF_8).size + 1
-                        out.flush()
-                        if (bytes >= MAX_BYTES) {
-                            AiLatencyTrace.end(mine)
-                            mine.dropped.addAndGet(mine.queue.size.toLong())
-                            mine.queue.clear()
-                            break
-                        }
+                while (mine.active.get() || mine.queue.isNotEmpty()) {
+                    val event = mine.queue.poll(200, TimeUnit.MILLISECONDS) ?: continue
+                    if (writer == null) {
+                        dir.mkdirs()
+                        val file = File.createTempFile("latency-$stamp-${mine.id}-", ".csv", dir)
+                        writer = file.bufferedWriter()
+                        val version = app.packageManager.getPackageInfo(app.packageName, 0).versionName
+                        writer.appendLine(AiLatencyCsv.HEADER)
+                        writer.appendLine(AiLatencyCsv.row(AiLatencyTrace.Event("recording_start", startedNs,
+                            detail = "version=$version;sdk=${android.os.Build.VERSION.SDK_INT}")))
                     }
-                    writer?.appendLine(AiLatencyCsv.row(AiLatencyTrace.Event("recording_end",
-                        SystemClock.elapsedRealtimeNanos(), detail = "dropped=${mine.dropped.get()};limit=${bytes >= MAX_BYTES}")))
+                    val out = writer
+                    val row = AiLatencyCsv.row(event)
+                    out.appendLine(row)
+                    bytes += row.toByteArray(Charsets.UTF_8).size + 1
+                    out.flush()
+                    if (bytes >= MAX_BYTES) {
+                        AiLatencyTrace.end(mine)
+                        mine.dropped.addAndGet(mine.queue.size.toLong())
+                        mine.queue.clear()
+                        break
+                    }
+                }
+                writer?.appendLine(AiLatencyCsv.row(AiLatencyTrace.Event("recording_end",
+                    SystemClock.elapsedRealtimeNanos(), detail = "dropped=${mine.dropped.get()};limit=${bytes >= MAX_BYTES}")))
             } catch (e: Exception) {
                 Log.w("AiLatencyRecorder", "Latency recording stopped", e)
             } finally {

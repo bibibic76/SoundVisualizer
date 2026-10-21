@@ -8,6 +8,9 @@ import android.graphics.Path
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import androidx.core.graphics.withClip
+import android.os.SystemClock
+import com.example.soundvisualizer.ai.AiLatencyStamp
+import com.example.soundvisualizer.ai.AiLatencyTrace
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -185,7 +188,7 @@ class VisualizerEngine(
     private var glowAlpha = 0f
     private var glowRadiusPx = 0f
     private var colorRgb = 0xFFFFFF
-    private var colorLatency: com.example.soundvisualizer.ai.AiLatencyStamp? = null
+    private var colorLatency: AiLatencyStamp? = null
     private var visible = false
     private var wasVisible = false
     private var lastTickNanos = 0L      // 마지막으로 처리한 틱 (시간 정규화용)
@@ -343,9 +346,9 @@ class VisualizerEngine(
         colorLatency = inputs.latencyStamp()
         val shown = inputs.isShown(coarse)
         val drawable = canDraw(s)
-        if (colorLatency != null && com.example.soundvisualizer.ai.AiLatencyTrace.recordingId != 0L)
-            com.example.soundvisualizer.ai.AiLatencyTrace.observed(colorLatency,
-                com.example.soundvisualizer.ai.AiLatencyTrace.Stage.COLOR_READ, android.os.SystemClock.elapsedRealtimeNanos(),
+        if (colorLatency != null && AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.observed(colorLatency,
+                AiLatencyTrace.Stage.COLOR_READ, SystemClock.elapsedRealtimeNanos(),
                 if (shown && drawable) "eligible" else "hidden_or_disabled")
         advanceHold(k)
         if (drawable) {
@@ -836,9 +839,9 @@ class VisualizerEngine(
             VisualMode.Pad -> drawPad(canvas)
             VisualMode.CircleRipple -> drawCircle(canvas)
         }
-        if (colorLatency != null && com.example.soundvisualizer.ai.AiLatencyTrace.recordingId != 0L)
-            com.example.soundvisualizer.ai.AiLatencyTrace.observed(colorLatency,
-                com.example.soundvisualizer.ai.AiLatencyTrace.Stage.COLOR_DRAW, android.os.SystemClock.elapsedRealtimeNanos())
+        if (colorLatency != null && AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.observed(colorLatency,
+                AiLatencyTrace.Stage.COLOR_DRAW, SystemClock.elapsedRealtimeNanos())
     }
 
     // ---------------- Wave / Outline ----------------

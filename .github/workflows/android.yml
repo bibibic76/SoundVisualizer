@@ -63,6 +63,9 @@ jobs:
       - name: 유닛 테스트
         run: ./gradlew testDebugUnitTest
 
+      - name: 지연 기록 요약 도구 테스트
+        run: python3 -B -m unittest discover -s tools -p 'test_summarize_ai_latency.py'
+
       # 몇 개가 돌았는지 실행 화면 상단과 요약에 남긴다. 테스트가 실패해도 실행한다.
       - name: 유닛 테스트 결과 요약
         if: ${{ !cancelled() }}

@@ -29,3 +29,6 @@ app/build/
 .fake
 # Kotlin compiler session files
 .kotlin/
+
+# Local Python diagnostic summaries/tests.
+/tools/__pycache__/
