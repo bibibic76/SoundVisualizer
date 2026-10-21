@@ -1,0 +1,69 @@
+"""Deterministic timing tests independent of trained-model outputs."""
+import unittest
+
+import numpy as np
+
+from classifier import InferenceResult, ReferenceClassifier
+from evaluate_responsive_inference import captures, replay
+from responsive_schedule import BorrowedSlots
+
+
+class ScriptedClassifier(ReferenceClassifier):
+    def __init__(self, reject_early=False, early_danger=False):
+        self.reject_early = reject_early
+        self.early_danger = early_danger
+        self.reset_state()
+
+    def reset_state(self):
+        self._confirmed_coarse = "ambient"
+        self._confirmed_display = ""
+        self._confirmed_confidence = 0.0
+        self._candidate_coarse = ""
+        self._candidate_streak = 0
+
+    def classify_mono_capture_once(self, mono, rate, apply_hysteresis=False):
+        # Input encodes capture time in the event interval. No wall clock or call count.
+        now = float(mono[-1]) * 10_000
+        label = "speech" if now >= 1650 else "ambient"
+        if 1800 <= now < 1950 and self.reject_early:
+            label = "danger" if self.early_danger else "ambient"
+        if self.early_danger and now >= 1950:
+            label = "danger"
+        return InferenceResult(0, label.title(), .5, label, True, 0), None, {}
+
+
+class ResponsiveReplayTest(unittest.TestCase):
+    def evaluate(self, adaptive, reject_early=False, early_danger=False, cost=25):
+        rate = 16_000
+        mono = np.zeros(64_000, dtype=np.float32)
+        mono[24_000:48_000] = np.arange(24_000, 48_000, dtype=np.float32) / rate / 10
+        return replay(
+            mono, captures(mono, rate, 1), rate, BorrowedSlots(delay_ms=0, followup=False),
+            ScriptedClassifier(reject_early, early_danger), {}, 1500, 3000,
+            "danger" if early_danger else "speech", cost, False, adaptive, adaptive,
+        )
+
+    def test_unchanged_two_confirmations_can_finish_125ms_earlier(self):
+        baseline = self.evaluate(False)
+        candidate = self.evaluate(True)
+        self.assertAlmostEqual(125, baseline["first_valid_expected_ms"] - candidate["first_valid_expected_ms"])
+
+    def test_failed_early_confirmation_preserves_original_candidate_and_slot(self):
+        baseline = self.evaluate(False, reject_early=True)
+        candidate = self.evaluate(True, reject_early=True)
+        self.assertEqual(baseline["first_valid_expected_ms"], candidate["first_valid_expected_ms"])
+        self.assertGreater(candidate["predictions"], baseline["predictions"])
+
+    def test_speculative_danger_does_not_change_baseline_danger_time(self):
+        baseline = self.evaluate(False, reject_early=True, early_danger=True)
+        candidate = self.evaluate(True, reject_early=True, early_danger=True)
+        self.assertEqual(baseline["first_valid_expected_ms"], candidate["first_valid_expected_ms"])
+
+    def test_slow_inference_disables_speculation(self):
+        baseline = self.evaluate(False, cost=50)
+        candidate = self.evaluate(True, cost=50)
+        self.assertEqual(baseline, candidate)
+
+
+if __name__ == "__main__":
+    unittest.main()

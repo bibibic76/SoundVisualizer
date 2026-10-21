@@ -460,7 +460,8 @@ class AudioCaptureService : Service() {
                     appContext,
                     rate,
                     channels = 2,
-                    mappingOverrides = { SettingsManager.soundTypes.value }
+                    mappingOverrides = { SettingsManager.soundTypes.value },
+                    responsiveConfirmation = BuildConfig.AI_SPEECH_CONFIRMATION_EXPERIMENT
                 )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)

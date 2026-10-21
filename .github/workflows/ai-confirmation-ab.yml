@@ -1,0 +1,62 @@
+name: AI confirmation experiment APKs
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/ai-confirmation-ab.yml'
+      - 'app/src/main/java/com/example/soundvisualizer/ai/AiSpeechConfirmation.kt'
+      - 'app/src/main/java/com/example/soundvisualizer/ai/RealtimeAiPipeline.kt'
+      - 'app/src/test/java/com/example/soundvisualizer/ai/AiSpeechConfirmationTest.kt'
+
+concurrency:
+  group: confirmation-ab-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: confirmation-${{ matrix.mode }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: ['false', 'true']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Restore the same signing key for both arms
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$DEBUG_KEYSTORE_BASE64" ]; then
+            echo '::error::A/B APKs require DEBUG_KEYSTORE_BASE64; do not create incompatible random signatures.'
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/confirmation-ab.keystore"
+          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$keystore"
+          echo "SV_DEBUG_KEYSTORE=$keystore" >> "$GITHUB_ENV"
+      - name: Build release APK and compile instrumentation
+        run: ./gradlew assembleRelease assembleDebugAndroidTest -PaiSpeechConfirmationExperiment=${{ matrix.mode }}
+      - name: Record experiment identity
+        env:
+          MODE: ${{ matrix.mode }}
+        run: |
+          printf 'commit=%s\naiSpeechConfirmationExperiment=%s\n' "$GITHUB_SHA" "$MODE" > app/build/outputs/apk/release/experiment.txt
+      - uses: actions/upload-artifact@v7
+        with:
+          name: speech-confirmation-${{ matrix.mode }}-release
+          path: |
+            app/build/outputs/apk/release/*arm64-v8a*.apk
+            app/build/outputs/apk/release/experiment.txt
+            app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: error
+          retention-days: 14

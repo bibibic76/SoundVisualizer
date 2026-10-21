@@ -18,5 +18,10 @@ data class AiClassificationResult(
     val mappingOverrideCount: Int = 0,
     val mappingSignature: String = "default",
     /** Immutable settings snapshot used to suppress stale results immediately on edits. */
-    internal val mappingInputs: Map<String, String> = emptyMap()
+    internal val mappingInputs: Map<String, String> = emptyMap(),
+    val responsiveConfirmation: Boolean = false,
+    val earlyConfirmation: Boolean = false,
+    val confirmationAttempts: Long = 0L,
+    val confirmationAccepted: Long = 0L,
+    internal val pendingSpeechConfirmation: AiSpeechConfirmation.Request? = null
 )

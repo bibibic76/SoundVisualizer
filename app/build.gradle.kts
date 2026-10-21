@@ -20,6 +20,14 @@ android {
         targetSdk = 37
         versionCode = 13
         versionName = "1.7.2"
+        // Paired experiment APKs only. Default builds keep the existing 250ms scheduler.
+        buildConfigField(
+            "boolean", "AI_SPEECH_CONFIRMATION_EXPERIMENT",
+            providers.gradleProperty("aiSpeechConfirmationExperiment").map {
+                require(it == "true" || it == "false") { "aiSpeechConfirmationExperiment must be true or false" }
+                it
+            }.getOrElse("false")
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -93,6 +101,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     externalNativeBuild {
         cmake {

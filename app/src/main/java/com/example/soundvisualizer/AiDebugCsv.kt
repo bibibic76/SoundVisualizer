@@ -41,6 +41,10 @@ object AiDebugCsv {
         add("total_ms")
         add("mapping_override_count")
         add("mapping_signature")
+        add("responsive_confirmation")
+        add("early_confirmation")
+        add("confirmation_attempts")
+        add("confirmation_accepted")
     }
 
     /** 머리글 한 줄. 파일을 새로 열 때 한 번만 쓴다. */
@@ -88,6 +92,10 @@ object AiDebugCsv {
         cells += millis(result.totalMs)
         cells += result.mappingOverrideCount.toString()
         cells += result.mappingSignature
+        cells += result.responsiveConfirmation.toString()
+        cells += result.earlyConfirmation.toString()
+        cells += result.confirmationAttempts.toString()
+        cells += result.confirmationAccepted.toString()
         return cells.joinToString(",") { quote(it) }
     }
 

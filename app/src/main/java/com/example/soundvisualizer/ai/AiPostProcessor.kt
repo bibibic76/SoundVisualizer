@@ -89,6 +89,23 @@ class AiPostProcessor(
         candidateStreak = 0
     }
 
+    internal fun hasPendingSpeechConfirmation(): Boolean =
+        confirmedCoarse == "ambient" && candidateCoarse == "speech" && candidateStreak == 1
+
+    /** A failed speculative observation must not erase the original candidate or change the UI. */
+    internal fun confirmSpeechIfConsistent(
+        frame: FrameInput,
+        request: AiSpeechConfirmation.Request
+    ): FrameResult? {
+        if (!hasPendingSpeechConfirmation() || !AiSpeechConfirmation.matches(request, frame)) return null
+        val threshold = computeEffectiveThreshold(
+            frame.coarse, baseConfidenceThreshold, frame.hasStrongDangerCue,
+            frame.hasCriticalDangerCue, frame.dangerCuePromoted
+        )
+        if (frame.confidence < threshold) return null
+        return process(frame)
+    }
+
     fun process(frame: FrameInput): FrameResult {
         val effective = computeEffectiveThreshold(
             coarse = frame.coarse,

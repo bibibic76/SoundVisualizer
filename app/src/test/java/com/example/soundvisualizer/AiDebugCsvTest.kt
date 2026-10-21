@@ -16,6 +16,21 @@ import org.junit.Test
  */
 class AiDebugCsvTest {
 
+    @Test
+    fun experimentAndAttemptCountersAreRecordedWithoutChangingEarlierColumns() {
+        val sample = result().copy(
+            responsiveConfirmation = true, earlyConfirmation = true,
+            confirmationAttempts = 3, confirmationAccepted = 2
+        )
+        val row = cells(AiDebugCsv.row(sample, 1500, CaptureSource.InternalPlayback, .4f, true))
+        fun cell(name: String) = row[AiDebugCsv.COLUMNS.indexOf(name)]
+        assertEquals("true", cell("responsive_confirmation"))
+        assertEquals("true", cell("early_confirmation"))
+        assertEquals("3", cell("confirmation_attempts"))
+        assertEquals("2", cell("confirmation_accepted"))
+        assertEquals("Gunshot, gunfire", cell("display"))
+    }
+
     private val defaultLocale = Locale.getDefault()
 
     private fun result(

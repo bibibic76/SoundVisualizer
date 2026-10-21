@@ -15,6 +15,52 @@ import kotlin.math.max
 @RunWith(AndroidJUnit4::class)
 class RealtimeAiPipelineInstrumentedTest {
     @Test
+    fun experimentConfirmsSameModelOutputAndRejectsStaleMapping() {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext
+        val names = app.assets.open("ai/yamnet_class_map.csv").use { YamnetCoarseClassifier.loadClassNames(it) }
+        var overrides = names.associateWith { "speech" }
+        // Opposite-phase capture opens the original-channel gate while downmixing to a stable silence tensor.
+        val mono = FloatArray(31_200) { i -> if (i % 2 == 0) .1f else -.1f }
+        RealtimeAiPipeline.create(app, 16_000, 2, { overrides }, responsiveConfirmation = true).use { pipeline ->
+            pipeline.ingestInterleavedForTest(mono, mono.size)
+            val first = requireNotNull(pipeline.runTickForTest())
+            val request = requireNotNull(first.result.pendingSpeechConfirmation)
+            assertEquals("ambient", first.uiCoarse)
+            val confirmed = requireNotNull(pipeline.runConfirmationForTest(request))
+            assertEquals("speech", confirmed.uiCoarse)
+            assertTrue(confirmed.result.earlyConfirmation)
+            assertEquals(1L, pipeline.inferenceStatsForTest().confirmationAccepted)
+
+            pipeline.resetState()
+            pipeline.ingestInterleavedForTest(mono, mono.size)
+            val pending = requireNotNull(pipeline.runTickForTest()).result.pendingSpeechConfirmation!!
+            val before = pipeline.inferenceStatsForTest().executed
+            overrides = emptyMap()
+            assertNull(pipeline.runConfirmationForTest(pending))
+            assertEquals(before, pipeline.inferenceStatsForTest().executed)
+            assertNull(pipeline.lastClassification())
+        }
+    }
+
+    @Test
+    fun failedSpeculationDoesNotReplaceResultOrEraseNormalCandidate() {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext
+        val names = app.assets.open("ai/yamnet_class_map.csv").use { YamnetCoarseClassifier.loadClassNames(it) }
+        val overrides = names.associateWith { "speech" }
+        val mono = FloatArray(31_200) { i -> if (i % 2 == 0) .1f else -.1f }
+        RealtimeAiPipeline.create(app, 16_000, 2, { overrides }, responsiveConfirmation = true).use { pipeline ->
+            pipeline.ingestInterleavedForTest(mono, mono.size)
+            val first = requireNotNull(pipeline.runTickForTest()).result
+            val request = requireNotNull(first.pendingSpeechConfirmation).copy(confidence = 1.1f)
+            assertNull(pipeline.runConfirmationForTest(request))
+            assertEquals(first, pipeline.lastClassification())
+            assertEquals("speech", requireNotNull(pipeline.runTickForTest()).uiCoarse)
+            assertEquals(1L, pipeline.inferenceStatsForTest().confirmationAttempts)
+            assertEquals(0L, pipeline.inferenceStatsForTest().confirmationAccepted)
+        }
+    }
+
+    @Test
     fun realtimePipeline_logMelMatchesQualcommFrontend() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
         val mono = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES) { i ->
