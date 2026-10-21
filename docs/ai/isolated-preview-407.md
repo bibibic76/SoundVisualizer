@@ -51,6 +51,8 @@ python -m unittest discover -s tools/ai_reference -p 'test_*.py'
 
 ## 다른 아이디어 — 권장 순서와 판정 기준
 
+**사용자 확인: 느리다는 피드백의 대상은 화면 색상·분류 표시다.** 따라서 아래 진동 후보는 이번 문제의 주된 해결책이 아니다. 화면 기준 후속 순서는 **단계별 trace → 첫 실행 입력 축적 분리 → 새로운 분석 위상 → 짧은 문맥 모델 검증**이다. 아래 번호는 후보 구분이며 화면 문제의 실행 순서와 다르다.
+
 ### 1. AI 확정 직후 진동 판단 깨우기: 모델을 바꾸지 않는 작은 개선
 
 현재 `feedback/HapticTuning.kt`의 idle 판단 간격은 100ms이고 `HapticNotifier`는 handler의 다음 판단 때 `labelSource`를 읽는다. AI의 **정규 확정 라벨이 바뀌었을 때만** handler를 깨우면 다음 poll까지의 대기를 줄일 여지가 있다. 절감 상한은 해당 polling 대기분(조건에 따라 0~약100ms)이지 분류 지연 전체가 아니다. 현재도 driver가 먼저 깨우는 경우가 있어 평균 50ms 절감을 보장하지 않는다.
@@ -62,6 +64,10 @@ python -m unittest discover -s tools/ai_reference -p 'test_*.py'
 PCM capture timestamp → AI snapshot/start/end → regular confirmed → overlay read / haptic command를 같은 시간축으로 연결한다. 이미 capture clock·개발 로그·CSV가 있으나 결과 `timestampMs`는 wall clock이어서 그대로 뺄 수 없다. 첫 실행과 연속 전환, 내부음과 마이크/진동 ON을 구분한다. 디버그 통계는 고정 크기로 집계해 캡처 스레드 allocation이나 매 프레임 로깅을 늘리지 않는다.
 
 특히 마이크 자기 진동 치환은 입력을 과거 깨끗한 소리로 바꾸므로 시간상 오래된 입력을 최신 입력처럼 재면 안 된다. 이 trace는 속도 개선 자체가 아니라, 다음 실험이 실제 병목을 줄였는지 판정하는 장치다.
+
+화면 쪽에는 regular result ID/시각과 해당 coarse를 처음 읽은 draw frame 시각을 함께 기록한다. 확정은 빨랐는데 그리기가 늦었는지, 확정 자체가 늦었는지부터 구분한다. 현재 오버레이는 캡처 기반 wake와 frame 읽기를 이미 사용하므로 이를 새 개선처럼 재구현하지 않는다. 화면 sleep/가림/잠금 해제도 분리하고, UI polling 주기를 무조건 높여 해결하지 않는다.
+
+첫 실행에 한정한 별도 후보도 있다. 현재 서비스는 모델 초기화 완료 후 pipeline을 attach하므로 준비 전 PCM은 AI ring에 남지 않는다. 작은 bounded startup ring에 최근 입력만 보존해 초기화 후 넘기면 준비 완료 뒤 새로 창을 채우는 대기를 줄일 여지가 있다. 이는 실행 중 색상 전환에는 효과가 없고, 과거 Danger를 새 사건처럼 뒤늦게 알리거나 이전 실행/mapping의 입력을 섞지 않는 수명·시각 검증이 필요하다. 아직 구현하지 않았다.
 
 ### 3. 시작/큰 변화 뒤 분석 위상 재배치: 연산 수를 유지하는 실험
 
@@ -81,4 +87,4 @@ PCM capture timestamp → AI snapshot/start/end → regular confirmed → overla
 
 ## 권장 결론
 
-이번 분리 보완은 역효과를 줄이기 위한 실험 기반이지 배포 승인이 아니다. 다음 저위험 후보는 **정규 라벨 변경에 반응하는 진동 wake-up + 단계별 실측**이다. 화면 색 분류 자체를 크게 앞당기는 목표라면 새로운 위상 설계 또는 짧은 문맥 모델의 정확도 검증을 별도 작업으로 잡는다. threshold/2회 확인을 근거 없이 낮추거나 회귀 파일만 예외 처리하지 않는다.
+이번 분리 보완은 역효과를 줄이기 위한 실험 기반이지 배포 승인이 아니다. **이번 사용자 문제는 화면이므로 정규 확정→draw 구간을 포함한 실측이 우선**이다. 첫 실행만 느린 경우에는 초기 입력 보존을, 실행 중 색상 전환 자체가 느리면 새로운 위상 설계 또는 짧은 문맥 모델의 정확도 검증을 별도 작업으로 잡는다. 진동 wake-up은 후순위의 별도 후보다. threshold/2회 확인을 근거 없이 낮추거나 회귀 파일만 예외 처리하지 않는다.
