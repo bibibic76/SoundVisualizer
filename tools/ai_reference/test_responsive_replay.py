@@ -5,7 +5,7 @@ import numpy as np
 
 from classifier import InferenceResult, ReferenceClassifier
 from evaluate_responsive_inference import captures, replay
-from responsive_schedule import BorrowedSlots
+from responsive_schedule import BorrowedSlots, ProductionSlots, RuntimeProfile
 
 
 class ScriptedClassifier(ReferenceClassifier):
@@ -33,14 +33,16 @@ class ScriptedClassifier(ReferenceClassifier):
 
 
 class ResponsiveReplayTest(unittest.TestCase):
-    def evaluate(self, adaptive, reject_early=False, early_danger=False, cost=25):
+    def evaluate(self, adaptive, reject_early=False, early_danger=False, cost=25, profile=None):
         rate = 16_000
         mono = np.zeros(64_000, dtype=np.float32)
         mono[24_000:48_000] = np.arange(24_000, 48_000, dtype=np.float32) / rate / 10
         return replay(
-            mono, captures(mono, rate, 1), rate, BorrowedSlots(delay_ms=0, followup=False),
+            mono, captures(mono, rate, 1), rate,
+            ProductionSlots(profile=profile, followup=False) if profile else BorrowedSlots(delay_ms=0, followup=False),
             ScriptedClassifier(reject_early, early_danger), {}, 1500, 3000,
             "danger" if early_danger else "speech", cost, False, adaptive, adaptive,
+            consistent=bool(profile), activity=bool(profile), runtime_profile=profile,
         )
 
     def test_unchanged_two_confirmations_can_finish_125ms_earlier(self):
@@ -63,6 +65,34 @@ class ResponsiveReplayTest(unittest.TestCase):
         baseline = self.evaluate(False, cost=50)
         candidate = self.evaluate(True, cost=50)
         self.assertEqual(baseline, candidate)
+
+    def test_production_fixed_slow_costs_disable_speculation(self):
+        for cost in (26, 50, 100, 200, 400):
+            with self.subTest(cost=cost):
+                profile = RuntimeProfile("fixed", cost)
+                self.assertEqual(self.evaluate(False, profile=profile), self.evaluate(True, profile=profile))
+
+    def test_late_early_wakeup_aborts_without_delaying_regular_tick(self):
+        profile = RuntimeProfile("wake-jitter", 20)
+        baseline = self.evaluate(False, profile=profile)
+        candidate = self.evaluate(True, profile=profile)
+        self.assertEqual(baseline["first_valid_expected_ms"], candidate["first_valid_expected_ms"])
+        self.assertEqual(0, candidate["early_attempts"])
+        self.assertGreater(candidate["deadline_aborts"], 0)
+
+    def test_unexpected_early_cost_can_delay_even_accepted_speech(self):
+        profile = RuntimeProfile("early-spike")
+        baseline = self.evaluate(False, profile=profile)
+        candidate = self.evaluate(True, profile=profile)
+        self.assertGreater(candidate["first_valid_expected_ms"], baseline["first_valid_expected_ms"])
+        self.assertEqual(1, candidate["early_accepted"])
+
+    def test_unexpected_early_cost_can_delay_danger_fallback(self):
+        profile = RuntimeProfile("early-spike")
+        baseline = self.evaluate(False, True, True, profile=profile)
+        candidate = self.evaluate(True, True, True, profile=profile)
+        self.assertAlmostEqual(170, candidate["first_valid_expected_ms"] - baseline["first_valid_expected_ms"])
+        self.assertGreater(candidate["early_rejected"], 0)
 
 
 if __name__ == "__main__":

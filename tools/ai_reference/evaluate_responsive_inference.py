@@ -17,7 +17,7 @@ import numpy as np
 from classifier import ReferenceClassifier
 from compare_logmel_frontends import qualcomm_source_log_mel
 from preprocess import capture_samples_for_one_yamnet_window, downmix_to_mono
-from responsive_schedule import BorrowedSlots, ChangeDetector, RephasedSlots, SilenceGate
+from responsive_schedule import BorrowedSlots, ChangeDetector, ProductionSlots, RephasedSlots, RuntimeProfile, SilenceGate
 from wav_io import load_wav_float_interleaved
 
 
@@ -32,7 +32,7 @@ def captures(interleaved, rate, channels):
     return output
 
 
-def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, expected, duration_ms, adaptive, confirmation=False, fallback=False, source_onset=None, consistent=False, activity=False):
+def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, expected, duration_ms, adaptive, confirmation=False, fallback=False, source_onset=None, consistent=False, activity=False, runtime_profile=None):
     gate = SilenceGate()
     detector = ChangeDetector()
     classifier.reset_state()
@@ -46,6 +46,8 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
     confirmation_source = None
     active_since = None
     last_capture = -math.inf
+    early_attempts = early_accepted = early_rejected = deadline_aborts = 0
+    simulated_busy_ms = 0.0
 
     def sustained(now):
         return active_since is not None and now - active_since >= 100 and now - last_capture <= 100
@@ -70,13 +72,14 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                 scheduler.on_change(time)
             capture_index += 1
         elif kind == 1:
-            _, snapshot_ms, result, old_regular, speculative_target = pending
+            _, snapshot_ms, result, old_regular, speculative_target, inference_cost = pending
             rejected = (speculative_target is not None and (
                 not result.meets_threshold or result.coarse_class != speculative_target[0] or
                 (consistent and (result.yamnet_display_name != speculative_target[1] or result.confidence < speculative_target[2]))
                 or (activity and not sustained(now))
             ))
             if fallback and rejected:
+                early_rejected += 1
                 scheduler.regular = max(old_regular, scheduler.last_finished + 100.0)
                 scheduler.early = None
                 scheduler.borrowed = False
@@ -84,6 +87,8 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                 pending = None
                 confirmation_source = None
                 continue
+            if speculative_target is not None:
+                early_accepted += 1
             classifier._apply_coarse_hysteresis(result)
             ui = classifier._confirmed_coarse
             timeline.append((now, ui))
@@ -92,7 +97,7 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                 first_correct = now - onset
             gate.complete(snapshot_ms)
             pending = None
-            if (confirmation and (not fallback or duration_ms <= 25) and
+            if (confirmation and (not fallback or inference_cost <= 25) and
                     result.meets_threshold and result.coarse_class != ui and
                     result.coarse_class != "danger" and classifier._candidate_streak == 1 and
                     (not consistent or (ui == "ambient" and result.coarse_class == "speech"))):
@@ -100,11 +105,18 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                 if scheduler.early is not None:
                     confirmation_source = result
         else:
+            if (scheduler.early is not None and isinstance(scheduler, ProductionSlots) and
+                    not scheduler.can_start_early(now)):
+                scheduler.early = None
+                scheduler.borrowed = False
+                deadline_aborts += 1
+                continue
             if activity and scheduler.early is not None and not sustained(now):
                 scheduler.early = None
                 scheduler.borrowed = False
                 continue
             run = captured >= need and gate.is_open(now)
+            inference_cost = 0.0
             if run:
                 if pending is not None:
                     raise AssertionError("Overlapping inference")
@@ -120,9 +132,13 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
                         confirmation_source.yamnet_display_name if confirmation_source else None,
                         confirmation_source.confidence if confirmation_source else 0,
                     )
-                pending = (now + duration_ms, now, result, scheduler.regular, speculative_target)
+                inference_cost = runtime_profile.duration(now, speculative_target is not None) if runtime_profile else duration_ms
+                if speculative_target is not None:
+                    early_attempts += 1
+                pending = (now + inference_cost, now, result, scheduler.regular, speculative_target, inference_cost)
                 predictions += 1
-            scheduler.complete(now, duration_ms if run else 0)
+                simulated_busy_ms += inference_cost
+            scheduler.complete(now, inference_cost)
     timeline.append((cutoff, timeline[-1][1]))
     held = Counter()
     danger_ms = 0.0
@@ -136,6 +152,9 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
         "activity_onset_ms": onset, "predictions": predictions, "advances": scheduler.advances,
         "majority": max(("ambient", "speech", "danger"), key=lambda label: (held[label], label == "danger", label == "speech")),
         "danger_ms_with_tail": danger_ms, "danger_seen": danger_ms > 0,
+        "early_attempts": early_attempts, "early_accepted": early_accepted,
+        "early_rejected": early_rejected, "deadline_aborts": deadline_aborts,
+        "simulated_busy_ms": simulated_busy_ms,
     }
 
 
@@ -196,6 +215,7 @@ def main():
     parser.add_argument("--dataset", action="append")
     parser.add_argument("--phase-ms", nargs="+", type=int, default=[0, 100, 200])
     parser.add_argument("--inference-ms", type=int, default=25)
+    parser.add_argument("--runtime-profile", choices=["fixed", "variable", "wake-jitter", "early-spike", "mixed"])
     parser.add_argument("--limit", type=int)
     parser.add_argument("--background", type=Path, help="Optional 0dB RMS diagnostic mix; source files remain unchanged")
     parser.add_argument("--sample-rate", type=int, help="Explicitly restrict diagnostic subset to one native sample rate")
@@ -206,6 +226,8 @@ def main():
         parser.error("Output already exists")
     if args.inference_ms < 0 or any(phase < 0 for phase in args.phase_ms):
         parser.error("Times must be nonnegative")
+    if args.runtime_profile and args.arms != ["confirm_active"]:
+        parser.error("Production runtime profiles support only --arms confirm_active")
     raw = args.manifest.read_bytes()
     manifest = json.loads(raw)
     if isinstance(manifest, dict):
@@ -272,14 +294,19 @@ def main():
             }
             for name in ["baseline", *args.arms]:
                 scheduler, adaptive, confirmation, fallback = configurations[name]
+                profile = RuntimeProfile(args.runtime_profile, args.inference_ms) if args.runtime_profile else None
+                if profile:
+                    scheduler = ProductionSlots(profile=profile, followup=False)
                 row[name] = replay(mono, chunks, rate, scheduler, classifier, cache,
                                    prefix, stop, item["expected"], args.inference_ms, adaptive, confirmation, fallback, source_onset,
-                                   name in ("confirm_consistent", "confirm_active"), name == "confirm_active")
+                                   name in ("confirm_consistent", "confirm_active"), name == "confirm_active", profile)
             rows.append(row)
         if index % 20 == 0:
             print(f"responsive: {index}/{len(manifest)} files", flush=True)
     report = {
         "manifest_sha256": hashlib.sha256(raw).hexdigest(), "inference_ms": args.inference_ms,
+        "runtime_profile": args.runtime_profile,
+        "scheduler": "production-rephased" if args.runtime_profile else "legacy-fixed-slot-diagnostic",
         "model_sha256": {name: hashlib.sha256((args.model_dir / name).read_bytes()).hexdigest()
                          for name in ("yamnet.onnx", "yamnet.data", "yamnet_class_map.csv")},
         "background": str(args.background) if args.background else None,
@@ -287,7 +314,8 @@ def main():
         "excluded_sample_rate": excluded,
         "phase_ms": args.phase_ms, "summary": {arm: paired_summary(rows, arm) for arm in args.arms},
         "limitations": "Activity-marker latency in controlled file replay, not Android or semantic event latency. "
-                        "25ms is declared simulated compute time, not measured runtime. Reused diagnostic corpus, not holdout.",
+                        "Compute time and wake-up jitter are declared simulation assumptions, not measured runtime. "
+                        "Dataset provenance is in the manifest; no training-disjoint or real-world guarantee.",
         "rows": rows,
     }
     with args.output.open("x", encoding="utf-8") as output:

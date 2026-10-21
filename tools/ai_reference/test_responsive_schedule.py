@@ -1,6 +1,6 @@
 import unittest
 
-from responsive_schedule import BorrowedSlots, ChangeDetector, SilenceGate
+from responsive_schedule import BorrowedSlots, ChangeDetector, ProductionSlots, RuntimeProfile, SilenceGate
 
 
 class ResponsiveScheduleTest(unittest.TestCase):
@@ -48,6 +48,27 @@ class ResponsiveScheduleTest(unittest.TestCase):
         self.assertTrue(gate.is_open(2000))
         gate.complete(1350)
         self.assertFalse(gate.is_open(2000))
+
+    def test_production_regular_tick_rephases_after_late_wakeup(self):
+        scheduler = ProductionSlots(regular=250)
+        scheduler.complete(290, 20)
+        self.assertEqual(540, scheduler.regular)
+
+    def test_production_estimate_boundary_and_late_early_wakeup(self):
+        scheduler = ProductionSlots(regular=2000, last_finished=1775, last_duration=25)
+        scheduler.on_change(1775)
+        self.assertEqual(1875, scheduler.early)
+        self.assertTrue(scheduler.can_start_early(1875))
+        self.assertFalse(scheduler.can_start_early(1876))
+        scheduler = ProductionSlots(regular=2000, last_finished=1776, last_duration=26)
+        scheduler.on_change(1776)
+        self.assertIsNone(scheduler.early)
+
+    def test_runtime_profile_is_wall_time_based_except_explicit_adversary(self):
+        profile = RuntimeProfile("variable")
+        self.assertEqual(profile.duration(510, False), profile.duration(510, True))
+        self.assertEqual(180, profile.duration(510, False))
+        self.assertEqual(200, RuntimeProfile("early-spike").duration(1870, True))
 
 
 if __name__ == "__main__":

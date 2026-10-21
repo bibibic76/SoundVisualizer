@@ -37,6 +37,8 @@ jobs:
         run: python tools/ai_reference/test_compare_logmel_dataset.py
       - name: Python classifier policy parity 테스트
         run: python tools/ai_reference/test_classifier_policy.py
+      - name: Python 반응 지연·실행시간 변동·자료 선정 회귀 테스트
+        run: python -m unittest discover -s tools/ai_reference -p 'test_*.py'
       - name: TensorFlow log-mel 수치 parity 확인
         run: >-
           python tools/ai_reference/verify_tensorflow_logmel_parity.py

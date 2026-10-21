@@ -100,3 +100,65 @@ class RephasedSlots(BorrowedSlots):
         self.regular = max(started_ms + self.interval_ms, self.last_finished + 100.0)
         self.early = None
         self.borrowed = False
+
+
+@dataclass(frozen=True)
+class RuntimeProfile:
+    """Declared synthetic costs, NOT a distribution measured on Android.
+
+    Wall-time buckets avoid feeding baseline/candidate different cost sequences
+    merely because one makes an extra call. early-spike is deliberately
+    adversarial: only speculative calls unexpectedly take 200ms.
+    """
+    name: str = "fixed"
+    fixed_ms: float = 25.0
+
+    def duration(self, started_ms, speculative):
+        if self.name == "early-spike":
+            return 200.0 if speculative else 20.0
+        if self.name in ("variable", "mixed"):
+            return (15.0, 20.0, 180.0, 20.0, 15.0, 350.0, 20.0, 20.0)[int(started_ms // 250) % 8]
+        return self.fixed_ms
+
+    def lateness(self, deadline_ms, speculative):
+        if self.name in ("wake-jitter", "mixed"):
+            return 80.0 if speculative else (0.0, 40.0, 0.0, 90.0)[int(deadline_ms // 250) % 4]
+        return 0.0
+
+
+@dataclass
+class ProductionSlots(BorrowedSlots):
+    """Mirror start(): each regular start rephases its next deadline.
+
+    A rejected early tick restores the OLD regular deadline only if the actual
+    completion +100ms still fits. Unexpected cost can therefore delay fallback.
+    This model exposes that risk instead of assuming the 25ms estimate holds.
+    """
+    profile: RuntimeProfile = RuntimeProfile()
+    last_duration: float = 0.0
+
+    @property
+    def deadline(self):
+        planned = self.regular if self.early is None else self.early
+        return planned + self.profile.lateness(planned, self.early is not None)
+
+    def on_change(self, now_ms):
+        early = now_ms + 100.0
+        if (self.early is None and self.last_duration <= 25.0 and
+                early + self.last_duration + 100.0 <= self.regular):
+            self.early = early
+            self.borrowed = True
+            self.advances += 1
+
+    def can_start_early(self, now_ms):
+        return now_ms + self.last_duration + 100.0 <= self.regular
+
+    def complete(self, started_ms, duration_ms):
+        self.last_finished = started_ms + duration_ms
+        self.last_duration = duration_ms
+        if self.early is not None:
+            self.regular = max(self.regular + self.interval_ms, self.last_finished + 100.0)
+        else:
+            self.regular = max(started_ms + self.interval_ms, self.last_finished + 100.0)
+        self.early = None
+        self.borrowed = False
