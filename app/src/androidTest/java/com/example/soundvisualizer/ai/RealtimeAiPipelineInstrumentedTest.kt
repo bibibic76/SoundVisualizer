@@ -10,12 +10,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.math.abs
 import kotlin.math.max
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /** Production pipeline always uses the pinned Qualcomm-source frontend (#272). */
 @RunWith(AndroidJUnit4::class)
 class RealtimeAiPipelineInstrumentedTest {
     @Test
-    fun experimentConfirmsSameModelOutputAndRejectsStaleMapping() {
+    fun isolatedPreviewDoesNotConsumeRegularConfirmationAndRejectsStaleMapping() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
         val names = app.assets.open("ai/yamnet_class_map.csv").use { YamnetCoarseClassifier.loadClassNames(it) }
         var overrides = names.associateWith { "speech" }
@@ -28,17 +30,26 @@ class RealtimeAiPipelineInstrumentedTest {
             val first = requireNotNull(pipeline.runTickForTest())
             val request = requireNotNull(first.result.pendingSpeechConfirmation)
             assertEquals("ambient", first.uiCoarse)
-            val confirmed = requireNotNull(pipeline.runConfirmationForTest(request))
-            assertEquals("speech", confirmed.uiCoarse)
-            assertTrue(confirmed.result.earlyConfirmation)
+            awaitPreviewReady(pipeline)
+            assertTrue(pipeline.submitPreviewForTest(request, 2000L))
+            awaitPreviewIdle(pipeline)
+            val confirmed = requireNotNull(pipeline.lastClassification())
+            assertEquals("speech", confirmed.coarse)
+            assertTrue(confirmed.earlyConfirmation)
             assertEquals(1L, pipeline.inferenceStatsForTest().confirmationAccepted)
+            // The original candidate still awaits its original second regular observation.
+            val regular = requireNotNull(pipeline.runTickForTest())
+            assertEquals("speech", regular.uiCoarse)
+            assertTrue(!regular.result.earlyConfirmation)
+            assertEquals(2L, pipeline.inferenceStatsForTest().executed)
 
             pipeline.resetState()
             feedSustainedCapture(pipeline, mono)
             val pending = requireNotNull(pipeline.runTickForTest()).result.pendingSpeechConfirmation!!
             val before = pipeline.inferenceStatsForTest().executed
             overrides = emptyMap()
-            assertNull(pipeline.runConfirmationForTest(pending))
+            assertTrue(pipeline.submitPreviewForTest(pending, 2000L))
+            awaitPreviewIdle(pipeline)
             assertEquals(before, pipeline.inferenceStatsForTest().executed)
             assertNull(pipeline.lastClassification())
         }
@@ -56,12 +67,63 @@ class RealtimeAiPipelineInstrumentedTest {
             feedSustainedCapture(pipeline, mono)
             val first = requireNotNull(pipeline.runTickForTest()).result
             val request = requireNotNull(first.pendingSpeechConfirmation).copy(confidence = 1.1f)
-            assertNull(pipeline.runConfirmationForTest(request))
+            awaitPreviewReady(pipeline)
+            assertTrue(pipeline.submitPreviewForTest(request, 2000L))
+            awaitPreviewIdle(pipeline)
             assertEquals(first, pipeline.lastClassification())
             assertEquals("speech", requireNotNull(pipeline.runTickForTest()).uiCoarse)
             assertEquals(1L, pipeline.inferenceStatsForTest().confirmationAttempts)
             assertEquals(0L, pipeline.inferenceStatsForTest().confirmationAccepted)
         }
+    }
+
+    @Test
+    fun blockedPreviewCannotBlockRegularDangerOrOverwriteItLater() {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext
+        val names = app.assets.open("ai/yamnet_class_map.csv").use { YamnetCoarseClassifier.loadClassNames(it) }
+        var overrides = names.associateWith { "speech" }
+        val pcm = FloatArray(31_200) { if (it % 2 == 0) .1f else -.1f }
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        RealtimeAiPipeline.create(
+            app, 16_000, 2, { overrides }, responsiveConfirmation = true, elapsedRealtimeMs = { 1000L }
+        ).use { pipeline ->
+            try {
+                feedSustainedCapture(pipeline, pcm)
+                val first = requireNotNull(pipeline.runTickForTest()).result
+                awaitPreviewReady(pipeline)
+                pipeline.beforePreviewInferenceForTest = {
+                    entered.countDown()
+                    check(release.await(10, TimeUnit.SECONDS))
+                }
+                assertTrue(pipeline.submitPreviewForTest(first.pendingSpeechConfirmation!!, 2000L))
+                assertTrue(entered.await(10, TimeUnit.SECONDS))
+                overrides = names.associateWith { "danger" }
+                // The optional lane remains blocked, yet a real ONNX regular call completes.
+                val danger = requireNotNull(pipeline.runTickForTest())
+                assertEquals("danger", danger.uiCoarse)
+                assertEquals(1L, release.count)
+                assertEquals("danger", pipeline.lastClassification()?.coarse)
+                release.countDown()
+                awaitPreviewIdle(pipeline)
+                assertEquals("danger", pipeline.lastClassification()?.coarse)
+                assertEquals(0L, pipeline.inferenceStatsForTest().confirmationAccepted)
+            } finally {
+                release.countDown()
+            }
+        }
+    }
+
+    private fun awaitPreviewReady(pipeline: RealtimeAiPipeline) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+        while (!pipeline.previewReadyForTest() && System.nanoTime() < deadline) Thread.sleep(5)
+        assertTrue("preview model did not initialize", pipeline.previewReadyForTest())
+    }
+
+    private fun awaitPreviewIdle(pipeline: RealtimeAiPipeline) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+        while (pipeline.previewBusyForTest() && System.nanoTime() < deadline) Thread.sleep(5)
+        assertTrue("preview did not finish", !pipeline.previewBusyForTest())
     }
 
     private fun feedSustainedCapture(pipeline: RealtimeAiPipeline, pcm: FloatArray) {

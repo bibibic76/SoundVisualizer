@@ -20,6 +20,7 @@ data class AiClassificationResult(
     /** Immutable settings snapshot used to suppress stale results immediately on edits. */
     internal val mappingInputs: Map<String, String> = emptyMap(),
     val responsiveConfirmation: Boolean = false,
+    /** Optional published view; does not mutate regular confirmed/hysteresis state. */
     val earlyConfirmation: Boolean = false,
     val confirmationAttempts: Long = 0L,
     val confirmationAccepted: Long = 0L,

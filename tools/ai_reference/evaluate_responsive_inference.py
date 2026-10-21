@@ -142,16 +142,20 @@ def replay(mono, chunks, rate, scheduler, classifier, cache, start_ms, stop_ms, 
     timeline.append((cutoff, timeline[-1][1]))
     held = Counter()
     danger_ms = 0.0
+    speech_ms = 0.0
     for (time, ui), (end, _) in zip(timeline, timeline[1:]):
         overlap = max(0.0, min(end, stop_ms) - max(time, start_ms))
         held[ui] += overlap
         if ui == "danger":
             danger_ms += max(0.0, end - max(time, start_ms))
+        if ui == "speech":
+            speech_ms += max(0.0, end - max(time, start_ms))
     return {
         "first_valid_expected_ms": first_correct if expected in ("speech", "danger") else None,
         "activity_onset_ms": onset, "predictions": predictions, "advances": scheduler.advances,
         "majority": max(("ambient", "speech", "danger"), key=lambda label: (held[label], label == "danger", label == "speech")),
         "danger_ms_with_tail": danger_ms, "danger_seen": danger_ms > 0,
+        "speech_ms_with_tail": speech_ms, "speech_seen": speech_ms > 0,
         "early_attempts": early_attempts, "early_accepted": early_accepted,
         "early_rejected": early_rejected, "deadline_aborts": deadline_aborts,
         "simulated_busy_ms": simulated_busy_ms,

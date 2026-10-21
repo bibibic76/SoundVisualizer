@@ -64,7 +64,7 @@ class RealtimeAiPipeline private constructor(
         val uiConfidence: Float
     )
 
-    /** Lightweight counters for device tests of inference suppression and lifecycle completion. */
+    /** executed/completed count regular calls; optional work is counted separately as attempts. */
     data class InferenceStats(
         val executed: Long,
         val completed: Long,
@@ -137,12 +137,49 @@ class RealtimeAiPipeline private constructor(
         CaptureAudioMath.captureSamplesForOneYamnetWindow(audioBuffer.sampleRate)
     private val captureScratch = FloatArray(captureNeed)
     private val mono16kScratch = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
-
     private val debuggable: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
-    fun lastClassification(): AiClassificationResult? = lastResult.get()?.takeIf {
-        it.mappingInputs == mappingOverrides()
+    private data class PreviewInput(
+        val parent: AiClassificationResult,
+        val request: AiSpeechConfirmation.Request,
+        val mapping: YamnetMappingPolicy
+    )
+
+    private class PreviewModel(context: Context, captureNeed: Int) : AutoCloseable {
+        val frontend = QualcommSourceAudioPreprocessor()
+        val capture = FloatArray(captureNeed)
+        val mono16k = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
+        val yamnet = YamnetInference.create(context)
+        override fun close() = yamnet.close()
+    }
+
+    /** Test-only barrier on the isolated lane; never used by the regular scheduler. */
+    @Volatile internal var beforePreviewInferenceForTest: (() -> Unit)? = null
+
+    private val previewWorker = if (responsiveConfirmation) AiDeadlineWorker(
+        clockMs = elapsedRealtimeMs,
+        createResource = { PreviewModel(context, captureNeed) },
+        compute = { model: PreviewModel, input: PreviewInput -> computePreview(model, input) },
+        onAccepted = { confirmationAccepted.incrementAndGet() },
+        onError = { if (debuggable) Log.w(TAG, "Isolated preview failed", it) },
+        threadFactory = java.util.concurrent.ThreadFactory { work ->
+            Thread({
+                try { android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND) }
+                catch (_: SecurityException) { /* Priority is best effort, not a deadline guarantee. */ }
+                work.run()
+            }, "ai-speech-preview").apply { isDaemon = true }
+        }
+    ) else null
+
+    fun lastClassification(): AiClassificationResult? {
+        val base = lastResult.get()?.takeIf { it.mappingInputs == mappingOverrides() } ?: return null
+        val preview = previewWorker?.latest() ?: return base
+        // Preview is display-only; it never changes the regular candidate/hysteresis.
+        // Identity prevents a late Speech from masking a newer regular Danger/result.
+        return preview.output.takeIf {
+            preview.input.parent === base && captureInferenceGate.isContinuouslyActive(elapsedRealtimeMs())
+        } ?: base
     }
 
     fun inferenceStatsForTest(): InferenceStats = InferenceStats(
@@ -156,6 +193,7 @@ class RealtimeAiPipeline private constructor(
     fun start() {
         if (closed.get()) return
         if (!running.compareAndSet(false, true)) return
+        previewWorker?.invalidate()
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
@@ -179,7 +217,7 @@ class RealtimeAiPipeline private constructor(
                     }
                 }
                 val tickFinishedAtMs = elapsedRealtimeMs()
-                var regularDeadlineMs = tickFinishedAtMs + remainingTickDelayMs(
+                val regularDeadlineMs = tickFinishedAtMs + remainingTickDelayMs(
                         intervalMs = predictIntervalMs,
                         tickStartedAtMs = tickStartedAtMs,
                         tickFinishedAtMs = tickFinishedAtMs,
@@ -190,27 +228,10 @@ class RealtimeAiPipeline private constructor(
                 val earlyDeadline = if (request != null) AiSpeechConfirmation.deadlineMs(
                     tickStartedAtMs, tickFinishedAtMs, regularDeadlineMs
                 ) else null
-                if (earlyDeadline != null) {
-                    delay((earlyDeadline - elapsedRealtimeMs()).coerceAtLeast(0L))
-                    if (!isActive || !running.get()) break
-                    val estimatedCost = (tickFinishedAtMs - tickStartedAtMs).coerceAtLeast(0L)
-                    if (elapsedRealtimeMs() + estimatedCost + MIN_TICK_REST_MS <= regularDeadlineMs) {
-                        val beforeEarly = lastResult.get()
-                        try {
-                            runTickInternal(log = true, diagnostics = false, confirmation = request)
-                        } catch (t: Throwable) {
-                            if (debuggable) Log.w(TAG, "Early confirmation failed", t)
-                        }
-                        val earlyResult = lastResult.get()
-                        if (earlyResult !== beforeEarly && earlyResult?.earlyConfirmation == true) {
-                            // Consume the original slot only when the speculative result was accepted.
-                            regularDeadlineMs += predictIntervalMs
-                        }
-                        regularDeadlineMs = maxOf(
-                            regularDeadlineMs, elapsedRealtimeMs() + MIN_TICK_REST_MS
-                        )
-                    }
+                if (earlyDeadline != null && result != null && request != null) {
+                    previewWorker?.submit(PreviewInput(result, request, mapping), earlyDeadline, regularDeadlineMs)
                 }
+                // Never await the preview or consume/delay a regular slot, even on success.
                 delay((regularDeadlineMs - elapsedRealtimeMs()).coerceAtLeast(0L))
             }
         }
@@ -218,6 +239,7 @@ class RealtimeAiPipeline private constructor(
 
     fun stop() {
         running.set(false)
+        previewWorker?.invalidate()
         schedulerJob?.cancel()
         schedulerJob = null
     }
@@ -251,10 +273,15 @@ class RealtimeAiPipeline private constructor(
         return runTickInternal(log = false, diagnostics = true)
     }
 
-    internal fun runConfirmationForTest(request: AiSpeechConfirmation.Request): TickDiagnostics? =
-        runTickInternal(log = false, diagnostics = true, confirmation = request)
+    internal fun previewReadyForTest(): Boolean = previewWorker?.isReady() == true
+    internal fun previewBusyForTest(): Boolean = previewWorker?.isBusy() == true
+    internal fun submitPreviewForTest(request: AiSpeechConfirmation.Request, expiresAtMs: Long): Boolean {
+        val parent = lastResult.get() ?: return false
+        return previewWorker?.submit(PreviewInput(parent, request, mapping), elapsedRealtimeMs(), expiresAtMs) == true
+    }
 
     fun resetState() {
+        previewWorker?.invalidate()
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
@@ -279,9 +306,9 @@ class RealtimeAiPipeline private constructor(
      */
     private fun runTickInternal(
         log: Boolean,
-        diagnostics: Boolean,
-        confirmation: AiSpeechConfirmation.Request? = null
+        diagnostics: Boolean
     ): TickDiagnostics? {
+        previewWorker?.invalidate()
         if (closed.get()) return null
         if (!audioBuffer.hasEnoughForYamnetWindow()) return null
         // Skip if previous tick still running (scheduler overlap)
@@ -301,24 +328,17 @@ class RealtimeAiPipeline private constructor(
                 previousOverrides = overrides.toMap()
                 mapping = next
             }
-            if (confirmation != null && (
-                !responsiveConfirmation || confirmation.mappingSignature != mapping.signature ||
-                    !postProcessor.hasPendingSpeechConfirmation() ||
-                    !captureInferenceGate.isContinuouslyActive(elapsedRealtimeMs())
-                )) return null
             if (!captureInferenceGate.isInferenceOpen(elapsedRealtimeMs())) {
                 silenceSkippedTicks.incrementAndGet()
                 return null
             }
             val snapshotTimeMs = elapsedRealtimeMs()
             val result = try {
-                doInference(log, diagnostics, confirmation)
+                doInference(log, diagnostics)
             } catch (t: Throwable) {
                 captureInferenceGate.onInferenceFailed(snapshotTimeMs)
                 throw t
             }
-            // A rejected speculative observation completes without replacing lastResult.
-            // Keep completion accounting independent of whether the UI adopted a new result.
             inferenceCompletions.incrementAndGet()
             captureInferenceGate.onInferenceCompleted(snapshotTimeMs)
             return result
@@ -329,11 +349,9 @@ class RealtimeAiPipeline private constructor(
 
     private fun doInference(
         log: Boolean,
-        diagnostics: Boolean,
-        confirmation: AiSpeechConfirmation.Request?
+        diagnostics: Boolean
     ): TickDiagnostics? {
         inferenceExecutions.incrementAndGet()
-        if (confirmation != null) confirmationAttempts.incrementAndGet()
         val t0 = System.nanoTime()
         var logMel: FloatArray
         val preprocessNs = measureNanoTime {
@@ -370,11 +388,7 @@ class RealtimeAiPipeline private constructor(
             topKSummary = topKSummary,
             criticalDangerEvent = hasCritical
         )
-        val post = if (confirmation == null) postProcessor.process(frame) else {
-            if (!captureInferenceGate.isContinuouslyActive(elapsedRealtimeMs())) return null
-            postProcessor.confirmSpeechIfConsistent(frame, confirmation) ?: return null
-        }
-        if (confirmation != null) confirmationAccepted.incrementAndGet()
+        val post = postProcessor.process(frame)
 
         val totalMs = (System.nanoTime() - t0) / 1e6
         val result = AiClassificationResult(
@@ -392,10 +406,10 @@ class RealtimeAiPipeline private constructor(
             mappingSignature = mapping.signature,
             mappingInputs = previousOverrides,
             responsiveConfirmation = responsiveConfirmation,
-            earlyConfirmation = confirmation != null,
+            earlyConfirmation = false,
             confirmationAttempts = confirmationAttempts.get(),
             confirmationAccepted = confirmationAccepted.get(),
-            pendingSpeechConfirmation = if (responsiveConfirmation && confirmation == null)
+            pendingSpeechConfirmation = if (responsiveConfirmation)
                 AiSpeechConfirmation.request(frame, post, mapping.signature) else null
         )
         lastResult.set(result)
@@ -437,6 +451,43 @@ class RealtimeAiPipeline private constructor(
             uiCoarse = post.uiCoarse,
             uiDisplay = post.uiDisplay,
             uiConfidence = post.uiConfidence
+        )
+    }
+
+    private fun computePreview(model: PreviewModel, input: PreviewInput): AiClassificationResult? {
+        val parent = input.parent
+        fun stillCurrent() = !closed.get() && lastResult.get() === parent &&
+            parent.mappingInputs == mappingOverrides() &&
+            input.request.mappingSignature == input.mapping.signature &&
+            captureInferenceGate.isContinuouslyActive(elapsedRealtimeMs())
+        if (!stillCurrent()) return null
+        beforePreviewInferenceForTest?.invoke()
+        if (!stillCurrent()) return null
+        confirmationAttempts.incrementAndGet()
+        val t0 = System.nanoTime()
+        val preprocessNs = measureNanoTime {
+            audioBuffer.copyTailRightPadded(model.capture, captureNeed)
+            CaptureAudioMath.resampleMonoFloatTo16kCustom(
+                model.capture, captureNeed, audioBuffer.sampleRate, model.mono16k
+            )
+        }
+        lateinit var logMel: FloatArray
+        val melNs = measureNanoTime { logMel = model.frontend.computeLogMelSpectrogram(model.mono16k) }
+        val inferred = model.yamnet.inferFromLogMelFlat(logMel)
+        val pre = coarseClassifier.classify(inferred.probabilities, input.mapping)
+        val decision = YamnetSafetyCueDecision.decide(classNames, pre, input.mapping)
+        val frame = AiPostProcessor.FrameInput(decision.postCoarse, decision.postDisplay, decision.postConfidence)
+        if (!stillCurrent() || !AiSpeechConfirmation.matches(input.request, frame) ||
+            frame.confidence < AiPostProcessor.DEFAULT_BASE_THRESHOLD) return null
+        // No postProcessor.process/confirm here: never mutate the regular candidate state.
+        return parent.copy(
+            coarse = "speech", display = frame.display, confidence = frame.confidence,
+            top5 = pre.top5, dangerCuePromoted = false, meetsThreshold = true,
+            timestampMs = System.currentTimeMillis(),
+            preprocessMs = (preprocessNs + melNs) / 1e6,
+            yamnetMs = inferred.inferenceTimeMs, totalMs = (System.nanoTime() - t0) / 1e6,
+            earlyConfirmation = true, confirmationAttempts = confirmationAttempts.get(),
+            confirmationAccepted = confirmationAccepted.get() + 1, pendingSpeechConfirmation = null
         )
     }
 
@@ -532,6 +583,7 @@ class RealtimeAiPipeline private constructor(
         if (!closed.compareAndSet(false, true)) return
         stop()
         scope.cancel()
+        previewWorker?.close()
 
         // stop()/cancel() 은 다음 틱의 시작만 막는다. 이미 session.run() 안에 들어간 추론이
         // 있으면 그게 끝날 때까지 기다린 뒤에 네이티브 세션을 해제해야 use-after-free 가 없다.

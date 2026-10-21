@@ -20,7 +20,7 @@ android {
         targetSdk = 37
         versionCode = 13
         versionName = "1.7.2"
-        // Paired experiment APKs only. Default builds keep the existing 250ms scheduler.
+        // Paired isolated-preview APKs only. Both modes preserve regular 250ms slots.
         buildConfigField(
             "boolean", "AI_SPEECH_CONFIRMATION_EXPERIMENT",
             providers.gradleProperty("aiSpeechConfirmationExperiment").map {
