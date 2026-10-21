@@ -1,5 +1,6 @@
 package com.example.soundvisualizer
 
+import android.app.KeyguardManager
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,7 +9,10 @@ import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.hardware.input.InputManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
@@ -27,23 +31,48 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.example.soundvisualizer.language.AppLanguage
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
     private companion object {
         const val TAG = "OverlayService"
+
+        /** 잠금이 풀리기를 기다리는 동안 잠금을 확인하는 간격. 잠금 풀림 방송을 놓쳤을 때만 쓰인다([OverlayVisibility.onLockCheck]). */
+        const val UNLOCK_CHECK_MS = 1000L
     }
 
     private lateinit var windowManager: WindowManager
     private var composeView: ComposeView? = null
     private var overlayParams: WindowManager.LayoutParams? = null
-    private var unlockReceiverRegistered = false
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    /** 잠금이 풀리면 잠금 화면이 숨긴 오버레이 창을 다시 보이게 한다([showAgainAfterUnlock], #401). */
+    /** 오버레이 창이 가려졌는지(화면 꺼짐·잠금 화면). [visibility] 가 정하고, 오버레이([VisualizerOverlay])는 가려진 동안 쉰다. */
+    private val covered = MutableStateFlow(false)
+    private var visibility = OverlayVisibility(covered = false, waitingForUnlock = false)
+    private var receiversRegistered = false
+
+    private val screenReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Intent.ACTION_SCREEN_OFF -> visibility.onScreenOff()
+                Intent.ACTION_SCREEN_ON -> visibility.onScreenOn()
+            }
+            publish()
+        }
+    }
+
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == Intent.ACTION_USER_PRESENT) showAgainAfterUnlock()
+            if (intent.action == Intent.ACTION_USER_PRESENT && visibility.onUnlocked()) showAgain()
+            publish()
         }
+    }
+
+    /** 잠금 풀림 방송을 놓쳐도 오버레이가 쉰 채 남지 않게, 잠금이 풀리기를 기다리는 동안 [UNLOCK_CHECK_MS] 마다 잠금을 확인한다. */
+    private val unlockCheck = Runnable {
+        if (visibility.onLockCheck(isKeyguardLocked())) showAgain()
+        publish()
     }
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -103,7 +132,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             setViewTreeViewModelStoreOwner(this@OverlayService)
             setViewTreeSavedStateRegistryOwner(this@OverlayService)
             setContent {
-                VisualizerOverlay()
+                VisualizerOverlay(covered)
             }
         }
         // 권한이 도중에 회수됐거나 시스템이 서비스를 되살린 경우 addView 가 BadTokenException 을
@@ -126,22 +155,53 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
         composeView = view
         overlayParams = params
-        // 잠금 풀림(USER_PRESENT)은 시스템 서버가 아니라 시스템 UI 앱이 보내서, 내보내지 않은 수신기에는 오지 않는다(#385).
-        // 보호된 방송이라 일반 앱은 보낼 수 없으므로 내보내도 다른 앱이 이 수신기를 부를 수 없다.
-        ContextCompat.registerReceiver(this, unlockReceiver, IntentFilter(Intent.ACTION_USER_PRESENT), ContextCompat.RECEIVER_EXPORTED)
-        unlockReceiverRegistered = true
+        registerReceivers()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
 
     /**
-     * 잠금 화면이 숨긴 오버레이 창을 다시 보이게 한다(#401).
+     * 화면 켜짐·꺼짐과 잠금 풀림 방송을 오버레이가 떠 있는 동안 받는다([OverlayVisibility], #401). 매니페스트에 적어서는
+     * 받을 수 없는 방송이다. 캡처 서비스도 같은 방송을 받지만 그쪽은 캡처·AI·진동을 쉴지 정하는 데 쓰고, 외부 사운드 모드는
+     * 쉬지 않는다. 오버레이는 모드와 상관없이 가려진 동안 쉰다.
+     *
+     * 화면 켜짐·꺼짐은 시스템 서버만 보내는 보호된 방송이라 내보내지 않은 수신기로 받는다([AudioCaptureService] 와 같다).
+     * 잠금 풀림(USER_PRESENT)은 시스템 UI 앱이 보내서, 내보내지 않은 수신기에는 오지 않는다(#385). 이것도 보호된
+     * 방송이라 일반 앱은 보낼 수 없으므로, 내보내도 다른 앱이 이 수신기를 부를 수 없다.
+     */
+    private fun registerReceivers() {
+        val screenFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+        }
+        ContextCompat.registerReceiver(this, screenReceiver, screenFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(this, unlockReceiver, IntentFilter(Intent.ACTION_USER_PRESENT), ContextCompat.RECEIVER_EXPORTED)
+        receiversRegistered = true
+        // 등록 전에 이미 꺼졌거나 잠겼다면 그 방송은 다시 오지 않는다.
+        visibility = OverlayVisibility.initial(
+            interactive = getSystemService(PowerManager::class.java)?.isInteractive != false,
+            keyguardLocked = isKeyguardLocked()
+        )
+        publish()
+    }
+
+    /** [visibility] 를 오버레이에 알린다. 잠금이 풀리기를 기다리는 동안만 잠금 확인을 다시 건다. */
+    private fun publish() {
+        mainHandler.removeCallbacks(unlockCheck)
+        if (visibility.waitingForUnlock) mainHandler.postDelayed(unlockCheck, UNLOCK_CHECK_MS)
+        covered.value = visibility.covered
+    }
+
+    private fun isKeyguardLocked(): Boolean = getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
+
+    /**
+     * 잠금 화면이 숨긴 오버레이 창을 다시 보이게 한다(#401). 오버레이가 다시 그리기 시작하기([publish]) 전에 부른다.
      *
      * 잠금 화면이 뜨면 안드로이드는 다른 앱의 오버레이 창을 숨긴다. Galaxy S25+(Android 17)는 잠금을 풀어도 다시
      * 보이게 하지 않아(`dumpsys window` 의 `mPolicyVisibility=false`), 우리 앱 화면을 열기 전까지 오버레이가 보이지
-     * 않고 프레임도 오지 않았다. 창의 배치를 다시 요청하면 WindowManager 가 잠금 화면 정책을 다시 따진다.
+     * 않고 프레임도 오지 않았다. 창의 배치를 다시 요청하면 WindowManager 가 잠금 화면 정책을 다시 따져 창을 보이게 한다.
      */
-    private fun showAgainAfterUnlock() {
+    private fun showAgain() {
         val view = composeView ?: return
         val params = overlayParams ?: return
         try {
@@ -166,9 +226,11 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_NOT_STICKY
 
     override fun onDestroy() {
-        if (unlockReceiverRegistered) {
+        mainHandler.removeCallbacks(unlockCheck)
+        if (receiversRegistered) {
+            unregisterReceiver(screenReceiver)
             unregisterReceiver(unlockReceiver)
-            unlockReceiverRegistered = false
+            receiversRegistered = false
         }
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         composeView?.let { view ->
