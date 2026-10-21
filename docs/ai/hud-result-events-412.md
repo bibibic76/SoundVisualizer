@@ -20,7 +20,7 @@ pause는 내부 collector/timer를 취소하며, 이미 대기한 신호도 현�
 
 ## PR #411 계측과 함께 적용할 때
 
-이 변경은 develop 기반으로 독립된다. 아직 초안인 #411의 `HudFrame`/draw 계측은 포함하지 않았다. 두 변경은 `AiDebugOverlay`의 producer 주변과 pipeline 공개 지점에서 겹칠 수 있다. 함께 적용할 때 다음을 유지한다.
+이 변경은 develop 기반으로 독립된다. 아직 초안인 #411의 `HudFrame`/draw 계측은 포함하지 않았다. merge-tree 진단에서 `AiDebugOverlay.kt`와 `RealtimeAiPipeline.kt`의 충돌을 확인했다. 자동 병합된다는 뜻이 아니며, 함께 적용할 때 다음을 유지한다.
 
 1. 이 PR의 `aiHudRefreshes(...).collect` 안에 #411의 HUD read 계측·`HudFrame` 생성을 둔다. `HUD_POLL`은 호환되는 기존 열 이름으로 남겨도 의미는 “HUD가 결과를 처음 읽은 시각”이다. 알림과 heartbeat 어느 경로든 같은 시점에서 찍는다.
 2. 텍스트와 latency stamp는 동일 composition snapshot을 사용하고 기존 HUD draw 계측을 유지한다. 100ms delay를 다시 넣지 않는다.
