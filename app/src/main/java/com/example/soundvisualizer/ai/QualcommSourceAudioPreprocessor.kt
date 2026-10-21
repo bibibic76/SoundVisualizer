@@ -24,8 +24,8 @@ import kotlin.math.sqrt
  * reflect padding, a centered 400-point periodic Hann window, magnitude (not
  * power), and torchaudio's default HTK mel filter bank.
  *
- * This class is intentionally separate from the production preprocessor while
- * Issue #145 measures parity and YAMNet-only behavior. It is not thread-safe.
+ * Production frontend. Its scratch buffers are owned by the pipeline's inference
+ * lock; concurrent calls on the same instance are not supported.
  */
 internal class QualcommSourceAudioPreprocessor {
 
@@ -57,7 +57,7 @@ internal class QualcommSourceAudioPreprocessor {
     )
     private val melStartBins: IntArray
     private val melEndBins: IntArray
-    private val bitReversed = createBitReversedIndices(FFT_SIZE)
+    private val fft = PlannedRadix2Fft(FFT_SIZE)
 
     private val fitted = FloatArray(REQUIRED_MONO_16K_SAMPLES)
     private val fftReal = DoubleArray(FFT_SIZE)
@@ -106,7 +106,7 @@ internal class QualcommSourceAudioPreprocessor {
                 fftReal[fftIndex] = fitted[sourceIndex].toDouble() * hannWindow[windowIndex]
             }
 
-            fftInPlace(fftReal, fftImag, bitReversed)
+            fft.transform(fftReal, fftImag)
             for (frequency in 0 until FREQ_BINS) {
                 val real = fftReal[frequency]
                 val imaginary = fftImag[frequency]
