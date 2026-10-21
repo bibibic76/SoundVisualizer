@@ -309,17 +309,22 @@ object TutorialScript {
 /**
  * [TutorialScript] 를 오버레이 엔진이 읽는 입력으로 잇는다. 엔진은 앱이 쓰는 것과 같은 [com.example.soundvisualizer.VisualizerEngine] 이다.
  *
- * 모드는 기본값인 파도로 고정하고, 사용자가 꺼 둔 종류도 모두 그린다. 튜토리얼은 앱이 무엇을 하는지 보여 주는
+ * 튜토리얼은 모드를 기본값인 파도로 고정하고, 사용자가 꺼 둔 종류도 모두 그린다. 튜토리얼은 앱이 무엇을 하는지 보여 주는
  * 곳이라 지금 설정이 아니라 처음 설정의 모양을 보여 준다. 색만은 사용자가 고른 색을 쓴다. 설정 탭에서 보는 색과
  * 범례가 달라지면 안 되기 때문이다.
+ *
+ * 쉬운 설정의 모양 카드(#408)는 같은 그림으로 카드의 [mode] 를 그 모드의 설정([settings])으로 그린다.
  *
  * 실제 소리([com.example.soundvisualizer.LiveVisualizerInputs])와 오버레이를 깨우는 신호(OverlayWake)에는 닿지 않는다.
  * 튜토리얼을 켜 둔 채 시각화가 돌아도 둘이 서로를 건드리지 않는다.
  *
- * @param colors 라벨 → ARGB 색.
+ * @param settings 엔진이 틱마다 읽는다. 사용자의 모드 설정과 섞이지 않게 따로 만들어 넘긴다.
+ * @param colors 라벨 → ARGB 색. 맨 뒤에 두어 람다로 넘길 수 있다.
  */
 class TutorialDemoInputs(
     private val scene: TutorialScene,
+    private val mode: VisualMode = VisualMode.Wave,
+    private val settings: ModeSettings = demoSettings(),
     private val colors: (String) -> Int
 ) : VisualizerInputs {
 
@@ -332,7 +337,7 @@ class TutorialDemoInputs(
         out[2] = 1f
     }
 
-    override fun currentMode(): VisualMode = VisualMode.Wave
+    override fun currentMode(): VisualMode = mode
 
     override fun settingsFor(mode: VisualMode): ModeSettings = settings
 
@@ -341,9 +346,6 @@ class TutorialDemoInputs(
     override fun colorFor(label: String): Int = colors(label)
 
     override fun isShown(label: String): Boolean = true
-
-    /** 엔진이 틱마다 읽는다. 사용자의 모드 설정과 섞이지 않게 따로 만들어 둔다. */
-    private val settings = demoSettings()
 
     companion object {
         /**

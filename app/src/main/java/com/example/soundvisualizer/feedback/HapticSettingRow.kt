@@ -266,8 +266,8 @@ private fun LevelSlider(typeName: String, level: Int, enabled: Boolean, onFinish
     }
 }
 
-/** 소리 종류의 이름(분류 탭과 같은 "환경음"·"대화음"·"위협음"). */
-private fun soundTypeName(label: String): Int = when (label) {
+/** 소리 종류의 이름(분류 탭과 같은 "환경음"·"대화음"·"위협음"). 쉬운 설정([EasyHapticRow])도 같은 이름을 쓴다. */
+internal fun soundTypeName(label: String): Int = when (label) {
     AiClassification.DANGER -> R.string.sound_type_danger
     AiClassification.SPEECH -> R.string.sound_type_speech
     else -> R.string.sound_type_ambient

@@ -55,11 +55,13 @@ class AccessibilitySemanticsInstrumentedTest {
     /**
      * 새로 설치한 테스트 기기에서는 튜토리얼이 탭 화면 대신 뜬다. 액티비티보다 먼저 정하고, 끝나면 되돌린다.
      * 분류 탭은 바꾼 소리 없이 기본 모드로 열어 카드가 늘 같은 글로 읽히게 하고, 끝나면 사용자의 값으로 되돌린다.
+     * 설정 탭은 자세한 설정으로 연다. 새로 설치하면 쉬운 설정(#408)으로 열리는데, 그 화면은 EasySettingsInstrumentedTest 가 본다.
      */
     private val settings = object : ExternalResource() {
         private var before = true
         private var typesBefore: Map<String, String> = emptyMap()
         private var advancedBefore = false
+        private var easyBefore = SettingsManager.EASY_SETTINGS_DEFAULT
 
         override fun before() {
             InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -67,9 +69,11 @@ class AccessibilitySemanticsInstrumentedTest {
                 before = SettingsManager.tutorialSeen.value
                 typesBefore = SettingsManager.soundTypes.value
                 advancedBefore = SettingsManager.classifyAdvanced.value
+                easyBefore = SettingsManager.easySettings.value
                 SettingsManager.setTutorialSeen(true)
                 SettingsManager.resetSoundTypes()
                 SettingsManager.setClassifyAdvanced(false)
+                SettingsManager.setEasySettings(false)
             }
         }
 
@@ -78,6 +82,7 @@ class AccessibilitySemanticsInstrumentedTest {
                 SettingsManager.resetSoundTypes()
                 typesBefore.forEach { (name, type) -> SettingsManager.setSoundType(name, type) }
                 SettingsManager.setClassifyAdvanced(advancedBefore)
+                SettingsManager.setEasySettings(easyBefore)
                 SettingsManager.setTutorialSeen(before)
             }
         }
