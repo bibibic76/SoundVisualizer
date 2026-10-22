@@ -119,6 +119,10 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             params.alpha = getSystemService(InputManager::class.java).maximumObscuringOpacityForTouch
         }
+        // 많아야 초당 60번(배터리 설정이면 30번) 그리므로 화면에 그만큼만 요청한다. 요청하지 않으면 Galaxy S25+ 는
+        // 홈 화면 위에서도 화면 전체를 120Hz 로 돌렸다. 앞에 있는 앱이 더 빠르게 그리면 시스템이 그 앱을 따른다.
+        params.preferredRefreshRate =
+            (if (SettingsManager.reducedFrameRate.value) VisualizerEngine.REDUCED_FPS else VisualizerEngine.FULL_FPS).toFloat()
         // 노치/상태바/내비게이션 영역까지 덮어서 파도가 화면 실제 테두리에서 시작하도록 한다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
