@@ -20,6 +20,11 @@ android {
         targetSdk = 37
         versionCode = 13
         versionName = "1.7.2"
+        buildConfigField("boolean", "AI_SILERO_PREVIEW_ENABLED",
+            providers.gradleProperty("aiSileroPreview").map {
+                require(it == "true" || it == "false") { "aiSileroPreview must be true or false" }
+                it
+            }.getOrElse("false"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
