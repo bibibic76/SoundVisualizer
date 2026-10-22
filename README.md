@@ -106,7 +106,7 @@ The project is rigorously engineered for high-performance, real-time background 
 * **AudioPlaybackCapture**: A foreground service captures the audio other apps play through `MediaProjection`, or the microphone through `AudioRecord` in External sound mode.
 * **Native Channel Levels**: The left and right peak levels are measured in C++ (NDK) for every buffer and handed to the renderer.
 * **Zero-Allocation Rendering**: The Jetpack Compose canvas renderer allocates no memory per frame, preventing GC pauses and frame drops.
-* **Frame-Rate Independent and Idle-Aware**: Smoothing is normalized to a 60 FPS reference and capped at 60 FPS even on 120 Hz screens (30 FPS with **Draw the graphic less often**), and the overlay asks the screen to refresh only that often. When nothing is visible, the overlay stops redrawing and wakes as soon as sound arrives, and by default it pauses while the screen is off.
+* **Frame-Rate Independent and Idle-Aware**: Smoothing is normalized to a 60 FPS reference and capped at 60 FPS even on 120 Hz screens (30 FPS with **Draw the graphic less often**). When nothing is visible, the overlay stops redrawing and wakes as soon as sound arrives, and by default it pauses while the screen is off.
 * **ONNX Inference Pipeline**: Every 250 ms, the last 0.975 seconds of audio is downmixed to mono, resampled to 16 kHz through an anti-aliasing filter, turned into the log-mel spectrogram the model was exported with, and classified by YAMNet via ONNX Runtime. The model files are checked against a pinned size and SHA-256 at load. Each step is unit-tested against reference outputs.
 
 ---

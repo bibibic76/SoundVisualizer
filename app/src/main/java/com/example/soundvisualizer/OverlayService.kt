@@ -24,7 +24,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
@@ -33,7 +32,6 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.example.soundvisualizer.language.AppLanguage
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
 
@@ -121,8 +119,6 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             params.alpha = getSystemService(InputManager::class.java).maximumObscuringOpacityForTouch
         }
-        // 그리는 만큼만 화면에 주사율을 요청한다([VisualizerEngine.overlayRefreshRate], #428). 실행 중에 바꾸면 아래에서 따라간다.
-        params.preferredRefreshRate = VisualizerEngine.overlayRefreshRate(SettingsManager.reducedFrameRate.value)
         // 노치/상태바/내비게이션 영역까지 덮어서 파도가 화면 실제 테두리에서 시작하도록 한다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
@@ -162,23 +158,6 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         registerReceivers()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        // 실행 중에 '그래픽 덜 그리기'를 켜고 끄면 화면에 요청하는 주사율도 바꾼다. 처음 값은 이미 넣어 두었다.
-        lifecycleScope.launch {
-            SettingsManager.reducedFrameRate.collect { reduced -> requestRefreshRate(VisualizerEngine.overlayRefreshRate(reduced)) }
-        }
-    }
-
-    /** 오버레이 창이 화면에 요청하는 주사율을 바꾼다. 같은 값이면 창을 건드리지 않는다. */
-    private fun requestRefreshRate(rate: Float) {
-        val view = composeView ?: return
-        val params = overlayParams ?: return
-        if (params.preferredRefreshRate == rate) return
-        params.preferredRefreshRate = rate
-        try {
-            windowManager.updateViewLayout(view, params)
-        } catch (e: IllegalArgumentException) {
-            // 창이 이미 떨어졌다. 서비스가 내려가는 중이다.
-        }
     }
 
     /**
