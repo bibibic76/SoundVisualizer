@@ -189,11 +189,12 @@ class YamnetThreeClassMapperTest {
         listOf(
             "Bellow", "Whoop", "Yell", "Cheering",
             "Giggle", "Snicker", "Belly laugh", "Chuckle, chortle",
-            "Baby cry, infant cry", "Whimper", "Wail, moan"
+            "Baby cry, infant cry", "Whimper", "Wail, moan",
+            "Sneeze", "Cough", "Breathing"
         ).forEach { displayName ->
             assertEquals(displayName, "speech", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
         }
-        listOf("Whimper (dog)", "Bellow-like sound", "Cheering music").forEach { displayName ->
+        listOf("Whimper (dog)", "Bellow-like sound", "Cheering music", "Breathing machine", "Cough-like sound").forEach { displayName ->
             assertEquals(displayName, "ambient", YamnetThreeClassMapper.mapDisplayNameToCoarse(displayName))
         }
     }
