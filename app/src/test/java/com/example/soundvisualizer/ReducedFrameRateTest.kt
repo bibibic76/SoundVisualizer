@@ -73,4 +73,15 @@ class ReducedFrameRateTest {
         // 0 은 "화면 주사율 그대로" 라는 뜻이라, 아끼려다 오히려 더 그리게 된다.
         assertTrue(VisualizerEngine.REDUCED_FPS in 1 until VisualizerEngine.FULL_FPS)
     }
+
+    @Test
+    fun `오버레이 창은 그리는 만큼만 화면 주사율을 요청한다`() {
+        // 요청하지 않으면 S25+ 는 홈 화면 위에서도 120Hz 로 돌았다(#428). 그리는 수보다 높게 요청하면 그만큼 헛돈다.
+        assertEquals(VisualizerEngine.FULL_FPS.toFloat(), VisualizerEngine.overlayRefreshRate(reduced = false))
+        assertEquals(VisualizerEngine.REDUCED_FPS.toFloat(), VisualizerEngine.overlayRefreshRate(reduced = true))
+        // 오버레이 창은 처음 값과 실행 중에 바뀐 값을 모두 이 수로 요청한다.
+        val service = java.io.File("src/main/java/com/example/soundvisualizer/OverlayService.kt").readText(Charsets.UTF_8)
+        assertTrue(service.contains("params.preferredRefreshRate = VisualizerEngine.overlayRefreshRate(SettingsManager.reducedFrameRate.value)"))
+        assertTrue(service.contains("SettingsManager.reducedFrameRate.collect { reduced -> requestRefreshRate(VisualizerEngine.overlayRefreshRate(reduced)) }"))
+    }
 }
