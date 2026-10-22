@@ -60,7 +60,7 @@
     <string name="tutorial_types_body">AI sorts sounds into three types and draws each in its own color. You can change the colors under “Detailed” in the Settings tab.</string>
     <string name="tutorial_type_ambient">Ambient</string>
     <string name="tutorial_type_ambient_examples">Music, rain and everything else</string>
-    <string name="tutorial_type_speech">Speech</string>
+    <string name="tutorial_type_speech">Human sounds</string>
     <string name="tutorial_type_speech_examples">Voices</string>
     <string name="tutorial_type_danger">Danger</string>
     <string name="tutorial_type_danger_examples">Gunshots, explosions, sirens</string>
@@ -171,7 +171,7 @@
 
     <!-- Sound types -->
     <string name="ai_show_ambient">Show ambient sounds</string>
-    <string name="ai_show_speech">Show speech</string>
+    <string name="ai_show_speech">Show human sounds</string>
     <string name="ai_show_danger">Show danger sounds</string>
     <string name="ai_unavailable">Sound type detection isn\'t working, so every sound is shown in the ambient color. Try turning the visualizer off and on again.</string>
 
@@ -187,7 +187,7 @@
     <string name="classify_filter_all">All</string>
     <string name="classify_filter_changed">Changed</string>
     <string name="sound_type_ambient">Ambient</string>
-    <string name="sound_type_speech">Speech</string>
+    <string name="sound_type_speech">Human sounds</string>
     <string name="sound_type_danger">Danger</string>
     <string name="classify_type_default">%1$s (default)</string>
     <string name="classify_changed_from">Default: %1$s</string>
@@ -279,7 +279,7 @@
     <!-- Accessibility -->
     <string name="cd_pick_color">Open color picker</string>
     <string name="cd_color_ambient">Ambient color</string>
-    <string name="cd_color_speech">Speech color</string>
+    <string name="cd_color_speech">Human sounds color</string>
     <string name="cd_color_danger">Danger sound color</string>
     <string name="cd_expand">Expand</string>
     <string name="cd_collapse">Collapse</string>
@@ -356,7 +356,7 @@
     <string name="help_modes_notification">While it\'s on, you can expand the running notification to switch modes without opening the app.</string>
 
     <string name="help_sound_title">Sound types and vibration</string>
-    <string name="help_sound_kinds">AI sorts what you hear into ambient, speech and danger sounds. By default, ambient is white, speech is yellow and danger is red. In the Settings tab you can choose whether each type is shown, and change its color under “Detailed”.</string>
+    <string name="help_sound_kinds">AI sorts what you hear into ambient, human sounds and danger sounds. By default, ambient is white, human sounds is yellow and danger is red. In the Settings tab you can choose whether each type is shown, and change its color under “Detailed”.</string>
     <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI\'s vote on the type, though, so this doesn\'t mean every doorbell will be shown as danger. Turn on Advanced mode to change sounds one by one.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate. For each type, you can choose Off, Weak or Strong in “Simple”, or a mode (Off, Slow, Medium, Fast, Continuous) and a strength in “Detailed”.</string>
