@@ -646,6 +646,17 @@ class VisualizerEngine(
         return drawn
     }
 
+    /**
+     * 가려졌던 창이 다시 보였다([VisualizerOverlay]). 가려진 동안 쌓인 소리 크기를 버린다(#433).
+     *
+     * 소리 크기는 마지막으로 읽은 뒤의 최대값으로 쌓이는데([VisualizerInputs.readPeaks]), 가려진 동안에는 아무도 읽지 않는다.
+     * 그대로 두면 다시 보인 뒤 첫 확인([pollWake])이 가려진 동안의 가장 큰 소리를 지금 소리로 보고, 조용한 방에서 지난 소리를
+     * 그리거나 숨긴 종류의 소리로 보관해 위협음 판정으로 꺼낸다. 버린 뒤의 확인은 다시 보인 뒤에 들어온 소리만 본다.
+     */
+    fun onUncovered() {
+        inputs.readPeaks(peaks)
+    }
+
     // ---------------- 피크 보관 ----------------
 
     /**
