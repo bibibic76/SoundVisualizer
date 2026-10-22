@@ -19,7 +19,7 @@ android {
         // "다시 켜기" 로 여는 경로가 모두 BAL_ALLOW_NON_APP_VISIBLE_WINDOW 로 허용되는 것을 Android 17 에서 봤다(#155).
         targetSdk = 37
         versionCode = 14
-        versionName = "1.7.3"
+        versionName = "1.8.0"
         buildConfigField("boolean", "AI_SILERO_PREVIEW_ENABLED",
             providers.gradleProperty("aiSileroPreview").map {
                 require(it == "true" || it == "false") { "aiSileroPreview must be true or false" }
