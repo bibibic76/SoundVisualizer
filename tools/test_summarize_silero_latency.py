@@ -25,6 +25,8 @@ class PreviewSummaryTest(unittest.TestCase):
         self.assertEqual(150, result["observed_preview_lead"]["color_draw"]["median_ms"])
         self.assertEqual(1, result["censored_draw_pairs"]["hud_draw"])
         self.assertEqual(1, result["next_regular_speech"])
+        self.assertEqual(2, result["stage_summary"]["results"])
+        self.assertEqual(1, result["stage_summary"]["excluded_preview_results"])
 
     def test_retraction_and_missing_future_are_not_counted_as_improvements(self):
         rows = self.sample()

@@ -23,6 +23,7 @@ def summarize(rows):
     stages = Counter()
     ended = False
     dropped = None
+    excluded_previews = 0
     for row in rows:
         if row["schema"] != "1":
             raise ValueError("Unsupported latency schema")
@@ -34,6 +35,11 @@ def summarize(rows):
             continue
         key = (row["pipeline_session_id"], row["result_id"])
         if row["stage"] == "result":
+            # A preview inherits its parent's YAMNet input stamp. Counting it as
+            # another inference would mislabel VAD waiting as regular publication.
+            if "kind=preview" in row.get("detail", "").split(";"):
+                excluded_previews += 1
+                continue
             results[key] = row
         else:
             observed.setdefault(key, {}).setdefault(row["stage"], int(row["at_boot_ns"]))
@@ -66,12 +72,14 @@ def summarize(rows):
                     invalid += 1
         if "hud_poll" in seen and "hud_draw" in seen and seen["hud_draw"] >= seen["hud_poll"]:
             intervals["hud_poll_to_draw"].append(seen["hud_draw"] - seen["hud_poll"])
-    return {"results": len(results), "stages": dict(stages), "invalid_intervals": invalid,
+    return {"results": len(results), "excluded_preview_results": excluded_previews,
+            "stages": dict(stages), "invalid_intervals": invalid,
             "recording_closed": ended, "dropped_events": dropped, "input_may_be_filtered_results": filtered,
             "missing_color_draw": sum("color_draw" not in observed.get(k, {}) for k in results),
             "missing_hud_draw": sum("hud_draw" not in observed.get(k, {}) for k in results),
             "intervals": {k: distribution(v) for k, v in intervals.items()},
-            "limitations": "Missing draws are censored (hidden, replaced, paused, or dropped), not zero latency. "
+            "limitations": "Regular inference stages exclude provisional preview results with inherited input stamps. "
+            "Missing draws are censored (hidden, replaced, paused, or dropped), not zero latency. "
             "Read return is not microphone/event onset. Draw callback is not physical presentation. "
             "Conditional observed-result distributions are not end-to-end detection performance."}
 
