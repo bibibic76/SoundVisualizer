@@ -3,6 +3,7 @@ package com.example.soundvisualizer.feedback
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.AiClassification
 import com.example.soundvisualizer.CaptureSource
+import com.example.soundvisualizer.EasyNoteLineBreak
 import com.example.soundvisualizer.PictureChoiceRow
 import com.example.soundvisualizer.R
 import com.example.soundvisualizer.SecondaryTextColor
@@ -38,8 +40,9 @@ import com.example.soundvisualizer.WarningColor
  *   끔만 선택할 수 있다.
  * - 안내 글은 할 일이나 까닭을 알려 주는 것만 둔다: 진동이 없는 기기, 표시를 켜야 함, 외부 사운드 모드의 환경음, 소리 종류
  *   구분(AI)을 쓸 수 없음(자세한 설정과 같은 안내, 진동에 기대는 사람을 거짓으로 안심시키지 않는다, #232), 세기를 바꿀 수
- *   없는 기기(약하게와 세게가 같게 울린다). 실행 중이라 미리 울리지 않는다는 안내는 줄마다 두지 않고 소리 종류 카드 맨 위에
- *   한 번 둔다. 줄마다 두면 다른 안내에 가려 빠지는 줄이 생기고, 같은 문장이 세 번 되풀이된다.
+ *   없는 기기(약하게와 세게가 같게 울린다), 자세한 설정에서 단계와 다른 세기로 맞춤(어느 칸도 선택되지 않은 까닭, #424).
+ *   실행 중이라 미리 울리지 않는다는 안내는 줄마다 두지 않고 소리 종류 카드 맨 위에 한 번 둔다. 줄마다 두면 다른 안내에
+ *   가려 빠지는 줄이 생기고, 같은 문장이 세 번 되풀이된다.
  *
  * @param label [AiClassification] 의 라벨
  * @param shown 이 종류의 화면 표시가 켜져 있는지
@@ -90,6 +93,8 @@ fun EasyHapticRow(label: String, shown: Boolean) {
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
         aiNote -> AiUnavailableNotice.otherRow(loudAlerts)
         rowEnabled && shownStep != EasyVibration.Off && !player.hasAmplitudeControl -> R.string.haptic_no_amplitude
+        // 자세한 설정에서 단계와 다른 세기로 맞춰 두었으면 어느 칸도 선택해 두지 않으므로 그 까닭과 할 일을 적는다(크기와 같다).
+        shownStep == null -> R.string.easy_vibration_custom
         else -> null
     }
 
@@ -125,6 +130,7 @@ fun EasyHapticRow(label: String, shown: Boolean) {
                 fontSize = 13.sp,
                 lineHeight = 19.sp,
                 color = if (aiNote) WarningColor else SecondaryTextColor,
+                style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),
                 modifier = Modifier.padding(top = 8.dp)
             )
         }

@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">ज़ोरदार</string>
     <string name="easy_vibration_off_external">बाहरी आवाज़ मोड में माहौल की आवाज़ों पर वाइब्रेशन नहीं होता।</string>
     <string name="easy_vibration_preview_running">विज़ुअलाइज़र चालू रहते हुए झलक वाला वाइब्रेशन नहीं होता।</string>
+    <string name="easy_size_custom">यह साइज़ “विस्तृत सेटिंग” में सेट किया गया है। इसे बदलने के लिए ऊपर से कोई विकल्प चुनें।</string>
+    <string name="easy_vibration_custom">यह तीव्रता “विस्तृत सेटिंग” में सेट की गई है। इसे बदलने के लिए ऊपर से कोई विकल्प चुनें।</string>
 
     <!-- Language -->
     <string name="settings_language_title">भाषा</string>

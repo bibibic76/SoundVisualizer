@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Stark</string>
     <string name="easy_vibration_off_external">Im Modus für Außengeräusche vibrieren Umgebungsgeräusche nicht.</string>
     <string name="easy_vibration_preview_running">Keine Vorschau, während die Tonvisualisierung läuft.</string>
+    <string name="easy_size_custom">Diese Größe wurde in der Ansicht „Detailliert“ eingestellt. Wählen Sie oben eine Option, um sie zu ändern.</string>
+    <string name="easy_vibration_custom">Diese Stärke wurde in der Ansicht „Detailliert“ eingestellt. Wählen Sie oben eine Option, um sie zu ändern.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Sprache</string>

@@ -1,5 +1,6 @@
 package com.example.soundvisualizer
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -69,7 +70,8 @@ class EasySettingsSourceTest {
     fun `크기 칸은 선택한 모드의 크기를 보여 주고 그 모드에만 쓴다`() {
         // 크기는 모드마다 따로다(사용자 결정 2026-10-22). 그림도 그 모드의 모양이다.
         assertTrue(view.contains("EasySection(size, spokenTitle = \"\$size, \${stringResource(mode.labelRes)}\") { SizeChoices(mode) }"))
-        assertTrue(view.contains("selected = EasySize.of(settings)"))
+        assertTrue(view.contains("val selected = EasySize.of(settings)"))
+        assertTrue(view.contains("selected = selected,"))
         assertTrue(view.contains("picture = { step, color -> SizeStepIcon(step, mode, color) }"))
         assertTrue(view.contains("onSelect = { SettingsManager.applyEasySize(mode, it) }"))
     }
@@ -81,6 +83,18 @@ class EasySettingsSourceTest {
         assertTrue("선택한 칸에 체크 표시가 없다", row.contains("if (isSelected) {") && row.contains("Icons.Default.Check"))
         // 낱말 앞에 두면 긴 번역어가 좁은 칸에서 줄을 바꾸므로 칸 모서리에 둔다.
         assertTrue(row.contains("modifier = Modifier.align(Alignment.TopStart)"))
+    }
+
+    @Test
+    fun `자세한 설정에서 맞춘 크기와 세기는 선택을 비우고 한 줄로 알린다`() {
+        // 가장 가까운 단계를 선택된 것으로 보이지 않는다(사용자 결정 2026-10-22, #424). 크기와 진동이 같은 규칙이다.
+        assertTrue(view.contains("if (selected == null) {"))
+        assertTrue(view.contains("stringResource(R.string.easy_size_custom)"))
+        assertTrue(haptic.contains("shownStep == null -> R.string.easy_vibration_custom"))
+        // 안내 글은 한국어를 낱말 단위로 줄 바꾼다. 글자 단위로는 "바뀝니/다."처럼 끊겼다.
+        val noteStyle = "style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),"
+        assertEquals("쉬운 설정 화면의 안내 글 셋(크기, AI, 실행 중)", 3, Regex(Regex.escape(noteStyle)).findAll(view).count())
+        assertTrue(haptic.contains(noteStyle))
     }
 
     @Test

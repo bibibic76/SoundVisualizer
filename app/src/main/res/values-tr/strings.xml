@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Güçlü</string>
     <string name="easy_vibration_off_external">Dış ses modunda ortam sesleri için titreşim olmaz.</string>
     <string name="easy_vibration_preview_running">Çalışırken önizleme titreşimi çalınmaz.</string>
+    <string name="easy_size_custom">Bu boyut “Ayrıntılı” görünümünde ayarlandı. Değiştirmek için yukarıdan bir seçenek seçin.</string>
+    <string name="easy_vibration_custom">Bu yoğunluk “Ayrıntılı” görünümünde ayarlandı. Değiştirmek için yukarıdan bir seçenek seçin.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Dil</string>

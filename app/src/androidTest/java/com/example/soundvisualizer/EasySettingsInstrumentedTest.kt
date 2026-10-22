@@ -42,6 +42,7 @@ import org.junit.runner.RunWith
  * - 맨 위 두 칸, 모양 카드, 크기 세 단계는 48dp 이상의 라디오 단추이고, 소리 종류 줄은 종류 이름으로 읽히는 스위치다.
  * - 자세한 설정에만 있는 것(모드 설정 제목, 모드별 슬라이더)은 보이지 않는다.
  * - 크기 단계는 선택한 모드에만 쓰고, 크기 칸은 선택한 모드의 크기를 보여 준다.
+ * - 크기와 진동 세기가 자세한 설정에서 단계와 다르게 맞춰져 있으면 어느 칸도 선택해 두지 않고 한 줄로 알린다(#424).
  *
  * 진동 칸은 누르지 않는다. 누르면 2초 미리보기가 폰에서 울린다. 저장된 세기에 맞는 칸이 선택되어 보이는지만 보고,
  * 진동 단계의 규칙은 EasyVibrationTest 가 본다.
@@ -232,20 +233,25 @@ class EasySettingsInstrumentedTest {
             SettingsManager.flushModeSettings()
         }
         openSettings()
+        val customNote = hasText(string(R.string.easy_size_custom))
         rule.onNode(choice(EasySize.Medium.labelRes)).assertIsSelected()
+        rule.onNode(customNote).assertDoesNotExist()
 
+        // 어느 칸도 선택해 두지 않고, 자세한 설정에서 맞춘 크기라고 한 줄로 알린다(#424).
         scrolledTo(choice(VisualMode.Pad.labelRes)).performClick()
         rule.waitForIdle()
         for (step in EasySize.values()) scrolledTo(choice(step.labelRes)).assertIsNotSelected()
+        scrolledTo(customNote).assertExists()
         // 크기 제목은 어느 모드의 크기인지와 함께 읽힌다("크기, 패드").
         val sizeTitle = "${string(R.string.easy_section_size)}, ${string(VisualMode.Pad.labelRes)}"
         rule.onNode(hasContentDescription(sizeTitle) and isHeading).assertExists()
 
-        // 패드에 작게를 누르면 패드만 바뀐다. 파도로 돌아가면 파도의 크기(보통)가 보인다.
-        rule.onNode(choice(EasySize.Small.labelRes)).performClick()
+        // 패드에 작게를 누르면 패드만 바뀌고 안내는 사라진다. 파도로 돌아가면 파도의 크기(보통)가 보인다.
+        scrolledTo(choice(EasySize.Small.labelRes)).performClick()
         rule.waitForIdle()
         assertEquals(EasySize.Small, EasySize.of(SettingsManager.padMode.value))
         assertEquals(EasySize.Medium, EasySize.of(SettingsManager.waveMode.value))
+        rule.onNode(customNote).assertDoesNotExist()
         scrolledTo(choice(VisualMode.Wave.labelRes)).performClick()
         rule.waitForIdle()
         scrolledTo(choice(EasySize.Medium.labelRes)).assertIsSelected()
@@ -253,16 +259,37 @@ class EasySettingsInstrumentedTest {
 
     @Test
     fun vibrationStepsShowEachTypesStoredStrength() {
-        // 위협음은 100%(세게), 대화음은 30%(약하게), 환경음은 꺼 둔 채 세기만 남아 있다(끔).
+        // 위협음은 100%(세게), 대화음은 40%(약하게), 환경음은 꺼 둔 채 세기만 남아 있다(끔).
+        setHaptics(speechLevel = 40)
+        openSettings()
+        // 줄은 위협음, 대화음, 환경음 순서다.
+        assertVibrationSteps(listOf(EasyVibration.High, EasyVibration.Low, EasyVibration.Off))
+        rule.onNode(hasText(string(R.string.easy_vibration_custom))).assertDoesNotExist()
+    }
+
+    @Test
+    fun vibrationStrengthSetInDetailedLeavesTheStepsEmpty() {
+        // 자세한 설정에서 대화음을 70% 로 맞춘 사람이다. 가장 가까운 '세게'로 보이지 않고, 어느 칸도 선택되지 않는다(#424).
+        setHaptics(speechLevel = 70)
+        openSettings()
+        assertVibrationSteps(listOf(EasyVibration.High, null, EasyVibration.Off))
+        // 그 줄에만 자세한 설정에서 맞춘 세기라고 알린다. 진동이 없는 기기(CI 에뮬레이터)에서는 진동이 없다는 안내가 앞선다.
+        val notes = if (HapticPlayer(rule.activity).hasVibrator) 1 else 0
+        rule.onAllNodes(hasText(string(R.string.easy_vibration_custom))).assertCountEquals(notes)
+    }
+
+    /** 위협음은 중간 100%, 대화음은 느림 [speechLevel]%, 환경음은 꺼 둔 채 세기 60. 외부 사운드 모드는 끈다. */
+    private fun setHaptics(speechLevel: Int) {
         rule.runOnUiThread {
             SettingsManager.setExternalSoundMode(false)
             SettingsManager.updateHaptic(AiClassification.DANGER, HapticSettings(HapticMode.Medium, HapticSettings.MAX_LEVEL))
-            SettingsManager.updateHaptic(AiClassification.SPEECH, HapticSettings(HapticMode.Slow, 30))
+            SettingsManager.updateHaptic(AiClassification.SPEECH, HapticSettings(HapticMode.Slow, speechLevel))
             SettingsManager.updateHaptic(AiClassification.AMBIENT, HapticSettings(HapticMode.Off, 60))
         }
-        openSettings()
-        // 줄은 위협음, 대화음, 환경음 순서다.
-        val expected = listOf(EasyVibration.High, EasyVibration.Low, EasyVibration.Off)
+    }
+
+    /** 위협음·대화음·환경음 줄마다 선택되어 보이는 칸. null 이면 그 줄은 어느 칸도 선택되지 않는다. 칸은 누르지 않는다. */
+    private fun assertVibrationSteps(expected: List<EasyVibration?>) {
         val hasVibrator = HapticPlayer(rule.activity).hasVibrator
         for (step in EasyVibration.values()) {
             val cells = rule.onAllNodes(choice(step.labelRes)).assertCountEquals(expected.size)

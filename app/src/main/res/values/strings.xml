@@ -128,6 +128,8 @@
     <string name="easy_vibration_high">Strong</string>
     <string name="easy_vibration_off_external">Ambient sounds don\'t vibrate in External sound mode.</string>
     <string name="easy_vibration_preview_running">No preview while running.</string>
+    <string name="easy_size_custom">This size was set in “Detailed”. Select one above to change it.</string>
+    <string name="easy_vibration_custom">This strength was set in “Detailed”. Select one above to change it.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Language</string>

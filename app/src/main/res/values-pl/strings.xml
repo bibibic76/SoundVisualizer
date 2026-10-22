@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Mocne</string>
     <string name="easy_vibration_off_external">W trybie dźwięków zewnętrznych dźwięki otoczenia nie wywołują wibracji.</string>
     <string name="easy_vibration_preview_running">Gdy wizualizacja działa, próbna wibracja się nie włącza.</string>
+    <string name="easy_size_custom">Ten rozmiar ustawiono w widoku „Szczegółowe”. Wybierz opcję powyżej, aby go zmienić.</string>
+    <string name="easy_vibration_custom">Tę siłę ustawiono w widoku „Szczegółowe”. Wybierz opcję powyżej, aby ją zmienić.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Język</string>

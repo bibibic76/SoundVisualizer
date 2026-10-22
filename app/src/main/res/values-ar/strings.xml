@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">قوي</string>
     <string name="easy_vibration_off_external">لا يهتز الجهاز للأصوات المحيطة في «وضع الأصوات الخارجية».</string>
     <string name="easy_vibration_preview_running">لا تعمل المعاينة أثناء التشغيل.</string>
+    <string name="easy_size_custom">هذا الحجم مضبوط في «إعدادات مفصّلة». اختر أحد الخيارات أعلاه لتغييره.</string>
+    <string name="easy_vibration_custom">هذه القوة مضبوطة في «إعدادات مفصّلة». اختر أحد الخيارات أعلاه لتغييرها.</string>
 
     <!-- Language -->
     <string name="settings_language_title">اللغة</string>

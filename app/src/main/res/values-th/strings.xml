@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">แรง</string>
     <string name="easy_vibration_off_external">ในโหมดเสียงภายนอก เสียงแวดล้อมจะไม่สั่น</string>
     <string name="easy_vibration_preview_running">ขณะกำลังทำงาน จะไม่สั่นตัวอย่าง</string>
+    <string name="easy_size_custom">ขนาดนี้ตั้งไว้ใน “แบบละเอียด” เลือกตัวเลือกด้านบนเพื่อเปลี่ยน</string>
+    <string name="easy_vibration_custom">ความแรงนี้ตั้งไว้ใน “แบบละเอียด” เลือกตัวเลือกด้านบนเพื่อเปลี่ยน</string>
 
     <!-- Language -->
     <string name="settings_language_title">ภาษา</string>

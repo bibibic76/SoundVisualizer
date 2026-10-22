@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Mạnh</string>
     <string name="easy_vibration_off_external">Trong Chế độ âm thanh bên ngoài, âm thanh môi trường sẽ không rung.</string>
     <string name="easy_vibration_preview_running">Không rung thử khi đang chạy.</string>
+    <string name="easy_size_custom">Kích thước này được đặt trong “Chi tiết”. Chọn một mục ở trên để thay đổi.</string>
+    <string name="easy_vibration_custom">Cường độ này được đặt trong “Chi tiết”. Chọn một mục ở trên để thay đổi.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Ngôn ngữ</string>
