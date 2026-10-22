@@ -90,6 +90,7 @@ fun choicesPerRow(
  * 같은 너비의 선택지 칸을 [perRow] 개씩 줄지어 둔다. 마지막 줄이 덜 차도 칸 너비는 위 줄과 같다.
  * 한 줄 안의 칸은 높이를 맞춘다. 화면 읽어주기에는 전체를 한 선택지 묶음(selectableGroup)으로 알린다.
  *
+ * @param footer 줄들 밑에 가로를 다 쓰는 칸 하나. 같은 선택지 묶음에 들어가 화면 읽어주기에 함께 세어진다.
  * @param cell 선택지 하나를 그린다. 받은 Modifier(줄 안의 너비와 높이)를 칸의 맨 앞에 붙인다.
  */
 @Composable
@@ -98,6 +99,7 @@ fun <T> EqualChoiceRows(
     perRow: Int,
     gap: Dp,
     modifier: Modifier = Modifier,
+    footer: (@Composable () -> Unit)? = null,
     cell: @Composable (option: T, modifier: Modifier) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(gap), modifier = modifier.selectableGroup()) {
@@ -107,6 +109,7 @@ fun <T> EqualChoiceRows(
                 repeat(perRow - row.size) { Spacer(modifier = Modifier.weight(1f)) }
             }
         }
+        footer?.invoke()
     }
 }
 
@@ -132,14 +135,16 @@ fun DependentSettings(visible: Boolean, content: @Composable ColumnScope.() -> U
  * 제목을 누르면 펼쳐지는 카드. 설정 탭의 모드 카드와 도움말 탭의 주제 카드가 함께 쓴다.
  *
  * @param isExpanded 처음 그릴 때 펼쳐 둘지. 사용자가 한 번 접거나 펼치면 그 뒤로는 사용자의 선택이 이긴다.
+ * @param expandNow 참이 되면 접혀 있어도 펼친다. 쉬운 설정에서 이 카드의 설정을 보러 왔을 때다(#427).
  */
 @Composable
-fun SettingsExpander(title: String, isExpanded: Boolean = false, content: @Composable () -> Unit) {
+fun SettingsExpander(title: String, isExpanded: Boolean = false, expandNow: Boolean = false, content: @Composable () -> Unit) {
     // 펼침 상태는 목록 밖으로 스크롤되면 사라지지 않게 저장한다. remember 로 두면 펼쳐 둔 카드가
     // 화면 밖에 나갔다 돌아왔을 때 접혀 있고, 접어 둔 카드는 다시 펼쳐져 있다.
     // [isExpanded] 를 키로 두어 고른 모드가 바뀔 때만 다시 맞춘다. 키가 없으면 새로 고른 모드의 카드는
     // 접힌 채로 맨 위에 오고, 방금 쓰던 모드의 카드는 펼쳐진 채로 남는다.
     var expanded by rememberSaveable(isExpanded) { mutableStateOf(isExpanded) }
+    LaunchedEffect(expandNow) { if (expandNow) expanded = true }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),

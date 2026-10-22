@@ -40,15 +40,17 @@ import com.example.soundvisualizer.WarningColor
  *   끔만 선택할 수 있다.
  * - 안내 글은 할 일이나 까닭을 알려 주는 것만 둔다: 진동이 없는 기기, 표시를 켜야 함, 외부 사운드 모드의 환경음, 소리 종류
  *   구분(AI)을 쓸 수 없음(자세한 설정과 같은 안내, 진동에 기대는 사람을 거짓으로 안심시키지 않는다, #232), 세기를 바꿀 수
- *   없는 기기(약하게와 세게가 같게 울린다), 자세한 설정에서 단계와 다른 세기로 맞춤(어느 칸도 선택되지 않은 까닭, #424).
- *   실행 중이라 미리 울리지 않는다는 안내는 줄마다 두지 않고 소리 종류 카드 맨 위에 한 번 둔다. 줄마다 두면 다른 안내에
- *   가려 빠지는 줄이 생기고, 같은 문장이 세 번 되풀이된다.
+ *   없는 기기(약하게와 세게가 같게 울린다). 실행 중이라 미리 울리지 않는다는 안내는 줄마다 두지 않고 소리 종류 카드 맨 위에
+ *   한 번 둔다. 줄마다 두면 다른 안내에 가려 빠지는 줄이 생기고, 같은 문장이 세 번 되풀이된다.
+ * - 세 칸 밑에 '자세한 설정' 칸이 있다(#427). 자세한 설정에서 단계와 다른 세기로 맞춰 두었으면 이 칸이 선택되어 보이고,
+ *   누르면 자세한 설정의 그 종류 진동 줄로 간다.
  *
  * @param label [AiClassification] 의 라벨
  * @param shown 이 종류의 화면 표시가 켜져 있는지
+ * @param onOpenDetailed '자세한 설정' 칸을 눌렀을 때
  */
 @Composable
-fun EasyHapticRow(label: String, shown: Boolean) {
+fun EasyHapticRow(label: String, shown: Boolean, onOpenDetailed: () -> Unit) {
     val context = LocalContext.current
     val player = remember { HapticPlayer(context) }
     val settings by SettingsManager.hapticSettings(label).collectAsState()
@@ -93,8 +95,6 @@ fun EasyHapticRow(label: String, shown: Boolean) {
         aiNote && label == AiClassification.DANGER -> R.string.haptic_ai_unavailable_danger
         aiNote -> AiUnavailableNotice.otherRow(loudAlerts)
         rowEnabled && shownStep != EasyVibration.Off && !player.hasAmplitudeControl -> R.string.haptic_no_amplitude
-        // 자세한 설정에서 단계와 다른 세기로 맞춰 두었으면 어느 칸도 선택해 두지 않으므로 그 까닭과 할 일을 적는다(크기와 같다).
-        shownStep == null -> R.string.easy_vibration_custom
         else -> null
     }
 
@@ -118,6 +118,9 @@ fun EasyHapticRow(label: String, shown: Boolean) {
             enabled = rowEnabled,
             optionEnabled = { EasyVibration.selectable(it, label, external) },
             modifier = Modifier.padding(top = 8.dp),
+            // 단계와 다른 세기면 가장 가까운 단계로 보이지 않는다. 실제 세기와 다르고 그 칸을 눌러도 바뀌지 않았다(#424).
+            detailedSelected = shownStep == null,
+            onDetailed = onOpenDetailed,
             onSelect = { step ->
                 val next = EasyVibration.toStore(settings, step, label, external)
                 if (next != null) SettingsManager.updateHaptic(label, next)

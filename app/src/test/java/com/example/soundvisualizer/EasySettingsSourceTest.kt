@@ -69,7 +69,7 @@ class EasySettingsSourceTest {
     @Test
     fun `크기 칸은 선택한 모드의 크기를 보여 주고 그 모드에만 쓴다`() {
         // 크기는 모드마다 따로다(사용자 결정 2026-10-22). 그림도 그 모드의 모양이다.
-        assertTrue(view.contains("EasySection(size, spokenTitle = \"\$size, \${stringResource(mode.labelRes)}\") { SizeChoices(mode) }"))
+        assertTrue(view.contains("EasySection(size, spokenTitle = \"\$size, \${stringResource(mode.labelRes)}\") { SizeChoices(mode, onOpenDetailed) }"))
         assertTrue(view.contains("val selected = EasySize.of(settings)"))
         assertTrue(view.contains("selected = selected,"))
         assertTrue(view.contains("picture = { step, color -> SizeStepIcon(step, mode, color) }"))
@@ -86,14 +86,24 @@ class EasySettingsSourceTest {
     }
 
     @Test
-    fun `자세한 설정에서 맞춘 크기와 세기는 선택을 비우고 한 줄로 알린다`() {
-        // 가장 가까운 단계를 선택된 것으로 보이지 않는다(사용자 결정 2026-10-22, #424). 크기와 진동이 같은 규칙이다.
-        assertTrue(view.contains("if (selected == null) {"))
-        assertTrue(view.contains("stringResource(R.string.easy_size_custom)"))
-        assertTrue(haptic.contains("shownStep == null -> R.string.easy_vibration_custom"))
-        // 안내 글은 한국어를 낱말 단위로 줄 바꾼다. 글자 단위로는 "바뀝니/다."처럼 끊겼다.
+    fun `자세한 설정에서 맞춘 크기와 세기는 '자세한 설정' 칸이 선택되고 그 칸이 그 설정으로 간다`() {
+        // 가장 가까운 단계를 선택된 것으로 보이지 않는다(#424). 단계 대신 '자세한 설정' 칸이 선택된다(사용자 결정 2026-10-22, #427).
+        assertTrue(view.contains("detailedSelected = selected == null,"))
+        assertTrue(view.contains("onDetailed = { onOpenDetailed(DetailTarget.Size(mode)) },"))
+        assertTrue(haptic.contains("detailedSelected = shownStep == null,"))
+        assertTrue(view.contains("EasyHapticRow(label, shown, onOpenDetailed = { onOpenDetailed(DetailTarget.Vibration(label)) })"))
+        // 칸 이름은 맨 위 두 칸의 '자세한 설정'과 같은 글자다.
+        val cell = view.substringAfter("private fun DetailedChoiceCell(")
+        assertTrue(cell.contains("stringResource(R.string.settings_view_detailed)"))
+        // 같은 선택지 묶음 안의 칸이라 화면 읽어주기에 함께 세어진다.
+        assertTrue(view.contains("EqualChoiceRows(options, perRow, gap = 8.dp, footer = footer)"))
+    }
+
+    @Test
+    fun `쉬운 설정의 안내 글은 한국어를 낱말 단위로 줄 바꾼다`() {
+        // 글자 단위로는 "바뀝니/다."처럼 끝 글자만 다음 줄에 남았다(#424).
         val noteStyle = "style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),"
-        assertEquals("쉬운 설정 화면의 안내 글 셋(크기, AI, 실행 중)", 3, Regex(Regex.escape(noteStyle)).findAll(view).count())
+        assertEquals("쉬운 설정 화면의 안내 글 둘(AI, 실행 중)", 2, Regex(Regex.escape(noteStyle)).findAll(view).count())
         assertTrue(haptic.contains(noteStyle))
     }
 

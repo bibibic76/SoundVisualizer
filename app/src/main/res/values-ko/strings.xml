@@ -114,8 +114,6 @@
     <string name="easy_vibration_high">세게</string>
     <string name="easy_vibration_off_external">외부 사운드 모드에서는 환경음이 진동하지 않습니다.</string>
     <string name="easy_vibration_preview_running">실행 중에는 미리 울리지 않습니다.</string>
-    <string name="easy_size_custom">‘자세한 설정’에서 맞춘 크기입니다. 위에서 선택하면 바뀝니다.</string>
-    <string name="easy_vibration_custom">‘자세한 설정’에서 맞춘 세기입니다. 위에서 선택하면 바뀝니다.</string>
 
     <!-- 언어 -->
     <string name="settings_language_title">언어</string>

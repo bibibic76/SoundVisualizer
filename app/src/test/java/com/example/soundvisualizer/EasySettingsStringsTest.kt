@@ -37,10 +37,8 @@ class EasySettingsStringsTest {
         strings.getValue("values").keys.filter { it.startsWith("settings_view_") || it.startsWith("easy_") }.sorted()
     }
 
-    /** '자세한 설정'에 있다고 알리는 도움말·튜토리얼 문구와, 쉬운 설정에서 자세한 설정으로 맞춘 값이라고 알리는 안내(#424). */
+    /** '자세한 설정'에 있다고 알리는 도움말·튜토리얼 문구. */
     private val pointsToDetailed = listOf(
-        "easy_size_custom",
-        "easy_vibration_custom",
         "tutorial_types_body",
         "help_modes_note",
         "help_sound_kinds",
@@ -54,7 +52,7 @@ class EasySettingsStringsTest {
 
     @Test
     fun `쉬운 설정 문구는 모든 언어에 있다`() {
-        assertTrue("쉬운 설정 문구를 찾지 못했습니다: $easyKeys", easyKeys.size >= 15)
+        assertTrue("쉬운 설정 문구를 찾지 못했습니다: $easyKeys", easyKeys.size >= 13)
         val missing = dirs.mapNotNull { dir ->
             val keys = easyKeys.filter { it !in strings.getValue(dir) }
             if (keys.isEmpty()) null else "$dir: ${keys.size}개 빠짐 $keys"
