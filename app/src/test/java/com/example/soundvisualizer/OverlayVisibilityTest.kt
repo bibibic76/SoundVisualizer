@@ -47,6 +47,21 @@ class OverlayVisibilityTest {
     }
 
     @Test
+    fun `자동 잠금 유예 시간 안에 다시 켜서 방송이 오지 않아도 0점5초 안에 다시 보인다`() {
+        // 화면이 저절로 꺼진 뒤 유예 시간(S25+ 5초) 안에 다시 켜면 잠금 화면이 뜨지 않아 잠금 풀림 방송이 오지 않는다(#437).
+        // 이때는 잠금 확인으로만 다시 보인다. 간격이 1초였을 때는 약 2초 동안 그리지 않았다.
+        val v = waiting()
+        var waitedMs = 0L
+        while (v.covered) {
+            waitedMs += OverlayVisibility.LOCK_CHECK_MS
+            v.onLockCheck(keyguardLocked = false)
+        }
+        assertTrue("${waitedMs}ms 동안 그리지 않는다", waitedMs <= 500L)
+        // 처음 풀린 것을 본 뒤 한 간격은 더 기다린다. 이 여유로 S25+ 에서 잠금 풀림 방송 없이 지문·패턴으로 풀어 봤다(#437).
+        assertTrue("S25+ 에서 확인한 여유보다 짧다", OverlayVisibility.LOCK_CHECK_MS >= 250L)
+    }
+
+    @Test
     fun `잠금 확인 중에 다시 잠기면 처음부터 센다`() {
         val v = waiting()
         v.onLockCheck(keyguardLocked = false)

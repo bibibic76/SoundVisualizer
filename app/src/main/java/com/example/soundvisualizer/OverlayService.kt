@@ -37,9 +37,6 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
     private companion object {
         const val TAG = "OverlayService"
-
-        /** 잠금이 풀리기를 기다리는 동안 잠금을 확인하는 간격. 잠금 풀림 방송을 놓쳤을 때만 쓰인다([OverlayVisibility.onLockCheck]). */
-        const val UNLOCK_CHECK_MS = 1000L
     }
 
     private lateinit var windowManager: WindowManager
@@ -69,7 +66,10 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         }
     }
 
-    /** 잠금 풀림 방송을 놓쳐도 오버레이가 쉰 채 남지 않게, 잠금이 풀리기를 기다리는 동안 [UNLOCK_CHECK_MS] 마다 잠금을 확인한다. */
+    /**
+     * 잠금 풀림 방송이 오지 않아도 오버레이가 쉰 채 남지 않게, 잠금이 풀리기를 기다리는 동안
+     * [OverlayVisibility.LOCK_CHECK_MS] 마다 잠금을 확인한다. 자동 잠금 유예 시간 안에 화면을 다시 켜면 방송이 오지 않는다.
+     */
     private val unlockCheck = Runnable {
         if (visibility.onLockCheck(isKeyguardLocked())) showAgain()
         publish()
@@ -188,7 +188,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     /** [visibility] 를 오버레이에 알린다. 잠금이 풀리기를 기다리는 동안만 잠금 확인을 다시 건다. */
     private fun publish() {
         mainHandler.removeCallbacks(unlockCheck)
-        if (visibility.waitingForUnlock) mainHandler.postDelayed(unlockCheck, UNLOCK_CHECK_MS)
+        if (visibility.waitingForUnlock) mainHandler.postDelayed(unlockCheck, OverlayVisibility.LOCK_CHECK_MS)
         covered.value = visibility.covered
     }
 
