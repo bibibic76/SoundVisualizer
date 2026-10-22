@@ -101,7 +101,8 @@ fun choicesPerRow(
  * 칸 높이를 맞추려고 칸의 최소 높이를 미리 물으므로 칸 안에 SubcomposeLayout(BoxWithConstraints 등)을 두지 않는다.
  *
  * @param footer 줄들 밑에 가로를 다 쓰는 칸 하나. 같은 선택지 묶음에 들어가 화면 읽어주기에 맨 끝으로 함께 세어진다.
- * @param cell 선택지 하나를 그린다. 받은 Modifier(정해 준 칸 자리를 채운다)를 칸의 맨 앞에 붙인다.
+ * @param cell 선택지 하나를 그린다. 받은 Modifier(정해 준 칸 자리를 채운다)를 칸의 맨 앞에 붙인다. 칸 하나는 맨 바깥 노드
+ *   하나로 그리고 selectable 도 그 노드에 단다. 순번은 이 레이아웃이 놓은 노드끼리 세므로, 감싸는 노드를 하나 더 두면 다시 어긋난다.
  */
 @Composable
 fun <T> EqualChoiceRows(
