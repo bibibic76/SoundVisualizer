@@ -1,0 +1,31 @@
+name: Verifier corpus integrity
+
+on:
+  pull_request:
+    paths:
+      - "tools/ai_reference/*verifier_corpus*.py"
+      - "docs/ai/verifier-corpus-416/**"
+      - "app/src/main/java/com/example/soundvisualizer/ai/YamnetThreeClassMapper.kt"
+      - ".github/workflows/verifier-corpus.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  corpus-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Test lineage, product policy and annotation gates
+        run: python -m unittest discover -s tools/ai_reference -p 'test_verifier_corpus.py'
+      - name: Audit frozen candidate metadata without audio or model inference
+        run: >-
+          python tools/ai_reference/verifier_corpus.py
+          --manifest docs/ai/verifier-corpus-416/manifest.json
+          --exclusions docs/ai/verifier-corpus-416/exclusions.json
+          --selection docs/ai/verifier-corpus-416/selection.json
