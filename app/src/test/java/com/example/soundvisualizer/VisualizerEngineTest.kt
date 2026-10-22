@@ -52,6 +52,32 @@ private class FakeInputs(
     override fun isShown(label: String): Boolean = shown
 }
 
+/**
+ * 네이티브 소리 크기처럼 버퍼마다 마지막으로 읽은 뒤의 최대값을 쌓고, 읽으면 0 으로 되돌린다(native-lib.cpp 의 readPeaks).
+ * [FakeInputs] 는 정해 둔 값을 그대로 돌려주므로, 읽지 않는 동안 쌓이는 것을 볼 때는 이것을 쓴다. 나머지는 [base] 를 따른다.
+ */
+private class AccumulatingInputs(base: FakeInputs = FakeInputs()) : VisualizerInputs by base {
+    private var left = 0f
+    private var right = 0f
+    private var buffers = 0
+
+    /** 버퍼 하나가 들어왔다. */
+    fun push(l: Float, r: Float = l) {
+        left = maxOf(left, l)
+        right = maxOf(right, r)
+        buffers++
+    }
+
+    override fun readPeaks(out: FloatArray) {
+        out[0] = left
+        out[1] = right
+        out[2] = buffers.toFloat()
+        left = 0f
+        right = 0f
+        buffers = 0
+    }
+}
+
 private fun newEngine(fake: FakeInputs): VisualizerEngine =
     VisualizerEngine(DENSITY, fake).also { it.setSurfaceSize(W, H) }
 
@@ -580,6 +606,44 @@ class VisualizerEngineTest {
         fake.becomeDanger() // 켜진 뒤 위협음 판정이 왔다
         engine.pollWake()
         assertTrue("화면이 꺼지기 전 소리가 위협음으로 번쩍였다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `다시 보이면 가려진 동안 쌓인 소리는 버리고 그 뒤의 소리로 확인한다`() {
+        // 외부 사운드 모드처럼 가려진 동안에도 소리를 받는다. 가려진 동안 큰 소리가 한 번 났고 지금은 조용하다(#433).
+        val inputs = AccumulatingInputs()
+        val engine = VisualizerEngine(DENSITY, inputs).also { it.setSurfaceSize(W, H) }
+        engine.tickUntilIdle()
+        engine.sleepNow()
+        inputs.push(0.9f)
+        repeat(100) { inputs.push(0f) }
+
+        engine.onUncovered()
+        inputs.push(0.001f) // 다시 보인 뒤 첫 확인까지 들어온 소리
+        engine.pollWake()
+        assertTrue("방은 조용한데 가려진 동안의 소리로 깨어났다", engine.debugState().idle)
+
+        // 다시 보인 뒤에 난 소리에는 평소처럼 깨어난다.
+        inputs.push(0.5f)
+        engine.pollWake()
+        assertFalse("다시 보인 뒤의 소리에 깨어나지 않는다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `가려진 동안 숨긴 종류로 난 소리는 다시 보인 뒤의 위협음 판정으로 꺼내지 않는다`() {
+        // 위협음만 보이게 해 두었다. 가려진 동안 환경음으로 큰 소리가 났고, 다시 보인 직후 위협음 판정이 왔다(#433).
+        val fake = FakeInputs(label = AiClassification.AMBIENT, shown = false)
+        val inputs = AccumulatingInputs(fake)
+        val engine = VisualizerEngine(DENSITY, inputs).also { it.setSurfaceSize(W, H) }
+        engine.tickUntilIdle()
+        engine.sleepNow()
+        inputs.push(0.9f, 0.3f)
+
+        engine.onUncovered()
+        engine.pollWake()
+        fake.becomeDanger()
+        engine.pollWake()
+        assertTrue("가려진 동안의 소리가 위협음으로 번쩍였다", engine.debugState().idle)
     }
 
     // ---------------------------------------------------------------
