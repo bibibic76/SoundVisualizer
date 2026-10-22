@@ -27,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +48,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -69,6 +71,12 @@ import com.example.soundvisualizer.tutorial.ModePreviewPhone
 /** 선택지 칸의 바탕색. 설정 화면의 다른 선택지(모드 단추, 진동 방식)와 같다. 글자 대비는 ColorContrastTest 가 본다. */
 internal val ChoiceColor = Color(0xFF333A44)
 private val ChoiceDisabledColor = Color(0xFF2A3038)
+
+/**
+ * 쉬운 설정의 안내 글 줄 바꿈. 한국어·일본어는 낱말(어절) 단위로 줄을 바꾼다(Android 13 이상, 다른 언어는 그대로).
+ * 기본인 글자 단위로는 "바뀝니/다."처럼 낱말 중간에서 끊겨 끝 글자만 다음 줄에 남았다(#424).
+ */
+internal val EasyNoteLineBreak = LineBreak.Simple.copy(wordBreak = LineBreak.WordBreak.Phrase)
 
 /**
  * 설정 탭 맨 위의 두 칸: 쉬운 설정 | 자세한 설정. 고른 화면은 저장되어 다음에 열 때도 그 화면이다.
@@ -266,8 +274,8 @@ private fun ModeCard(
  * 크기 세 단계. 크기는 모드마다 따로라(사용자 결정 2026-10-22) 지금 선택한 모드의 크기를 보여 주고 바꾼다. 그림도 그 모드의
  * 모양으로 그린다([SizeStepIcon]). 모양 카드에서 다른 모드를 선택하면 그 모드에 정해 둔 크기로 바뀐다.
  *
- * 자세한 설정에서 그 모드의 크기·진하기를 단계와 다르게 맞췄거나 크기 고정을 켰으면 어느 칸도 선택해 두지 않는다. 누르면 그
- * 모드만 바뀌고 모양 카드에 바로 보이므로 따로 묻지 않는다.
+ * 자세한 설정에서 그 모드의 크기·진하기를 단계와 다르게 맞췄거나 크기 고정을 켰으면 어느 칸도 선택해 두지 않고, 칸 밑에
+ * 그 까닭을 한 줄로 적는다. 누르면 그 모드만 바뀌고 모양 카드에 바로 보이므로 따로 묻지 않는다.
  */
 @Composable
 private fun SizeChoices(mode: VisualMode) {
@@ -281,13 +289,24 @@ private fun SizeChoices(mode: VisualMode) {
         VisualMode.CircleRipple -> circle
         VisualMode.Outline -> outline
     }
+    val selected = EasySize.of(settings)
     PictureChoiceRow(
         options = EasySize.values().toList(),
-        selected = EasySize.of(settings),
+        selected = selected,
         labelOf = { stringResource(it.labelRes) },
         picture = { step, color -> SizeStepIcon(step, mode, color) },
         onSelect = { SettingsManager.applyEasySize(mode, it) }
     )
+    // 어느 칸도 선택되지 않은 까닭과 할 일을 적는다(사용자 결정 2026-10-22, #424). 가장 가까운 단계를 선택된 것으로 보이면
+    // 실제 크기와 다르고, 그 칸을 누르면 오히려 크기가 바뀐다.
+    if (selected == null) {
+        Text(
+            stringResource(R.string.easy_size_custom),
+            fontSize = 13.sp, lineHeight = 19.sp, color = SecondaryTextColor,
+            style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
 }
 
 /**
@@ -302,6 +321,7 @@ private fun ColumnScope.SoundTypeBlocks() {
         Text(
             stringResource(R.string.ai_unavailable),
             fontSize = 14.sp, lineHeight = 21.sp, color = WarningColor,
+            style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),
             modifier = Modifier.padding(bottom = 16.dp)
         )
     }
@@ -314,6 +334,7 @@ private fun ColumnScope.SoundTypeBlocks() {
         Text(
             stringResource(R.string.easy_vibration_preview_running),
             fontSize = 13.sp, lineHeight = 19.sp, color = SecondaryTextColor,
+            style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),
             modifier = Modifier.padding(bottom = 16.dp)
         )
     }

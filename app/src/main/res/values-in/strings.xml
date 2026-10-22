@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Kuat</string>
     <string name="easy_vibration_off_external">Dalam Mode suara luar, suara latar tidak memicu getaran.</string>
     <string name="easy_vibration_preview_running">Contoh getaran tidak diputar saat visualisasi berjalan.</string>
+    <string name="easy_size_custom">Ukuran ini diatur di tampilan “Detail”. Pilih salah satu di atas untuk mengubahnya.</string>
+    <string name="easy_vibration_custom">Kekuatan ini diatur di tampilan “Detail”. Pilih salah satu di atas untuk mengubahnya.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Bahasa</string>

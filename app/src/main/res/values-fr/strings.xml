@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Forte</string>
     <string name="easy_vibration_off_external">Les sons d\'ambiance ne font pas vibrer en mode son externe.</string>
     <string name="easy_vibration_preview_running">Pas d\'aperçu pendant la visualisation.</string>
+    <string name="easy_size_custom">Cette taille a été réglée dans la vue « Détaillé ». Choisissez une option ci-dessus pour la modifier.</string>
+    <string name="easy_vibration_custom">Cette intensité a été réglée dans la vue « Détaillé ». Choisissez une option ci-dessus pour la modifier.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Langue</string>

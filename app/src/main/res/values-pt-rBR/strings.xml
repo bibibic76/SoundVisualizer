@@ -108,6 +108,8 @@
     <string name="easy_vibration_high">Forte</string>
     <string name="easy_vibration_off_external">No modo de som externo, os sons ambientes não vibram.</string>
     <string name="easy_vibration_preview_running">A prévia não vibra com a visualização em execução.</string>
+    <string name="easy_size_custom">Este tamanho foi ajustado em “Detalhado”. Escolha uma opção acima para mudar.</string>
+    <string name="easy_vibration_custom">Esta intensidade foi ajustada em “Detalhado”. Escolha uma opção acima para mudar.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Idioma</string>
