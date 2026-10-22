@@ -24,7 +24,7 @@ android {
             providers.gradleProperty("aiSileroPreview").map {
                 require(it == "true" || it == "false") { "aiSileroPreview must be true or false" }
                 it
-            }.getOrElse("false"))
+            }.getOrElse("true"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
