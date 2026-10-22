@@ -21,6 +21,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -126,21 +127,31 @@ internal fun SettingsViewSwitch(easy: Boolean) {
     }
 }
 
+/** 쉬운 설정의 '자세한 설정' 칸을 눌렀을 때 자세한 설정에서 보여 줄 곳(#427). */
+internal sealed interface DetailTarget {
+    /** 그 모드의 카드(크기가 맨 위에 있다). */
+    data class Size(val mode: VisualMode) : DetailTarget
+
+    /** 그 소리 종류의 진동 줄. [label] 은 [AiClassification] 의 라벨이다. */
+    data class Vibration(val label: String) : DetailTarget
+}
+
 /**
  * 쉬운 설정 화면. 모양 → 크기 → 소리 종류 → 빠른 설정 타일 순서다.
  *
  * @param active 설정 탭이 지금 보고 있는 탭인지. 아닐 때는 모양 카드를 움직이지 않는다.
  * @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다.
+ * @param onOpenDetailed '자세한 설정' 칸을 눌렀을 때. 자세한 설정으로 넘어가 그 설정이 있는 곳을 보여 준다.
  */
 @Composable
-internal fun EasySettingsContent(active: Boolean, onAddTile: () -> Unit) {
+internal fun EasySettingsContent(active: Boolean, onAddTile: () -> Unit, onOpenDetailed: (DetailTarget) -> Unit) {
     val mode by SettingsManager.visualMode.collectAsState()
     val size = stringResource(R.string.easy_section_size)
     Column {
         EasySection(stringResource(R.string.easy_section_shape)) { ModeCards(active) }
         // 크기는 선택한 모드의 것이라, 화면 읽어주기에는 "크기, 원형" 처럼 어느 모드의 크기인지 함께 읽힌다.
-        EasySection(size, spokenTitle = "$size, ${stringResource(mode.labelRes)}") { SizeChoices(mode) }
-        EasySection(stringResource(R.string.easy_section_types)) { SoundTypeBlocks() }
+        EasySection(size, spokenTitle = "$size, ${stringResource(mode.labelRes)}") { SizeChoices(mode, onOpenDetailed) }
+        EasySection(stringResource(R.string.easy_section_types)) { SoundTypeBlocks(onOpenDetailed) }
         QuickTileCard(onAddTile, compact = true)
     }
 }
@@ -274,11 +285,12 @@ private fun ModeCard(
  * 크기 세 단계. 크기는 모드마다 따로라(사용자 결정 2026-10-22) 지금 선택한 모드의 크기를 보여 주고 바꾼다. 그림도 그 모드의
  * 모양으로 그린다([SizeStepIcon]). 모양 카드에서 다른 모드를 선택하면 그 모드에 정해 둔 크기로 바뀐다.
  *
- * 자세한 설정에서 그 모드의 크기·진하기를 단계와 다르게 맞췄거나 크기 고정을 켰으면 어느 칸도 선택해 두지 않고, 칸 밑에
- * 그 까닭을 한 줄로 적는다. 누르면 그 모드만 바뀌고 모양 카드에 바로 보이므로 따로 묻지 않는다.
+ * 단계 밑에 '자세한 설정' 칸이 있다(#427). 자세한 설정에서 그 모드의 크기·진하기를 단계와 다르게 맞췄거나 크기 고정을
+ * 켰으면 단계 대신 이 칸이 선택되어 보이고, 누르면 자세한 설정의 그 모드 카드로 간다. 단계를 누르면 그 모드만 바뀌고 모양
+ * 카드에 바로 보이므로 따로 묻지 않는다.
  */
 @Composable
-private fun SizeChoices(mode: VisualMode) {
+private fun SizeChoices(mode: VisualMode, onOpenDetailed: (DetailTarget) -> Unit) {
     val wave by SettingsManager.waveMode.collectAsState()
     val pad by SettingsManager.padMode.collectAsState()
     val circle by SettingsManager.circleMode.collectAsState()
@@ -295,18 +307,11 @@ private fun SizeChoices(mode: VisualMode) {
         selected = selected,
         labelOf = { stringResource(it.labelRes) },
         picture = { step, color -> SizeStepIcon(step, mode, color) },
+        // 단계와 다르면 가장 가까운 단계로 보이지 않는다. 실제 크기와 다르고, 그 칸을 누르면 오히려 크기가 바뀐다(#424).
+        detailedSelected = selected == null,
+        onDetailed = { onOpenDetailed(DetailTarget.Size(mode)) },
         onSelect = { SettingsManager.applyEasySize(mode, it) }
     )
-    // 어느 칸도 선택되지 않은 까닭과 할 일을 적는다(사용자 결정 2026-10-22, #424). 가장 가까운 단계를 선택된 것으로 보이면
-    // 실제 크기와 다르고, 그 칸을 누르면 오히려 크기가 바뀐다.
-    if (selected == null) {
-        Text(
-            stringResource(R.string.easy_size_custom),
-            fontSize = 13.sp, lineHeight = 19.sp, color = SecondaryTextColor,
-            style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),
-            modifier = Modifier.padding(top = 8.dp)
-        )
-    }
 }
 
 /**
@@ -314,7 +319,7 @@ private fun SizeChoices(mode: VisualMode) {
  * 줄과 진동 세 칸이 있다. 색은 바꾸지 않고 종류 그림에 칠해 보여 주기만 한다. 색 바꾸기는 자세한 설정에 있다.
  */
 @Composable
-private fun ColumnScope.SoundTypeBlocks() {
+private fun ColumnScope.SoundTypeBlocks(onOpenDetailed: (DetailTarget) -> Unit) {
     // 모델을 못 불러온 채 실행 중이면 종류별 색과 진동이 먹지 않는 까닭을 맨 위에 알린다(자세한 설정과 같은 안내).
     val aiAvailable by SettingsManager.aiAvailable.collectAsState()
     if (!aiAvailable) {
@@ -345,15 +350,15 @@ private fun ColumnScope.SoundTypeBlocks() {
     val showAmbient by SettingsManager.showAmbient.collectAsState()
     val colorAmbient by SettingsManager.colorAmbient.collectAsState()
 
-    SoundTypeBlock(AiClassification.DANGER, R.string.ai_show_danger, showDanger, colorDanger) {
+    SoundTypeBlock(AiClassification.DANGER, R.string.ai_show_danger, showDanger, colorDanger, onOpenDetailed) {
         SettingsManager.updateAISettings(showDanger = it)
     }
     TypeDivider()
-    SoundTypeBlock(AiClassification.SPEECH, R.string.ai_show_speech, showSpeech, colorSpeech) {
+    SoundTypeBlock(AiClassification.SPEECH, R.string.ai_show_speech, showSpeech, colorSpeech, onOpenDetailed) {
         SettingsManager.updateAISettings(showSpeech = it)
     }
     TypeDivider()
-    SoundTypeBlock(AiClassification.AMBIENT, R.string.ai_show_ambient, showAmbient, colorAmbient) {
+    SoundTypeBlock(AiClassification.AMBIENT, R.string.ai_show_ambient, showAmbient, colorAmbient, onOpenDetailed) {
         SettingsManager.updateAISettings(showAmbient = it)
     }
 }
@@ -376,7 +381,14 @@ private fun TypeDivider() {
  * 같은 이름). 그림과 눈 표시는 이름과 스위치가 이미 말하는 것이라 읽지 않는다.
  */
 @Composable
-private fun SoundTypeBlock(label: String, showLabelRes: Int, shown: Boolean, color: Int, onShownChange: (Boolean) -> Unit) {
+private fun SoundTypeBlock(
+    label: String,
+    showLabelRes: Int,
+    shown: Boolean,
+    color: Int,
+    onOpenDetailed: (DetailTarget) -> Unit,
+    onShownChange: (Boolean) -> Unit
+) {
     val showLabel = stringResource(showLabelRes)
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -414,7 +426,7 @@ private fun SoundTypeBlock(label: String, showLabelRes: Int, shown: Boolean, col
             )
         )
     }
-    EasyHapticRow(label, shown)
+    EasyHapticRow(label, shown, onOpenDetailed = { onOpenDetailed(DetailTarget.Vibration(label)) })
 }
 
 /**
@@ -424,9 +436,13 @@ private fun SoundTypeBlock(label: String, showLabelRes: Int, shown: Boolean, col
  * - 번역된 낱말이 칸보다 길면 줄을 바꾸고 칸 높이를 함께 맞춘다. 글꼴을 키워 낱말이 칸에 들어가지 않으면 한 줄의 칸 수를
  *   줄인다([choicesPerRow]).
  * - 그림은 아래 낱말이 말하는 것을 보여 주기만 하므로 화면 읽어주기에서는 낱말만 읽힌다.
+ * - [onDetailed] 를 주면 칸들 밑에 '자세한 설정' 칸을 가로로 길게 둔다(#427). 같은 선택지 묶음이라 화면 읽어주기에
+ *   "4개 중 4번째"처럼 함께 세어진다.
  *
  * @param picture 칸의 그림. 받은 색으로 그린다(선택한 칸은 흰색, 흐린 칸은 흐린 색).
  * @param optionEnabled 칸마다 선택할 수 있는지. 선택할 수 없는 칸은 줄 전체가 꺼졌을 때와 같은 색으로 흐리게 둔다.
+ * @param detailedSelected 값이 어느 칸과도 맞지 않아 '자세한 설정' 칸을 선택된 것으로 보일지
+ * @param onDetailed '자세한 설정' 칸을 눌렀을 때. null 이면 그 칸을 두지 않는다.
  */
 @Composable
 internal fun <T> PictureChoiceRow(
@@ -437,13 +453,18 @@ internal fun <T> PictureChoiceRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     optionEnabled: (T) -> Boolean = { true },
+    detailedSelected: Boolean = false,
+    onDetailed: (() -> Unit)? = null,
     onSelect: (T) -> Unit
 ) {
     val labels = options.map { labelOf(it) }
     val labelStyle = wrappingLabelStyle().copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+    val footer: (@Composable () -> Unit)? = onDetailed?.let { open ->
+        { DetailedChoiceCell(selected = detailedSelected, enabled = enabled, onClick = open) }
+    }
     BoxWithConstraints(modifier = modifier) {
         val perRow = choicesPerRow(labels, maxPerRow = options.size, rowWidth = maxWidth, gap = 8.dp, cellPadding = 4.dp, style = labelStyle)
-        EqualChoiceRows(options, perRow, gap = 8.dp) { option, cellModifier ->
+        EqualChoiceRows(options, perRow, gap = 8.dp, footer = footer) { option, cellModifier ->
             val isSelected = option == selected
             val optionOn = enabled && optionEnabled(option)
             val content = when {
@@ -491,5 +512,52 @@ internal fun <T> PictureChoiceRow(
                 }
             }
         }
+    }
+}
+
+/**
+ * 선택지 줄 밑의 '자세한 설정' 칸(#427): [조절 그림] 자세한 설정 ··· [체크] [>].
+ *
+ * 자세한 설정에서 단계와 다르게 맞춘 값이면 선택된 것으로 보인다. 누르면 값을 바꾸지 않고 자세한 설정의 그 자리로 간다.
+ * 이름은 맨 위 두 칸의 '자세한 설정'과 같은 글자를 쓴다. 칸이 가로로 길어 체크 표시를 낱말 뒤에 둔다.
+ */
+@Composable
+private fun DetailedChoiceCell(selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    val content = when {
+        !enabled -> PrimaryTextColor.copy(alpha = 0.35f)
+        selected -> Color.White
+        else -> PrimaryTextColor
+    }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                when {
+                    !enabled -> ChoiceDisabledColor
+                    selected -> AccentFillColor
+                    else -> ChoiceColor
+                }
+            )
+            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        DetailedIcon(content)
+        Spacer(Modifier.width(10.dp))
+        Text(
+            stringResource(R.string.settings_view_detailed),
+            color = content,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            style = wrappingLabelStyle(),
+            modifier = Modifier.weight(1f)
+        )
+        if (selected) {
+            Icon(Icons.Default.Check, contentDescription = null, tint = content, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(4.dp))
+        }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = content, modifier = Modifier.size(20.dp))
     }
 }

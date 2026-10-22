@@ -7,10 +7,12 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsAtLeast
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasAnySibling
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasText
@@ -102,6 +104,7 @@ class EasySettingsInstrumentedTest {
         val LABELS = listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
         val MODE_COUNT = VisualMode.values().size
 
+
         fun modes(): List<ModeSettings> = listOf(
             SettingsManager.waveMode.value, SettingsManager.padMode.value,
             SettingsManager.circleMode.value, SettingsManager.outlineMode.value
@@ -152,13 +155,26 @@ class EasySettingsInstrumentedTest {
 
     private fun choice(id: Int) = hasText(string(id)) and isSelectable()
 
+    /**
+     * '자세한 설정' 칸은 맨 위 두 칸, 크기 줄, 진동 줄 셋에 있고 모두 같은 글자다(#427). 번호로 고르면 목록을 민 뒤
+     * 맨 위 두 칸이 목록에서 빠져 다른 칸을 가리키므로, 같은 선택지 묶음의 이웃 칸으로 고른다.
+     */
+    private fun detailedNextTo(neighbor: Int) =
+        choice(R.string.settings_view_detailed) and hasAnySibling(hasText(string(neighbor)))
+
+    /** 맨 위 두 칸의 '자세한 설정'. */
+    private val switchDetailed get() = detailedNextTo(R.string.settings_view_easy)
+
+    /** 크기 줄의 '자세한 설정' 칸. */
+    private val sizeDetailed get() = detailedNextTo(EasySize.Small.labelRes)
+
     @Test
     fun simpleViewIsMadeOfNamedChoicesAndSwitches() {
         openSettings()
         // 맨 위 두 칸은 둘 중 하나를 고르는 라디오 단추다. 쉬운 설정이 선택되어 있다.
         rule.onNode(choice(R.string.settings_view_easy)).assertIsSelected()
             .assert(hasRole(Role.RadioButton)).assertHeightIsAtLeast(48.dp)
-        rule.onNode(choice(R.string.settings_view_detailed)).assertIsNotSelected()
+        rule.onNode(switchDetailed).assertIsNotSelected()
             .assert(hasRole(Role.RadioButton)).assertHeightIsAtLeast(48.dp)
         rule.onNode(hasText(string(R.string.easy_section_shape)) and isHeading).assertExists()
 
@@ -190,7 +206,7 @@ class EasySettingsInstrumentedTest {
     @Test
     fun detailedViewIsOneTapAwayAndRemembered() {
         openSettings()
-        rule.onNode(choice(R.string.settings_view_detailed)).performClick()
+        rule.onNode(switchDetailed).performClick()
         rule.waitForIdle()
         rule.onNode(hasText(string(R.string.settings_section_mode)) and isHeading).assertExists()
         assertFalse("자세한 설정을 저장하지 않았다", SettingsManager.easySettings.value)
@@ -233,28 +249,53 @@ class EasySettingsInstrumentedTest {
             SettingsManager.flushModeSettings()
         }
         openSettings()
-        val customNote = hasText(string(R.string.easy_size_custom))
         rule.onNode(choice(EasySize.Medium.labelRes)).assertIsSelected()
-        rule.onNode(customNote).assertDoesNotExist()
+        rule.onNode(sizeDetailed).assertIsNotSelected()
 
-        // 어느 칸도 선택해 두지 않고, 자세한 설정에서 맞춘 크기라고 한 줄로 알린다(#424).
+        // 단계 칸은 어느 것도 선택해 두지 않고, '자세한 설정' 칸이 선택되어 보인다(#424, #427).
         scrolledTo(choice(VisualMode.Pad.labelRes)).performClick()
         rule.waitForIdle()
         for (step in EasySize.values()) scrolledTo(choice(step.labelRes)).assertIsNotSelected()
-        scrolledTo(customNote).assertExists()
+        rule.onNode(sizeDetailed).assertIsSelected()
         // 크기 제목은 어느 모드의 크기인지와 함께 읽힌다("크기, 패드").
         val sizeTitle = "${string(R.string.easy_section_size)}, ${string(VisualMode.Pad.labelRes)}"
         rule.onNode(hasContentDescription(sizeTitle) and isHeading).assertExists()
 
-        // 패드에 작게를 누르면 패드만 바뀌고 안내는 사라진다. 파도로 돌아가면 파도의 크기(보통)가 보인다.
+        // 패드에 작게를 누르면 패드만 바뀌고 '자세한 설정' 칸의 선택이 풀린다. 파도로 돌아가면 파도의 크기(보통)가 보인다.
         scrolledTo(choice(EasySize.Small.labelRes)).performClick()
         rule.waitForIdle()
         assertEquals(EasySize.Small, EasySize.of(SettingsManager.padMode.value))
         assertEquals(EasySize.Medium, EasySize.of(SettingsManager.waveMode.value))
-        rule.onNode(customNote).assertDoesNotExist()
+        rule.onNode(sizeDetailed).assertIsNotSelected()
         scrolledTo(choice(VisualMode.Wave.labelRes)).performClick()
         rule.waitForIdle()
         scrolledTo(choice(EasySize.Medium.labelRes)).assertIsSelected()
+    }
+
+    @Test
+    fun sizeDetailedCellOpensThatModesCardInDetailed() {
+        // 자세한 설정에서 패드의 크기를 맞춰 쓰는 사람이 패드 카드를 접어 두었다.
+        rule.runOnUiThread {
+            SettingsManager.setVisualMode(VisualMode.Pad)
+            SettingsManager.updatePadMode { intensity = 63f }
+            SettingsManager.flushModeSettings()
+        }
+        openSettings()
+        val sizeSlider = hasContentDescription(string(R.string.setting_size))
+        rule.onNode(switchDetailed).performClick()
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.mode_card_pad)).performClick()
+        rule.waitForIdle()
+        rule.onNode(sizeSlider).assertDoesNotExist()
+        rule.onNode(choice(R.string.settings_view_easy)).performClick()
+        rule.waitForIdle()
+
+        // 쉬운 설정의 크기 줄에서 '자세한 설정' 칸을 누르면 자세한 설정으로 넘어가, 패드 카드를 펼쳐 크기가 보이게 한다(#427).
+        scrolledTo(sizeDetailed).assertIsSelected().performClick()
+        rule.waitForIdle()
+        assertFalse("자세한 설정으로 넘어가지 않았다", SettingsManager.easySettings.value)
+        assertEquals("크기를 바꾸지 않아야 한다", 63f, SettingsManager.padMode.value.intensity)
+        rule.onNode(sizeSlider).assertIsDisplayed()
     }
 
     @Test
@@ -264,18 +305,15 @@ class EasySettingsInstrumentedTest {
         openSettings()
         // 줄은 위협음, 대화음, 환경음 순서다.
         assertVibrationSteps(listOf(EasyVibration.High, EasyVibration.Low, EasyVibration.Off))
-        rule.onNode(hasText(string(R.string.easy_vibration_custom))).assertDoesNotExist()
     }
 
     @Test
-    fun vibrationStrengthSetInDetailedLeavesTheStepsEmpty() {
-        // 자세한 설정에서 대화음을 70% 로 맞춘 사람이다. 가장 가까운 '세게'로 보이지 않고, 어느 칸도 선택되지 않는다(#424).
+    fun vibrationStrengthSetInDetailedSelectsTheDetailedCell() {
+        // 자세한 설정에서 대화음을 70% 로 맞춘 사람이다. 가장 가까운 '세게'로 보이지 않고(#424), 그 줄의 '자세한 설정' 칸이
+        // 선택되어 보인다(#427).
         setHaptics(speechLevel = 70)
         openSettings()
         assertVibrationSteps(listOf(EasyVibration.High, null, EasyVibration.Off))
-        // 그 줄에만 자세한 설정에서 맞춘 세기라고 알린다. 진동이 없는 기기(CI 에뮬레이터)에서는 진동이 없다는 안내가 앞선다.
-        val notes = if (HapticPlayer(rule.activity).hasVibrator) 1 else 0
-        rule.onAllNodes(hasText(string(R.string.easy_vibration_custom))).assertCountEquals(notes)
     }
 
     /** 위협음은 중간 100%, 대화음은 느림 [speechLevel]%, 환경음은 꺼 둔 채 세기 60. 외부 사운드 모드는 끈다. */
@@ -288,7 +326,10 @@ class EasySettingsInstrumentedTest {
         }
     }
 
-    /** 위협음·대화음·환경음 줄마다 선택되어 보이는 칸. null 이면 그 줄은 어느 칸도 선택되지 않는다. 칸은 누르지 않는다. */
+    /**
+     * 위협음·대화음·환경음 줄마다 선택되어 보이는 칸. null 이면 그 줄은 단계 칸 대신 '자세한 설정' 칸이 선택되어 보인다.
+     * 칸은 누르지 않는다(누르면 폰이 울린다).
+     */
     private fun assertVibrationSteps(expected: List<EasyVibration?>) {
         val hasVibrator = HapticPlayer(rule.activity).hasVibrator
         for (step in EasyVibration.values()) {
@@ -298,6 +339,12 @@ class EasySettingsInstrumentedTest {
                 // 진동이 없는 기기(CI 에뮬레이터)에서는 누를 수 없다.
                 if (!hasVibrator) cells[row].assertIsNotEnabled()
             }
+        }
+        // 진동 줄의 '자세한 설정' 칸도 위협음, 대화음, 환경음 순서다.
+        val detailed = rule.onAllNodes(detailedNextTo(EasyVibration.Low.labelRes)).assertCountEquals(expected.size)
+        expected.forEachIndexed { row, shown ->
+            val cell = detailed[row]
+            if (shown == null) cell.assertIsSelected() else cell.assertIsNotSelected()
         }
     }
 

@@ -191,6 +191,23 @@ private fun DrawScope.insetRect(outer: RoundRect, depth: Float, corner: Float): 
     CornerRadius((corner - depth).coerceAtLeast(1.dp.toPx()))
 )
 
+/** '자세한 설정' 칸의 그림: 손잡이가 달린 가로 막대 셋. 자세한 설정의 슬라이더를 뜻한다. */
+@Composable
+fun DetailedIcon(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier.size(24.dp)) {
+        val s = size.minDimension
+        val line = s * 0.08f
+        val knob = s * 0.12f
+        val rows = floatArrayOf(0.24f, 0.5f, 0.76f)
+        val knobs = floatArrayOf(0.66f, 0.32f, 0.54f)
+        for (i in rows.indices) {
+            val y = s * rows[i]
+            drawLine(color, Offset(s * 0.08f, y), Offset(s * 0.92f, y), line, StrokeCap.Round)
+            drawCircle(color, knob, Offset(s * knobs[i], y))
+        }
+    }
+}
+
 /**
  * 진동 단계의 그림: 세워 든 폰과 양옆의 진동 표시. 끔은 빗금, 약하게는 한 줄, 세게는 두 줄이다.
  * 튜토리얼 진동 쪽의 진동 표시와 같은 모양이다.

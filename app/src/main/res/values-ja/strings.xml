@@ -108,8 +108,6 @@
     <string name="easy_vibration_high">強め</string>
     <string name="easy_vibration_off_external">外部音モードでは、環境音では振動しません。</string>
     <string name="easy_vibration_preview_running">可視化の実行中は、お試しの振動は鳴りません。</string>
-    <string name="easy_size_custom">このサイズは「詳細設定」で調整されています。上で選択すると変わります。</string>
-    <string name="easy_vibration_custom">この強さは「詳細設定」で調整されています。上で選択すると変わります。</string>
 
     <!-- Language -->
     <string name="settings_language_title">言語</string>
