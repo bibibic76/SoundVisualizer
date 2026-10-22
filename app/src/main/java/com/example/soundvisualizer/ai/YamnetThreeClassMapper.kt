@@ -60,7 +60,8 @@ object YamnetThreeClassMapper {
     private fun matchesSpeech(s: String): Boolean {
         // Instrument, not a human vocalization.
         if (s == "singing bowl") return false
-        // Product policy: Speech is the human-vocalization bucket, not only
+        // Product policy (#421, user-approved): Speech is human-origin vocal
+        // sound, including sneeze/cough/breathing, not only
         // intelligible language. Exact labels keep dog Whimper and similarly
         // named non-human sounds from inheriting this mapping (#345).
         if (s in HUMAN_VOCALIZATION_LABELS) return true
@@ -92,6 +93,7 @@ object YamnetThreeClassMapper {
     private val HUMAN_VOCALIZATION_LABELS = setOf(
         "bellow", "whoop", "yell", "cheering",
         "giggle", "snicker", "belly laugh", "chuckle, chortle",
-        "baby cry, infant cry", "whimper", "wail, moan"
+        "baby cry, infant cry", "whimper", "wail, moan",
+        "sneeze", "cough", "breathing"
     )
 }
