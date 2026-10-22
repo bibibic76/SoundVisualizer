@@ -32,6 +32,8 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
+      - name: Test latency summary tools
+        run: PYTHONPATH=tools python3 -m unittest tools/test_summarize_ai_latency.py tools/test_summarize_silero_latency.py
       - name: Restore shared comparison signing key
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
@@ -41,6 +43,25 @@ jobs:
           echo "SV_DEBUG_KEYSTORE=$RUNNER_TEMP/silero-debug.keystore" >> "$GITHUB_ENV"
       - name: Build and test exact flag variant, including R8 release
         run: ./gradlew testDebugUnitTest assembleRelease -PaiSileroPreview=${{ matrix.enabled }}
+      - name: Record exact APK provenance and verify signature
+        env:
+          COMPARISON_VARIANT: ${{ matrix.variant }}
+          PREVIEW_ENABLED: ${{ matrix.enabled }}
+        run: |
+          APK=app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs "$APK" > app/build/outputs/apk/release/signature.txt
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          apk = Path('app/build/outputs/apk/release/app-arm64-v8a-release.apk')
+          model = Path('app/src/main/assets/ai/silero_vad.onnx')
+          data = dict(variant=os.environ['COMPARISON_VARIANT'], preview_enabled=os.environ['PREVIEW_ENABLED'],
+                      commit=os.environ['GITHUB_SHA'], run_id=os.environ['GITHUB_RUN_ID'],
+                      apk_sha256=hashlib.sha256(apk.read_bytes()).hexdigest(),
+                      silero_sha256=hashlib.sha256(model.read_bytes()).hexdigest())
+          apk.with_name('comparison.json').write_text(json.dumps(data, indent=2) + '\n')
+          PY
       - name: Upload Galaxy arm64 release and R8 map
         uses: actions/upload-artifact@v7
         with:
@@ -48,5 +69,7 @@ jobs:
           path: |
             app/build/outputs/apk/release/app-arm64-v8a-release.apk
             app/build/outputs/mapping/release/mapping.txt
+            app/build/outputs/apk/release/comparison.json
+            app/build/outputs/apk/release/signature.txt
           if-no-files-found: error
           retention-days: 14

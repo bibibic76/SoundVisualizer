@@ -74,6 +74,19 @@ class AiClassificationTest {
     }
 
     @Test
+    fun `임시 화면 표시는 확정 결과와 진동 위협음 경로를 바꾸지 않는다`() {
+        AiClassification.attach { result(AiClassification.AMBIENT) }
+        AiClassification.attachDisplay { result(AiClassification.SPEECH).copy(speechPreview = true) }
+        assertEquals(AiClassification.SPEECH, AiClassification.latestForDisplay()?.coarse)
+        assertEquals(AiClassification.AMBIENT, AiClassification.latest()?.coarse)
+        assertEquals(AiClassification.AMBIENT, AiClassification.coarse())
+        AiClassification.attach { result(AiClassification.DANGER) }
+        assertEquals(AiClassification.DANGER, AiClassification.latestForDisplay()?.coarse)
+        AiClassification.detach()
+        assertEquals(null, AiClassification.latestForDisplay())
+    }
+
+    @Test
     fun `라벨 상수는 서로 다르다`() {
         val labels = setOf(
             AiClassification.AMBIENT,

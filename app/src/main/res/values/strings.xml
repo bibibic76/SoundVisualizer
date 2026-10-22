@@ -279,7 +279,7 @@
     <!-- Accessibility -->
     <string name="cd_pick_color">Open color picker</string>
     <string name="cd_color_ambient">Ambient color</string>
-    <string name="cd_color_speech">Human sounds color</string>
+    <string name="cd_color_speech">Human sound color</string>
     <string name="cd_color_danger">Danger sound color</string>
     <string name="cd_expand">Expand</string>
     <string name="cd_collapse">Collapse</string>
@@ -356,7 +356,7 @@
     <string name="help_modes_notification">While it\'s on, you can expand the running notification to switch modes without opening the app.</string>
 
     <string name="help_sound_title">Sound types and vibration</string>
-    <string name="help_sound_kinds">AI sorts what you hear into ambient, human sounds and danger sounds. By default, ambient is white, human sounds is yellow and danger is red. In the Settings tab you can choose whether each type is shown, and change its color under “Detailed”.</string>
+    <string name="help_sound_kinds">AI sorts what you hear into ambient, human sounds and danger sounds. By default, ambient is white, human sounds are yellow and danger is red. In the Settings tab you can choose whether each type is shown, and change its color under “Detailed”.</string>
     <string name="help_sound_classify_groups">In the Sounds tab, similar sounds are grouped, and you pick which type each group counts as. For example, change the “Doorbell” group to Danger, and when the AI hears a doorbell or a knock it gets the danger color and vibration. A sound you newly set to Danger only takes part in the AI\'s vote on the type, though, so this doesn\'t mean every doorbell will be shown as danger. Turn on Advanced mode to change sounds one by one.</string>
     <string name="help_sound_danger">When a danger sound (like a gunshot) is detected, the color changes instantly instead of fading.</string>
     <string name="help_sound_haptic">Vibration alerts you even when you\'re not looking at the screen. At first only danger sounds vibrate. For each type, you can choose Off, Weak or Strong in “Simple”, or a mode (Off, Slow, Medium, Fast, Continuous) and a strength in “Detailed”.</string>

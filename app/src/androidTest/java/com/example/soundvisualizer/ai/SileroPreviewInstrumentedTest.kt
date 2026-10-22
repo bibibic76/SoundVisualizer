@@ -52,7 +52,9 @@ class SileroPreviewInstrumentedTest {
         val pipeline = RealtimeAiPipeline.create(app, 16000, 1, mappingOverrides = { overrides }, speechPreviewEnabled = true)
         try {
             pipeline.beforeVerifierScoreForTest { entered.countDown(); release.await() }
-            val mono = FloatArray(16000) { kotlin.math.sin(it * .031).toFloat() * .4f }
+            // High-confidence synthetic tone, all labels mapped to Danger solely for
+            // this concurrency test. Not evidence of real-world alarm recognition.
+            val mono = FloatArray(16000) { kotlin.math.sin(it * (2 * Math.PI * 440 / 16000)).toFloat() * .4f }
             pipeline.ingestInterleavedForTest(mono, mono.size)
             assertTrue(entered.await(5, java.util.concurrent.TimeUnit.SECONDS))
             val tick = executor.submit<RealtimeAiPipeline.TickDiagnostics?> { pipeline.runTickForTest() }.get(5, java.util.concurrent.TimeUnit.SECONDS)
