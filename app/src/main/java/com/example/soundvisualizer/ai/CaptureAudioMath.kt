@@ -126,6 +126,30 @@ object CaptureAudioMath {
         }
     }
 
+    /** Optional Silero stream: source starts at floor(outputStart*rate/16k)-47.
+     * Caller must have received every right-hand FIR tap before using the block.
+     * Reuses the same coefficients without changing the regular YAMNet frontend.
+     */
+    internal fun resampleStreamBlock(source: FloatArray, sourceFirst: Long,
+        outputStart: Long, sourceSampleRate: Int, destination: FloatArray) {
+        val table = if (sourceSampleRate > TARGET_SAMPLE_RATE) firTableFor(sourceSampleRate) else null
+        for (i in destination.indices) {
+            val numerator = (outputStart + i) * sourceSampleRate
+            val center = numerator / TARGET_SAMPLE_RATE
+            val local = (center - sourceFirst).toInt()
+            if (table == null) {
+                require(sourceSampleRate == TARGET_SAMPLE_RATE)
+                destination[i] = source[local]
+            } else {
+                val coefficients = table.coefficients[phaseIndex(numerator % TARGET_SAMPLE_RATE, table.phaseCount)]
+                var sum = 0.0
+                for (tap in 0 until FIR_TAPS)
+                    sum += coefficients[tap].toDouble() * source[local - FIR_HALF_TAPS + 1 + tap].toDouble()
+                destination[i] = sum.toFloat()
+            }
+        }
+    }
+
     /** Preserve the previous interpolation behavior for the unsupported upsampling case. */
     private fun linearResample(
         source: FloatArray,

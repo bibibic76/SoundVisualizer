@@ -40,6 +40,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import com.example.soundvisualizer.ai.AiCaptureSampleRatePolicy
 import com.example.soundvisualizer.ai.AiClassificationResult
+import com.example.soundvisualizer.ai.AiLatencyTrace
 import com.example.soundvisualizer.ai.RealtimeAiPipeline
 import com.example.soundvisualizer.feedback.AiFeedFilter
 import com.example.soundvisualizer.feedback.AiLabelFreshness
@@ -446,10 +447,15 @@ class AudioCaptureService : Service() {
      * 로딩 중에 서비스가 내려가면 늦게 만들어진 파이프라인이 스스로 닫힌다.
      */
     private fun startAiPipelineAsync() {
+        val initTraceId = AiLatencyTrace.nextId()
+        if (AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.mark("model_init_start", SystemClock.elapsedRealtimeNanos(), initTraceId)
         val rate = sampleRate
         if (!AiCaptureSampleRatePolicy.isSupportedForAi(rate)) {
             Log.w(TAG, "AI disabled for unsupported capture sample rate: $rate")
             synchronized(aiLock) { onAiPipelineLoadedLocked(null) }
+            if (AiLatencyTrace.recordingId != 0L)
+                AiLatencyTrace.mark("model_init_end", SystemClock.elapsedRealtimeNanos(), initTraceId, "unsupported_rate")
             return
         }
         val appContext = applicationContext
@@ -460,7 +466,8 @@ class AudioCaptureService : Service() {
                     appContext,
                     rate,
                     channels = 2,
-                    mappingOverrides = { SettingsManager.soundTypes.value }
+                    mappingOverrides = { SettingsManager.soundTypes.value },
+                    onClassificationChanged = AiClassification::notifyResultChanged
                 )
             } catch (t: Throwable) {
                 Log.e(TAG, "AI pipeline init failed: ${t.message}", t)
@@ -478,6 +485,8 @@ class AudioCaptureService : Service() {
                 }
             }
             synchronized(aiLock) { onAiPipelineLoadedLocked(pipeline) }
+            if (AiLatencyTrace.recordingId != 0L)
+                AiLatencyTrace.mark("model_init_end", SystemClock.elapsedRealtimeNanos(), initTraceId, "ok=${pipeline != null}")
         }, "SV-AiInit").apply {
             isDaemon = true
             start()
@@ -517,6 +526,7 @@ class AudioCaptureService : Service() {
     private fun startAiLocked(pipeline: RealtimeAiPipeline) {
         pipeline.start()
         AiClassification.attach { pipeline.lastClassification() }
+        AiClassification.attachDisplay { pipeline.lastDisplayClassification() }
     }
 
     /**
@@ -769,6 +779,11 @@ class AudioCaptureService : Service() {
     private fun captureLoop(record: AudioRecord, dualMono: Boolean, hearsOwnVibration: Boolean, debug: Boolean) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val loopThread = Thread.currentThread()
+        val traceCaptureSession = AiLatencyTrace.nextId()
+        var traceFrames = 0L
+        if (AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.mark("capture_start", SystemClock.elapsedRealtimeNanos(), traceCaptureSession,
+                "source=${SettingsManager.runningCaptureSource.value};rate=${record.sampleRate}")
         // direct buffer: AudioRecord 가 직접 채우고 JNI 가 주소로 읽는다 (Kotlin 힙 복사 0회, GC 0회).
         val buffer = ByteBuffer.allocateDirect(READ_FLOATS * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder())
         // AI 경로는 FloatArray 를 받으므로 뷰와 스크래치를 한 번만 만들어 재사용한다.
@@ -801,9 +816,11 @@ class AudioCaptureService : Service() {
         while (isRecording) {
             val bytes = record.read(buffer, buffer.capacity(), AudioRecord.READ_BLOCKING)
             // 읽기가 돌아온 시각. 시각 표시가 없을 때 캡처 시각을 어림하는 데 쓴다.
-            val readNs = if (clock != null) SystemClock.elapsedRealtimeNanos() else 0L
+            val traceOn = AiLatencyTrace.recordingId != 0L
+            val readNs = if (clock != null || traceOn) SystemClock.elapsedRealtimeNanos() else 0L
             if (bytes > 0) {
                 val floats = bytes / BYTES_PER_FLOAT
+                traceFrames += floats / 2
                 if (dualMono) toDualMono(floatView, floats, micMutedForCall)
                 // 마이크 감도는 실행 중에도 바꿀 수 있어 버퍼마다 읽는다(원자 읽기 하나). 크기에만 곱하고 AI 는 그대로 받는다.
                 val levelGain = if (dualMono) MicSensitivity.gain(SettingsManager.micSensitivity.value) else 1f
@@ -830,7 +847,8 @@ class AudioCaptureService : Service() {
                             floatView.get(aiScratch, 0, floats)
                         }
                     }
-                    pipeline.ingestInterleavedPcm(aiScratch, floats)
+                    pipeline.ingestInterleavedPcm(aiScratch, floats, traceCaptureSession,
+                        traceFrames, if (traceOn) readNs else 0L, hearsOwnVibration)
                 }
                 feedLog?.afterBuffer(readNs)
             } else if (bytes < 0) {

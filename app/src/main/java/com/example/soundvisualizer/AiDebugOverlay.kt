@@ -22,15 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawWithContent
+import android.os.SystemClock
+import com.example.soundvisualizer.ai.AiLatencyStamp
+import com.example.soundvisualizer.ai.AiLatencyTrace
+import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 
-/** 개발자 모드 HUD 를 얼마나 자주 다시 읽는지. 추론이 250ms 주기라 그보다 촘촘해야 한다. */
-private const val DEBUG_POLL_MS = 100L
+private data class HudFrame(val lines: AiDebugLines, val latency: AiLatencyStamp? = null)
 
 /** 창 알파(약 0.8)가 곱해지므로 판은 완전히 불투명하게 둔다. 반투명을 쓰면 두 번 곱해져 흐려진다. */
 private val PlateColor = Color(0xFF101216)
@@ -56,7 +58,7 @@ private val Top5TextColor = Color(0xFFB0B4BA)
  * "신뢰할 수 없는 터치 차단" 을 다시 부른다.
  */
 @Composable
-fun AiDebugOverlay() {
+fun AiDebugOverlay(covered: StateFlow<Boolean>? = null) {
     val enabled by SettingsManager.developerMode.collectAsState()
     if (!enabled) return
 
@@ -74,17 +76,15 @@ fun AiDebugOverlay() {
     // 추론 결과는 250ms 주기로만 바뀐다. produceState 의 상태는 구조적 동등성을 쓰고
     // AiClassificationResult 는 data class 이므로, 같은 결과가 계속 돌아오는 동안 대입이 no-op 이라
     // 리컴포지션이 일어나지 않는다. 대기 중에 저절로 조용해지는 셈이다.
-    val lines by produceState(
-        initialValue = AiDebugText.format(null, 0L, 0f, shown = false, aiAvailable = true),
+    val frame by produceState(
+        initialValue = HudFrame(AiDebugText.format(null, 0L, 0f, shown = false, aiAvailable = true)),
         aiAvailable
     ) {
         val capturePaused = SettingsManager.isCapturePaused
-        while (true) {
-            // 화면이 꺼져 캡처를 쉬는 동안에는 폴링도 멈춘다. 주머니 속에서 100ms 타이머로
-            // CPU 를 깨울 이유가 없다 (렌더 루프가 멈추는 것과 같은 이유).
-            if (capturePaused.value) capturePaused.first { !it }
-
-            val result = AiClassification.latest()
+        aiHudRefreshes(AiClassification.changes, capturePaused).collect {
+            val result = AiClassification.latestForDisplay()
+            if (result?.latency != null && AiLatencyTrace.recordingId != 0L)
+                AiLatencyTrace.observed(result.latency, AiLatencyTrace.Stage.HUD_POLL, SystemClock.elapsedRealtimeNanos())
             val nowMs = System.currentTimeMillis()
             val level = AudioEngine.currentLevel()
             // 실행마다 고정되는 소스를 결과를 본 시점에 함께 큐로 넘긴다. 파일 쓰기 스레드가 나중에
@@ -94,7 +94,7 @@ fun AiDebugOverlay() {
             // 기록은 큐에 넣기만 하므로 메인 스레드를 붙잡지 않는다. 같은 결과를 두세 번 보는 것은
             // AiDebugLogWriter 가 timestampMs 로 걸러 낸다.
             if (result != null) AiDebugRecorder.offer(result, nowMs, captureSource, level, shown)
-            value = AiDebugText.format(
+            value = HudFrame(AiDebugText.format(
                 result = result,
                 nowMs = nowMs,
                 level = level,
@@ -102,11 +102,14 @@ fun AiDebugOverlay() {
                 // 설정 상태를 "AI 가 못 잡았다" 로 오독한다.
                 shown = shown,
                 aiAvailable = aiAvailable
-            )
-            delay(DEBUG_POLL_MS)
+            ), result?.latency)
         }
     }
 
+    // Capture the same composition snapshot as the text; reading newer state in draw would
+    // incorrectly attribute old text to a result that has not been composed yet.
+    val renderedFrame = frame
+    val lines = renderedFrame.lines
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -116,6 +119,11 @@ fun AiDebugOverlay() {
             .padding(horizontal = 8.dp, vertical = 6.dp)
             // 개발용 표시라 화면 읽어주기로는 읽지 않는다. 정작 이 앱 사용자에게는 소음이다.
             .clearAndSetSemantics { }
+            .drawWithContent {
+                drawContent()
+                if (covered?.value != true && renderedFrame.latency != null && AiLatencyTrace.recordingId != 0L)
+                    AiLatencyTrace.observed(renderedFrame.latency, AiLatencyTrace.Stage.HUD_DRAW, SystemClock.elapsedRealtimeNanos())
+            }
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             DebugText(lines.coarse, weight = FontWeight.Bold)

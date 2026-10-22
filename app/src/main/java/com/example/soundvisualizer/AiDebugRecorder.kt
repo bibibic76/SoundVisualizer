@@ -91,6 +91,7 @@ object AiDebugRecorder {
         val app = context.applicationContext
         val mine = Session(SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date()))
         session = mine
+        AiLatencyRecorder.start(app, mine.stamp)
         currentFile = null
         worker = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "ai-debug-record").apply { isDaemon = true }
@@ -106,6 +107,7 @@ object AiDebugRecorder {
      */
     @Synchronized
     fun stop() {
+        AiLatencyRecorder.stop()
         val leaving = session ?: return
         leaving.active.set(false)
         session = null
@@ -197,6 +199,7 @@ object AiDebugRecorder {
         mine.active.set(false)
         synchronized(this) {
             if (session === mine) {
+                AiLatencyRecorder.stop()
                 session = null
                 currentFile = null
             }

@@ -4,6 +4,11 @@ import com.example.soundvisualizer.ai.AiClassificationResult
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineStart
 
 /**
  * 분류기와 렌더러를 잇는 지점. 오버레이는 매 프레임 [AiClassification.coarse] 만 부르고,
@@ -76,5 +81,23 @@ class AiClassificationTest {
             AiClassification.DANGER
         )
         assertEquals(3, labels.size)
+    }
+
+    @Test
+    fun `결과 알림과 detach 는 저장한 payload 대신 현재 source 를 읽게 한다`() = runBlocking {
+        var current = result(AiClassification.SPEECH)
+        AiClassification.attach { current }
+        // Replay is just a wake-up; the provider may already have advanced.
+        current = result(AiClassification.DANGER)
+        withTimeout(2_000) { AiClassification.changes.first() }
+        assertEquals(AiClassification.DANGER, AiClassification.latest()?.coarse)
+        val next = async(start = CoroutineStart.UNDISPATCHED) {
+            // Drop the replay wake-up and wait for detach's signal.
+            var count = 0
+            AiClassification.changes.first { ++count == 2 }
+        }
+        AiClassification.detach()
+        withTimeout(2_000) { next.await() }
+        assertEquals(AiClassification.AMBIENT, AiClassification.coarse())
     }
 }
