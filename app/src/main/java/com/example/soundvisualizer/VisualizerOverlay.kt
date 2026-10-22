@@ -72,10 +72,11 @@ private suspend fun rest(engine: VisualizerEngine, capturePaused: StateFlow<Bool
         if (capturePaused.value) capturePaused.first { !it }
         // 캡처를 쉬지 않아도(외부 사운드 모드, 일시정지 설정 꺼짐) 가려진 동안은 깨어나지 않는다. 잠금 화면에서 소리에
         // 깨어나 프레임을 요청하면 잠금을 풀어도 그리지 않았다(#401). 쉬는 중에 가려졌을 때 보관한 소리를 비우는 것도
-        // 여기서 한다. 다시 보이면 그때의 소리로 확인한다.
+        // 여기서 한다. 다시 보이면 가려진 동안 쌓인 소리 크기를 버리고(#433) 그 뒤의 소리로 확인한다.
         if (covered.value) {
             engine.sleepNow()
             covered.first { !it }
+            engine.onUncovered()
         }
         if (engine.canSleepUntilLoud) OverlayWake.awaitLoud() else delay(VisualizerEngine.IDLE_POLL_MS)
         // 확인하기 직전부터 들어오는 소리만 다음 잠을 깨운다. 확인과 잠드는 사이에 온 소리도 놓치지 않는다.
