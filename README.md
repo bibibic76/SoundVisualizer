@@ -57,6 +57,7 @@ We provide 4 unique rendering modes that intuitively map sound intensity and dir
 - **Pad Mode**: Displays glowing pads anchored to 8 spots around the screen edges.
 - **Outline Mode**: A minimalist variation of Wave mode, showing only the thin borders of the wave to minimize screen occlusion.
 - The graphics float transparently over other apps and let touches pass straight through. Size, opacity, sensitivity, speed, and glow are saved separately for each mode.
+- **Simple settings**: The Settings tab has a picture-based view. Choose the shape from four cards drawn by the real visualizer, its size in three steps, and for each sound type whether it is shown and how strongly it vibrates. Everything else is under “Detailed”.
 
 ### 2. Control Without Leaving Your Game
 Change what you see without switching away from the game or video you are watching.
@@ -78,7 +79,7 @@ Change what you see without switching away from the game or video you are watchi
 - Search by name, filter by type or by the sounds you changed, and reset everything in one step. The AI follows your changes immediately.
 
 ### 6. Vibration Alerts
-- **Patterns per type**: Choose Off, Slow, Medium, Fast, or Continuous and a strength from 10 to 100% for each sound type, so you can tell sounds apart by touch. At first only `Danger` vibrates, at Medium.
+- **Patterns per type**: Choose Off, Slow, Medium, Fast, or Continuous and a strength from 10 to 100% for each sound type, so you can tell sounds apart by touch. At first only `Danger` vibrates, at Medium. Simple settings offer just Off, Weak, and Strong.
 - **Follows the sound**: It vibrates while that type of sound continues and stops when the sound stops, so you notice sounds even when you are not looking at the screen.
 - **Lock screen alerts**: When a `Danger` sound is heard while the phone is locked, an alert appears on the lock screen.
 

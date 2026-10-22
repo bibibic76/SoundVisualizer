@@ -52,6 +52,32 @@ private class FakeInputs(
     override fun isShown(label: String): Boolean = shown
 }
 
+/**
+ * 네이티브 소리 크기처럼 버퍼마다 마지막으로 읽은 뒤의 최대값을 쌓고, 읽으면 0 으로 되돌린다(native-lib.cpp 의 readPeaks).
+ * [FakeInputs] 는 정해 둔 값을 그대로 돌려주므로, 읽지 않는 동안 쌓이는 것을 볼 때는 이것을 쓴다. 나머지는 [base] 를 따른다.
+ */
+private class AccumulatingInputs(base: FakeInputs = FakeInputs()) : VisualizerInputs by base {
+    private var left = 0f
+    private var right = 0f
+    private var buffers = 0
+
+    /** 버퍼 하나가 들어왔다. */
+    fun push(l: Float, r: Float = l) {
+        left = maxOf(left, l)
+        right = maxOf(right, r)
+        buffers++
+    }
+
+    override fun readPeaks(out: FloatArray) {
+        out[0] = left
+        out[1] = right
+        out[2] = buffers.toFloat()
+        left = 0f
+        right = 0f
+        buffers = 0
+    }
+}
+
 private fun newEngine(fake: FakeInputs): VisualizerEngine =
     VisualizerEngine(DENSITY, fake).also { it.setSurfaceSize(W, H) }
 
@@ -504,6 +530,120 @@ class VisualizerEngineTest {
 
         engine.pollWake()
         assertTrue("여전히 조용하면 idle 을 유지한다", engine.debugState().idle)
+    }
+
+    // ---------------------------------------------------------------
+    // 가려졌을 때 (sleepNow, 화면 꺼짐·잠금 화면): 보이지 않는 동안은 계산하지 않는다 (#400, #401)
+    // ---------------------------------------------------------------
+
+    @Test
+    fun `화면이 꺼지면 소리가 이어져도 그리던 것을 지우고 바로 쉰다`() {
+        val fake = FakeInputs()
+        val engine = newEngine(fake)
+        fake.left = 0.5f
+        fake.right = 0.5f
+        engine.advance(30)
+        assertTrue("소리가 나는 동안 그리고 있어야 한다", engine.debugState().visible)
+
+        assertTrue("그리던 것이 남았으면 한 번 다시 그려 비워야 한다", engine.sleepNow())
+        val state = engine.debugState()
+        assertTrue("소리가 이어져도 1초를 기다리지 않고 바로 쉰다", state.idle)
+        assertFalse("화면이 켜졌을 때 꺼지기 전 모양이 그려진다", state.visible)
+        assertEquals(0f, state.alpha, 0f)
+        assertEquals(0f, state.smoothTotal, 0f)
+        assertTrue("깊이가 남았다 (${state.depths})", state.depths.all { it == 0f })
+    }
+
+    @Test
+    fun `이미 쉬고 있으면 화면이 꺼져도 다시 그릴 것이 없고 켜진 뒤 한 번은 바로 확인한다`() {
+        val engine = newEngine(FakeInputs())
+        engine.tickUntilIdle()
+        engine.pollWake()
+        assertTrue("조용한 확인 뒤에는 소리 신호를 기다리며 잔다", engine.canSleepUntilLoud)
+
+        assertFalse("지울 것이 없는데 다시 그리게 한다", engine.sleepNow())
+        assertTrue(engine.debugState().idle)
+        // 꺼진 동안 들어온 소리는 소리 신호로 알 수 없을 수 있으니, 켜지면 신호를 기다리지 않고 확인한다.
+        assertFalse("화면이 켜진 뒤 첫 확인을 소리 신호에 미룬다", engine.canSleepUntilLoud)
+    }
+
+    @Test
+    fun `화면이 켜지면 꺼지기 전 크기에서 잇지 않고 그때의 소리로 0 에서 자란다`() {
+        val fake = FakeInputs()
+        val engine = newEngine(fake)
+        fake.left = 0.9f
+        fake.right = 0.9f
+        engine.advance(30)
+        engine.sleepNow()
+
+        // 화면이 켜진 뒤 첫 확인. 소리가 이어지고 있으면 깨어난다.
+        engine.pollWake()
+        assertFalse("소리가 나는데 깨어나지 않는다", engine.debugState().idle)
+        engine.tick(FRAME_60 * 1000)
+        val woken = engine.debugState().smoothTotal
+
+        // 처음 켠 엔진이 같은 소리를 첫 프레임에 받았을 때와 같아야 한다.
+        val freshFake = FakeInputs()
+        val fresh = newEngine(freshFake)
+        freshFake.left = 0.9f
+        freshFake.right = 0.9f
+        fresh.tick(FRAME_60)
+        assertEquals(fresh.debugState().smoothTotal, woken, 0.0001f)
+    }
+
+    @Test
+    fun `화면이 꺼지기 전 보관한 소리는 켜진 뒤의 위협음 판정으로 꺼내지 않는다`() {
+        // `위협음 판정이 소리가 끝난 뒤에 와도 보관한 방향으로 보인다` 와 같은 흐름에 화면 꺼짐만 끼운다.
+        val (engine, fake) = hiddenAmbientIdle()
+        fake.left = 0.6f
+        fake.right = 0.2f
+        engine.pollWake()
+        fake.left = 0f
+        fake.right = 0f
+        engine.poll(15)
+
+        engine.sleepNow() // 화면이 꺼졌다가
+        fake.becomeDanger() // 켜진 뒤 위협음 판정이 왔다
+        engine.pollWake()
+        assertTrue("화면이 꺼지기 전 소리가 위협음으로 번쩍였다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `다시 보이면 가려진 동안 쌓인 소리는 버리고 그 뒤의 소리로 확인한다`() {
+        // 외부 사운드 모드처럼 가려진 동안에도 소리를 받는다. 가려진 동안 큰 소리가 한 번 났고 지금은 조용하다(#433).
+        val inputs = AccumulatingInputs()
+        val engine = VisualizerEngine(DENSITY, inputs).also { it.setSurfaceSize(W, H) }
+        engine.tickUntilIdle()
+        engine.sleepNow()
+        inputs.push(0.9f)
+        repeat(100) { inputs.push(0f) }
+
+        engine.onUncovered()
+        inputs.push(0.001f) // 다시 보인 뒤 첫 확인까지 들어온 소리
+        engine.pollWake()
+        assertTrue("방은 조용한데 가려진 동안의 소리로 깨어났다", engine.debugState().idle)
+
+        // 다시 보인 뒤에 난 소리에는 평소처럼 깨어난다.
+        inputs.push(0.5f)
+        engine.pollWake()
+        assertFalse("다시 보인 뒤의 소리에 깨어나지 않는다", engine.debugState().idle)
+    }
+
+    @Test
+    fun `가려진 동안 숨긴 종류로 난 소리는 다시 보인 뒤의 위협음 판정으로 꺼내지 않는다`() {
+        // 위협음만 보이게 해 두었다. 가려진 동안 환경음으로 큰 소리가 났고, 다시 보인 직후 위협음 판정이 왔다(#433).
+        val fake = FakeInputs(label = AiClassification.AMBIENT, shown = false)
+        val inputs = AccumulatingInputs(fake)
+        val engine = VisualizerEngine(DENSITY, inputs).also { it.setSurfaceSize(W, H) }
+        engine.tickUntilIdle()
+        engine.sleepNow()
+        inputs.push(0.9f, 0.3f)
+
+        engine.onUncovered()
+        engine.pollWake()
+        fake.becomeDanger()
+        engine.pollWake()
+        assertTrue("가려진 동안의 소리가 위협음으로 번쩍였다", engine.debugState().idle)
     }
 
     // ---------------------------------------------------------------

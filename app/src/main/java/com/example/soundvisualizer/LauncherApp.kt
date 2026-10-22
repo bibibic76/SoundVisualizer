@@ -101,7 +101,8 @@ fun LauncherApp(
         ) { page ->
             when (page) {
                 0 -> HomeTab(onStart, onStop, onOpenTutorial)
-                1 -> SettingsTab(onAddTile)
+                // 쉬운 설정의 모양 카드는 설정 탭에 손을 떼고 멈췄을 때만 움직인다. 옆 탭에서 미리 그려 둘 때는 멈춰 있다.
+                1 -> SettingsTab(onAddTile, active = restingPage == 1)
                 TAB_CLASSIFY -> ClassifyTab()
                 else -> HelpTab()
             }

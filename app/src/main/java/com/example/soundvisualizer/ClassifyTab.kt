@@ -66,7 +66,7 @@ private val ChipColor = Color(0xFF333A44)
 private val SOUND_TYPES = listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
 
 /** 목록에서 붙어 있는 찾기·거르기 줄의 자리. 그 앞은 제목·설명·고급 모드 스위치를 담은 칸 하나뿐이다. */
-private const val STICKY_HEADER_INDEX = 1
+internal const val STICKY_HEADER_INDEX = 1
 
 /** 줄 오른쪽 종류 버튼의 최대 폭. 흔한 폭(411dp)에서 줄 안쪽의 절반쯤이다. */
 private val TYPE_BUTTON_MAX_WIDTH = 150.dp

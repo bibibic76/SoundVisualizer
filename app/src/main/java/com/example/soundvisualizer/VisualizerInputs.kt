@@ -1,5 +1,7 @@
 package com.example.soundvisualizer
 
+import com.example.soundvisualizer.ai.AiLatencyStamp
+
 /**
  * [VisualizerEngine] 이 프레임마다 읽는 바깥 세계.
  *
@@ -14,6 +16,8 @@ interface VisualizerInputs {
     fun settingsFor(mode: VisualMode): ModeSettings
     /** [AiClassification] 의 라벨 중 하나. */
     fun coarseLabel(): String
+    /** The same result just read by coarseLabel; diagnostics only, no second source read. */
+    fun latencyStamp(): AiLatencyStamp? = null
     fun colorFor(label: String): Int
     fun isShown(label: String): Boolean
 
@@ -39,7 +43,13 @@ object LiveVisualizerInputs : VisualizerInputs {
         VisualMode.Outline -> SettingsManager.outlineMode.value
     }
 
-    override fun coarseLabel(): String = AiClassification.coarse()
+    private var lastLatency: AiLatencyStamp? = null
+    override fun coarseLabel(): String {
+        val result = AiClassification.latestForDisplay()
+        lastLatency = result?.latency
+        return result?.coarse ?: AiClassification.AMBIENT
+    }
+    override fun latencyStamp() = lastLatency
 
     override fun colorFor(label: String): Int = when (label) {
         AiClassification.DANGER -> SettingsManager.colorDanger.value

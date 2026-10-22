@@ -17,8 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
+/**
+ * 다른 앱 위에 겹쳐 그리는 오버레이.
+ * @param covered 오버레이 창이 가려졌는지(화면 꺼짐·잠금 화면, [OverlayVisibility]). 가려진 동안은 쉬고 새 프레임을 요청하지 않는다.
+ */
 @Composable
-fun VisualizerOverlay() {
+fun VisualizerOverlay(covered: StateFlow<Boolean>) {
     val density = LocalDensity.current.density
     val engine = remember(density) { VisualizerEngine(density) }
     // 프레임 틱 → 그리기 무효화를 잇는 유일한 Compose 상태. 리컴포지션은 발생하지 않는다.
@@ -27,11 +31,16 @@ fun VisualizerOverlay() {
     LaunchedEffect(engine) {
         val capturePaused = SettingsManager.isCapturePaused
         while (true) {
+            // 가려지면 바로 쉰다(#401). 잠금 화면이 창을 숨긴 동안 새 프레임을 요청하면, Galaxy S25+(Android 17)는 잠금을
+            // 풀어도 그 요청을 끝내 주지 않아 오버레이가 멈춘 채 남았다. 화면이 꺼진 동안에도 프레임 신호를 보내는 버전에서는
+            // 보이지 않는 그림을 계속 계산하던 것도 멈춘다(#400). 진동과 잠금 화면 알림은 오버레이와 상관없다.
+            // 그리던 것이 남았으면 한 번 무효화해 둔다. 막혀 있던 그리기가 다시 보일 때 빈 화면으로 그려진다.
+            if (covered.value && engine.sleepNow()) frame.longValue++
             if (engine.isIdle) {
                 // 쉬는 동안은 Compose 디스패처를 벗어나 메인 스레드 핸들러에서 기다린다(#170). Compose 디스패처는
                 // delay 를 따로 타이머 스레드로 재고, 돌아올 때마다 vsync 까지 요청한다. 그리는 것도 없는데 확인
                 // 한 번에 스레드가 네다섯 번 깨어났다. 같은 메인 스레드라 엔진을 만지는 스레드는 바뀌지 않는다.
-                withContext(Dispatchers.Main) { rest(engine, capturePaused) }
+                withContext(Dispatchers.Main) { rest(engine, capturePaused, covered) }
             } else {
                 withFrameNanos { nanos ->
                     if (engine.tick(nanos)) frame.longValue++
@@ -46,20 +55,29 @@ fun VisualizerOverlay() {
         }
         // 개발자 모드 표시. 상태 읽기를 저 안에 가둬 두었으므로 이 함수는 여전히 리컴포지션되지 않는다.
         // 여기서 설정이나 분류 결과를 읽으면 그 성질이 깨진다.
-        AiDebugOverlay()
+        AiDebugOverlay(covered)
     }
 }
 
 /**
  * 엔진이 깨어날 때까지 쉰다. 조용하고 보관한 소리도 없으면 캡처 스레드가 큰 소리를 알려 줄 때까지 잠들고,
  * 그렇지 않으면(표시를 꺼 둔 소리가 나는 중이거나 늦게 올 위협음 판정을 위해 소리를 보관하는 중) 33ms 마다 확인한다.
+ * 가려진 동안은 확인하지 않고 다시 보일 때까지 기다린다.
  */
-private suspend fun rest(engine: VisualizerEngine, capturePaused: StateFlow<Boolean>) {
+private suspend fun rest(engine: VisualizerEngine, capturePaused: StateFlow<Boolean>, covered: StateFlow<Boolean>) {
     while (engine.isIdle) {
         // 화면이 꺼져 캡처를 쉬는 동안에는 새 소리가 들어오지 않으니 확인도 멈추고 켜질 때까지 기다린다.
         // 화면이 꺼져도 이 루프는 저절로 멈추지 않아 CPU 를 계속 깨운다. 소리가 나던 중에 쉬기 시작해도
         // 캡처 서비스가 남은 소리 크기를 지우므로, 엔진이 1초 남짓 뒤 쉬기로 내려와 여기서 멈춘다.
         if (capturePaused.value) capturePaused.first { !it }
+        // 캡처를 쉬지 않아도(외부 사운드 모드, 일시정지 설정 꺼짐) 가려진 동안은 깨어나지 않는다. 잠금 화면에서 소리에
+        // 깨어나 프레임을 요청하면 잠금을 풀어도 그리지 않았다(#401). 쉬는 중에 가려졌을 때 보관한 소리를 비우는 것도
+        // 여기서 한다. 다시 보이면 가려진 동안 쌓인 소리 크기를 버리고(#433) 그 뒤의 소리로 확인한다.
+        if (covered.value) {
+            engine.sleepNow()
+            covered.first { !it }
+            engine.onUncovered()
+        }
         if (engine.canSleepUntilLoud) OverlayWake.awaitLoud() else delay(VisualizerEngine.IDLE_POLL_MS)
         // 확인하기 직전부터 들어오는 소리만 다음 잠을 깨운다. 확인과 잠드는 사이에 온 소리도 놓치지 않는다.
         OverlayWake.arm()

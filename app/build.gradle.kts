@@ -18,8 +18,13 @@ android {
         // 37(Android 17)에서 이 앱에 걸리는 변경은 백그라운드 액티비티 시작(BAL) 조이기뿐이었다. 타일·알림 본문·
         // "다시 켜기" 로 여는 경로가 모두 BAL_ALLOW_NON_APP_VISIBLE_WINDOW 로 허용되는 것을 Android 17 에서 봤다(#155).
         targetSdk = 37
-        versionCode = 13
-        versionName = "1.7.2"
+        versionCode = 14
+        versionName = "1.8.0"
+        buildConfigField("boolean", "AI_SILERO_PREVIEW_ENABLED",
+            providers.gradleProperty("aiSileroPreview").map {
+                require(it == "true" || it == "false") { "aiSileroPreview must be true or false" }
+                it
+            }.getOrElse("true"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -93,6 +98,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     externalNativeBuild {
         cmake {

@@ -75,6 +75,14 @@ object SettingsManager {
      */
     internal const val REDUCED_FRAME_RATE_DEFAULT = false
 
+    /**
+     * 설정 탭을 쉬운 설정으로 열지의 기본값(#408). 새로 설치한 사람은 그림으로 선택하는 쉬운 설정부터 본다.
+     *
+     * [PAUSE_WHEN_SCREEN_OFF_DEFAULT] 와 같은 이유로 한 곳에만 둔다. 저장된 적이 없을 때 실제로 고르는 값은
+     * [loadEasySettings] 가 정한다.
+     */
+    internal const val EASY_SETTINGS_DEFAULT = true
+
     private const val KEY_PAUSE_WHEN_SCREEN_OFF = "pause_when_screen_off"
     private const val KEY_EXTERNAL_SOUND_MODE = "external_sound_mode"
     private const val KEY_MIC_SENSITIVITY = "mic_sensitivity"
@@ -87,6 +95,10 @@ object SettingsManager {
     private const val KEY_TUTORIAL_SEEN = "tutorial_seen"
     private const val KEY_SOUND_TYPES = "sound_types"
     private const val KEY_CLASSIFY_ADVANCED = "classify_advanced"
+    private const val KEY_EASY_SETTINGS = "easy_settings"
+
+    /** 네 모드의 설정을 저장하는 키의 앞부분([loadMode]). [VisualMode] 의 순서와 같다. */
+    private val MODE_PREFIXES = listOf("wave", "pad", "circle", "outline")
 
     /** 분류 탭에서 고를 수 있는 종류. 화면·진동이 알아듣는 라벨과 같다. */
     private val SOUND_TYPE_LABELS = setOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
@@ -155,6 +167,13 @@ object SettingsManager {
      */
     private val _classifyAdvanced = MutableStateFlow(CLASSIFY_ADVANCED_DEFAULT)
     val classifyAdvanced: StateFlow<Boolean> = _classifyAdvanced
+
+    /**
+     * 설정 탭을 쉬운 설정(그림으로 선택하는 화면)으로 볼지(#408). 꺼 두면 지금까지의 자세한 설정이다.
+     * 화면 설정이라 다른 값은 바꾸지 않는다. 사용자가 고른 것이라 기기 전용 값([dropOtherDeviceValues])이 아니다.
+     */
+    private val _easySettings = MutableStateFlow(EASY_SETTINGS_DEFAULT)
+    val easySettings: StateFlow<Boolean> = _easySettings
 
     // 소리 종류별 진동 설정. 키는 AiClassification 라벨.
     private val hapticFlows: Map<String, MutableStateFlow<HapticSettings>> =
@@ -376,6 +395,11 @@ object SettingsManager {
         _padMode.value = loadMode(prefs, "pad")
         _circleMode.value = loadMode(prefs, "circle")
         _outlineMode.value = loadMode(prefs, "outline")
+        // 정한 값을 곧바로 저장한다. 저장하지 않으면 쉬운 설정에서 크기를 바꾼 사람이 다음에 열 때 바꾼 값이 있다는 이유로
+        // 자세한 설정이 된다. 튜토리얼 판단(맨 위) 뒤라서 새로 설치한 앱을 "쓰던 사람"으로 보게 하지 않는다.
+        val easySettings = loadEasySettings(prefs)
+        if (!prefs.contains(KEY_EASY_SETTINGS)) prefs.edit { putBoolean(KEY_EASY_SETTINGS, easySettings) }
+        _easySettings.value = easySettings
 
         _showAmbient.value = prefs.getBoolean("show_ambient", true)
         _colorAmbient.value = prefs.getInt("color_ambient", DEFAULT_COLOR_AMBIENT)
@@ -518,6 +542,17 @@ object SettingsManager {
         else loadSoundTypes(source).isNotEmpty() || CLASSIFY_ADVANCED_DEFAULT
 
     /**
+     * 설정 탭을 쉬운 설정으로 열지. 저장된 적이 없으면 **모드별 상세 값을 바꿔 둔 사람인지**로 정한다(#408).
+     *
+     * 네 모드의 설정이 모두 처음 값이면(새로 설치했거나 손대지 않았으면) 쉬운 설정으로 연다. 하나라도 바꿨으면 손에 익은
+     * 자세한 설정으로 연다. 분류 탭 고급 모드(#349)와 같은 방식이다. 색·진동처럼 쉬운 설정에도 보이는 값은 따지지 않는다.
+     * [load] 는 이렇게 정한 값을 곧바로 저장한다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (EasySettingsSettingTest).
+     */
+    internal fun loadEasySettings(source: SharedPreferences): Boolean =
+        if (source.contains(KEY_EASY_SETTINGS)) source.getBoolean(KEY_EASY_SETTINGS, EASY_SETTINGS_DEFAULT)
+        else EASY_SETTINGS_DEFAULT && MODE_PREFIXES.all { loadMode(source, it) == ModeSettings() }
+
+    /**
      * 마지막으로 사용자 모르게 꺼진 이유. 이름으로 저장하므로 모르는 이름(항목을 바꾼 뒤 등)이면
      * 알릴 것이 없는 것으로 본다. 기기 없이 검사할 수 있게 프리퍼런스를 인자로 받는다 (StopNoticeSettingsTest).
      */
@@ -616,6 +651,22 @@ object SettingsManager {
         dirtyModes += "outline"
     }
 
+    /**
+     * 쉬운 설정의 크기 단계를 [mode] 에 쓰고 곧바로 저장한다(#408). 크기는 모드마다 따로라 다른 모드는 건드리지 않는다.
+     * 한 번 누르면 끝나는 조작이라 미루지 않는다. 크기·진하기·크기 고정 말고는 바꾸지 않는다([EasySize.applyTo]).
+     * 메인 스레드에서 부른다.
+     */
+    fun applyEasySize(mode: VisualMode, step: EasySize) {
+        when (mode) {
+            VisualMode.Wave -> _waveMode.value = step.applyTo(_waveMode.value)
+            VisualMode.Pad -> _padMode.value = step.applyTo(_padMode.value)
+            VisualMode.CircleRipple -> _circleMode.value = step.applyTo(_circleMode.value)
+            VisualMode.Outline -> _outlineMode.value = step.applyTo(_outlineMode.value)
+        }
+        dirtyModes += MODE_PREFIXES[mode.ordinal]
+        flushModeSettings()
+    }
+
     /** 미뤄둔 모드 설정을 저장한다. 바뀐 것이 없으면 아무것도 하지 않는다. 메인 스레드에서 부른다. */
     fun flushModeSettings() {
         if (dirtyModes.isEmpty()) return
@@ -709,6 +760,12 @@ object SettingsManager {
     fun setClassifyAdvanced(enabled: Boolean) {
         _classifyAdvanced.value = enabled
         prefs.edit { putBoolean(KEY_CLASSIFY_ADVANCED, enabled) }
+    }
+
+    /** 설정 탭의 화면(쉬운 설정·자세한 설정)을 바꾼다. 화면만 바뀌고 다른 설정은 건드리지 않는다. */
+    fun setEasySettings(enabled: Boolean) {
+        _easySettings.value = enabled
+        prefs.edit { putBoolean(KEY_EASY_SETTINGS, enabled) }
     }
 
     /**

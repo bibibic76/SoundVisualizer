@@ -8,6 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
@@ -30,9 +33,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.soundvisualizer.feedback.HapticSettingRow
 
-/** @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다. */
+/**
+ * 자세한 설정 목록에서 첫 모드 카드의 자리: 맨 위 두 칸, 모드 고르기 다음이다. 모드 카드 넷 다음이 소리 종류 카드다.
+ * 쉬운 설정에서 보러 온 설정으로 옮겨 갈 때 쓴다(#427). 앞에 항목을 더하면 이 값도 고친다(EasySettingsInstrumentedTest 가 본다).
+ */
+private const val DETAIL_FIRST_MODE_INDEX = 2
+
+/** 쉬운 설정의 진동 칸에서 보러 올 수 있는 소리 종류. */
+private val DETAIL_VIBRATION_LABELS = listOf(AiClassification.AMBIENT, AiClassification.SPEECH, AiClassification.DANGER)
+
+/**
+ * 설정 탭. 맨 위의 두 칸으로 쉬운 설정(그림으로 선택하는 화면, #408)과 자세한 설정(모든 설정)을 오간다.
+ * 쉬운 설정의 '자세한 설정' 칸을 누르면 자세한 설정으로 넘어와 그 설정이 있는 곳까지 옮겨 간다(#427).
+ *
+ * @param onAddTile 시스템의 "빠른 설정에 추가" 창을 띄운다. Android 13 이상에서만 부른다.
+ * @param active 이 탭이 지금 보고 있는 탭인지. 쉬운 설정의 모양 카드는 이때만 움직인다.
+ */
 @Composable
-fun SettingsTab(onAddTile: () -> Unit) {
+fun SettingsTab(onAddTile: () -> Unit, active: Boolean = true) {
+    val easy by SettingsManager.easySettings.collectAsState()
     val currentMode by SettingsManager.visualMode.collectAsState()
 
     // 색 고르기 창은 목록 **밖**에 둔다. 줄 안에 두면 그 줄이 화면 밖으로 밀릴 때(회전 뒤 스크롤 위치가
@@ -61,8 +80,43 @@ fun SettingsTab(onAddTile: () -> Unit) {
         )
     }
 
-    LazyColumn(modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
-        item {
+    // 쉬운 설정의 '자세한 설정' 칸을 누르면 자세한 설정으로 넘어와 그 설정이 있는 곳까지 옮겨 간다(#427).
+    val listState = rememberLazyListState()
+    var detailTarget by remember { mutableStateOf<DetailTarget?>(null) }
+    val vibrationRows = remember { DETAIL_VIBRATION_LABELS.associateWith { BringIntoViewRequester() } }
+    // 지금 모드의 카드가 맨 위에 온다. 옮겨 갈 자리를 셀 때도 같은 순서를 쓴다.
+    val sortedModes = VisualMode.values().sortedBy { if (it == currentMode) 0 else 1 }
+    LaunchedEffect(detailTarget, easy) {
+        val target = detailTarget ?: return@LaunchedEffect
+        if (easy) return@LaunchedEffect
+        when (target) {
+            // 모드 카드의 맨 위가 크기 고정과 크기다. 카드가 화면 맨 위에 오게 옮긴다(접혀 있으면 카드가 펼친다).
+            is DetailTarget.Size -> listState.scrollToItem(DETAIL_FIRST_MODE_INDEX + sortedModes.indexOf(target.mode))
+            // 소리 종류 카드로 옮긴 뒤, 그 종류의 진동 줄이 다 보이게 조금 더 민다.
+            is DetailTarget.Vibration -> {
+                listState.scrollToItem(DETAIL_FIRST_MODE_INDEX + sortedModes.size)
+                withFrameNanos { }
+                vibrationRows[target.label]?.bringIntoView()
+            }
+        }
+        detailTarget = null
+    }
+
+    LazyColumn(state = listState, modifier = Modifier.padding(horizontal = 24.dp).fillMaxSize()) {
+        item(key = "view_switch") { SettingsViewSwitch(easy) }
+
+        if (easy) {
+            item(key = "easy") {
+                EasySettingsContent(active, onAddTile, onOpenDetailed = { target ->
+                    detailTarget = target
+                    SettingsManager.setEasySettings(false)
+                })
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+            return@LazyColumn
+        }
+
+        item(key = "modes") {
             // 언어는 홈 오른쪽 아래로 옮겼다(#308). 앱을 열면 처음 보이는 곳이라 읽지 못하는 언어로 바뀌어도 찾기 쉽다.
             Text(stringResource(R.string.settings_section_mode), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
             Card(
@@ -112,42 +166,41 @@ fun SettingsTab(onAddTile: () -> Unit) {
             Text(stringResource(R.string.settings_section_mode_detail), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp))
         }
 
-        // 동적으로 선택된 모드를 제일 위에 오도록 정렬
-        val sortedModes = VisualMode.values().sortedBy { if (it == currentMode) 0 else 1 }
-
-        // 현재 모드가 맨 위로 올라오며 순서가 바뀐다. key 가 없으면 기억된 펼침 상태가
+        // 현재 모드가 맨 위로 올라오며 순서가 바뀐다(sortedModes). key 가 없으면 기억된 펼침 상태가
         // 모드가 아니라 슬롯 인덱스에 붙어서 카드끼리 뒤바뀐다.
         items(sortedModes.size, key = { sortedModes[it].name }) { index ->
             val mode = sortedModes[index]
+            // 쉬운 설정의 크기 칸에서 이 모드의 설정을 보러 왔으면 접혀 있어도 펼친다.
+            val expandNow = (detailTarget as? DetailTarget.Size)?.mode == mode
             when (mode) {
                 VisualMode.Wave -> {
                     val waveSettings by SettingsManager.waveMode.collectAsState()
-                    SettingsExpander(stringResource(R.string.mode_card_wave), isExpanded = currentMode == VisualMode.Wave) {
+                    SettingsExpander(stringResource(R.string.mode_card_wave), isExpanded = currentMode == VisualMode.Wave, expandNow = expandNow) {
                         ModeSettingsSection(waveSettings) { SettingsManager.updateWaveMode(it) }
                     }
                 }
                 VisualMode.Pad -> {
                     val padSettings by SettingsManager.padMode.collectAsState()
-                    SettingsExpander(stringResource(R.string.mode_card_pad), isExpanded = currentMode == VisualMode.Pad) {
+                    SettingsExpander(stringResource(R.string.mode_card_pad), isExpanded = currentMode == VisualMode.Pad, expandNow = expandNow) {
                         ModeSettingsSection(padSettings) { SettingsManager.updatePadMode(it) }
                     }
                 }
                 VisualMode.CircleRipple -> {
                     val circleSettings by SettingsManager.circleMode.collectAsState()
-                    SettingsExpander(stringResource(R.string.mode_card_circle), isExpanded = currentMode == VisualMode.CircleRipple) {
+                    SettingsExpander(stringResource(R.string.mode_card_circle), isExpanded = currentMode == VisualMode.CircleRipple, expandNow = expandNow) {
                         ModeSettingsSection(circleSettings, isCircle = true) { SettingsManager.updateCircleMode(it) }
                     }
                 }
                 VisualMode.Outline -> {
                     val outlineSettings by SettingsManager.outlineMode.collectAsState()
-                    SettingsExpander(stringResource(R.string.mode_card_outline), isExpanded = currentMode == VisualMode.Outline) {
+                    SettingsExpander(stringResource(R.string.mode_card_outline), isExpanded = currentMode == VisualMode.Outline, expandNow = expandNow) {
                         ModeSettingsSection(outlineSettings) { SettingsManager.updateOutlineMode(it) }
                     }
                 }
             }
         }
 
-        item {
+        item(key = "types") {
             Text(stringResource(R.string.settings_section_ai), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor, modifier = Modifier.semantics { heading() }.padding(bottom = 16.dp, top = 24.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -166,26 +219,33 @@ fun SettingsTab(onAddTile: () -> Unit) {
                         )
                     }
 
+                    // 종류마다 [표시·색, 진동] 을 한 묶음으로 두고, 쉬운 설정의 진동 칸에서 보러 오면 그 묶음이 다 보이게 민다.
                     val showAmbient by SettingsManager.showAmbient.collectAsState()
                     val colorAmbient by SettingsManager.colorAmbient.collectAsState()
-                    ColorSettingRow(stringResource(R.string.ai_show_ambient), stringResource(R.string.cd_color_ambient), showAmbient, colorAmbient,
-                        onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
-                        onPickColor = { editingColor = AiClassification.AMBIENT })
-                    HapticSettingRow(AiClassification.AMBIENT, showAmbient)
+                    Column(Modifier.bringIntoViewRequester(vibrationRows.getValue(AiClassification.AMBIENT))) {
+                        ColorSettingRow(stringResource(R.string.ai_show_ambient), stringResource(R.string.cd_color_ambient), showAmbient, colorAmbient,
+                            onCheckedChange = { SettingsManager.updateAISettings(showAmbient = it) },
+                            onPickColor = { editingColor = AiClassification.AMBIENT })
+                        HapticSettingRow(AiClassification.AMBIENT, showAmbient)
+                    }
 
                     val showSpeech by SettingsManager.showSpeech.collectAsState()
                     val colorSpeech by SettingsManager.colorSpeech.collectAsState()
-                    ColorSettingRow(stringResource(R.string.ai_show_speech), stringResource(R.string.cd_color_speech), showSpeech, colorSpeech,
-                        onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
-                        onPickColor = { editingColor = AiClassification.SPEECH })
-                    HapticSettingRow(AiClassification.SPEECH, showSpeech)
+                    Column(Modifier.bringIntoViewRequester(vibrationRows.getValue(AiClassification.SPEECH))) {
+                        ColorSettingRow(stringResource(R.string.ai_show_speech), stringResource(R.string.cd_color_speech), showSpeech, colorSpeech,
+                            onCheckedChange = { SettingsManager.updateAISettings(showSpeech = it) },
+                            onPickColor = { editingColor = AiClassification.SPEECH })
+                        HapticSettingRow(AiClassification.SPEECH, showSpeech)
+                    }
 
                     val showDanger by SettingsManager.showDanger.collectAsState()
                     val colorDanger by SettingsManager.colorDanger.collectAsState()
-                    ColorSettingRow(stringResource(R.string.ai_show_danger), stringResource(R.string.cd_color_danger), showDanger, colorDanger,
-                        onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
-                        onPickColor = { editingColor = AiClassification.DANGER })
-                    HapticSettingRow(AiClassification.DANGER, showDanger)
+                    Column(Modifier.bringIntoViewRequester(vibrationRows.getValue(AiClassification.DANGER))) {
+                        ColorSettingRow(stringResource(R.string.ai_show_danger), stringResource(R.string.cd_color_danger), showDanger, colorDanger,
+                            onCheckedChange = { SettingsManager.updateAISettings(showDanger = it) },
+                            onPickColor = { editingColor = AiClassification.DANGER })
+                        HapticSettingRow(AiClassification.DANGER, showDanger)
+                    }
                 }
             }
 
@@ -440,9 +500,12 @@ fun ColorSettingRow(
  *
  * 추가해 두었으면 버튼 대신 추가되어 있다고만 보여 준다. 설정 탭은 늘 보는 곳이 아니라, 카드를 통째로 감추면 어디서
  * 추가했는지, 지웠을 때 어디서 다시 추가하는지 헷갈린다. 추가 여부는 타일 서비스가 추가·제거될 때 알려 준다.
+ *
+ * @param compact 쉬운 설정(#408)에서는 추가 버튼 위의 설명을 뺀다. 제목과 버튼이 할 일을 말한다. 버튼을 띄울 수 없는
+ *   Android 12 이하의 방법 안내는 그대로 둔다.
  */
 @Composable
-private fun QuickTileCard(onAddTile: () -> Unit) {
+internal fun QuickTileCard(onAddTile: () -> Unit, compact: Boolean = false) {
     val tileAdded by SettingsManager.tileAdded.collectAsState()
     Card(
         colors = CardDefaults.cardColors(containerColor = CardColor),
@@ -457,10 +520,14 @@ private fun QuickTileCard(onAddTile: () -> Unit) {
                     fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp)
                 )
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                    Text(
-                        stringResource(R.string.tile_add_desc),
-                        fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                    )
+                    if (compact) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                    } else {
+                        Text(
+                            stringResource(R.string.tile_add_desc),
+                            fontSize = 13.sp, color = SecondaryTextColor, lineHeight = 20.sp, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+                        )
+                    }
                     OutlinedButton(
                         onClick = onAddTile,
                         border = BorderStroke(1.dp, AccentColor),

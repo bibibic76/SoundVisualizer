@@ -148,12 +148,14 @@ def _matches_speech(s: str) -> bool:
     # Instrument, not a human vocalization.
     if s == "singing bowl":
         return False
-    # Product policy: Speech is the human-vocalization bucket, not only
+    # #421 user-approved policy: Speech includes human sneeze/cough/breathing,
+    # as well as the existing human-vocalization bucket, not only
     # intelligible language. Exact labels exclude Whimper (dog) (#345).
     if s in {
         "bellow", "whoop", "yell", "cheering",
         "giggle", "snicker", "belly laugh", "chuckle, chortle",
         "baby cry, infant cry", "whimper", "wail, moan",
+        "sneeze", "cough", "breathing",
     }:
         return True
     if "speech" in s or "conversation" in s or "narration" in s:

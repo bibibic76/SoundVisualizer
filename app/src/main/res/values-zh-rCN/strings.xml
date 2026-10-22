@@ -48,7 +48,7 @@
     <string name="tutorial_direction_body">来自左边的声音会在左侧显示得更大，来自右边的声音会在右侧显示得更大。无法分辨前后。</string>
     <string name="tutorial_direction_body_external">在外部声音模式下，应用暂时不会显示声音来自哪一侧，所有声音都显示在中间。对于手机内播放的声音，来自左边的声音会在左侧显示得更大。</string>
     <string name="tutorial_types_title">用颜色区分声音类型</string>
-    <string name="tutorial_types_body">AI 会将声音分为三种类型，并用不同的颜色显示。您可以在“设置”标签页中更改颜色。</string>
+    <string name="tutorial_types_body">AI 会将声音分为三种类型，并用不同的颜色显示。您可以在“设置”标签页的“详细设置”中更改颜色。</string>
     <string name="tutorial_type_ambient">环境音</string>
     <string name="tutorial_type_ambient_examples">音乐、雨声等其他声音</string>
     <string name="tutorial_type_speech">人声</string>
@@ -94,6 +94,20 @@
     <string name="settings_section_mode_detail">各模式详细设置</string>
     <string name="settings_section_ai">声音类型（AI）</string>
     <string name="settings_section_battery">电池</string>
+    <!-- Simple settings (#408) -->
+    <string name="settings_view_easy">简易设置</string>
+    <string name="settings_view_detailed">详细设置</string>
+    <string name="easy_section_shape">形状</string>
+    <string name="easy_section_size">大小</string>
+    <string name="easy_section_types">声音类型</string>
+    <string name="easy_size_small">小</string>
+    <string name="easy_size_medium">中</string>
+    <string name="easy_size_large">大</string>
+    <string name="easy_vibration_off">关闭</string>
+    <string name="easy_vibration_low">弱</string>
+    <string name="easy_vibration_high">强</string>
+    <string name="easy_vibration_off_external">在外部声音模式下，环境音不会振动。</string>
+    <string name="easy_vibration_preview_running">运行时不会播放预览振动。</string>
 
     <!-- Language -->
     <string name="settings_language_title">语言</string>
@@ -294,14 +308,14 @@
     <string name="help_mode_pad_desc">屏幕边缘的 8 个位置会亮起光条，方向显示最为清晰。</string>
     <string name="help_mode_outline_desc">只绘制细细的波浪轮廓线，对游戏画面的遮挡更少。</string>
     <string name="help_mode_circle_desc">屏幕中央的圆环会朝声音传来的方向鼓起。</string>
-    <string name="help_modes_note">“大小”“不透明度”等设置会按模式分别保存，可在“设置”标签页中更改。</string>
+    <string name="help_modes_note">“大小”“不透明度”等设置会按模式分别保存，可在“设置”标签页的“详细设置”中更改。</string>
     <string name="help_modes_notification">开启期间，可以展开运行中的通知，无需打开应用即可切换模式。</string>
 
     <string name="help_sound_title">声音类型与振动</string>
-    <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中更改每种类型的颜色以及是否显示。</string>
+    <string name="help_sound_kinds">AI 会将听到的声音分为环境音、人声和危险音。默认情况下，环境音为白色，人声为黄色，危险音为红色。您可以在“设置”标签页中选择每种类型是否显示，并在“详细设置”中更改其颜色。</string>
     <string name="help_sound_classify_groups">在“分类”标签页中，相似的声音会归为一组，您可以为每组选择归入哪一类。例如，将“门铃”组改为危险音后，AI 识别到门铃或敲门声时，会使用危险音的颜色和振动。不过，新设为危险音的声音只会参与 AI 判断类型的投票，因此并不代表每次门铃响都会显示为危险音。要逐个更改声音，请开启高级模式。</string>
     <string name="help_sound_danger">检测到危险音（如枪声）时，颜色会立即改变，而不是逐渐过渡。</string>
-    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动，您可以为每种类型选择振动方式（关闭、慢、中、快、连续）和强度。</string>
+    <string name="help_sound_haptic">即使您没有看着屏幕，也能通过振动收到提醒。默认只有危险音会振动。您可以为每种类型在“简易设置”中选择“关闭”“弱”或“强”，或在“详细设置”中选择振动方式（关闭、慢、中、快、连续）和强度。</string>
     <string name="help_sound_haptic_rule">只有已开启显示的类型才会振动。该类型的声音持续期间会一直振动，声音停止时振动也会停止。“中”每半秒振动一下，“慢”的速度是它的一半，“快”是它的两倍，“连续”则不间断地振动。无论哪种方式，振动都保持您选择的强度。</string>
     <string name="help_sound_haptic_external">在外部声音模式下，手机只在两次振动之间的间歇检查声音是否仍在持续，以免把自己的振动误当成声音。因此，声音停止后，振动可能还会短暂持续，通常不到 1 秒。为了留出足够长的间歇，此模式下人声最快只能选择“慢”，危险音最快只能选择“中”，环境音则不会振动，因为周围总会有声音。设得更快的类型会按允许的最快方式振动，关闭外部声音模式后会恢复为您设置的方式。</string>
 
@@ -315,7 +329,7 @@
     <string name="help_note_mic_sensitivity">外部声音模式中的“麦克风灵敏度”只改变图形、振动和锁定屏幕上的危险音提醒所感知的声音大小。较小的声音几乎显示不出来时请调高，在嘈杂的地方连背景噪音也显示出来时请调低。如果将灵敏度调到默认位置（左起第 4 格）以下，较小的声音可能不会振动或触发危险音提醒。灵敏度不会改变 AI 用来区分声音类型的声音。因此，小到 AI 听不到的声音，即使调高灵敏度后图形中能显示出来，也不会振动或触发危险音提醒。这时，请把手机放在靠近声源的地方，并且不要遮住麦克风。</string>
     <string name="help_note_stopped">开始屏幕录制、屏幕共享或投屏会让可视化关闭，因为它们使用同一项屏幕录制授权，而 Android 一次只允许一个应用使用。如果其他应用正在录制、共享或投屏，重新开启会使其结束。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。从手机的屏幕共享通知中结束声音捕获时，也会显示同样的提醒；如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
     <string name="help_note_stopped_external">外部声音模式不受屏幕录制、屏幕共享或投屏影响，会保持开启。在您并未手动停止的情况下关闭时，手机通常会有三次长振动，并显示带“重新开启”按钮的通知。如果应用被强行停止或意外退出，则无法提醒您。如果关闭了通知，就只能通过振动提醒您，打开应用后“首页”会显示可视化因何关闭。</string>
-    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页的“电池”中更改。外部声音模式在屏幕关闭时也会继续收听。</string>
+    <string name="help_note_screen_off">屏幕关闭期间会暂停以节省电量，屏幕点亮后自动继续。可在“设置”标签页“详细设置”的“电池”中更改。外部声音模式在屏幕关闭时也会继续收听。</string>
     <string name="help_note_ai">AI 分类可能出错。在涉及安全的情况下，请勿将本应用作为唯一的保障手段。</string>
 
     <string name="help_faq_title">常见问题</string>
@@ -323,16 +337,16 @@
     <string name="help_faq_stopped_a">开始屏幕录制、屏幕共享或投屏时，或声音捕获因出错而中断时，可视化会关闭。请点按通知中的“重新开启”，或从“首页”或“快捷设置”中重新开启。每次开启时 Android 都会再次询问是否同意屏幕录制；重新开启会结束正在进行的录制、共享或投屏。</string>
     <string name="help_faq_stopped_a_external">声音捕获因出错而中断时，可视化会关闭。请点按通知中的“重新开启”，或从“首页”或“快捷设置”中重新开启。外部声音模式不会请求屏幕录制授权，其他应用进行屏幕录制、共享或投屏时也会保持开启。</string>
     <string name="help_faq_no_graphic_q">看不到任何图形。</string>
-    <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。可视化手机内的声音时，如果媒体音量调得很低，请调高一些。</string>
-    <string name="help_faq_no_graphic_a_external">请检查麦克风是否被屏蔽。通话时、其他应用正在使用麦克风时，或在快捷设置中屏蔽了麦克风时，不会有任何声音进来，“首页”和运行中的通知会提示您。如果较小的声音几乎显示不出来，请在“首页”调高“麦克风灵敏度”。另外，请确认“设置”标签页中的“不透明度”没有调得太低，并且当前声音类型的显示没有被关闭。</string>
+    <string name="help_faq_no_graphic_a">请检查正在播放声音的应用是否禁止音频捕获，以及该应用内的声音是否已静音。如果本应用持续接收不到声音，“首页”和运行中的通知会提示您。另外，请确认“设置”标签页中当前声音类型的显示没有被关闭，并且“详细设置”中的“不透明度”没有调得太低。可视化手机内的声音时，如果媒体音量调得很低，请调高一些。</string>
+    <string name="help_faq_no_graphic_a_external">请检查麦克风是否被屏蔽。通话时、其他应用正在使用麦克风时，或在快捷设置中屏蔽了麦克风时，不会有任何声音进来，“首页”和运行中的通知会提示您。如果较小的声音几乎显示不出来，请在“首页”调高“麦克风灵敏度”。另外，请确认“设置”标签页中当前声音类型的显示没有被关闭，并且“详细设置”中的“不透明度”没有调得太低。</string>
     <string name="help_faq_no_vibration_q">没有振动。</string>
-    <string name="help_faq_no_vibration_answer">请在“设置”的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。默认情况下，屏幕关闭时应用会暂停；如需在此期间也收到振动提醒，请在“设置”的“电池”中关闭“屏幕关闭时暂停”。无法识别声音类型时，只有较大的声音会按危险音的设置振动。如果在手机设置中关闭了振动，则可能不会振动。可视化手机内的声音时，如果媒体音量调得很低，请调高一些。</string>
-    <string name="help_faq_no_vibration_answer_external">请在“设置”的“声音类型（AI）”中，确认该类型的“显示”和“振动”均已开启。在外部声音模式下，门铃等环境音不会振动。如需通过振动得知，请在“分类”标签页中将该声音改为危险音或人声。人声最快只能按“慢”振动，危险音最快只能按“中”振动。通话时、其他应用正在使用麦克风时，或在快捷设置中屏蔽了麦克风时，不会有任何声音进来，“首页”和运行中的通知会提示您。如果您把“首页”的“麦克风灵敏度”调到了默认位置（左起第 4 格）以下，请重新调高。小到 AI 听不到的声音，即使再调高灵敏度后图形中能显示出来，也不会振动。这时，请把手机放在靠近声源的地方，并且不要遮住麦克风。无法识别声音类型时，只有较大的声音会按危险音的设置振动，且最快为“中”。此时，多大的声音才算较大，取决于“麦克风灵敏度”。如果在手机设置中关闭了振动，则可能不会振动。</string>
+    <string name="help_faq_no_vibration_answer">请在“设置”的“声音类型”中，确认该类型的“显示”和“振动”均已开启。默认情况下，屏幕关闭时应用会暂停；如需在此期间也收到振动提醒，请在“设置”的“详细设置”中关闭“电池”下的“屏幕关闭时暂停”。无法识别声音类型时，只有较大的声音会按危险音的设置振动。如果在手机设置中关闭了振动，则可能不会振动。可视化手机内的声音时，如果媒体音量调得很低，请调高一些。</string>
+    <string name="help_faq_no_vibration_answer_external">请在“设置”的“声音类型”中，确认该类型的“显示”和“振动”均已开启。在外部声音模式下，门铃等环境音不会振动。如需通过振动得知，请在“分类”标签页中将该声音改为危险音或人声。人声最快只能按“慢”振动，危险音最快只能按“中”振动。通话时、其他应用正在使用麦克风时，或在快捷设置中屏蔽了麦克风时，不会有任何声音进来，“首页”和运行中的通知会提示您。如果您把“首页”的“麦克风灵敏度”调到了默认位置（左起第 4 格）以下，请重新调高。小到 AI 听不到的声音，即使再调高灵敏度后图形中能显示出来，也不会振动。这时，请把手机放在靠近声源的地方，并且不要遮住麦克风。无法识别声音类型时，只有较大的声音会按危险音的设置振动，且最快为“中”。此时，多大的声音才算较大，取决于“麦克风灵敏度”。如果在手机设置中关闭了振动，则可能不会振动。</string>
     <string name="help_faq_install_q">无法安装新版本。</string>
     <string name="help_faq_install_a">在其他地方构建的 APK 签名不同，无法在现有应用上覆盖安装。请先卸载现有应用，然后再安装。此操作会重置您的设置。</string>
     <string name="help_faq_battery_q">耗电量大吗？</string>
     <string name="help_faq_battery_a">只在有声音时才绘制图形，安静时会进入待机状态。不过，由于需要持续捕获声音，建议您在不使用时将其关闭。</string>
-    <string name="help_faq_battery_less_drawing">有声音时，绘制图形最耗电。在“设置”标签页的“电池”中开启“降低图形绘制频率”，可以减少耗电，但图形的动画会不那么流畅。</string>
+    <string name="help_faq_battery_less_drawing">有声音时，绘制图形最耗电。在“设置”标签页“详细设置”的“电池”中开启“降低图形绘制频率”，可以减少耗电，但图形的动画会不那么流畅。</string>
     <string name="help_faq_language_q">如何更改应用语言？</string>
     <string name="help_faq_language_a">点按“首页”标签页右下角的地球图标按钮，然后选择一种语言。选择“系统默认”将跟随手机的语言。在 Android 13 及更高版本中，您也可以在手机设置的“应用语言”中更改。</string>
 
