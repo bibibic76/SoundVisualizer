@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -34,10 +35,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
+import kotlin.math.roundToInt
+import kotlin.math.sign
 
 /**
  * 좁은 칸(모드 선택, 진동 선택지, 슬라이더 이름)에 들어가는 이름표의 글자 모양.
@@ -88,10 +93,16 @@ fun choicesPerRow(
 
 /**
  * 같은 너비의 선택지 칸을 [perRow] 개씩 줄지어 둔다. 마지막 줄이 덜 차도 칸 너비는 위 줄과 같다.
- * 한 줄 안의 칸은 높이를 맞춘다. 화면 읽어주기에는 전체를 한 선택지 묶음(selectableGroup)으로 알린다.
+ * 한 줄 안의 칸은 가장 높은 칸에 높이를 맞춘다. 화면 읽어주기에는 전체를 한 선택지 묶음(selectableGroup)으로 알린다.
  *
- * @param footer 줄들 밑에 가로를 다 쓰는 칸 하나. 같은 선택지 묶음에 들어가 화면 읽어주기에 함께 세어진다.
- * @param cell 선택지 하나를 그린다. 받은 Modifier(줄 안의 너비와 높이)를 칸의 맨 앞에 붙인다.
+ * 칸과 [footer] 는 줄마다 Row 로 나누지 않고 한 레이아웃 아래 보이는 순서대로 놓는다(#434). 화면 읽어주기는 묶음 안의
+ * 순번("4개 중 2번째")을 칸을 놓은 순서로 매기는데, 그 순서는 레이아웃 부모마다 따로 센다. 줄마다 Row 를 두었을 때는 두 줄짜리
+ * 모양 카드가 1·3·1·3번째로 읽혔고, 크기 줄 밑의 '자세한 설정' 칸은 보통과 같은 2번째로 읽혔다.
+ * 칸 높이를 맞추려고 칸의 최소 높이를 미리 물으므로 칸 안에 SubcomposeLayout(BoxWithConstraints 등)을 두지 않는다.
+ *
+ * @param footer 줄들 밑에 가로를 다 쓰는 칸 하나. 같은 선택지 묶음에 들어가 화면 읽어주기에 맨 끝으로 함께 세어진다.
+ * @param cell 선택지 하나를 그린다. 받은 Modifier(정해 준 칸 자리를 채운다)를 칸의 맨 앞에 붙인다. 칸 하나는 맨 바깥 노드
+ *   하나로 그리고 selectable 도 그 노드에 단다. 순번은 이 레이아웃이 놓은 노드끼리 세므로, 감싸는 노드를 하나 더 두면 다시 어긋난다.
  */
 @Composable
 fun <T> EqualChoiceRows(
@@ -102,14 +113,43 @@ fun <T> EqualChoiceRows(
     footer: (@Composable () -> Unit)? = null,
     cell: @Composable (option: T, modifier: Modifier) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(gap), modifier = modifier.selectableGroup()) {
-        options.chunked(perRow.coerceAtLeast(1)).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(gap), modifier = Modifier.height(IntrinsicSize.Min)) {
-                row.forEach { option -> cell(option, Modifier.weight(1f).fillMaxHeight()) }
-                repeat(perRow - row.size) { Spacer(modifier = Modifier.weight(1f)) }
-            }
+    val columns = perRow.coerceAtLeast(1)
+    Layout(
+        content = {
+            options.forEach { option -> cell(option, Modifier.fillMaxSize()) }
+            footer?.invoke()
+        },
+        modifier = modifier.selectableGroup()
+    ) { measurables, constraints ->
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else constraints.minWidth
+        val gapPx = gap.roundToPx()
+        // Row 의 weight(1f) 와 똑같이 나눈다. 칸마다 반올림한 너비를 주고, 그 합이 줄과 어긋난 픽셀은 앞 칸부터 하나씩 고친다.
+        val space = (width - gapPx * (columns - 1)).coerceAtLeast(0)
+        val rounded = (space.toFloat() / columns).roundToInt()
+        var remainder = space - rounded * columns
+        val widths = IntArray(columns) {
+            val unit = remainder.sign
+            remainder -= unit
+            (rounded + unit).coerceAtLeast(0)
         }
-        footer?.invoke()
+        val lefts = IntArray(columns)
+        for (i in 1 until columns) lefts[i] = lefts[i - 1] + widths[i - 1] + gapPx
+        val rows = measurables.take(options.size).chunked(columns).map { row ->
+            val height = row.indices.maxOf { row[it].minIntrinsicHeight(widths[it]) }
+            row.mapIndexed { i, measurable -> measurable.measure(Constraints.fixed(widths[i], height)) }
+        }
+        val footerPlaceable = measurables.getOrNull(options.size)?.measure(Constraints.fixedWidth(width))
+        val heights = rows.map { it.first().height } + listOfNotNull(footerPlaceable?.height)
+        val total = heights.sum() + gapPx * (heights.size - 1).coerceAtLeast(0)
+        layout(width, constraints.constrainHeight(total)) {
+            // 보이는 순서(줄마다 시작 쪽부터, footer 는 맨 끝)대로 놓는다. 화면 읽어주기의 순번이 이 순서를 따른다.
+            var y = 0
+            rows.forEach { row ->
+                row.forEachIndexed { i, placeable -> placeable.placeRelative(lefts[i], y) }
+                y += row.first().height + gapPx
+            }
+            footerPlaceable?.placeRelative(0, y)
+        }
     }
 }
 

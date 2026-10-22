@@ -100,6 +100,16 @@ class EasySettingsSourceTest {
     }
 
     @Test
+    fun `소리 종류 이름은 좁은 칸의 이름표처럼 하이픈으로 끊고 보이는 이름이 든 이름으로 읽힌다`() {
+        // 스위치와 눈 그림을 뺀 칸이라 좁다. 독일어 "Umgebungsgeräusche" 가 낱말 중간에서 끊겼다(#434).
+        val block = view.substringAfter("private fun SoundTypeBlock(").substringBefore("internal fun typeRowName(")
+        assertTrue("소리 종류 이름에 하이픈 줄바꿈이 없다", block.contains("style = wrappingLabelStyle(),"))
+        // 읽는 이름에 보이는 이름이 없는 언어는 앞에 붙인다(EasySettingsStringsTest).
+        assertTrue(block.contains("val rowName = typeRowName(typeName, stringResource(showLabelRes))"))
+        assertTrue(block.contains(".clearAndSetSemantics { contentDescription = rowName }"))
+    }
+
+    @Test
     fun `쉬운 설정의 안내 글은 한국어를 낱말 단위로 줄 바꾼다`() {
         // 글자 단위로는 "바뀝니/다."처럼 끝 글자만 다음 줄에 남았다(#424).
         val noteStyle = "style = LocalTextStyle.current.copy(lineBreak = EasyNoteLineBreak),"
