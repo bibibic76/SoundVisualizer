@@ -108,8 +108,6 @@
     <string name="easy_vibration_high">强</string>
     <string name="easy_vibration_off_external">在外部声音模式下，环境音不会振动。</string>
     <string name="easy_vibration_preview_running">运行时不会播放预览振动。</string>
-    <string name="easy_size_custom">此大小是在“详细设置”中调整的。在上方选择即可更改。</string>
-    <string name="easy_vibration_custom">此强度是在“详细设置”中调整的。在上方选择即可更改。</string>
 
     <!-- Language -->
     <string name="settings_language_title">语言</string>

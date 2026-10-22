@@ -108,8 +108,6 @@
     <string name="easy_vibration_high">Сильно</string>
     <string name="easy_vibration_off_external">В режиме внешних звуков фоновые звуки не вызывают вибрацию.</string>
     <string name="easy_vibration_preview_running">Пока визуализатор работает, пробная вибрация не включается.</string>
-    <string name="easy_size_custom">Размер задан в разделе «Подробные». Выберите вариант выше, чтобы изменить его.</string>
-    <string name="easy_vibration_custom">Сила вибрации задана в разделе «Подробные». Выберите вариант выше, чтобы изменить её.</string>
 
     <!-- Language -->
     <string name="settings_language_title">Язык</string>
