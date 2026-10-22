@@ -8,6 +8,9 @@ import android.graphics.Path
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import androidx.core.graphics.withClip
+import android.os.SystemClock
+import com.example.soundvisualizer.ai.AiLatencyStamp
+import com.example.soundvisualizer.ai.AiLatencyTrace
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -185,6 +188,7 @@ class VisualizerEngine(
     private var glowAlpha = 0f
     private var glowRadiusPx = 0f
     private var colorRgb = 0xFFFFFF
+    private var colorLatency: AiLatencyStamp? = null
     private var visible = false
     private var wasVisible = false
     private var lastTickNanos = 0L      // 마지막으로 처리한 틱 (시간 정규화용)
@@ -339,8 +343,13 @@ class VisualizerEngine(
         // 1-1. 라벨. 숨김이면 이번 피크를 보관하고, 위협음 판정이 새로 왔으면 보관한 크기로 시작한다 (pollWake 참고).
         // 깨어 있는 동안 받은 소리도 판정이 오기 전에 대기로 내려가면 사라지므로 여기서도 똑같이 모은다.
         val coarse = inputs.coarseLabel()
+        colorLatency = inputs.latencyStamp()
         val shown = inputs.isShown(coarse)
         val drawable = canDraw(s)
+        if (colorLatency != null && AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.observed(colorLatency,
+                AiLatencyTrace.Stage.COLOR_READ, SystemClock.elapsedRealtimeNanos(),
+                if (shown && drawable) "eligible" else "hidden_or_disabled")
         advanceHold(k)
         if (drawable) {
             if (!shown) holdHidden(peaks[0], peaks[1])
@@ -841,6 +850,9 @@ class VisualizerEngine(
             VisualMode.Pad -> drawPad(canvas)
             VisualMode.CircleRipple -> drawCircle(canvas)
         }
+        if (colorLatency != null && AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.observed(colorLatency,
+                AiLatencyTrace.Stage.COLOR_DRAW, SystemClock.elapsedRealtimeNanos())
     }
 
     // ---------------- Wave / Outline ----------------

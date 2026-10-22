@@ -1,6 +1,9 @@
 package com.example.soundvisualizer
 
 import com.example.soundvisualizer.ai.AiClassificationResult
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * 분류기(AudioCaptureService 소유)와 오버레이 렌더러를 잇는 지점.
@@ -22,11 +25,23 @@ object AiClassification {
 
     @Volatile
     private var source: (() -> AiClassificationResult?)? = null
+    @Volatile private var displaySource: (() -> AiClassificationResult?)? = null
+
+    // Wake-up only: observers always call latest(), so a queued event cannot revive an old result.
+    private val changed = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    internal val changes = changed.asSharedFlow()
+
+    /** Non-suspending; never execute HUD work on the inference thread. */
+    fun notifyResultChanged() { changed.tryEmit(Unit) }
 
     /** 캡처 서비스가 분류기를 시작한 뒤(마지막 결과를 비운 뒤) 호출한다. */
     fun attach(source: () -> AiClassificationResult?) {
         this.source = source
+        displaySource = source
+        notifyResultChanged()
     }
+
+    fun attachDisplay(source: () -> AiClassificationResult?) { displaySource = source; notifyResultChanged() }
 
     /**
      * 분류기가 멈추면 반드시 호출한다. 이후 읽기는 [AMBIENT] 로 떨어진다.
@@ -35,6 +50,8 @@ object AiClassification {
      */
     fun detach() {
         source = null
+        displaySource = null
+        notifyResultChanged()
     }
 
     /**
@@ -55,4 +72,5 @@ object AiClassification {
      * 같은 AtomicReference 읽기라 락은 여기서도 필요 없다.
      */
     fun latest(): AiClassificationResult? = source?.invoke()
+    fun latestForDisplay(): AiClassificationResult? = displaySource?.invoke()
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.SystemClock
 import android.util.Log
+import com.example.soundvisualizer.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,6 +33,8 @@ class RealtimeAiPipeline private constructor(
     private val classNames: List<String>,
     private val postProcessor: AiPostProcessor,
     private val mappingOverrides: () -> Map<String, String>,
+    private val onClassificationChanged: () -> Unit,
+    private val speechPreviewEnabled: Boolean,
     private val predictIntervalMs: Long = AI_PREDICT_INTERVAL_MS
 ) : AutoCloseable {
 
@@ -83,6 +86,8 @@ class RealtimeAiPipeline private constructor(
             captureSampleRate: Int = AiAudioBuffer.DEFAULT_CAPTURE_SAMPLE_RATE,
             channels: Int = 2,
             mappingOverrides: () -> Map<String, String> = { emptyMap() },
+            onClassificationChanged: () -> Unit = {},
+            speechPreviewEnabled: Boolean = BuildConfig.AI_SILERO_PREVIEW_ENABLED,
         ): RealtimeAiPipeline {
             val names = context.assets.open("ai/yamnet_class_map.csv").use {
                 YamnetCoarseClassifier.loadClassNames(it)
@@ -99,7 +104,9 @@ class RealtimeAiPipeline private constructor(
                     coarseClassifier = coarseClassifier,
                     classNames = names,
                     postProcessor = postProcessor,
-                    mappingOverrides = mappingOverrides
+                    mappingOverrides = mappingOverrides,
+                    onClassificationChanged = onClassificationChanged,
+                    speechPreviewEnabled = speechPreviewEnabled
                 )
             }
         }
@@ -112,6 +119,30 @@ class RealtimeAiPipeline private constructor(
     private val running = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
     private val lastResult = AtomicReference<AiClassificationResult?>(null)
+    private data class SpeechParent(val result: AiClassificationResult, val display: String, val confidence: Float)
+    private data class DisplayPreview(val parent: AiClassificationResult, val result: AiClassificationResult, val expiresNs: Long)
+    private val speechGate = SileroPreviewGate<SpeechParent>()
+    private val displayPreview = AtomicReference<DisplayPreview?>(null)
+    private val speechWorker = if (speechPreviewEnabled) SileroStreamWorker(context, audioBuffer,
+        discontinuity = { speechGate.regular(null); displayPreview.set(null) }) {
+        epoch, start, end, probability, now ->
+        val accepted = speechGate.block(epoch, start, end, probability, now)
+        if (accepted != null && !closed.get() && lastResult.get() === accepted.parent.result && mappingOverrides().isEmpty()) {
+            val parent = accepted.parent.result
+            // Parent trace remains the YAMNet input; fresh VAD frame range is a separate detail.
+            val stamp = parent.latency?.copy(resultId = AiLatencyTrace.nextId())
+            val result = parent.copy(coarse = "speech", display = accepted.parent.display,
+                confidence = accepted.parent.confidence, speechPreview = true,
+                timestampMs = System.currentTimeMillis(), latency = stamp)
+            val published = SystemClock.elapsedRealtimeNanos()
+            if (published < accepted.acceptBeforeNs) {
+                displayPreview.set(DisplayPreview(parent, result, accepted.expiresNs))
+                if (stamp != null) AiLatencyTrace.result(stamp, published,
+                    "kind=preview;parent_result_id=${parent.latency?.resultId};fresh_start=$start;fresh_end=$end;p=$probability;expires_boot_ns=${accepted.expiresNs}")
+                onClassificationChanged()
+            }
+        }
+    } else null
     private val captureInferenceGate = AiCaptureInferenceGate(audioBuffer)
     private val inferenceExecutions = java.util.concurrent.atomic.AtomicLong(0)
     private val inferenceCompletions = java.util.concurrent.atomic.AtomicLong(0)
@@ -125,12 +156,38 @@ class RealtimeAiPipeline private constructor(
         CaptureAudioMath.captureSamplesForOneYamnetWindow(audioBuffer.sampleRate)
     private val captureScratch = FloatArray(captureNeed)
     private val mono16kScratch = FloatArray(CaptureAudioMath.REQUIRED_MONO_16K_SAMPLES)
+    private val pcmTrace = AiPcmTrace()
+    private var traceSessionId = AiLatencyTrace.nextId()
+    private var traceStartedNs = 0L
 
     private val debuggable: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
     fun lastClassification(): AiClassificationResult? = lastResult.get()?.takeIf {
         it.mappingInputs == mappingOverrides()
+    }
+
+    /** Renderer/HUD only. A regular Danger or edited mapping always wins. */
+    fun lastDisplayClassification(): AiClassificationResult? {
+        val regular = lastClassification() ?: return null
+        val view = displayPreview.get()
+        val now = if (view != null) SystemClock.elapsedRealtimeNanos() else 0L
+        if (view != null && now >= view.expiresNs && displayPreview.compareAndSet(view, null) && AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.mark("silero_expiry", now, traceSessionId,
+                "preview_result_id=${view.result.latency?.resultId};parent_result_id=${view.parent.latency?.resultId}")
+        return if (view != null && view.parent === regular && lastResult.get() === regular &&
+            regular.coarse == "ambient" && mappingOverrides().isEmpty() &&
+            now < view.expiresNs) view.result else lastClassification()
+    }
+
+    fun speechVerifierCallsForTest(): Long = speechWorker?.calls?.get() ?: 0
+    internal fun beforeVerifierScoreForTest(hook: () -> Unit) { speechWorker?.beforeScoreForTest = hook }
+
+    private fun publishResult(result: AiClassificationResult?) {
+        speechGate.regular(null)
+        displayPreview.set(null)
+        lastResult.set(result)
+        onClassificationChanged()
     }
 
     fun inferenceStatsForTest(): InferenceStats = InferenceStats(
@@ -142,10 +199,13 @@ class RealtimeAiPipeline private constructor(
     fun start() {
         if (closed.get()) return
         if (!running.compareAndSet(false, true)) return
+        traceSessionId = AiLatencyTrace.nextId()
+        traceStartedNs = SystemClock.elapsedRealtimeNanos()
+        AiLatencyTrace.mark("pipeline_start", traceStartedNs, traceSessionId)
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
-        lastResult.set(null)
+        publishResult(null)
         inferenceExecutions.set(0)
         inferenceCompletions.set(0)
         silenceSkippedTicks.set(0)
@@ -174,6 +234,10 @@ class RealtimeAiPipeline private constructor(
     }
 
     fun stop() {
+        speechGate.regular(null)
+        displayPreview.set(null)
+        if (AiLatencyTrace.recordingId != 0L)
+            AiLatencyTrace.mark("pipeline_stop", SystemClock.elapsedRealtimeNanos(), traceSessionId)
         running.set(false)
         schedulerJob?.cancel()
         schedulerJob = null
@@ -183,9 +247,13 @@ class RealtimeAiPipeline private constructor(
      * Capture-thread safe: copies PCM into AI ring immediately.
      * Never runs inference.
      */
-    fun ingestInterleavedPcm(pcm: FloatArray, floatCount: Int) {
+    fun ingestInterleavedPcm(pcm: FloatArray, floatCount: Int,
+                             captureSessionId: Long = 0, endFrameExclusive: Long = 0,
+                             readCompletedNs: Long = 0, inputMayBeFiltered: Boolean = false) {
         if (!running.get() || closed.get()) return
-        ingestInterleaved(pcm, floatCount)
+        captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime(),
+            captureSessionId, endFrameExclusive, readCompletedNs, inputMayBeFiltered)
+        speechWorker?.signal()
     }
 
     /** Test helper — ingest without requiring [start]. */
@@ -195,6 +263,7 @@ class RealtimeAiPipeline private constructor(
 
     fun ingestMonoForTest(mono: FloatArray, length: Int = mono.size) {
         audioBuffer.ingestMono(mono, length)
+        speechWorker?.signal()
     }
 
     /**
@@ -208,7 +277,7 @@ class RealtimeAiPipeline private constructor(
         audioBuffer.reset()
         captureInferenceGate.reset()
         postProcessor.reset()
-        lastResult.set(null)
+        publishResult(null)
         inferenceExecutions.set(0)
         inferenceCompletions.set(0)
         silenceSkippedTicks.set(0)
@@ -218,6 +287,7 @@ class RealtimeAiPipeline private constructor(
         // Evaluate the original channels before downmixing, then always retain the
         // samples in the ring so an input that reopens the gate has full context.
         captureInferenceGate.ingestInterleaved(pcm, floatCount, SystemClock.elapsedRealtime())
+        speechWorker?.signal()
     }
 
     /**
@@ -231,6 +301,7 @@ class RealtimeAiPipeline private constructor(
         // Skip if previous tick still running (scheduler overlap)
         if (!inferLock.tryLock()) return null
         try {
+            speechGate.regularStarted()
             // close() 가 락을 잡기 직전에 통과했을 수 있으므로 락 안에서 다시 확인한다.
             if (closed.get()) return null
             // StateFlow publishes immutable maps. Capture once, including during silence, so
@@ -240,7 +311,7 @@ class RealtimeAiPipeline private constructor(
                 val next = YamnetMappingPolicy.from(overrides, classNames)
                 if (next.signature != mapping.signature) {
                     postProcessor.reset()
-                    lastResult.set(null)
+                    publishResult(null)
                 }
                 previousOverrides = overrides.toMap()
                 mapping = next
@@ -268,10 +339,18 @@ class RealtimeAiPipeline private constructor(
 
     private fun doInference(log: Boolean, diagnostics: Boolean): TickDiagnostics? {
         inferenceExecutions.incrementAndGet()
+        val traceRecordingId = AiLatencyTrace.recordingId
+        val snapshotBootNs = if (speechPreviewEnabled) SystemClock.elapsedRealtimeNanos() else 0L
+        val inferenceSessionId = traceSessionId
+        val pipelineStartedNs = traceStartedNs
+        val snapshotBeginNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
+        var snapshotEndNs = 0L
         val t0 = System.nanoTime()
         var logMel: FloatArray
         val preprocessNs = measureNanoTime {
-            audioBuffer.copyTailRightPadded(captureScratch, captureNeed)
+            audioBuffer.copyTailRightPadded(captureScratch, captureNeed,
+                if (traceRecordingId != 0L) pcmTrace else null)
+            if (traceRecordingId != 0L) snapshotEndNs = SystemClock.elapsedRealtimeNanos()
             CaptureAudioMath.resampleMonoFloatTo16kCustom(
                 source = captureScratch,
                 sourceLength = captureNeed,
@@ -280,12 +359,14 @@ class RealtimeAiPipeline private constructor(
             )
             logMel = frontend.computeLogMelSpectrogram(mono16kScratch)
         }
+        val preprocessedNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
         val mono16kCopy = if (diagnostics) mono16kScratch.copyOf() else null
 
         var yamnetResult: YamnetInference.Result
         val yamnetNs = measureNanoTime {
             yamnetResult = yamnet.inferFromLogMelFlat(logMel)
         }
+        val inferredNs = if (traceRecordingId != 0L) SystemClock.elapsedRealtimeNanos() else 0L
 
         val pre = coarseClassifier.classify(yamnetResult.probabilities, mapping)
 
@@ -308,6 +389,24 @@ class RealtimeAiPipeline private constructor(
         )
 
         val totalMs = (System.nanoTime() - t0) / 1e6
+        val latency = if (traceRecordingId != 0L) AiLatencyStamp(
+            recordingId = traceRecordingId, pipelineSessionId = inferenceSessionId,
+            resultId = AiLatencyTrace.nextId(), pipelineStartedNs = pipelineStartedNs,
+            captureSessionId = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.captureSessionId else 0,
+            firstFrame = if (pcmTrace.recordingId == traceRecordingId && pcmTrace.captureSessionId != 0L)
+                (pcmTrace.endFrameExclusive - captureNeed).coerceAtLeast(0) else 0,
+            endFrameExclusive = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.endFrameExclusive else 0,
+            sampleRate = audioBuffer.sampleRate,
+            readCompletedNs = if (pcmTrace.recordingId == traceRecordingId) pcmTrace.readCompletedNs else 0,
+            inputMayBeFiltered = pcmTrace.inputMayBeFiltered,
+            snapshotBeginNs = snapshotBeginNs, snapshotEndNs = snapshotEndNs,
+            preprocessedNs = preprocessedNs, inferredNs = inferredNs,
+            confirmedNs = SystemClock.elapsedRealtimeNanos(), rawCoarse = decision.postCoarse,
+            meetsThreshold = post.meetsThreshold, candidateStreak = post.candidateStreak,
+            confirmedCoarse = post.uiCoarse, mappingSignature = mapping.signature,
+            rawConfidence = decision.postConfidence, effectiveThreshold = post.effectiveThreshold,
+            candidateCoarse = post.candidateCoarse
+        ) else null
         val result = AiClassificationResult(
             coarse = post.uiCoarse,
             display = post.uiDisplay,
@@ -321,9 +420,21 @@ class RealtimeAiPipeline private constructor(
             totalMs = totalMs,
             mappingOverrideCount = mapping.overrideCount,
             mappingSignature = mapping.signature,
-            mappingInputs = previousOverrides
+            mappingInputs = previousOverrides,
+            latency = latency
         )
-        lastResult.set(result)
+        // Immediately before the atomic store: observers may run before its post-store timestamp.
+        val publicationNs = if (latency != null) SystemClock.elapsedRealtimeNanos() else 0L
+        publishResult(result)
+        if (latency != null) AiLatencyTrace.result(latency, publicationNs,
+            "kind=regular;variant=${if (speechPreviewEnabled) "silero" else "baseline"};vad_calls=${speechWorker?.calls?.get() ?: 0};vad_compute_ns=${speechWorker?.computeNs?.get() ?: 0};vad_resets=${speechWorker?.resets?.get() ?: 0};vad_failed=${speechWorker?.failed?.get() ?: false}")
+        if (speechPreviewEnabled && decision.postCoarse == "speech" && post.meetsThreshold &&
+            post.uiCoarse == "ambient" && post.candidateStreak == 1 && previousOverrides.isEmpty()) {
+            val cursor = audioBuffer.cursor()
+            speechGate.regular(SileroPreviewGate.Candidate(
+                SpeechParent(result, decision.postDisplay, decision.postConfidence), cursor.frames,
+                snapshotBootNs + 250_000_000L, snapshotBootNs + 275_000_000L, cursor.generation))
+        }
 
         if (log && debuggable) {
             maybeLog(
@@ -456,6 +567,7 @@ class RealtimeAiPipeline private constructor(
     override fun close() {
         if (!closed.compareAndSet(false, true)) return
         stop()
+        speechWorker?.close() // Native execution/resources remain owned by its thread; no join.
         scope.cancel()
 
         // stop()/cancel() 은 다음 틱의 시작만 막는다. 이미 session.run() 안에 들어간 추론이
@@ -482,7 +594,7 @@ class RealtimeAiPipeline private constructor(
 
         audioBuffer.reset()
         postProcessor.reset()
-        lastResult.set(null)
+        publishResult(null)
     }
 }
 

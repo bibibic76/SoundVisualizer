@@ -89,7 +89,7 @@ object AiDebugText {
 
         return AiDebugLines(
             colorLabel = result.coarse,
-            coarse = result.coarse.uppercase(Locale.US),
+            coarse = result.coarse.uppercase(Locale.US) + if (result.speechPreview) " ~PREVIEW" else "",
             // 확정된 이름이 아직 없으면 빈 문자열이 온다. 임계값을 한 번도 넘지 못한 상태다.
             label = result.display.ifEmpty { "(none)" },
             confidence = twoDecimals(result.confidence),

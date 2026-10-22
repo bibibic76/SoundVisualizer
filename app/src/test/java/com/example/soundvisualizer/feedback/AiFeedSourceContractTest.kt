@@ -93,7 +93,7 @@ class AiFeedSourceContractTest {
             "aiPipeline?.let",
             "floatView.get(aiScratch, 0, floats)",
             "aiFeed.process(aiScratch, floats, startMs, clock.endExtraMs)",
-            "pipeline.ingestInterleavedPcm(aiScratch, floats)"
+            "pipeline.ingestInterleavedPcm(aiScratch, floats,"
         )
         // 프레임 번호가 맞으려면 AI 가 아직 없어도 버퍼마다 센다.
         assertTrue("시각을 AI 가 있을 때만 센다", loop.indexOf("clock?.onRead(") < loop.indexOf("aiPipeline?.let"))
@@ -116,7 +116,7 @@ class AiFeedSourceContractTest {
             "try {",
             "aiFeed.process(aiScratch, floats, startMs, clock.endExtraMs)",
             "} catch (e: Exception) {",
-            "pipeline.ingestInterleavedPcm(aiScratch, floats)"
+            "pipeline.ingestInterleavedPcm(aiScratch, floats,"
         )
         val handler = body(loop, "} catch (e: Exception) {")
         assertInOrder(
