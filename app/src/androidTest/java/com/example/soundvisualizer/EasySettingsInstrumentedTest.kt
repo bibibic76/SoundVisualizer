@@ -1,7 +1,9 @@
 package com.example.soundvisualizer
 
+import android.view.ViewGroup
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
@@ -21,6 +23,7 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,6 +32,7 @@ import com.example.soundvisualizer.feedback.EasyVibration
 import com.example.soundvisualizer.feedback.HapticMode
 import com.example.soundvisualizer.feedback.HapticPlayer
 import com.example.soundvisualizer.feedback.HapticSettings
+import com.example.soundvisualizer.feedback.soundTypeName
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -37,6 +41,7 @@ import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
+import kotlin.math.roundToInt
 
 /**
  * 설정 탭의 쉬운 설정(#408). 그림으로 선택하는 화면이 화면 읽어주기로도 쓸 수 있고, 누르면 정해 둔 값을 바꾸는지 본다.
@@ -44,10 +49,12 @@ import org.junit.runner.RunWith
  * - 맨 위 두 칸, 모양 카드, 크기 세 단계는 48dp 이상의 라디오 단추이고, 소리 종류 줄은 종류 이름으로 읽히는 스위치다.
  * - 자세한 설정에만 있는 것(모드 설정 제목, 모드별 슬라이더)은 보이지 않는다.
  * - 크기 단계는 선택한 모드에만 쓰고, 크기 칸은 선택한 모드의 크기를 보여 준다.
- * - 크기와 진동 세기가 자세한 설정에서 단계와 다르게 맞춰져 있으면 어느 칸도 선택해 두지 않고 한 줄로 알린다(#424).
+ * - 크기와 진동 세기가 자세한 설정에서 단계와 다르게 맞춰져 있으면 단계 칸 대신 그 줄의 '자세한 설정' 칸이 선택되어 보이고,
+ *   그 칸을 누르면 자세한 설정의 그 자리로 간다(#424, #427).
+ * - 선택지 묶음의 칸은 화면 읽어주기에 보이는 순서대로 세어진다(#434).
  *
  * 진동 칸은 누르지 않는다. 누르면 2초 미리보기가 폰에서 울린다. 저장된 세기에 맞는 칸이 선택되어 보이는지만 보고,
- * 진동 단계의 규칙은 EasyVibrationTest 가 본다.
+ * 진동 단계의 규칙은 EasyVibrationTest 가 본다. 진동 줄의 '자세한 설정' 칸은 화면만 옮기므로 누른다.
  * 시험이 바꾸는 값(튜토리얼을 봤는지, 설정 화면, 모드, 네 모드의 설정, 표시 여부, 진동, 외부 사운드 모드)은 모두 기억했다가
  * 되돌린다.
  * 기기 언어와 상관없이 돌도록 글자는 모두 리소스에서 만든다.
@@ -155,6 +162,16 @@ class EasySettingsInstrumentedTest {
 
     private fun choice(id: Int) = hasText(string(id)) and isSelectable()
 
+    /** 소리 종류 줄이 화면 읽어주기에 알려지는 이름. */
+    private fun typeRowNameOf(label: String): String {
+        val show = when (label) {
+            AiClassification.DANGER -> R.string.ai_show_danger
+            AiClassification.SPEECH -> R.string.ai_show_speech
+            else -> R.string.ai_show_ambient
+        }
+        return typeRowName(string(soundTypeName(label)), string(show))
+    }
+
     /**
      * '자세한 설정' 칸은 맨 위 두 칸, 크기 줄, 진동 줄 셋에 있고 모두 같은 글자다(#427). 번호로 고르면 목록을 민 뒤
      * 맨 위 두 칸이 목록에서 빠져 다른 칸을 가리키므로, 같은 선택지 묶음의 이웃 칸으로 고른다.
@@ -190,9 +207,10 @@ class EasySettingsInstrumentedTest {
         }
         rule.onNode(choice(EasySize.Medium.labelRes)).assertIsSelected()
 
-        // 소리 종류 줄은 줄 전체가 스위치이고, 자세한 설정과 같은 이름("위협음 표시")으로 읽힌다.
-        for (id in listOf(R.string.ai_show_danger, R.string.ai_show_speech, R.string.ai_show_ambient)) {
-            scrolledTo(hasContentDescription(string(id)) and isToggleable())
+        // 소리 종류 줄은 줄 전체가 스위치이고, 자세한 설정과 같은 이름("위협음 표시")으로 읽힌다. 그 이름에 보이는 종류 이름이
+        // 없는 언어는 종류 이름이 앞에 붙는다(#434).
+        for (label in LABELS) {
+            scrolledTo(hasContentDescription(typeRowNameOf(label)) and isToggleable())
                 .assert(hasRole(Role.Switch)).assertHeightIsAtLeast(48.dp)
         }
 
@@ -215,6 +233,39 @@ class EasySettingsInstrumentedTest {
         rule.waitForIdle()
         rule.onNode(hasText(string(R.string.easy_section_shape)) and isHeading).assertExists()
         assertTrue("쉬운 설정을 저장하지 않았다", SettingsManager.easySettings.value)
+    }
+
+    @Test
+    fun choicesAreCountedInTheOrderTheyAreShown() {
+        // 화면 읽어주기는 선택지 묶음 안의 순번("4개 중 2번째")을 읽는다. 두 줄로 놓이는 모양 카드와 밑에 '자세한 설정' 칸이
+        // 붙은 크기 줄도 보이는 순서대로 세어져야 한다(#434). 줄마다 따로 세면 두 칸이 같은 순번이 되었다.
+        openSettings()
+        assertCountedInShownOrder(choice(VisualMode.Wave.labelRes))
+        scrolledTo(sizeDetailed)
+        assertCountedInShownOrder(choice(EasySize.Small.labelRes))
+    }
+
+    /**
+     * [member] 가 든 선택지 묶음의 칸들이 보이는 순서(위에서 아래로, 한 줄은 왼쪽부터)대로 세어지는지 본다. Compose 는 묶음 안의
+     * 순번을 시스템에 넘기는 접근성 노드(AccessibilityNodeInfo)를 만들 때 정하므로, 그 노드를 직접 만들어 읽는다.
+     */
+    private fun assertCountedInShownOrder(member: SemanticsMatcher) {
+        val group = rule.onNode(member).fetchSemanticsNode().parent ?: error("선택지 묶음이 없다")
+        val cells = group.children
+            .filter { it.config.contains(SemanticsProperties.Selected) }
+            .sortedWith(compareBy({ it.boundsInRoot.top.roundToInt() }, { it.boundsInRoot.left }))
+        val names = cells.map { it.config.getOrNull(SemanticsProperties.Text)?.joinToString(" ").orEmpty() }
+        var counted = emptyList<Int>()
+        rule.runOnUiThread {
+            val content = rule.activity.findViewById<ViewGroup>(android.R.id.content)
+            val composeView = (content.getChildAt(0) as ViewGroup).getChildAt(0)
+            val provider = composeView.accessibilityNodeProvider ?: error("접근성 노드를 만들 수 없다")
+            counted = cells.map { cell ->
+                val item = provider.createAccessibilityNodeInfo(cell.id)?.collectionItemInfo ?: error("${names} 에 순번이 없다")
+                maxOf(item.rowIndex, item.columnIndex)
+            }
+        }
+        assertEquals("보이는 순서 $names", cells.indices.toList(), counted)
     }
 
     @Test
@@ -299,6 +350,24 @@ class EasySettingsInstrumentedTest {
     }
 
     @Test
+    fun vibrationDetailedCellOpensThatTypesVibrationInDetailed() {
+        // 자세한 설정에서는 위협음이 소리 종류 카드의 마지막 묶음이라, 작은 화면에서는 카드로 옮겨 가기만 하면 화면 밖에 남는다.
+        // 쉬운 설정의 위협음 진동 줄(첫 줄)에서 '자세한 설정' 칸을 누르면 그 묶음이 보이게 민다(#427).
+        setHaptics(speechLevel = 40)
+        openSettings()
+        val detailed = rule.onAllNodes(detailedNextTo(EasyVibration.Low.labelRes)).assertCountEquals(LABELS.size)
+        detailed[0].performScrollTo().performClick()
+        rule.waitForIdle()
+        assertFalse("자세한 설정으로 넘어가지 않았다", SettingsManager.easySettings.value)
+        assertEquals(
+            "진동을 바꾸지 않아야 한다",
+            HapticSettings(HapticMode.Medium, HapticSettings.MAX_LEVEL), SettingsManager.hapticSettings(AiClassification.DANGER).value
+        )
+        val dangerStrength = "${string(R.string.sound_type_danger)}, ${string(R.string.haptic_strength)}"
+        rule.onNode(hasContentDescription(dangerStrength)).assertIsDisplayed()
+    }
+
+    @Test
     fun vibrationStepsShowEachTypesStoredStrength() {
         // 위협음은 100%(세게), 대화음은 40%(약하게), 환경음은 꺼 둔 채 세기만 남아 있다(끔).
         setHaptics(speechLevel = 40)
@@ -351,7 +420,7 @@ class EasySettingsInstrumentedTest {
     @Test
     fun typeRowTurnsTheTypeOnAndOff() {
         openSettings()
-        val danger = hasContentDescription(string(R.string.ai_show_danger)) and isToggleable()
+        val danger = hasContentDescription(typeRowNameOf(AiClassification.DANGER)) and isToggleable()
         scrolledTo(danger).performClick()
         rule.waitForIdle()
         assertFalse(SettingsManager.showDanger.value)

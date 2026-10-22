@@ -1,5 +1,6 @@
 package com.example.soundvisualizer
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -94,5 +95,24 @@ class EasySettingsStringsTest {
                 .map { key -> "$dir: help_sound_haptic 에 '${s.getValue(key)}'($key) 가 없다" }
         }
         assertTrue(wrong.joinToString("\n"), wrong.isEmpty())
+    }
+
+    @Test
+    fun `소리 종류 줄의 읽는 이름에는 모든 언어에서 보이는 종류 이름이 들어 있다`() {
+        // 보이는 글자를 말해 누르는 음성 조작이 이 줄을 찾을 수 있어야 한다(WCAG 2.5.3, #434). 빠진 문구는 앱처럼 기본 언어를 쓴다.
+        val base = strings.getValue("values")
+        val missing = dirs.flatMap { dir ->
+            val s = strings.getValue(dir)
+            listOf("danger", "speech", "ambient").mapNotNull { type ->
+                val shown = s["sound_type_$type"] ?: base.getValue("sound_type_$type")
+                val name = typeRowName(shown, s["ai_show_$type"] ?: base.getValue("ai_show_$type"))
+                if (name.contains(shown, ignoreCase = true)) null else "$dir $type: '$shown' 가 '$name' 에 없다"
+            }
+        }
+        assertTrue(missing.joinToString("\n"), missing.isEmpty())
+
+        // 들어 있으면 자세한 설정의 스위치와 같은 이름 그대로다.
+        val ko = strings.getValue("values-ko")
+        assertEquals(ko.getValue("ai_show_danger"), typeRowName(ko.getValue("sound_type_danger"), ko.getValue("ai_show_danger")))
     }
 }

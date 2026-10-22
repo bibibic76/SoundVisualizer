@@ -378,7 +378,7 @@ private fun TypeDivider() {
  * 소리 종류 하나: [종류 그림] 이름 ··· [눈] [스위치], 그 아래 진동 세 칸.
  *
  * 줄 전체를 누르면 화면 표시가 켜지고 꺼진다. 화면 읽어주기에는 "위협음 표시, 스위치, 켜짐" 으로 읽힌다(자세한 설정의 스위치와
- * 같은 이름). 그림과 눈 표시는 이름과 스위치가 이미 말하는 것이라 읽지 않는다.
+ * 같은 이름, [typeRowName]). 그림과 눈 표시는 이름과 스위치가 이미 말하는 것이라 읽지 않는다.
  */
 @Composable
 private fun SoundTypeBlock(
@@ -389,7 +389,8 @@ private fun SoundTypeBlock(
     onOpenDetailed: (DetailTarget) -> Unit,
     onShownChange: (Boolean) -> Unit
 ) {
-    val showLabel = stringResource(showLabelRes)
+    val typeName = stringResource(soundTypeName(label))
+    val rowName = typeRowName(typeName, stringResource(showLabelRes))
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -403,13 +404,15 @@ private fun SoundTypeBlock(
                 role = Role.Switch,
                 onValueChange = onShownChange
             )
-            .clearAndSetSemantics { contentDescription = showLabel }
+            .clearAndSetSemantics { contentDescription = rowName }
     ) {
         SoundTypeBadge(label, Color(color))
         Spacer(Modifier.width(12.dp))
+        // 스위치와 눈 그림을 뺀 칸이라 좁다. 긴 번역어("Umgebungsgeräusche")는 하이픈을 넣어 끊는다(#434).
         Text(
-            stringResource(soundTypeName(label)),
+            typeName,
             fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryTextColor,
+            style = wrappingLabelStyle(),
             modifier = Modifier.weight(1f)
         )
         ShowIcon(shown, if (shown) PrimaryTextColor else SecondaryTextColor)
@@ -428,6 +431,14 @@ private fun SoundTypeBlock(
     }
     EasyHapticRow(label, shown, onOpenDetailed = { onOpenDetailed(DetailTarget.Vibration(label)) })
 }
+
+/**
+ * 소리 종류 줄을 화면 읽어주기에 알리는 이름. 자세한 설정의 스위치와 같은 이름([showLabel], "위협음 표시")을 쓰고, 그 안에
+ * 화면에 보이는 종류 이름([typeName])이 없으면 앞에 붙인다(#434). 보이는 글자를 말해 누르는 음성 조작도 이 줄을 찾을 수
+ * 있어야 한다(WCAG 2.5.3). 번역에 따라 "Mostrar sons de perigo" 에는 보이는 "Som de perigo" 가 들어 있지 않다.
+ */
+internal fun typeRowName(typeName: String, showLabel: String): String =
+    if (showLabel.contains(typeName, ignoreCase = true)) showLabel else "$typeName, $showLabel"
 
 /**
  * 그림과 낱말 하나로 된 선택지 줄(#408). 설정 화면의 다른 선택지(모드 단추, 진동 방식)와 같은 색으로 선택을 보이고,
