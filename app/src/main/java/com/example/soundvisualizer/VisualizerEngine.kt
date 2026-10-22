@@ -77,15 +77,6 @@ class VisualizerEngine(
          * AI·캡처처럼 프레임 수와 무관한 비용이 섞여 있기 때문이다. 대신 그만큼 덜 부드럽다.
          */
         const val REDUCED_FPS = 30
-
-        /**
-         * 오버레이 창이 화면에 요청하는 주사율(#428). 그리는 만큼([FULL_FPS], 배터리 설정이면 [REDUCED_FPS])만 요청한다.
-         * 요청하지 않으면 Galaxy S25+ 는 홈 화면 위에서도 화면 전체를 120Hz 로 돌려, 그리지 않을 화면 갱신마다 앱이 깨어나고
-         * 화면 합성도 120Hz 로 돌았다. 요청하자 60Hz 로 내려가 화면 합성 CPU 가 17.4% → 14.1%, 메인 스레드가 8.2% → 6.3% 로
-         * 줄었다(8분씩, 외부 사운드 모드). 앞에 있는 앱이 더 빠르게 그리면 시스템이 그 앱을 따른다.
-         */
-        fun overlayRefreshRate(reduced: Boolean): Float = (if (reduced) REDUCED_FPS else FULL_FPS).toFloat()
-
         /** 이 시간 동안 아무것도 안 보이면 저빈도 폴링(idle)으로 전환 */
         private const val IDLE_AFTER_NS = 1_000_000_000L
         /** 대기 중 확인 간격. 조용하고 보관한 소리도 없을 때는 이 간격 대신 소리 신호를 기다린다([canSleepUntilLoud]). */
