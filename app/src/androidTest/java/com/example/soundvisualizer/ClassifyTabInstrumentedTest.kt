@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
@@ -161,6 +162,17 @@ class ClassifyTabInstrumentedTest {
         rule.waitForIdle()
     }
 
+    /**
+     * '모두 기본값으로'를 누른다(사용자처럼). 그 줄은 위에 붙는 찾기·거르기 바로 밑의 칸이라, 보일 만큼만 밀면 위쪽이
+     * 찾기·거르기에 가려 가운데를 누른 것이 거르기 줄로 갈 수 있다(API 37 에뮬레이터에서 매번 그랬다, #418).
+     * 찾기·거르기가 목록의 제자리에 오게 밀어, 그 줄이 바로 밑에 다 보이게 한 뒤 누른다.
+     */
+    private fun pressResetAll() {
+        rule.onNode(classifyList).performScrollToIndex(STICKY_HEADER_INDEX)
+        rule.waitForIdle()
+        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+    }
+
     /** 고급 모드 스위치 줄. 이름·설명·상태가 한 덩어리다. */
     private val advancedSwitch get() = hasText(string(R.string.classify_advanced)) and isToggleable()
 
@@ -295,7 +307,7 @@ class ClassifyTabInstrumentedTest {
         rule.onNodeWithText(string(R.string.classify_changed_from, danger), useUnmergedTree = true).assertExists()
         rule.onNodeWithText(string(R.string.classify_changed_count, 1)).assertExists()
 
-        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        pressResetAll()
         rule.onNodeWithText(string(R.string.classify_reset_confirm)).performClick()
         rule.waitForIdle()
 
@@ -558,8 +570,7 @@ class ClassifyTabInstrumentedTest {
         rule.waitForIdle()
         assertEquals(mapOf("Doorbell" to AiClassification.SPEECH), SettingsManager.soundTypes.value)
 
-        scrollTo(hasText(string(R.string.classify_reset_all)))
-        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        pressResetAll()
         rule.onNodeWithText(string(R.string.classify_reset_confirm)).performClick()
         rule.waitForIdle()
         assertTrue(SettingsManager.soundTypes.value.isEmpty())
@@ -634,8 +645,7 @@ class ClassifyTabInstrumentedTest {
         assertEquals(sirens.associateWith { AiClassification.SPEECH }, SettingsManager.soundTypes.value)
 
         // 모두 되돌리기 창도 다시 만든 뒤에 그대로 떠 있고, 확인하면 바꾼 것을 모두 지운다.
-        scrollTo(hasText(string(R.string.classify_reset_all)))
-        rule.onNodeWithText(string(R.string.classify_reset_all)).performClick()
+        pressResetAll()
         rule.onNodeWithText(string(R.string.classify_reset_title)).assertExists()
         rule.activityRule.scenario.recreate()
         rule.waitForIdle()
